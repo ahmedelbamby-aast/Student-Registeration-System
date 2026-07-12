@@ -1,0 +1,245 @@
+# Project Plan
+
+## 1. Product goal
+
+Deliver a simple, accessible, secure registration system in which:
+
+- A student activates an institutional account, signs in with University ID
+  and password, sees the server date and current academic context, discovers
+  eligible subjects, selects groups, resolves schedule conflicts, and submits
+  one atomic registration.
+- Admin, Lecturer, and Teaching Assistant use one shared staff login. The
+  server derives roles and data scope; a login form never lets a user claim a
+  role.
+- Admin publishes valid terms, policies, offerings, groups, staff assignments,
+  rooms, times, and capacities.
+- Lecturers and TAs see only their assignments, timetable, authorized rosters,
+  and availability.
+
+Success means zero overbooked groups, zero partial submissions, every policy
+decision is explainable, and future features can attach at stable module
+boundaries.
+
+## 2. Scope
+
+### MVP
+
+- Institutional student activation and two login experiences.
+- Role-based access for Student, Admin, Lecturer, and Teaching Assistant.
+- Server-authoritative time, institutional timezone, academic term, and
+  registration windows.
+- Student academic profile, GPA, standing, transcript, prerequisites, holds,
+  cohort, program, and earned credits.
+- Effective-dated AASTMT policy configuration with rule provenance.
+- Course catalogue, offerings, groups, capacities, lecturers, TAs, rooms, and
+  meeting slots.
+- Explainable subject eligibility and search.
+- Draft schedule, overlap detection, manual resolution, and up to three
+  recommended group combinations.
+- Atomic all-or-nothing submission with idempotency and race safety.
+- Student receipt/history, staff workspaces, admin audit, and operations.
+
+### Not in MVP
+
+- Payments, grades entry, attendance capture, waitlists, advisor workflow,
+  notifications, chat, mobile applications, multi-tenancy, AI/ML scheduling,
+  and institution-wide timetable generation.
+- A break-glass capacity or conflict override.
+- Microservices, event sourcing, a message broker, a dynamic policy DSL,
+  Kubernetes, or separate read/write databases.
+
+## 3. Product and delivery roles
+
+| Role | Accountability |
+|---|---|
+| Product Owner | Scope, ordering, success metrics, acceptance |
+| AASTMT Registrar/Policy SME | Source authority, interpretation, examples, policy approval |
+| UX Lead | Storyboard, prototype, usability, WCAG 2.2 AA |
+| Technical Lead/Architect | Module boundaries, class/API contracts, ADRs |
+| Data/Backend Lead | ERD, EF Core model, migrations, SQL concurrency |
+| .NET Developers | Blazor WASM and ASP.NET Core implementation |
+| QA/SDET | Acceptance, integration, concurrency, load, E2E, accessibility |
+| DevOps | CI/CD, configuration, observability, backup, rollback |
+| Security Reviewer | Authentication, authorization, privacy, abuse controls |
+
+One person may fill multiple roles on a small team, but accountabilities and
+approval gates remain distinct.
+
+## 4. Exact specification inventory
+
+There are exactly 18 living specifications.
+
+| ID | Name | Accountable owner | Primary focus | First target |
+|---|---|---|---|---|
+| SPEC-001 | Product Charter and RBAC | Product Owner | Vision, personas, scope, permission matrix, metrics | S0 |
+| SPEC-002 | AASTMT Policy Rulebook | Registrar/Policy SME | Sources, simplified rules, versions, open policy decisions | S0 |
+| SPEC-003 | UX Storyboard and Accessibility | UX Lead | 27 screens, navigation, UI states, responsive and WCAG behavior | S0 |
+| SPEC-004 | Architecture and Engineering Principles | Architect | Modular monolith, dependencies, deployment, extension strategy | S0 |
+| SPEC-005 | ERD and Data Lifecycle | Data Lead | Entities, ownership, constraints, indexes, audit, migrations | S0-S1 |
+| SPEC-006 | Domain Classes and API Contracts | Technical Lead | Aggregates, services, DTOs, endpoints, error model | S0-S1 |
+| SPEC-007 | Identity and Account Lifecycle | Security Lead | Activation, login, recovery, RBAC, MFA, lockout, sessions | S1 |
+| SPEC-008 | Academic Term and Student Profile | Backend Lead | Time, terms/windows, GPA, transcript, standing, holds | S1 |
+| SPEC-009 | Catalogue, Prerequisites, and Policy Admin | Policy SME + Backend | Courses, curricula, typed rules, validation, simulation | S2 |
+| SPEC-010 | Offerings, Groups, and Resources | Backend Lead | Groups, capacity, staff, rooms, times, publish validation | S2 |
+| SPEC-011 | Eligibility and Subject Discovery | Product Owner | Search, availability, rule evaluation and explanations | S3 |
+| SPEC-012 | Schedule Builder and Conflicts | Technical Lead | Draft timetable, overlap detection, manual resolution | S4 |
+| SPEC-013 | Schedule Recommendations | Technical Lead | Bounded deterministic search, scoring, alternatives | S5 |
+| SPEC-014 | Registration Capacity and Concurrency | Data/Backend Lead | Atomic commit, idempotency, constraints, race safety | S6 |
+| SPEC-015 | Student Registration Records | Product Owner | Receipt, current timetable, history, decision snapshot | S6 |
+| SPEC-016 | Lecturer and TA Workspace | Product Owner | Assignments, scoped roster, timetable, availability | S7 |
+| SPEC-017 | Admin Operations, Audit, and Reporting | Product Owner | Master data, monitor, corrections, audit, exports | S2-S7 |
+| SPEC-018 | Quality, Security, Scalability, and Operations | QA/DevOps/Security | SLOs, threat model, test gates, recovery, release | S0-S8 |
+
+## 5. Dependencies
+
+```mermaid
+flowchart TD
+  S001["001 Charter"] --> S002["002 Policy"]
+  S001 --> S003["003 UX"]
+  S002 --> S003
+  S001 --> S004["004 Architecture"]
+  S003 --> S004
+  S004 --> S005["005 ERD"]
+  S004 --> S006["006 Classes and APIs"]
+  S005 --> S006
+  S006 --> S007["007 Identity"]
+  S007 --> S008["008 Term and Profile"]
+  S002 --> S009["009 Catalogue and Rules"]
+  S008 --> S009
+  S009 --> S010["010 Offerings"]
+  S010 --> S011["011 Eligibility"]
+  S011 --> S012["012 Schedule Builder"]
+  S012 --> S013["013 Recommendations"]
+  S013 --> S014["014 Atomic Registration"]
+  S014 --> S015["015 Records"]
+  S015 --> S016["016 Staff"]
+  S007 --> S017["017 Admin and Audit"]
+  S010 --> S017
+  S018["018 Quality and Operations"] -. cross-cutting .-> S007
+  S018 -. cross-cutting .-> S014
+  S018 -. cross-cutting .-> S017
+```
+
+## 6. Agile framework
+
+### Cadence
+
+- Two-week sprints.
+- Planning commits at 80-85% of adjusted team capacity.
+- Daily 15-minute stand-up.
+- Weekly backlog refinement plus policy/UX clinic.
+- Mid-sprint risk and test review for scheduling and registration work.
+- End-of-sprint staging demo, acceptance, and retrospective.
+- Capacity is re-baselined after three measured sprints.
+
+### Spec and change workflow
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> InReview: author ready
+  InReview --> Approved: required reviewers accept
+  InReview --> Draft: changes requested
+  Approved --> InDevelopment: sprint starts
+  InDevelopment --> Verification: implementation complete
+  Verification --> Released: all gates pass
+  Verification --> InDevelopment: defect found
+  Released --> Superseded: replacement approved
+```
+
+- Every backlog item links to a spec and acceptance criterion, for example
+  SPEC-014/AC-07.
+- Behavior changes begin with a spec pull request.
+- A policy change requires an effective-dated version and Registrar/SME
+  approval.
+- An architectural change requires an ADR and Technical Lead approval.
+- A data/concurrency change requires Data Lead and QA approval.
+- Released behavior is never silently rewritten; record the former version
+  and migration effect.
+
+### Definition of Ready
+
+A story may enter a sprint when:
+
+- Persona, value, spec/criterion link, and explicit non-goals are present.
+- It is INVEST-compliant and eight points or smaller.
+- Happy, validation, failure, authorization, accessibility, stale, and
+  performance behaviors are testable where relevant.
+- UI designs include loading, empty, success, error, denied, and concurrent
+  change states.
+- Data, API, migration, policy source, dependencies, and test data are known.
+- No unresolved question can materially alter implementation.
+- Product, development, and QA agree it is estimable.
+
+### Definition of Done
+
+- Peer-reviewed implementation satisfies every linked criterion.
+- Unit, SQL Server integration, architecture, Blazor E2E, and relevant
+  concurrency/load tests pass.
+- Server authorization and resource ownership are tested.
+- Accessibility checks have no serious failures on changed critical flows.
+- Logs, metrics, user-safe errors, migration, backup, and rollback notes exist.
+- Spec, diagram, ADR, and operations documentation are current.
+- No unresolved critical/high security finding remains.
+- Staging acceptance is complete; Registrar/SME also accepts policy behavior.
+
+## 7. Sprint plan
+
+| Sprint | Goal | Specifications | Demonstrable exit |
+|---|---|---|---|
+| S0 Discovery/design | Remove policy, UX, data, and architecture ambiguity | 001-006; 018 baseline | Gate A artifacts approved; policy questions owned |
+| S1 Walking skeleton | Authenticate and show authoritative current context | 005-008 | Student and staff sign in; role route, date, and term display |
+| S2 Admin master data | Configure and publish a registerable term | 009-010; 017 slice | Admin publishes a validated offering |
+| S3 Explainable availability | Show correct available subjects | 011 | Student sees eligible/unavailable subjects and reasons |
+| S4 Conflict-safe builder | Detect and manually resolve overlaps | 012 | Valid draft progresses; unresolved conflict blocks |
+| S5 Recommendations | Offer feasible group alternatives | 013 | Up to three explained options or honest no-solution |
+| S6 Safe registration | Commit atomically under contention | 014-015 | Exactly one winner for one remaining seat; no partial state |
+| S7 Role workspaces | Complete staff and admin operations | 016-017 | Scoped staff data and auditable operations |
+| S8 Hardening/release | Prove production readiness | 018 | Gate D UAT, security, load, accessibility, and recovery pass |
+
+## 8. Provisional non-functional targets
+
+These are planning hypotheses, not promises. Replace them with AASTMT
+enrollment and registration-window forecasts during Sprint 0.
+
+| Area | Initial target |
+|---|---|
+| Population | 25,000 accounts; 5,000 concurrent authenticated sessions |
+| Registration load | 75 submissions/s for 10 min; 200/s for 60 s |
+| Read load | 300 catalogue/timetable requests/s |
+| Catalogue latency | p95 <= 300 ms |
+| Submission latency | p95 <= 2 s at target load |
+| Optimizer | p95 <= 500 ms for 8 courses, up to 10 groups each |
+| Correctness | Zero overbooking, duplicate active course enrollment, partial submission |
+| Availability | 99.9% during announced registration windows |
+| Recovery | RPO <= 5 min; RTO <= 1 hour |
+| Accessibility | WCAG 2.2 AA on critical flows |
+
+Tests run at target, 2x target, and a short 5x spike. A mandatory collision
+test submits 100 registrations to a 30-seat group and must produce exactly 30
+active enrollments.
+
+## 9. Risks
+
+| Risk | Owner | Mitigation / gate |
+|---|---|---|
+| Policy ambiguity or change | Registrar/PO | Versioned sources, examples, SME approval before SPEC-009 |
+| Optimizer scope expansion | PO/Architect | Only published-group combinations in MVP |
+| Seat oversubscription | Data/QA | Atomic SQL update, transaction, unique constraints, collision tests |
+| Client bypass of rules | Security/Backend | Revalidate all rules and ownership on server |
+| Incorrect time/term | Backend/QA | TimeProvider, UTC instants, configured timezone, boundary tests |
+| Bad catalogue data | Registrar/Admin | Import preview, provenance, validation, publish gate |
+| Peak performance | DevOps/QA | Confirm forecast, indexes, load test, observe p95 and lock waits |
+| Stale WASM state | Frontend/Backend | Version tokens and final server revalidation |
+| Sensitive-data exposure | Security | Least privilege, scoped queries, audit, safe logs |
+| Inaccessible calendar | UX/QA | Equivalent chronological table/list and assistive-tech UAT |
+| Scope growth | PO | Fixed non-goals and separately versioned future backlog |
+
+## 10. Release gates
+
+- Gate A, end S0: Product Owner, Registrar/SME, UX, Architect, Data Lead,
+  Security, and QA approve the planning contracts.
+- Gate B, end S2: secure walking skeleton and valid published master data.
+- Gate C, end S6: end-to-end beta with proven atomic seat allocation.
+- Gate D, end S8: UAT, accessibility, security, load, recovery, and release
+  approvals.
