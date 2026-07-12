@@ -1,4 +1,4 @@
-# Research: Quality Security Scalability and Operations
+# Research: Quality, Security, Scalability, and Operations
 
 ## Decisions
 
@@ -29,6 +29,8 @@ interface OperationalMetric {
 
 GET /api/health exposes only the safe HealthSummary. GET /api/operations/metrics
 is restricted. Health detail and metrics MUST expose no secrets/topology.
+
+
 
 ## Open Research
 

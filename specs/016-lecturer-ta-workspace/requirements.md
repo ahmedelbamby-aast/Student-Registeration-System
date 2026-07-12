@@ -6,7 +6,7 @@
 **Owner:** Product Owner<br>
 **Reviewers:** Lecturer/TA representatives, Security, UX, QA<br>
 **Target:** Sprint 7<br>
-**Dependencies:** SPEC-007, SPEC-010, SPEC-015, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-007, SPEC-010, SPEC-015, SPEC-018<br>
 
 ## Context
 
@@ -32,6 +32,12 @@ availability without access to policy, user, or unrelated student data.
   rosters.
 - FR-8: Availability changes after schedule publication MUST trigger an admin
   warning and MUST NOT silently move a class.
+- FR-9: Availability MUST be a versioned staff-plus-term aggregate; edits MUST
+  validate the complete range set and replace/update it atomically rather than
+  inserting independently validated ranges.
+- FR-10: Availability deadline and published-schedule impact MUST be
+  revalidated with server time inside the same transaction as the aggregate
+  update.
 
 ## Non-Functional Requirements
 
@@ -52,7 +58,8 @@ And Group B is denied with no data.
 ### AC-2: Shared page, different scope (FR-1, FR-3)
 Given Lecturer and TA users open the same assignments route<br>
 When server responses are rendered<br>
-Then each sees only role-appropriate current assignments<br>
+Then each sees only the server-authorized lecture/tutorial/lab assignments
+defined by current GroupStaffAssignment records<br>
 And the role context is stated near the page heading.
 
 ### AC-3: Availability deadline (FR-6)
@@ -73,6 +80,30 @@ When the change is saved through the allowed process<br>
 Then Admin receives an affected-group warning<br>
 And no class, room or staff assignment moves automatically.
 
+### AC-6: Concurrent availability insert (FR-6, FR-9, FR-10)
+Given two clients load the same staff-term availability version<br>
+When they concurrently add overlapping ranges<br>
+Then exactly one complete aggregate update succeeds<br>
+And the loser receives 409 STALE_VERSION with the current range set.
+
+### AC-7: Availability races group publication (FR-8, FR-10)
+Given an availability update conflicts with a group being published for that
+staff member<br>
+When both transactions execute concurrently<br>
+Then one valid serial order is recorded<br>
+And an affected published group is never silently left without a warning and
+revalidation state.
+
+### AC-8: Staff workspace quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given approved read load, direct-object authorization matrix, privacy/audit
+inspection, and keyboard/calendar-list fixtures<br>
+When workspace quality tests execute<br>
+Then reads are at most 300 ms p95<br>
+And every unassigned object is denied without data<br>
+And rosters contain only approved fields with safe audit metadata<br>
+And timetable/availability is fully keyboard operable with a list/table
+alternative.
+
 ## Edge Cases
 
 - EC-1: Staff has both Lecturer and TA assignments -> display authorized
@@ -80,6 +111,8 @@ And no class, room or staff assignment moves automatically.
 - EC-2: Assignment removed while page open -> stale refresh denies roster.
 - EC-3: Concurrent availability edit -> stale version gets 409.
 - EC-4: No assignments -> clear empty state, no broad search access.
+- EC-5: Deadline passes after the page loads -> in-transaction server-time
+  validation rejects the update with AVAILABILITY_DEADLINE_PASSED.
 
 ## API Contracts
 
@@ -95,21 +128,39 @@ interface AvailabilityRangeDto {
   startLocal: string;
   endLocal: string;
   type: "available" | "unavailable" | "preferred";
+}
+interface StaffTermAvailabilityDto {
+  staffId: string;
+  termId: string;
+  deadlineUtc: string;
   rowVersion: string;
+  ranges: AvailabilityRangeDto[];
+}
+interface ReplaceAvailabilityRequest {
+  expectedStaffTermRowVersion: string;
+  ranges: AvailabilityRangeDto[];
 }
 ```
 
 Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
-/api/staff/groups/{id}/roster, GET/PUT /api/staff/availability.
+/api/staff/groups/{id}/roster, GET /api/staff/availability, and PUT
+/api/staff/availability. PUT replaces the complete staff-term range set and
+returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
+fails.
 
 ## Data Models
 
 | Field/example | Type | Constraints |
 |---|---|---|
 | GroupStaffAssignment | bridge | authorized staff + group + role |
-| StaffAvailability | range | own staff ID; deadline; rowversion |
+| StaffTermAvailability | aggregate root | unique staff + term; deadline; rowversion; owns complete range set |
+| StaffAvailability | child range | parent aggregate ID; day/start/end/type; no independent concurrency version |
 | StaffAssignmentDto | projection | current assigned group details only |
 | RosterRow | projection | minimal approved student fields |
+
+Every create/update/delete of a StaffAvailability child MUST lock and advance
+the owning StaffTermAvailability rowversion. Children MUST NOT be updated
+through an endpoint or transaction that bypasses the aggregate root.
 
 ## Out of Scope
 

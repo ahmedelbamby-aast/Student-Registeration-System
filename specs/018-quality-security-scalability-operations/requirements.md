@@ -6,7 +6,7 @@
 **Owner:** QA, DevOps, and Security Leads<br>
 **Reviewers:** All leads, Product Owner, Registrar<br>
 **Target:** Sprint 0-S8<br>
-**Dependencies:** SPEC-001, SPEC-004, SPEC-005, SPEC-006<br>
+**Dependencies:** SPEC-001, SPEC-003, SPEC-004, SPEC-005, SPEC-006<br>
 
 ## Context
 
@@ -38,13 +38,15 @@ until AASTMT provides enrollment/traffic forecasts.
 
 ## Non-Functional Requirements
 
-- NFR-1: Support planning baseline of 25,000 accounts and 5,000 concurrent
-  authenticated sessions, pending S0 rebaseline.
-- NFR-2: Support 75 submissions/s for 10 min, 200/s for 60 s, and 300 read/s.
-- NFR-3: Catalogue p95 <= 300 ms; commit p95 <= 2 s; optimizer p95 <= 500 ms
-  for the approved workload.
-- NFR-4: Zero overbooking, duplicate active offering enrollment, and partial
-  atomic submission.
+- NFR-1: The production-like validation environment MUST support a planning
+  baseline of 25,000 accounts and 5,000 concurrent authenticated sessions,
+  pending S0 rebaseline.
+- NFR-2: The system MUST support 75 submissions/s for 10 min, 200/s for 60 s,
+  and 300 read/s.
+- NFR-3: Catalogue p95 MUST be <= 300 ms, commit p95 MUST be <= 2 s, and
+  optimizer p95 MUST be <= 500 ms for the approved workload.
+- NFR-4: Tests MUST demonstrate zero overbooking, duplicate active offering
+  enrollment, and partial atomic submission.
 - NFR-5: Availability MUST be 99.9% during announced registration windows.
 - NFR-6: Unexpected server failure rate MUST be < 0.1% at target load.
 - NFR-7: RPO MUST be <= 5 minutes and RTO <= 1 hour.
@@ -90,6 +92,17 @@ When CI executes<br>
 Then restore/format/build, unit/architecture, SQL integration/migration,
 E2E/accessibility and security checks run in the approved order<br>
 And any required gate failure blocks merge.
+
+### AC-7: Complete operational proof (FR-2, FR-3, FR-7, NFR-1, NFR-5, NFR-6, NFR-9)
+Given the 25,000-account/5,000-session production-like fixture, two stateless
+replicas with shared Data Protection keys, observability collectors, and the
+critical eligibility/conflict/capacity suites<br>
+When the release evidence pipeline and registration-window soak execute<br>
+Then every boundary/concurrency test passes<br>
+And safe health/log/metric/trace signals are available<br>
+And availability is at least 99.9% during the test window<br>
+And unexpected failure rate is below 0.1%<br>
+And critical rule branch coverage is at least 90%.
 
 ## Edge Cases
 

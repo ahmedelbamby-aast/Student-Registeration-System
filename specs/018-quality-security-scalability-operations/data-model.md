@@ -1,4 +1,4 @@
-# Data Model: Quality Security Scalability and Operations
+# Data Model: Quality, Security, Scalability, and Operations
 
 ## Owned Entities
 

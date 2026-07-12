@@ -15,20 +15,44 @@
 ### Feature contract
 ```typescript
 interface ScheduleOptionDto {
+  optionId: string;
   rank: number;
   groups: GroupDto[];
   score: number;
   scoreExplanation: Array<{ factor: string; value: number; message: string }>;
 }
 interface OptimizationResultDto {
+  requestCorrelationId: string;
+  planRowVersion: string;
+  catalogueVersion: string;
+  policyVersion: string;
+  optimizerConfigurationVersion: string;
   status: "complete" | "no-solution" | "time-budget";
   options: ScheduleOptionDto[];
   conflicts: ScheduleConflictDto[];
   evaluatedAtUtc: string;
 }
+interface RecommendScheduleRequest {
+  expectedPlanRowVersion: string;
+  requestCorrelationId: string;
+  preferences: SchedulePreferencesDto;
+}
+interface ApplyScheduleOptionRequest {
+  optionId: string;
+  expectedPlanRowVersion: string;
+  requestCorrelationId: string;
+  catalogueVersion: string;
+  policyVersion: string;
+  optimizerConfigurationVersion: string;
+}
 ```
 
-Endpoint: POST /api/student/registration-plans/{id}/recommendations.
+Endpoints: POST /api/student/registration-plans/{id}/recommendations and PUT
+/api/student/registration-plans/{id}/recommended-option. Applying an option is
+an atomic versioned plan update; stale input returns 409 PLAN_CHANGED or
+STALE_INPUT.
+
+
 
 ## Open Research
 

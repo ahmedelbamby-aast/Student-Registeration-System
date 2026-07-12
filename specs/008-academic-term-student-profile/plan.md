@@ -1,6 +1,6 @@
 # Implementation Plan: Academic Term and Student Profile
 
-**Branch**: 008-academic-term-student-profile | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 008-academic-term-student-profile | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -30,6 +30,7 @@ Deliver Academic Term and Student Profile inside the modular monolith while keep
 ## Dependency Check
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
@@ -46,10 +47,13 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+
+
 ## Non-Functional Requirements
 
 - NFR-1: Time-dependent behavior MUST use TimeProvider and boundary tests.
-- NFR-2: Dashboard context SHOULD load within 300 ms p95 at approved read load.
+- NFR-2: Dashboard context SHOULD load within 300 ms p95 at the SPEC-018
+  300-read-requests-per-second target.
 - NFR-3: Instants MUST be stored in UTC datetime2; recurring class times use
   DayOfWeek/TimeOnly and term timezone.
 - NFR-4: Student academic data MUST be restricted to self and approved staff

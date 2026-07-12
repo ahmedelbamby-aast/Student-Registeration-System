@@ -49,7 +49,8 @@ As a Student, I need the No solution (FR-7) behavior so that Schedule Recommenda
 Given every combination has a hard overlap<br>
 When search completes<br>
 Then no fake solution is returned<br>
-And the minimal/useful conflicting course set and manual actions are shown.
+And a minimal blocking set, hard reason codes/intervals, and change/remove
+actions for every member are shown.
 ### User Story 4 - Time budget (FR-6, NFR-3) (P2)
 
 As a Student, I need the Time budget (FR-6, NFR-3) behavior so that Schedule Recommendations produces a verifiable outcome.
@@ -75,6 +76,46 @@ And a group fills before submission<br>
 When the student submits that option<br>
 Then final registration revalidates and rejects the stale group<br>
 And no recommendation is treated as a reservation.
+### User Story 6 - Plan changes during optimization (FR-9, FR-10) (P3)
+
+As a Student, I need the Plan changes during optimization (FR-9, FR-10) behavior so that Schedule Recommendations produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given optimization starts for plan rowversion 5<br>
+When the student edits the plan to rowversion 6 before the result is applied<br>
+Then applying the old option returns 409 PLAN_CHANGED<br>
+And rowversion 6 remains unchanged.
+### User Story 7 - Out-of-order responses (FR-9, FR-10, NFR-2) (P3)
+
+As a Student, I need the Out-of-order responses (FR-9, FR-10, NFR-2) behavior so that Schedule Recommendations produces a verifiable outcome.
+
+**Independent Test**: Execute AC-7 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-7)**
+
+Given request B for the current plan starts after request A<br>
+When B completes first and A completes later<br>
+Then the client renders only the response matching the current request
+correlation ID and plan version<br>
+And the server rejects any stale apply attempt.
+### User Story 8 - Optimizer pruning, performance, and coverage (FR-3, NFR-1, NFR-4) (P3)
+
+As a Student, I need the Optimizer pruning, performance, and coverage (FR-3, NFR-1, NFR-4) behavior so that Schedule Recommendations produces a verifiable outcome.
+
+**Independent Test**: Execute AC-8 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-8)**
+
+Given eight courses with ten groups each and fixtures exercising every
+constraint/pruning branch<br>
+When the optimizer benchmark and branch-coverage suite executes<br>
+Then constrained courses are processed first and invalid partial schedules are
+pruned<br>
+And p95 completion is at most 500 ms<br>
+And optimizer branch coverage is at least 90%.
 
 ## Edge Cases
 
@@ -83,6 +124,9 @@ And no recommendation is treated as a reservation.
 - EC-2: One selected course has zero viable groups -> immediate no-solution.
 - EC-3: Equal scores -> stable tie-break by course/group identifiers.
 - EC-4: Invalid preference weight -> reject configuration, use last approved.
+- EC-5: Catalogue/group/policy changes during search -> the result uses one
+  coherent captured version set or returns STALE_INPUT; mixed-version options
+  MUST NOT be returned.
 
 ## Requirements
 
@@ -91,17 +135,32 @@ And no recommendation is treated as a reservation.
 - FR-1: The optimizer MUST choose exactly one published viable group per
   selected course.
 - FR-2: It MUST enforce all hard meeting, availability, completeness,
-  eligibility, credit, and configured travel-buffer constraints.
+  eligibility, and credit constraints. A travel-buffer constraint MUST remain
+  disabled until a typed, sourced, approved policy defines its minutes/matrix.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.
 - FR-5: It MUST score results with approved soft preferences and explain score
   components.
 - FR-6: It MUST support cancellation and a configured computation time budget.
-- FR-7: If no feasible result exists, it MUST return a useful conflict set and
-  manual-resolution path.
+- FR-7: If no feasible result exists, it MUST return at least one minimal
+  blocking set of selected courses/groups, each hard reason code and involved
+  meeting interval, and direct change/remove actions for every member.
 - FR-8: Final submission MUST revalidate all results; a recommendation does not
   reserve seats.
+- FR-9: A recommendation request MUST include the expected plan rowversion and
+  request correlation ID; each result MUST identify the captured plan,
+  catalogue/group, policy, and optimizer-configuration versions.
+- FR-10: Applying an option MUST be one atomic versioned plan mutation and MUST
+  reject an option computed from a stale plan or dependency version.
+
+### Non-Functional Requirements
+
+- NFR-1: p95 optimization MUST be <= 500 ms for 8 courses with up to 10 groups
+  each under approved hardware/load.
+- NFR-2: Same inputs/configuration MUST produce the same ordering.
+- NFR-3: Time-budget expiry MUST return a safe status, not an unbounded task.
+- NFR-4: Unit coverage for optimizer branches MUST be at least 90%.
 
 ### Key Entities
 
@@ -124,8 +183,15 @@ And no recommendation is treated as a reservation.
 
 ## Dependencies
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-012](../012-schedule-builder-conflicts/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| STU-04 | /student/schedule | ScheduleBuilderPage.razor | Feature contract contributor; does not edit page; design SPEC-003, implementation SPEC-012 |
 
 ## Out of Scope
 

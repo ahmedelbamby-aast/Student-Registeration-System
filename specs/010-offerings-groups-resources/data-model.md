@@ -1,4 +1,4 @@
-# Data Model: Offerings Groups and Resources
+# Data Model: Offerings, Groups, and Resources
 
 ## Owned Entities
 

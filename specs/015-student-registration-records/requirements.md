@@ -6,7 +6,7 @@
 **Owner:** Product Owner<br>
 **Reviewers:** Registrar/Policy SME, UX, Data, QA<br>
 **Target:** Sprint 6<br>
-**Dependencies:** SPEC-008, SPEC-014, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-008, SPEC-014, SPEC-018<br>
 
 ## Context
 
@@ -68,11 +68,21 @@ When both timetable views are opened<br>
 Then calendar and accessible list/table show equivalent authorized records<br>
 And no drop/correction action appears before its workflow is approved.
 
+### AC-6: Registration-record quality gate (NFR-1, NFR-3, NFR-4)
+Given the approved read-load dataset, accessible print/export checks, and
+records spanning the full retention fixture<br>
+When record quality tests execute<br>
+Then receipt retrieval is at most 300 ms p95<br>
+And printed/exported views meet accessibility checks with minimized PII<br>
+And historical records remain durable and readable throughout the approved
+retention lifecycle.
+
 ## Edge Cases
 
 - EC-1: Result response lost -> idempotent lookup returns receipt.
 - EC-2: Receipt render service error -> safe retry by reference.
-- EC-3: No registrations -> meaningful empty state with eligible next action.
+- EC-3: No registrations -> show the selected term and window state and, only
+  when registration is open, a link to STU-02 subject discovery.
 - EC-4: Historical term archived -> remains read-only and accessible.
 
 ## API Contracts

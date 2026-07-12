@@ -14,12 +14,25 @@ interface AvailabilityRangeDto {
   startLocal: string;
   endLocal: string;
   type: "available" | "unavailable" | "preferred";
+}
+interface StaffTermAvailabilityDto {
+  staffId: string;
+  termId: string;
+  deadlineUtc: string;
   rowVersion: string;
+  ranges: AvailabilityRangeDto[];
+}
+interface ReplaceAvailabilityRequest {
+  expectedStaffTermRowVersion: string;
+  ranges: AvailabilityRangeDto[];
 }
 ```
 
 Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
-/api/staff/groups/{id}/roster, GET/PUT /api/staff/availability.
+/api/staff/groups/{id}/roster, GET /api/staff/availability, and PUT
+/api/staff/availability. PUT replaces the complete staff-term range set and
+returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
+fails.
 
 ## Shared Rules
 

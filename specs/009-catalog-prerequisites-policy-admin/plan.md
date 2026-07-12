@@ -1,11 +1,11 @@
-# Implementation Plan: Catalogue Prerequisites and Policy Administration
+# Implementation Plan: Catalogue, Prerequisites, and Policy Administration
 
-**Branch**: 009-catalog-prerequisites-policy-admin | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 009-catalog-prerequisites-policy-admin | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
 
-Deliver Catalogue Prerequisites and Policy Administration inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Deliver Catalogue, Prerequisites, and Policy Administration inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
 
 ## Technical Context
 
@@ -30,6 +30,7 @@ Deliver Catalogue Prerequisites and Policy Administration inside the modular mon
 ## Dependency Check
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
 - [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
@@ -46,6 +47,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

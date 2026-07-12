@@ -72,6 +72,36 @@ Given a reviewed migration bundle and production-like backup<br>
 When deployment rehearsal runs<br>
 Then migration is applied as a controlled step rather than app startup<br>
 And rollback instructions restore the prior verified state.
+### User Story 6 - Database-backed registration and idempotency guards (FR-2, FR-4, FR-9) (P3)
+
+As a Data Lead, I need the Database-backed registration and idempotency guards (FR-2, FR-4, FR-9) behavior so that ERD and Data Lifecycle produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given the Code First model is migrated to SQL Server<br>
+When parallel transactions claim one student-term guard and one idempotency
+key<br>
+Then database uniqueness and concurrency controls permit one canonical owner
+and payload<br>
+And a different payload cannot reuse that key<br>
+And the stored deterministic result survives application-process restart.
+### User Story 7 - Data operational quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Data Lead, I need the Data operational quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that ERD and Data Lifecycle produces a verifiable outcome.
+
+**Independent Test**: Execute AC-7 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-7)**
+
+Given a production-like database, reviewed migration bundle, backup, critical
+query plans, and privacy-safe logging fixture<br>
+When the data release gate executes<br>
+Then critical tables above 10,000 rows have reviewed indexed plans<br>
+And migration rehearsal completes inside the approved deployment window<br>
+And restore meets SPEC-018 RPO/RTO<br>
+And sensitive fields are absent from unsafe logs.
 
 ## Edge Cases
 
@@ -98,6 +128,19 @@ And rollback instructions restore the prior verified state.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
   startup migrations.
 - FR-8: Data provenance MUST be recorded for imported academic/catalogue data.
+- FR-9: The ERD MUST model a unique student-term registration guard and an
+  idempotency record containing owner/scope, canonical payload hash, processing
+  state, immutable deterministic result, created/updated/completed timestamps,
+  and uniqueness on owner/scope/key.
+
+### Non-Functional Requirements
+
+- NFR-1: No query on a table expected above 10,000 rows MAY rely on an
+  unreviewed full scan in a critical path.
+- NFR-2: A production-like migration rehearsal MUST complete inside the
+  approved deployment window with rollback instructions.
+- NFR-3: Backup/restore MUST meet SPEC-018 RPO/RTO.
+- NFR-4: Sensitive fields MUST be minimized and excluded from unsafe logs.
 
 ### Key Entities
 
@@ -131,6 +174,10 @@ And rollback instructions restore the prior verified state.
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
 - [SPEC-004](../004-architecture-engineering-principles/spec.md)
+
+## Frontend Route Ownership
+
+No route is directly owned. Any later UI exposure requires a SPEC-003 route-manifest amendment before implementation.
 
 ## Out of Scope
 

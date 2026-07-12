@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "canonicalOwners": {
+    "AcademicTerm": "008",
+    "ApplicationUser": "007",
+    "AuditEvent": "017",
+    "Course": "009",
+    "CourseOffering": "010",
+    "DecisionSnapshot": "014",
+    "Enrollment": "014",
+    "GroupSummary": "011",
+    "ImportBatch": "009",
+    "OperationalMetric": "018",
+    "PolicyRule": "009",
+    "PolicySet": "009",
+    "Program": "009",
+    "RegistrationPlan": "012",
+    "RegistrationSubmission": "014",
+    "RoleAssignment": "007",
+    "SectionGroup": "010",
+    "Staff": "007",
+    "StaffTermAvailability": "016",
+    "StaffAvailability": "016",
+    "Student": "008"
+  },
+  "artifactOverrides": {
+    "003:PageDesignRecord": "specs/003-ux-storyboard-accessibility/schemas/page-design-record.schema.json",
+    "003:DesignTokenSet": "src/StudentRegistration.Client/wwwroot/design/design-tokens.json",
+    "003:FrontendTestRecord": "specs/003-ux-storyboard-accessibility/schemas/frontend-test-record.schema.json",
+    "004:ModuleBoundary": "docs/architecture/module-boundaries.md",
+    "004:ArchitectureDecision": "docs/adr/README.md",
+    "004:DependencyRule": "tests/StudentRegistration.ArchitectureTests/ModuleDependencyTests.cs",
+    "018:StructuredLog": "docs/operations/telemetry-contract.md",
+    "018:Trace": "docs/operations/telemetry-contract.md",
+    "018:HealthSummary": "src/StudentRegistration.Contracts/Operations/HealthSummary.cs",
+    "018:OperationalMetric": "src/StudentRegistration.Contracts/Operations/OperationalMetric.cs",
+    "018:BackupEvidence": "docs/release-evidence/schemas/backup-evidence.schema.json",
+    "018:ReleaseEvidence": "docs/release-evidence/schemas/release-evidence.schema.json"
+  }
+}

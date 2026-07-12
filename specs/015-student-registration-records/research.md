@@ -29,6 +29,8 @@ Endpoints: GET /api/student/registrations, GET
 /api/student/registrations/{submissionId}, GET
 /api/student/registrations/current/timetable.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

@@ -73,7 +73,7 @@ There are exactly 18 living specifications.
 |---|---|---|---|---|
 | SPEC-001 | Product Charter and RBAC | Product Owner | Vision, personas, scope, permission matrix, metrics | S0 |
 | SPEC-002 | AASTMT Policy Rulebook | Registrar/Policy SME | Sources, simplified rules, versions, open policy decisions | S0 |
-| SPEC-003 | UX Storyboard and Accessibility | UX Lead | 27 screens, navigation, UI states, responsive and WCAG behavior | S0 |
+| SPEC-003 | Frontend Page Design, Storyboard, Accessibility and Functional Testing | UX Lead | 27 page designs, design system, component/contract/E2E/visual/a11y tests | S0 |
 | SPEC-004 | Architecture and Engineering Principles | Architect | Modular monolith, dependencies, deployment, extension strategy | S0 |
 | SPEC-005 | ERD and Data Lifecycle | Data Lead | Entities, ownership, constraints, indexes, audit, migrations | S0-S1 |
 | SPEC-006 | Domain Classes and API Contracts | Technical Lead | Aggregates, services, DTOs, endpoints, error model | S0-S1 |
@@ -93,31 +93,93 @@ There are exactly 18 living specifications.
 ## 5. Dependencies
 
 ```mermaid
-flowchart TD
+flowchart LR
   S001["001 Charter"] --> S002["002 Policy"]
-  S001 --> S003["003 UX"]
+  S001 --> S003["003 Frontend contract"]
   S002 --> S003
   S001 --> S004["004 Architecture"]
   S003 --> S004
+  S002 --> S005["005 ERD"]
   S004 --> S005["005 ERD"]
-  S004 --> S006["006 Classes and APIs"]
+  S004 --> S006["006 API contracts"]
   S005 --> S006
-  S006 --> S007["007 Identity"]
-  S007 --> S008["008 Term and Profile"]
+  S001 --> S018["018 Quality and Operations"]
+  S003 --> S018
+  S004 --> S018
+  S005 --> S018
+  S006 --> S018
+
+  S003 --> S007["007 Identity"]
+  S004 --> S007
+  S005 --> S007
+  S006 --> S007
+  S018 --> S007
+
+  S002 --> S008["008 Term and Profile"]
+  S003 --> S008
+  S005 --> S008
+  S007 --> S008
+  S018 --> S008
+
   S002 --> S009["009 Catalogue and Rules"]
+  S003 --> S009
+  S005 --> S009
+  S006 --> S009
   S008 --> S009
-  S009 --> S010["010 Offerings"]
-  S010 --> S011["011 Eligibility"]
-  S011 --> S012["012 Schedule Builder"]
-  S012 --> S013["013 Recommendations"]
-  S013 --> S014["014 Atomic Registration"]
-  S014 --> S015["015 Records"]
-  S015 --> S016["016 Staff"]
-  S007 --> S017["017 Admin and Audit"]
+  S018 --> S009
+
+  S003 --> S010["010 Offerings"]
+  S005 --> S010
+  S006 --> S010
+  S009 --> S010
+  S018 --> S010
+
+  S002 --> S011["011 Eligibility"]
+  S003 --> S011
+  S008 --> S011
+  S009 --> S011
+  S010 --> S011
+  S018 --> S011
+
+  S003 --> S012["012 Schedule Builder"]
+  S010 --> S012
+  S011 --> S012
+  S018 --> S012
+
+  S003 --> S013["013 Recommendations"]
+  S012 --> S013
+  S018 --> S013
+
+  S003 --> S014["014 Atomic Registration"]
+  S007 --> S014
+  S008 --> S014
+  S009 --> S014
+  S010 --> S014
+  S011 --> S014
+  S012 --> S014
+  S013 --> S014
+  S018 --> S014
+
+  S003 --> S015["015 Records"]
+  S008 --> S015
+  S014 --> S015
+  S018 --> S015
+
+  S003 --> S016["016 Staff"]
+  S007 --> S016
+  S010 --> S016
+  S015 --> S016
+  S018 --> S016
+
+  S003 --> S017["017 Admin and Audit"]
+  S007 --> S017
+  S008 --> S017
+  S009 --> S017
   S010 --> S017
-  S018["018 Quality and Operations"] -. cross-cutting .-> S007
-  S018 -. cross-cutting .-> S014
-  S018 -. cross-cutting .-> S017
+  S014 --> S017
+  S015 --> S017
+  S016 --> S017
+  S018 --> S017
 ```
 
 ## 6. Agile framework

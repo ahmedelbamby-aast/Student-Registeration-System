@@ -32,6 +32,8 @@ Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
 POST /api/auth/staff/login, POST /api/auth/logout, POST /api/auth/recovery,
 GET /api/auth/session.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

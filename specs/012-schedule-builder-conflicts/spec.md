@@ -61,6 +61,21 @@ When the student selects a second group for one offering or saves with a stale
 rowversion<br>
 Then the invalid/stale update is rejected<br>
 And the student can load the current plan and change/remove a group.
+### User Story 5 - Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Student, I need the Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Schedule Builder and Conflicts produces a verifiable outcome.
+
+**Independent Test**: Execute AC-5 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-5)**
+
+Given an eight-course/ten-groups-per-course plan, fixed meeting data, equivalent
+calendar/list fixtures, and two concurrent editors<br>
+When schedule performance, determinism, equivalence, and rowversion tests run<br>
+Then recalculation is at most 200 ms p95<br>
+And conflict output is deterministic<br>
+And calendar/list content is identical<br>
+And one stale editor receives 409 without a lost update.
 
 ## Edge Cases
 
@@ -86,7 +101,16 @@ And the student can load the current plan and change/remove a group.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
   credits/conflicts.
 - FR-7: Plans MUST persist server-side and use rowversion.
-- FR-8: Capacity displayed in a plan is advisory until final submission.
+- FR-8: The client MUST treat capacity displayed in a plan as advisory until
+  final submission revalidates it.
+
+### Non-Functional Requirements
+
+- NFR-1: Conflict recalculation SHOULD complete within 200 ms p95 for 8 courses
+  with 10 meeting slots each.
+- NFR-2: Conflict results MUST be deterministic.
+- NFR-3: Calendar and chronological list MUST contain equivalent content.
+- NFR-4: Plan editing MUST reject lost updates with 409.
 
 ### Key Entities
 
@@ -113,6 +137,13 @@ And the student can load the current plan and change/remove a group.
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
 - [SPEC-011](../011-eligibility-subject-discovery/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| STU-04 | /student/schedule | ScheduleBuilderPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-012 |
+| STU-05 | /student/review | RegistrationReviewPage.razor | Feature contract contributor; does not edit page; design SPEC-003, implementation SPEC-014 |
 
 ## Out of Scope
 

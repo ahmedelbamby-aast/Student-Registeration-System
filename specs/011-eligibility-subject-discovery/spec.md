@@ -63,6 +63,21 @@ When discovery is evaluated<br>
 Then the server applies eligibility before returning bounded, stably sorted
 results<br>
 And client manipulation cannot make an ineligible offering selectable.
+### User Story 5 - Discovery quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Student, I need the Discovery quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Eligibility and Subject Discovery produces a verifiable outcome.
+
+**Independent Test**: Execute AC-5 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-5)**
+
+Given the approved 300-read-per-second fixture, fixed input/version, malicious
+search strings, and color-vision/accessibility checks<br>
+When discovery quality tests execute<br>
+Then response time is at most 300 ms p95<br>
+And search is length-bounded and parameterized<br>
+And eligibility is deterministic<br>
+And every status has text/icon meaning independent of color.
 
 ## Edge Cases
 
@@ -71,7 +86,9 @@ And client manipulation cannot make an ineligible offering selectable.
 - EC-2: Group becomes full after results load -> details/submit revalidate.
 - EC-3: Search contains SQL metacharacters -> treated as literal parameterized
   text.
-- EC-4: No eligible offerings -> meaningful next action/advisor guidance.
+- EC-4: No eligible offerings -> show the evaluated policy version and reason
+  codes, reset-filter action, current window state, and the configured
+  Registrar/advisor support path.
 
 ## Requirements
 
@@ -89,6 +106,13 @@ And client manipulation cannot make an ineligible offering selectable.
 - FR-6: Each decision MUST include policy version and stable reasons.
 - FR-7: Client filtering MUST NOT substitute for server eligibility.
 - FR-8: Stable sorting and bounded pagination MUST be supported.
+
+### Non-Functional Requirements
+
+- NFR-1: Discovery SHOULD respond within 300 ms p95 at 300 read requests/s.
+- NFR-2: Search input MUST be parameterized and limited in length.
+- NFR-3: Eligibility MUST be deterministic for a fixed input/version.
+- NFR-4: Eligibility/status MUST not rely on color alone.
 
 ### Key Entities
 
@@ -112,10 +136,18 @@ And client manipulation cannot make an ineligible offering selectable.
 ## Dependencies
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| STU-02 | /student/subjects | SubjectDiscoveryPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-011 |
+| STU-03 | /student/subjects/{offeringId} | SubjectDetailsPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-011 |
 
 ## Out of Scope
 

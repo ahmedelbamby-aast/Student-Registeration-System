@@ -71,6 +71,19 @@ As a Technical Lead, I need the Architecture change governance (FR-8) behavior s
 Given a pull request changes a module dependency or deployment decision<br>
 When CI and review run<br>
 Then an approved ADR and updated architecture test are required.
+### User Story 6 - Required stack and domain purity (FR-1, NFR-4) (P3)
+
+As a Technical Lead, I need the Required stack and domain purity (FR-1, NFR-4) behavior so that Architecture and Engineering Principles produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given the solution manifest and compiled dependency graph<br>
+When architecture conformance tests execute<br>
+Then the solution uses the approved .NET/ASP.NET Core/Blazor/EF Core/SQL Server
+stack<br>
+And Domain projects reference none of ASP.NET, Blazor, EF Core, or SQL Server.
 
 ## Edge Cases
 
@@ -98,6 +111,14 @@ Then an approved ADR and updated architecture test are required.
   DSL, and institution-wide solver MUST NOT be introduced in MVP.
 - FR-8: Architectural changes MUST include an ADR and architecture-test update.
 
+### Non-Functional Requirements
+
+- NFR-1: Architecture tests MUST fail on forbidden module references/cycles.
+- NFR-2: Application instances MUST be stateless except for shared database
+  and approved key/config stores.
+- NFR-3: The architecture MUST support at least two application replicas.
+- NFR-4: Domain projects MUST have no dependency on ASP.NET, Blazor, EF, or SQL.
+
 ### Key Entities
 
 - **ModuleBoundary**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
@@ -120,6 +141,10 @@ Then an approved ADR and updated architecture test are required.
 
 - [SPEC-001](../001-product-charter-rbac/spec.md)
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
+
+## Frontend Route Ownership
+
+No route is directly owned. Any later UI exposure requires a SPEC-003 route-manifest amendment before implementation.
 
 ## Out of Scope
 

@@ -1,4 +1,4 @@
-# Data Model: Admin Operations Audit and Reporting
+# Data Model: Admin Operations, Audit, and Reporting
 
 ## Owned Entities
 

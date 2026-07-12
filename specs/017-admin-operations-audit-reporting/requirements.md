@@ -6,7 +6,7 @@
 **Owner:** Product Owner<br>
 **Reviewers:** Admin/Registrar, Security, Data, DevOps, QA<br>
 **Target:** Sprint 2-S7<br>
-**Dependencies:** SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-014, SPEC-015, SPEC-016, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-014, SPEC-015, SPEC-016, SPEC-018<br>
 
 ## Context
 
@@ -33,6 +33,16 @@ audit.
 - FR-7: Audit events for sensitive actions MUST be append-only to normal users.
 - FR-8: Import/publish/correction MUST use preview and explicit confirmation.
 - FR-9: Break-glass behavior MUST NOT exist without a separate approved spec.
+- FR-10: Update/delete commands MUST require expected rowversion; retryable
+  creates, imports, corrections, exports, and confirmations MUST require an
+  idempotency key.
+- FR-11: Preview tokens MUST bind actor, permission scope, canonical payload,
+  dependency versions, and expiry; confirmation MUST reject any changed input,
+  scope, permission, dependency, or expired token.
+- FR-12: A sensitive business mutation and its audit event MUST commit in the
+  same local SQL transaction; audit failure MUST roll back the mutation.
+- FR-13: The final-active-Admin role MUST NOT be removed by an ordinary
+  command; removal requires a separately approved two-actor recovery procedure.
 
 ## Non-Functional Requirements
 
@@ -76,6 +86,34 @@ When the bounded request and confirmed mutation execute<br>
 Then only a paged parameterized result is returned<br>
 And the confirmed feature-spec command is validated/audited.
 
+### AC-6: Stale preview confirmation (FR-8, FR-10, FR-11)
+Given an admin previews a correction and its dependency version changes<br>
+When the admin confirms the old token twice with the same idempotency key<br>
+Then both responses report 409 STALE_PREVIEW<br>
+And no correction or duplicate audit event commits.
+
+### AC-7: Audit failure rolls back mutation (FR-2, FR-12)
+Given a sensitive change passes validation<br>
+When audit-event persistence is fault-injected to fail<br>
+Then the business mutation rolls back<br>
+And the API returns a generic correlated failure without reporting success.
+
+### AC-8: Final Admin safeguard (FR-13)
+Given one active Admin role assignment remains<br>
+When an ordinary admin command attempts to revoke it<br>
+Then the command returns 409 FINAL_ADMIN_REQUIRED<br>
+And the assignment remains active.
+
+### AC-9: Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given target operational metrics, a production-size audit dataset, large export,
+and positive/negative/concurrent admin command matrix<br>
+When admin quality tests execute<br>
+Then metrics are no more than 60 seconds stale and show observation time<br>
+And audit first page returns within 1 second p95<br>
+And export executes asynchronously with bounded resources, expiry, and audit<br>
+And every admin action passes authorization, audit, concurrency, and
+anti-forgery checks.
+
 ## Edge Cases
 
 - EC-1: Metrics backend unavailable -> show stale timestamp/degraded state, not
@@ -85,13 +123,17 @@ And the confirmed feature-spec command is validated/audited.
 - EC-4: Bulk import partially invalid -> preview errors; publish all-or-nothing.
 - EC-5: Admin disables own final Admin role -> require safeguard/second actor
   according to security approval.
+- EC-6: The same idempotency key is reused with a different admin command
+  payload -> return 409 IDEMPOTENCY_KEY_REUSED and execute neither new payload.
 
 ## API Contracts
 
 ```typescript
 interface AdminCommandMetadata {
   reason: string;
-  expectedRowVersion?: string;
+  expectedRowVersion: string;
+  clientRequestId: string;
+  previewToken?: string;
 }
 interface AuditEventDto {
   id: string;
@@ -107,6 +149,11 @@ interface AuditEventDto {
 
 Endpoints include GET /api/admin/operations/metrics, GET /api/admin/audit,
 POST /api/admin/exports, and approved feature commands under /api/admin.
+Update/delete commands require expectedRowVersion. Retryable create, export,
+import, correction, and confirmation commands require clientRequestId.
+Confirmation requires a previewToken bound to actor/scope/payload/dependency
+versions/expiry; conflicts return 409 STALE_PREVIEW, STALE_VERSION,
+FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
 
 ## Data Models
 

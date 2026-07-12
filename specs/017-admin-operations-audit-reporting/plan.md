@@ -1,11 +1,11 @@
-# Implementation Plan: Admin Operations Audit and Reporting
+# Implementation Plan: Admin Operations, Audit, and Reporting
 
-**Branch**: 017-admin-operations-audit-reporting | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 017-admin-operations-audit-reporting | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
 
-Deliver Admin Operations Audit and Reporting inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Deliver Admin Operations, Audit, and Reporting inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
 
 ## Technical Context
 
@@ -29,6 +29,7 @@ Deliver Admin Operations Audit and Reporting inside the modular monolith while k
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
@@ -49,6 +50,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

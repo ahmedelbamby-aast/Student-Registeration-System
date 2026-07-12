@@ -1,4 +1,4 @@
-# Data Model: Catalogue Prerequisites and Policy Administration
+# Data Model: Catalogue, Prerequisites, and Policy Administration
 
 ## Owned Entities
 

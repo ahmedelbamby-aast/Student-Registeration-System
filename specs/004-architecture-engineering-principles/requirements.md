@@ -67,6 +67,13 @@ Given a pull request changes a module dependency or deployment decision<br>
 When CI and review run<br>
 Then an approved ADR and updated architecture test are required.
 
+### AC-6: Required stack and domain purity (FR-1, NFR-4)
+Given the solution manifest and compiled dependency graph<br>
+When architecture conformance tests execute<br>
+Then the solution uses the approved .NET/ASP.NET Core/Blazor/EF Core/SQL Server
+stack<br>
+And Domain projects reference none of ASP.NET, Blazor, EF Core, or SQL Server.
+
 ## Edge Cases
 
 - EC-1: A module needs an additional read -> add a narrow query interface, not

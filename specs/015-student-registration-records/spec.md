@@ -73,12 +73,28 @@ Given a student has current and historical registrations<br>
 When both timetable views are opened<br>
 Then calendar and accessible list/table show equivalent authorized records<br>
 And no drop/correction action appears before its workflow is approved.
+### User Story 6 - Registration-record quality gate (NFR-1, NFR-3, NFR-4) (P3)
+
+As a Student, I need the Registration-record quality gate (NFR-1, NFR-3, NFR-4) behavior so that Student Registration Records produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given the approved read-load dataset, accessible print/export checks, and
+records spanning the full retention fixture<br>
+When record quality tests execute<br>
+Then receipt retrieval is at most 300 ms p95<br>
+And printed/exported views meet accessibility checks with minimized PII<br>
+And historical records remain durable and readable throughout the approved
+retention lifecycle.
 
 ## Edge Cases
 
 - EC-1: Result response lost -> idempotent lookup returns receipt.
 - EC-2: Receipt render service error -> safe retry by reference.
-- EC-3: No registrations -> meaningful empty state with eligible next action.
+- EC-3: No registrations -> show the selected term and window state and, only
+  when registration is open, a link to STU-02 subject discovery.
 - EC-4: Historical term archived -> remains read-only and accessible.
 
 ## Requirements
@@ -98,6 +114,13 @@ And no drop/correction action appears before its workflow is approved.
   original meaning after later edits.
 - FR-8: Drop/correction actions MUST be absent until approved policy/workflow
   is specified.
+
+### Non-Functional Requirements
+
+- NFR-1: Receipt retrieval SHOULD respond within 300 ms p95.
+- NFR-2: Record access MUST have ownership/role-scope tests.
+- NFR-3: Printed/exported views MUST be accessible and minimize PII.
+- NFR-4: Historical records MUST be durable under the approved retention plan.
 
 ### Key Entities
 
@@ -120,9 +143,17 @@ And no drop/correction action appears before its workflow is approved.
 
 ## Dependencies
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-014](../014-registration-capacity-concurrency/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| STU-06 | /student/registration/result/{id} | RegistrationResultPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-015 |
+| STU-07 | /student/registrations | RegistrationHistoryPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-015 |
 
 ## Out of Scope
 

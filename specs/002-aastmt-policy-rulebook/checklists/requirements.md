@@ -1,6 +1,6 @@
 # Requirements Quality Checklist: AASTMT Policy Rulebook
 
-- [x] No unresolved clarification or placeholder remains.
+- [x] No hidden clarification or placeholder remains; every external decision is registered with an owner and fail-closed rule.
 - [x] Requirements are testable and use stable identifiers.
 - [x] Every acceptance scenario maps to a user story.
 - [x] Success criteria are measurable and technology-neutral.

@@ -26,7 +26,8 @@ submission until the plan is valid.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
   credits/conflicts.
 - FR-7: Plans MUST persist server-side and use rowversion.
-- FR-8: Capacity displayed in a plan is advisory until final submission.
+- FR-8: The client MUST treat capacity displayed in a plan as advisory until
+  final submission revalidates it.
 
 ## Non-Functional Requirements
 
@@ -60,6 +61,15 @@ When the student selects a second group for one offering or saves with a stale
 rowversion<br>
 Then the invalid/stale update is rejected<br>
 And the student can load the current plan and change/remove a group.
+
+### AC-5: Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given an eight-course/ten-groups-per-course plan, fixed meeting data, equivalent
+calendar/list fixtures, and two concurrent editors<br>
+When schedule performance, determinism, equivalence, and rowversion tests run<br>
+Then recalculation is at most 200 ms p95<br>
+And conflict output is deterministic<br>
+And calendar/list content is identical<br>
+And one stale editor receives 409 without a lost update.
 
 ## Edge Cases
 

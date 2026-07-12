@@ -3,6 +3,7 @@
 ## Owned Entities
 
 - **ApplicationUser**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **Staff**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StudentActivation**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **RoleAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **SecurityAudit**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.

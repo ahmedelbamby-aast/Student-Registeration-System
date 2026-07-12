@@ -67,6 +67,19 @@ When representatives execute the approved Student, Admin, Lecturer and TA
 journeys<br>
 Then the student can complete the atomic registration flow<br>
 And every staff role reaches only its approved workspace.
+### User Story 5 - Product quality boundary (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Product Owner, I need the Product quality boundary (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Product Charter and RBAC produces a verifiable outcome.
+
+**Independent Test**: Execute AC-5 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-5)**
+
+Given the MVP release candidate and SPEC-018 production-like load profile<br>
+When accessibility, authorization, architecture, and scale gates execute<br>
+Then critical flows meet WCAG 2.2 AA<br>
+And every protected request is API-authorized<br>
+And the modular monolith meets SPEC-018 targets without distributed services.
 
 ## Edge Cases
 
@@ -92,6 +105,14 @@ And every staff role reaches only its approved workspace.
 - FR-7: Every implementation story MUST trace to an approved spec and
   acceptance criterion.
 
+### Non-Functional Requirements
+
+- NFR-1: Critical flows MUST meet WCAG 2.2 AA.
+- NFR-2: The design MUST support the approved SPEC-018 scale targets without
+  changing domain behavior.
+- NFR-3: Authorization MUST be enforced by the API for every protected action.
+- NFR-4: The initial solution MUST remain one deployable modular monolith.
+
 ### Key Entities
 
 - **Role**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
@@ -113,6 +134,10 @@ And every staff role reaches only its approved workspace.
 ## Dependencies
 
 - None; this is a root specification.
+
+## Frontend Route Ownership
+
+No route is directly owned. Any later UI exposure requires a SPEC-003 route-manifest amendment before implementation.
 
 ## Out of Scope
 

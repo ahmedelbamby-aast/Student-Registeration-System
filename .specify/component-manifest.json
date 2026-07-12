@@ -1,0 +1,25 @@
+{
+  "version": "1.1.0",
+  "components": [
+    { "name": "AppShell", "path": "src/StudentRegistration.Client/Components/Layout/AppShell.razor" },
+    { "name": "RoleNavigation", "path": "src/StudentRegistration.Client/Components/Navigation/RoleNavigation.razor" },
+    { "name": "Button", "path": "src/StudentRegistration.Client/Components/Forms/AppButton.razor" },
+    { "name": "AppLink", "path": "src/StudentRegistration.Client/Components/Navigation/AppLink.razor" },
+    { "name": "FormField", "path": "src/StudentRegistration.Client/Components/Forms/FormField.razor" },
+    { "name": "ValidationSummary", "path": "src/StudentRegistration.Client/Components/Forms/AccessibleValidationSummary.razor" },
+    { "name": "SearchFilter", "path": "src/StudentRegistration.Client/Components/Forms/SearchFilter.razor" },
+    { "name": "EntityCard", "path": "src/StudentRegistration.Client/Components/Display/EntityCard.razor" },
+    { "name": "StatusBadge", "path": "src/StudentRegistration.Client/Components/Feedback/StatusBadge.razor" },
+    { "name": "StatePanel", "path": "src/StudentRegistration.Client/Components/Feedback/RouteStatePanel.razor" },
+    { "name": "Alert", "path": "src/StudentRegistration.Client/Components/Feedback/Alert.razor" },
+    { "name": "ConfirmationDialog", "path": "src/StudentRegistration.Client/Components/Overlay/ConfirmationDialog.razor" },
+    { "name": "DataTable", "path": "src/StudentRegistration.Client/Components/Data/DataTable.razor" },
+    { "name": "Pagination", "path": "src/StudentRegistration.Client/Components/Data/Pagination.razor" },
+    { "name": "GroupCard", "path": "src/StudentRegistration.Client/Components/Registration/GroupCard.razor" },
+    { "name": "CapacityIndicator", "path": "src/StudentRegistration.Client/Components/Registration/CapacityIndicator.razor" },
+    { "name": "ScheduleCalendar", "path": "src/StudentRegistration.Client/Components/Scheduling/ScheduleCalendar.razor" },
+    { "name": "ScheduleList", "path": "src/StudentRegistration.Client/Components/Scheduling/ScheduleList.razor" },
+    { "name": "ConflictPanel", "path": "src/StudentRegistration.Client/Components/Scheduling/ConflictPanel.razor" },
+    { "name": "ReceiptSummary", "path": "src/StudentRegistration.Client/Components/Registration/ReceiptSummary.razor" }
+  ]
+}

@@ -10,6 +10,13 @@ and assistive technology, and never hide the reason a submission is blocked.
 There are 27 reusable route-level screen templates: 5 public/authentication,
 8 student, 9 admin, 4 shared Lecturer/TA, and 1 system screen.
 
+Before implementation, each route requires the Page Design Record defined by
+SPEC-003: annotated wide/narrow wireframes, information hierarchy, components,
+data/reason-code mapping, action/navigation contract, focus order, complete
+state matrix, responsive behavior, and component/contract/E2E/a11y/visual test
+IDs. The normative route-to-owner/test matrix is
+specs/003-ux-storyboard-accessibility/page-matrix.md.
+
 ## Primary journey
 
 ```mermaid
@@ -58,8 +65,10 @@ Every authenticated page shows:
 - Accessible help/reference ID for failures.
 
 Every data screen implements loading, empty, success, validation error,
-recoverable service error, unauthorized/session-expired, and stale/concurrent
-change states. Editing screens protect unsaved changes.
+recoverable service error, unauthorized/session-expired, stale/concurrent
+change, and offline states or records a justified N/A state. Editing screens
+protect unsaved changes. Offline mode never queues a registration/admin write
+or presents a cached success.
 
 ## Public and authentication screens
 
@@ -151,18 +160,20 @@ The conflict presentation contains:
 - Error summary links to fields; inline errors use programmatic association.
 - Schedule calendar always has equivalent chronological list/table.
 - Status changes use restrained live regions.
-- Reflow at 200% zoom and usable small-screen layouts.
+- Reflow at 400% zoom and usable layouts from 320 to 1920 CSS pixels.
 - Reduced-motion preference and accessible session timeout warning.
 - Localization-ready resources and layout; Arabic/RTL is a future spec.
 
 ## Usability validation
 
-- S0: 5-8 students find term, eligible subject, group, and full status.
+- S0: at least 8 students find term, eligible subject, group, and full status.
 - S2: 3-5 admin/registrar users create a term and publish a valid offering.
-- S5: 5-8 students identify, auto-resolve, and manually resolve conflicts.
-- S7: 3-5 Lecturers and 3-5 TAs find assignment/roster and submit availability.
+- S5: at least 8 students identify, auto-resolve, and manually resolve conflicts.
+- S7: at least 3 Lecturers and 3 TAs find assignment/roster and submit availability.
 - S8: end-to-end UAT includes novice, keyboard-only, and screen-reader users.
 
 Initial target is above 80% task completion and below 15% task errors. Go-live
-target is at least 90% completion for registration and no unresolved critical
-or major core-flow usability defect.
+target is at least 90% completion for registration across at least 8 students
+including novice, keyboard-only, and screen-reader participants, plus at least
+3 Admin, 3 Lecturer, and 3 TA participants for their critical journeys, with
+no unresolved critical or major core-flow usability defect.

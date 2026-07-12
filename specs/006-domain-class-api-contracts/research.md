@@ -37,12 +37,24 @@ interface AppContextDto {
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   roles: string[];
 }
+
+interface PublicContextDto {
+  serverTimeUtc: string;
+  timeZoneId: string;
+  teachingTermLabel?: string;
+  registrationTermLabel?: string;
+  registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  serviceState: "available" | "maintenance" | "unavailable";
+}
 ```
 
 Feature endpoints are defined in SPEC-007 through SPEC-017.
 
-Examples: GET /api/context, GET /api/resources?page=1&pageSize=20, and POST
-/api/commands with the feature-specific DTO.
+Examples: GET /api/public/context, GET /api/context, GET
+/api/resources?page=1&pageSize=20, and POST /api/commands with the
+feature-specific DTO.
+
+
 
 ## Open Research
 

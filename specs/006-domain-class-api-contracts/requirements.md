@@ -22,11 +22,20 @@ in docs/diagrams/CLASS_DIAGRAM.md.
   entities or password/security internals.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
   optional field details.
-- FR-4: Mutation endpoints MUST support cancellation and appropriate
-  idempotency/concurrency tokens.
+- FR-4: Update/delete endpoints MUST require an expected rowversion or
+  If-Match value; retryable create/confirm/submit commands MUST require an
+  idempotency key; cancellation behavior before and after commit MUST be
+  documented per endpoint.
 - FR-5: Listing endpoints MUST use bounded pagination.
 - FR-6: API versioning policy MUST be defined before the first breaking change.
 - FR-7: Domain code MUST use TimeProvider abstraction for current time.
+- FR-8: Idempotency contracts MUST define owner/scope, server-canonical payload,
+  atomic first claim, same-payload processing/replay, different-payload
+  IDEMPOTENCY_KEY_REUSED, and which final rejections are replayable.
+- FR-9: Public AUTH-01 status MUST use GET /api/public/context, returning only
+  server time/timezone, public teaching/registration term labels, window state,
+  maintenance state, and no user, role, student, capacity, or internal-health
+  data.
 
 ## Non-Functional Requirements
 
@@ -67,6 +76,28 @@ When the list endpoint validates the request<br>
 Then it caps/rejects the size according to contract<br>
 And a breaking shape change requires the approved versioning process.
 
+### AC-6: Complete idempotency contract (FR-4, FR-8)
+Given a retryable command contract is reviewed<br>
+When its OpenAPI and integration cases are inspected<br>
+Then same-key/same-payload processing and replay are explicit<br>
+And same-key/different-payload returns 409 IDEMPOTENCY_KEY_REUSED<br>
+And cancellation before commit versus response loss after commit has distinct
+documented behavior.
+
+### AC-7: Privacy-safe public context (FR-9, NFR-3)
+Given an unauthenticated visitor opens AUTH-01<br>
+When GET /api/public/context succeeds<br>
+Then only the FR-9 fields are returned<br>
+And authenticated context, internal health, capacity, and personal data are
+absent.
+
+### AC-8: Application-service and serialization consistency (FR-1, NFR-4)
+Given every approved endpoint contract and representative command/query<br>
+When architecture and JSON contract tests execute<br>
+Then endpoints delegate business decisions to focused application services<br>
+And field naming, UTC dates, timezone identifiers, and invariant decimal
+formats are identical across responses.
+
 ## Edge Cases
 
 - EC-1: Malformed JSON -> 400 VALIDATION_ERROR with no command execution.
@@ -101,12 +132,22 @@ interface AppContextDto {
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   roles: string[];
 }
+
+interface PublicContextDto {
+  serverTimeUtc: string;
+  timeZoneId: string;
+  teachingTermLabel?: string;
+  registrationTermLabel?: string;
+  registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  serviceState: "available" | "maintenance" | "unavailable";
+}
 ```
 
 Feature endpoints are defined in SPEC-007 through SPEC-017.
 
-Examples: GET /api/context, GET /api/resources?page=1&pageSize=20, and POST
-/api/commands with the feature-specific DTO.
+Examples: GET /api/public/context, GET /api/context, GET
+/api/resources?page=1&pageSize=20, and POST /api/commands with the
+feature-specific DTO.
 
 ## Data Models
 

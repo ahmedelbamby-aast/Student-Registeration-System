@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "specs": [
     {
       "id": "001",
@@ -44,7 +44,7 @@
     {
       "id": "003",
       "slug": "ux-storyboard-accessibility",
-      "title": "UX Storyboard and Accessibility",
+      "title": "Frontend Page Design, Storyboard, Accessibility and Functional Testing",
       "owner": "UX Lead",
       "actor": "Student or staff user",
       "module": "Client",
@@ -53,12 +53,15 @@
         "002"
       ],
       "entities": [
-        "AppContext",
+        "FrontendAppContextView",
         "UiStatus",
-        "ConflictView"
+        "ConflictView",
+        "PageDesignRecord",
+        "DesignTokenSet",
+        "FrontendTestRecord"
       ],
       "successCriteria": [
-        "All 27 approved route templates define loading, empty, success, error, denied, and stale states where applicable.",
+        "All 27 route templates have approved page-design records and complete component, contract, E2E, accessibility, and visual test plans.",
         "Critical journeys meet WCAG 2.2 AA requirements before release.",
         "At least 90% of representative users complete registration in usability validation."
       ]
@@ -144,11 +147,12 @@
     {
       "id": "018",
       "slug": "quality-security-scalability-operations",
-      "title": "Quality Security Scalability and Operations",
+      "title": "Quality, Security, Scalability, and Operations",
       "owner": "QA/DevOps/Security Leads",
       "actor": "Operations and security reviewer",
       "module": "Operations",
       "dependencies": [
+        "003",
         "001",
         "004",
         "005",
@@ -176,6 +180,7 @@
       "actor": "Student or staff user",
       "module": "IdentityAccess",
       "dependencies": [
+        "003",
         "004",
         "005",
         "006",
@@ -183,6 +188,7 @@
       ],
       "entities": [
         "ApplicationUser",
+        "Staff",
         "StudentActivation",
         "RoleAssignment",
         "SecurityAudit"
@@ -202,6 +208,7 @@
       "module": "Academics",
       "dependencies": [
         "002",
+        "003",
         "005",
         "007",
         "018"
@@ -222,12 +229,13 @@
     {
       "id": "009",
       "slug": "catalog-prerequisites-policy-admin",
-      "title": "Catalogue Prerequisites and Policy Administration",
+      "title": "Catalogue, Prerequisites, and Policy Administration",
       "owner": "Registrar/Policy SME and Backend Lead",
       "actor": "Authorized administrator",
       "module": "Academics",
       "dependencies": [
         "002",
+        "003",
         "005",
         "006",
         "008",
@@ -251,11 +259,12 @@
     {
       "id": "010",
       "slug": "offerings-groups-resources",
-      "title": "Offerings Groups and Resources",
+      "title": "Offerings, Groups, and Resources",
       "owner": "Backend Lead",
       "actor": "Authorized administrator",
       "module": "Scheduling",
       "dependencies": [
+        "003",
         "005",
         "006",
         "009",
@@ -284,6 +293,7 @@
       "module": "Registration",
       "dependencies": [
         "002",
+        "003",
         "008",
         "009",
         "010",
@@ -334,6 +344,7 @@
       "actor": "Student",
       "module": "Registration",
       "dependencies": [
+        "003",
         "012",
         "018"
       ],
@@ -357,7 +368,10 @@
       "actor": "Student",
       "module": "Registration",
       "dependencies": [
+        "003",
         "007",
+        "008",
+        "009",
         "010",
         "011",
         "012",
@@ -368,7 +382,8 @@
         "RegistrationSubmission",
         "Enrollment",
         "SectionGroup",
-        "DecisionSnapshot"
+        "DecisionSnapshot",
+        "StudentTermRegistrationGuard"
       ],
       "successCriteria": [
         "Concurrent submissions never overbook a group or duplicate an active course enrollment.",
@@ -384,6 +399,7 @@
       "actor": "Student",
       "module": "Registration",
       "dependencies": [
+        "003",
         "008",
         "014",
         "018"
@@ -408,6 +424,7 @@
       "actor": "Lecturer or Teaching Assistant",
       "module": "StaffAdministration",
       "dependencies": [
+        "003",
         "007",
         "010",
         "015",
@@ -415,6 +432,7 @@
       ],
       "entities": [
         "StaffAssignment",
+        "StaffTermAvailability",
         "StaffAvailability",
         "RosterRow",
         "GroupSummary"
@@ -428,11 +446,12 @@
     {
       "id": "017",
       "slug": "admin-operations-audit-reporting",
-      "title": "Admin Operations Audit and Reporting",
+      "title": "Admin Operations, Audit, and Reporting",
       "owner": "Product Owner",
       "actor": "Authorized administrator",
       "module": "StaffAdministration",
       "dependencies": [
+        "003",
         "007",
         "008",
         "009",

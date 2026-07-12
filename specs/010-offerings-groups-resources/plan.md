@@ -1,11 +1,11 @@
-# Implementation Plan: Offerings Groups and Resources
+# Implementation Plan: Offerings, Groups, and Resources
 
-**Branch**: 010-offerings-groups-resources | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 010-offerings-groups-resources | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
 
-Deliver Offerings Groups and Resources inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Deliver Offerings, Groups, and Resources inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
 
 ## Technical Context
 
@@ -29,6 +29,7 @@ Deliver Offerings Groups and Resources inside the modular monolith while keeping
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
 - [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
@@ -46,10 +47,12 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+
+
 ## Non-Functional Requirements
 
-- NFR-1: Offering/group reads SHOULD complete within 300 ms p95 under approved
-  read load.
+- NFR-1: Offering/group reads SHOULD complete within 300 ms p95 at the
+  SPEC-018 300-read-requests-per-second target.
 - NFR-2: Publication validation MUST produce stable actionable reason codes.
 - NFR-3: Meeting display MUST use term timezone and unambiguous day/time.
 - NFR-4: Large admin lists MUST be paged/filtered.

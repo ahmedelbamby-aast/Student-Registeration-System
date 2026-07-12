@@ -1,4 +1,4 @@
-# API Contract: Quality Security Scalability and Operations
+# API Contract: Quality, Security, Scalability, and Operations
 
 ## Feature Contract
 

@@ -1,6 +1,6 @@
 # Implementation Plan: Eligibility and Subject Discovery
 
-**Branch**: 011-eligibility-subject-discovery | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 011-eligibility-subject-discovery | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -30,6 +30,7 @@ Deliver Eligibility and Subject Discovery inside the modular monolith while keep
 ## Dependency Check
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
@@ -46,6 +47,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

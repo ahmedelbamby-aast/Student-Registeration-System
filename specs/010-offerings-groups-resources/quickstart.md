@@ -1,4 +1,4 @@
-# Planning Quickstart: Offerings Groups and Resources
+# Planning Quickstart: Offerings, Groups, and Resources
 
 This is a pre-implementation verification guide. It does not run or create application code.
 

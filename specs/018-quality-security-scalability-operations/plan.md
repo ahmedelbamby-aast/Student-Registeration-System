@@ -1,11 +1,11 @@
-# Implementation Plan: Quality Security Scalability and Operations
+# Implementation Plan: Quality, Security, Scalability, and Operations
 
-**Branch**: 018-quality-security-scalability-operations | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 018-quality-security-scalability-operations | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
 
-Deliver Quality Security Scalability and Operations inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Deliver Quality, Security, Scalability, and Operations inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
 
 ## Technical Context
 
@@ -29,6 +29,7 @@ Deliver Quality Security Scalability and Operations inside the modular monolith 
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-001](../001-product-charter-rbac/spec.md)
 - [SPEC-004](../004-architecture-engineering-principles/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
@@ -46,15 +47,19 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+
+
 ## Non-Functional Requirements
 
-- NFR-1: Support planning baseline of 25,000 accounts and 5,000 concurrent
-  authenticated sessions, pending S0 rebaseline.
-- NFR-2: Support 75 submissions/s for 10 min, 200/s for 60 s, and 300 read/s.
-- NFR-3: Catalogue p95 <= 300 ms; commit p95 <= 2 s; optimizer p95 <= 500 ms
-  for the approved workload.
-- NFR-4: Zero overbooking, duplicate active offering enrollment, and partial
-  atomic submission.
+- NFR-1: The production-like validation environment MUST support a planning
+  baseline of 25,000 accounts and 5,000 concurrent authenticated sessions,
+  pending S0 rebaseline.
+- NFR-2: The system MUST support 75 submissions/s for 10 min, 200/s for 60 s,
+  and 300 read/s.
+- NFR-3: Catalogue p95 MUST be <= 300 ms, commit p95 MUST be <= 2 s, and
+  optimizer p95 MUST be <= 500 ms for the approved workload.
+- NFR-4: Tests MUST demonstrate zero overbooking, duplicate active offering
+  enrollment, and partial atomic submission.
 - NFR-5: Availability MUST be 99.9% during announced registration windows.
 - NFR-6: Unexpected server failure rate MUST be < 0.1% at target load.
 - NFR-7: RPO MUST be <= 5 minutes and RTO <= 1 hour.

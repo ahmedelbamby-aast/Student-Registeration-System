@@ -68,6 +68,13 @@ journeys<br>
 Then the student can complete the atomic registration flow<br>
 And every staff role reaches only its approved workspace.
 
+### AC-5: Product quality boundary (NFR-1, NFR-2, NFR-3, NFR-4)
+Given the MVP release candidate and SPEC-018 production-like load profile<br>
+When accessibility, authorization, architecture, and scale gates execute<br>
+Then critical flows meet WCAG 2.2 AA<br>
+And every protected request is API-authorized<br>
+And the modular monolith meets SPEC-018 targets without distributed services.
+
 ## Edge Cases
 
 - EC-1: User holds Lecturer and TA roles -> offer only the authorized contexts.

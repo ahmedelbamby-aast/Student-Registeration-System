@@ -65,6 +65,21 @@ Given a draft rule contains an unknown rule type or executable expression<br>
 When validation is requested<br>
 Then validation rejects it<br>
 And no executable content is stored or run.
+### User Story 5 - Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Registrar/Policy SME, I need the Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that AASTMT Policy Rulebook produces a verifiable outcome.
+
+**Independent Test**: Execute AC-5 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-5)**
+
+Given an approved policy version, fixed input, Registrar boundary examples, and
+recorded provenance<br>
+When the evaluator runs repeatedly under the approved performance fixture<br>
+Then every result and reason is identical<br>
+And every boundary regression passes<br>
+And decision evaluation is at most 100 ms p95 excluding initial data retrieval<br>
+And source/access/approval/effective metadata remains auditable.
 
 ## Edge Cases
 
@@ -92,6 +107,16 @@ And no executable content is stored or run.
   policy scripts MUST NOT be stored.
 - FR-7: Published policy versions MUST be immutable and superseded, not edited.
 
+### Non-Functional Requirements
+
+- NFR-1: The same input and policy version MUST yield the same result.
+- NFR-2: All boundary examples supplied by the Registrar MUST have automated
+  regression tests.
+- NFR-3: A policy decision query SHOULD complete within 100 ms p95 excluding
+  initial data retrieval.
+- NFR-4: Source URL, access date, approval actor, and effective period MUST be
+  auditable.
+
 ### Key Entities
 
 - **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
@@ -113,6 +138,10 @@ And no executable content is stored or run.
 ## Dependencies
 
 - [SPEC-001](../001-product-charter-rbac/spec.md)
+
+## Frontend Route Ownership
+
+No route is directly owned. Any later UI exposure requires a SPEC-003 route-manifest amendment before implementation.
 
 ## Out of Scope
 

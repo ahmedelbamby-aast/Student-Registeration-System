@@ -6,7 +6,7 @@
 **Owner:** Product Owner<br>
 **Reviewers:** Registrar/Policy SME, UX, Backend, QA<br>
 **Target:** Sprint 3<br>
-**Dependencies:** SPEC-002, SPEC-008, SPEC-009, SPEC-010, SPEC-018<br>
+**Dependencies:** SPEC-002, SPEC-003, SPEC-008, SPEC-009, SPEC-010, SPEC-018<br>
 
 ## Context
 
@@ -63,6 +63,15 @@ Then the server applies eligibility before returning bounded, stably sorted
 results<br>
 And client manipulation cannot make an ineligible offering selectable.
 
+### AC-5: Discovery quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given the approved 300-read-per-second fixture, fixed input/version, malicious
+search strings, and color-vision/accessibility checks<br>
+When discovery quality tests execute<br>
+Then response time is at most 300 ms p95<br>
+And search is length-bounded and parameterized<br>
+And eligibility is deterministic<br>
+And every status has text/icon meaning independent of color.
+
 ## Edge Cases
 
 - EC-1: Policy/profile data unavailable -> safe unavailable result and support
@@ -70,7 +79,9 @@ And client manipulation cannot make an ineligible offering selectable.
 - EC-2: Group becomes full after results load -> details/submit revalidate.
 - EC-3: Search contains SQL metacharacters -> treated as literal parameterized
   text.
-- EC-4: No eligible offerings -> meaningful next action/advisor guidance.
+- EC-4: No eligible offerings -> show the evaluated policy version and reason
+  codes, reset-filter action, current window state, and the configured
+  Registrar/advisor support path.
 
 ## API Contracts
 

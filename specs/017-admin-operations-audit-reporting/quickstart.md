@@ -1,4 +1,4 @@
-# Planning Quickstart: Admin Operations Audit and Reporting
+# Planning Quickstart: Admin Operations, Audit, and Reporting
 
 This is a pre-implementation verification guide. It does not run or create application code.
 

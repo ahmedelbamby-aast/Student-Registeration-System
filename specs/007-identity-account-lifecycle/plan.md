@@ -1,6 +1,6 @@
 # Implementation Plan: Identity and Account Lifecycle
 
-**Branch**: 007-identity-account-lifecycle | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 007-identity-account-lifecycle | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -29,6 +29,7 @@ Deliver Identity and Account Lifecycle inside the modular monolith while keeping
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-004](../004-architecture-engineering-principles/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
 - [SPEC-006](../006-domain-class-api-contracts/spec.md)
@@ -46,10 +47,12 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+
+
 ## Non-Functional Requirements
 
-- NFR-1: Login SHOULD respond within 500 ms p95 at approved load excluding MFA
-  provider latency.
+- NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
+  production-like authenticated-session load, excluding MFA-provider latency.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
 - NFR-3: Password/credential configuration MUST follow current ASP.NET Core
   Identity and AASTMT security policy.

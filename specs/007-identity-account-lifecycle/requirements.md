@@ -6,7 +6,7 @@
 **Owner:** Security Lead<br>
 **Reviewers:** Product Owner, Backend, QA, AASTMT identity owner<br>
 **Target:** Sprint 1<br>
-**Dependencies:** SPEC-004, SPEC-005, SPEC-006, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-018<br>
 
 ## Context
 
@@ -30,11 +30,20 @@ enforced by ASP.NET Core.
   plus antiforgery for mutations.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
+- FR-10: Activation and recovery tokens MUST be single-use through an atomic
+  database transition; concurrent uses of one token MUST change at most one
+  account state.
+- FR-11: Claiming an institutional University ID MUST be protected by a unique
+  database constraint so parallel activation requests cannot link it twice.
+- FR-12: Lockout counters, rate-limit state, security stamps, and session
+  invalidation MUST be shared across all application replicas.
+- FR-13: AUTH-02 through AUTH-05 and STU-08 MUST consume the SPEC-003 page,
+  state, accessibility, and functional-test contracts.
 
 ## Non-Functional Requirements
 
-- NFR-1: Login SHOULD respond within 500 ms p95 at approved load excluding MFA
-  provider latency.
+- NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
+  production-like authenticated-session load, excluding MFA-provider latency.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
 - NFR-3: Password/credential configuration MUST follow current ASP.NET Core
   Identity and AASTMT security policy.
@@ -72,6 +81,36 @@ When the approved threshold is reached<br>
 Then lockout/rate limiting and safe audit occur<br>
 And no long-lived credential is written to browser local storage.
 
+### AC-6: Parallel activation is single-use (FR-2, FR-10, FR-11)
+Given one valid activation token for one unclaimed University ID<br>
+When ten activation requests use that token concurrently through two
+application replicas<br>
+Then exactly one account link is created<br>
+And every other request receives the same safe already-used result<br>
+And no duplicate University ID claim exists.
+
+### AC-7: Replica-wide invalidation (FR-5, FR-12)
+Given a user has sessions routed to two application replicas<br>
+When recovery changes the password and security stamp<br>
+Then both replicas reject every earlier session<br>
+And lockout/rate-limit counters remain consistent across replicas.
+
+### AC-8: Identity route contract (FR-13)
+Given AUTH-02 through AUTH-05 and STU-08 Page Design Records<br>
+When their component, contract, E2E, accessibility, and visual plans are
+reviewed<br>
+Then every route/state maps to SPEC-003 and the owning identity FR/AC IDs.
+
+### AC-9: Authentication quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given the SPEC-018 approved load and positive/negative role matrix<br>
+When authentication performance, enumeration, configuration, and authorization
+tests execute<br>
+Then login is at most 500 ms p95 excluding MFA-provider latency<br>
+And errors do not reveal account existence<br>
+And credential configuration passes the current approved ASP.NET Core security
+baseline<br>
+And every protected endpoint permits and denies exactly the documented roles.
+
 ## Edge Cases
 
 - EC-1: University ID already activated -> direct to login/recovery, no second
@@ -81,6 +120,8 @@ And no long-lived credential is written to browser local storage.
   never privilege union beyond claims.
 - EC-4: Session expires during plan edit -> reauthenticate then revalidate plan.
 - EC-5: Repeated recovery request -> rate limit while returning generic result.
+- EC-6: Activation commits but its response is lost -> retry returns the
+  already-used safe result and MUST NOT create another user or role assignment.
 
 ## API Contracts
 

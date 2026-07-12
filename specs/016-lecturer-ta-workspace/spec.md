@@ -36,7 +36,8 @@ As a Lecturer or Teaching Assistant, I need the Shared page, different scope (FR
 
 Given Lecturer and TA users open the same assignments route<br>
 When server responses are rendered<br>
-Then each sees only role-appropriate current assignments<br>
+Then each sees only the server-authorized lecture/tutorial/lab assignments
+defined by current GroupStaffAssignment records<br>
 And the role context is stated near the page heading.
 ### User Story 3 - Availability deadline (FR-6) (P2)
 
@@ -74,6 +75,48 @@ Given an approved availability change conflicts with a published assignment<br>
 When the change is saved through the allowed process<br>
 Then Admin receives an affected-group warning<br>
 And no class, room or staff assignment moves automatically.
+### User Story 6 - Concurrent availability insert (FR-6, FR-9, FR-10) (P3)
+
+As a Lecturer or Teaching Assistant, I need the Concurrent availability insert (FR-6, FR-9, FR-10) behavior so that Lecturer and Teaching Assistant Workspace produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given two clients load the same staff-term availability version<br>
+When they concurrently add overlapping ranges<br>
+Then exactly one complete aggregate update succeeds<br>
+And the loser receives 409 STALE_VERSION with the current range set.
+### User Story 7 - Availability races group publication (FR-8, FR-10) (P3)
+
+As a Lecturer or Teaching Assistant, I need the Availability races group publication (FR-8, FR-10) behavior so that Lecturer and Teaching Assistant Workspace produces a verifiable outcome.
+
+**Independent Test**: Execute AC-7 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-7)**
+
+Given an availability update conflicts with a group being published for that
+staff member<br>
+When both transactions execute concurrently<br>
+Then one valid serial order is recorded<br>
+And an affected published group is never silently left without a warning and
+revalidation state.
+### User Story 8 - Staff workspace quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
+
+As a Lecturer or Teaching Assistant, I need the Staff workspace quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Lecturer and Teaching Assistant Workspace produces a verifiable outcome.
+
+**Independent Test**: Execute AC-8 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-8)**
+
+Given approved read load, direct-object authorization matrix, privacy/audit
+inspection, and keyboard/calendar-list fixtures<br>
+When workspace quality tests execute<br>
+Then reads are at most 300 ms p95<br>
+And every unassigned object is denied without data<br>
+And rosters contain only approved fields with safe audit metadata<br>
+And timetable/availability is fully keyboard operable with a list/table
+alternative.
 
 ## Edge Cases
 
@@ -82,6 +125,8 @@ And no class, room or staff assignment moves automatically.
 - EC-2: Assignment removed while page open -> stale refresh denies roster.
 - EC-3: Concurrent availability edit -> stale version gets 409.
 - EC-4: No assignments -> clear empty state, no broad search access.
+- EC-5: Deadline passes after the page loads -> in-transaction server-time
+  validation rejects the update with AVAILABILITY_DEADLINE_PASSED.
 
 ## Requirements
 
@@ -103,10 +148,25 @@ And no class, room or staff assignment moves automatically.
   rosters.
 - FR-8: Availability changes after schedule publication MUST trigger an admin
   warning and MUST NOT silently move a class.
+- FR-9: Availability MUST be a versioned staff-plus-term aggregate; edits MUST
+  validate the complete range set and replace/update it atomically rather than
+  inserting independently validated ranges.
+- FR-10: Availability deadline and published-schedule impact MUST be
+  revalidated with server time inside the same transaction as the aggregate
+  update.
+
+### Non-Functional Requirements
+
+- NFR-1: Staff dashboard/assignment reads SHOULD respond within 300 ms p95.
+- NFR-2: Every direct-object access MUST have assignment-scope authorization
+  tests.
+- NFR-3: Roster output MUST minimize PII and be safely audited.
+- NFR-4: Timetable/availability MUST have keyboard and list/table operation.
 
 ### Key Entities
 
 - **StaffAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **StaffTermAvailability**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StaffAvailability**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **RosterRow**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **GroupSummary**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
@@ -125,10 +185,20 @@ And no class, room or staff assignment moves automatically.
 
 ## Dependencies
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
 - [SPEC-015](../015-student-registration-records/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| STF-01 | /staff | StaffDashboardPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-016 |
+| STF-02 | /staff/timetable | StaffTimetablePage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-016 |
+| STF-03 | /staff/groups/{groupId}/roster | StaffRosterPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-016 |
+| STF-04 | /staff/availability | StaffAvailabilityPage.razor | Canonical page implementation owner; design SPEC-003, implementation SPEC-016 |
 
 ## Out of Scope
 

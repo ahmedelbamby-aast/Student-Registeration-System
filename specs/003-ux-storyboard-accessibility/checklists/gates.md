@@ -1,8 +1,8 @@
-# Gate Checklist: UX Storyboard and Accessibility
+# Gate Checklist: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 - [x] G1 Constitution compliance
 - [x] G2 Specification completeness
-- [x] G3 Clarification resolution
+- [x] G3 Clarification registration and fail-closed handling
 - [x] G4 Dependency validity
 - [x] G5 Plan and research completeness
 - [x] G6 Data model and API contract consistency

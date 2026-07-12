@@ -29,6 +29,8 @@ interface OfferingEligibilityDto {
 Endpoint: GET /api/student/terms/{termId}/offerings with q, eligibility,
 credits, day, availability, page, and pageSize.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

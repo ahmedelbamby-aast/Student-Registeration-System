@@ -1,4 +1,4 @@
-# Planning Quickstart: Quality Security Scalability and Operations
+# Planning Quickstart: Quality, Security, Scalability, and Operations
 
 This is a pre-implementation verification guide. It does not run or create application code.
 

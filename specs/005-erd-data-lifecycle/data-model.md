@@ -27,6 +27,8 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | SectionGroup.Version | rowversion | concurrency token |
 | Enrollment offering/group | composite FK | group must belong to offering |
 | ImportedRecord.Source | string | required provenance |
+| StudentTermRegistrationGuard | entity | unique student + term; rowversion/serialization boundary |
+| IdempotencyRecord | entity | unique owner + scope + key; payload hash, state, result, timestamps |
 
 ## Integrity Rules
 

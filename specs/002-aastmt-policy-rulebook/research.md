@@ -31,6 +31,8 @@ interface PolicyDecisionDto {
 Endpoints: POST /api/admin/policies/{id}/simulate and GET
 /api/student/offerings/{id}/eligibility.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

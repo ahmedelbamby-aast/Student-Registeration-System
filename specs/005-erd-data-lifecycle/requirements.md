@@ -28,6 +28,10 @@ proposed model is in docs/diagrams/ERD.md.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
   startup migrations.
 - FR-8: Data provenance MUST be recorded for imported academic/catalogue data.
+- FR-9: The ERD MUST model a unique student-term registration guard and an
+  idempotency record containing owner/scope, canonical payload hash, processing
+  state, immutable deterministic result, created/updated/completed timestamps,
+  and uniqueness on owner/scope/key.
 
 ## Non-Functional Requirements
 
@@ -68,6 +72,24 @@ When deployment rehearsal runs<br>
 Then migration is applied as a controlled step rather than app startup<br>
 And rollback instructions restore the prior verified state.
 
+### AC-6: Database-backed registration and idempotency guards (FR-2, FR-4, FR-9)
+Given the Code First model is migrated to SQL Server<br>
+When parallel transactions claim one student-term guard and one idempotency
+key<br>
+Then database uniqueness and concurrency controls permit one canonical owner
+and payload<br>
+And a different payload cannot reuse that key<br>
+And the stored deterministic result survives application-process restart.
+
+### AC-7: Data operational quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
+Given a production-like database, reviewed migration bundle, backup, critical
+query plans, and privacy-safe logging fixture<br>
+When the data release gate executes<br>
+Then critical tables above 10,000 rows have reviewed indexed plans<br>
+And migration rehearsal completes inside the approved deployment window<br>
+And restore meets SPEC-018 RPO/RTO<br>
+And sensitive fields are absent from unsafe logs.
+
 ## Edge Cases
 
 - EC-1: Migration fails partway -> deployment stops and follows tested rollback.
@@ -94,6 +116,8 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | SectionGroup.Version | rowversion | concurrency token |
 | Enrollment offering/group | composite FK | group must belong to offering |
 | ImportedRecord.Source | string | required provenance |
+| StudentTermRegistrationGuard | entity | unique student + term; rowversion/serialization boundary |
+| IdempotencyRecord | entity | unique owner + scope + key; payload hash, state, result, timestamps |
 
 ## Out of Scope
 

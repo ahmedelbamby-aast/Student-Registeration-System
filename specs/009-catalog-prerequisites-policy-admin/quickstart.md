@@ -1,4 +1,4 @@
-# Planning Quickstart: Catalogue Prerequisites and Policy Administration
+# Planning Quickstart: Catalogue, Prerequisites, and Policy Administration
 
 This is a pre-implementation verification guide. It does not run or create application code.
 

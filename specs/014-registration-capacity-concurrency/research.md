@@ -16,22 +16,39 @@
 ```typescript
 interface SubmitRegistrationRequest {
   planId: string;
-  planRowVersion: string;
+  expectedPlanRowVersion: string;
   termId: string;
   clientRequestId: string;
 }
-interface RegistrationCommitResult {
+interface RegistrationFinalResult {
   submissionId: string;
   status: "accepted" | "rejected";
   resultCode: string;
   registeredGroups: GroupDto[];
-  submittedAtUtc: string;
+  receivedAtUtc: string;
+  completedAtUtc?: string;
   policyVersion: string;
+  planRowVersion: string;
+}
+interface RegistrationInProgressResponse {
+  clientRequestId: string;
+  status: "processing";
+  retryAfterSeconds: number;
+  resultUrl: string;
 }
 ```
 
-Endpoint: POST /api/student/registrations. Success 201 (or 200 for idempotent
-replay); business conflicts 409; validation 400; auth 401/403.
+Endpoint: POST /api/student/registrations. New final result is 201; idempotent
+final replay is 200; bounded lock-wait expiry is 202 with
+RegistrationInProgressResponse and no submissionId; business/version/
+idempotency conflicts are 409; validation is 400; authentication/authorization
+are 401/403. GET /api/student/registrations/by-request/{clientRequestId}
+returns the authenticated student's committed final result, the same bounded
+202 while the first transaction still holds the key, or 404 REQUEST_NOT_FOUND
+after a rolled-back/nonexistent claim. A 202 is transport-level retry guidance,
+not evidence of a separately committed Processing row.
+
+
 
 ## Open Research
 

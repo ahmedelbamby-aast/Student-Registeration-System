@@ -1,6 +1,6 @@
 # Implementation Plan: Lecturer and Teaching Assistant Workspace
 
-**Branch**: 016-lecturer-ta-workspace | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 016-lecturer-ta-workspace | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -29,6 +29,7 @@ Deliver Lecturer and Teaching Assistant Workspace inside the modular monolith wh
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
 - [SPEC-015](../015-student-registration-records/spec.md)
@@ -45,6 +46,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

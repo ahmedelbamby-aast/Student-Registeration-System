@@ -191,6 +191,7 @@ UPDATE scheduling.SectionGroups
 SET EnrolledCount = EnrolledCount + 1
 WHERE Id = @GroupId
   AND Status = 'Published'
+  AND RegistrationPaused = 0
   AND EnrolledCount < Capacity;
 ```
 
@@ -207,37 +208,56 @@ sequenceDiagram
 
   Student->>UI: Submit reviewed plan
   UI->>API: POST submission + clientRequestId + planVersion
-  API->>API: Authorize student and check idempotency
+  API->>API: Authorize student and canonicalize payload
   API->>Rules: Re-evaluate term, policy, holds, overlap
   Rules-->>API: Valid proposal
-  API->>DB: Begin short transaction
-  API->>DB: Recheck invariants and allocate sorted group IDs
+  API->>DB: Begin transaction, claim key, lock and recheck invariants
+  API->>DB: Create allocation savepoint and allocate sorted group IDs
   alt every conditional update succeeds
     API->>DB: Upsert enrollments and result
     API->>DB: Commit
     API-->>UI: 201 accepted receipt
-  else a group/policy/plan changed
-    API->>DB: Roll back all changes
-    API-->>UI: 409 stable reason code
+  else deterministic group/policy/plan rejection
+    API->>DB: Roll back to savepoint, store rejected result, commit
+    API-->>UI: 409 stored/replayable stable reason
+  else transaction-aborting infrastructure failure
+    API->>DB: Roll back transaction and claim
+    API-->>UI: Retry-safe infrastructure error
   end
 ```
 
 Submission steps:
 
-1. Resolve student from server identity.
-2. Return the stored result for an existing student/term/clientRequestId.
-3. Re-evaluate policy and conflict state.
-4. Start a short transaction using EF Core execution strategy.
-5. Recheck window, policy version, hold, duplicates, and overlaps.
-6. Sort group IDs to reduce deadlock cycles.
-7. Execute conditional updates; any zero-row update rolls back all.
-8. Write enrollments, decision snapshot, submission result, and audit event.
-9. Commit and return the accepted timetable.
+1. Resolve student and capture ReceivedAtUtc from server identity/time.
+2. Canonicalize the payload.
+3. Start one short transaction using the EF Core execution strategy and
+   atomically claim student/term/clientRequestId inside that transaction.
+4. Lock the student-term guard, context/version records, and sorted group IDs.
+5. Re-read and validate window, profile/holds, policy/catalogue, plan,
+   duplicates, credit load, and every meeting/group version.
+6. Create an allocation savepoint, then execute conditional group updates.
+7. If a deterministic allocation/invariant check fails, roll back to the
+   savepoint, verify no seat/enrollment mutation remains, store the rejected
+   result/rejection audit, and commit the replayable claim/result. If the
+   transaction is aborted or a transient infrastructure failure occurs, roll
+   back the entire transaction and claim.
+8. On success, write enrollments, decision snapshot, accepted result, audit
+   event, and idempotency result in the same transaction.
+9. Commit and return or replay the stored final timetable/result.
+
+The idempotency claim is never committed separately from the registration
+result. A process failure before transaction commit leaves no durable
+Processing claim; a failure after commit replays the stored final result.
+A concurrent request blocked by the uncommitted claim waits at most 500 ms. If
+no final row becomes visible, the API returns a transport-level 202 containing
+only clientRequestId, retryAfterSeconds, and resultUrl. That response has no
+submissionId and does not imply that an uncommitted Processing row was read.
 
 Unique indexes prevent duplicate active enrollment. SQL rowversion handles
-ordinary concurrent editing, but it is not the sole capacity guard. Drops
-transition enrollment and decrement the same group counter transactionally.
-Capacity may not be reduced below EnrolledCount.
+ordinary concurrent editing, but it is not the sole capacity or student-term
+guard. Student drop/withdrawal/correction is outside MVP until a separate
+approved workflow spec exists. Capacity may not be reduced below
+EnrolledCount.
 
 A reconciliation metric compares EnrolledCount with active Enrollment rows.
 Any mismatch is a high-priority operational alert.

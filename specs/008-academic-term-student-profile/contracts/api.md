@@ -14,10 +14,20 @@ interface StudentAcademicContextDto {
   dataAsOfUtc: string;
   provenance: string;
 }
+interface PublicAcademicContextDto {
+  serverTimeUtc: string;
+  timeZoneId: string;
+  teachingTermLabel?: string;
+  registrationTermLabel?: string;
+  registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  serviceState: "available" | "maintenance" | "unavailable";
+}
 ```
 
-Endpoints: GET /api/context, GET /api/students/me/academic-context; admin
-mutation contracts live in SPEC-017.
+Endpoints: GET /api/public/context, GET /api/context, and GET
+/api/students/me/academic-context; admin mutation contracts live in SPEC-017.
+The public response contains no user, role, student, capacity, or
+internal-health data.
 
 ## Shared Rules
 

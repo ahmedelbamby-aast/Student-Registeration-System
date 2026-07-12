@@ -6,7 +6,7 @@
 **Owner:** Technical Lead<br>
 **Reviewers:** Product Owner, UX, QA, Performance owner<br>
 **Target:** Sprint 5<br>
-**Dependencies:** SPEC-012, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-012, SPEC-018<br>
 
 ## Context
 
@@ -19,17 +19,24 @@ bounded, deterministic, explainable, and honest when no solution exists.
 - FR-1: The optimizer MUST choose exactly one published viable group per
   selected course.
 - FR-2: It MUST enforce all hard meeting, availability, completeness,
-  eligibility, credit, and configured travel-buffer constraints.
+  eligibility, and credit constraints. A travel-buffer constraint MUST remain
+  disabled until a typed, sourced, approved policy defines its minutes/matrix.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.
 - FR-5: It MUST score results with approved soft preferences and explain score
   components.
 - FR-6: It MUST support cancellation and a configured computation time budget.
-- FR-7: If no feasible result exists, it MUST return a useful conflict set and
-  manual-resolution path.
+- FR-7: If no feasible result exists, it MUST return at least one minimal
+  blocking set of selected courses/groups, each hard reason code and involved
+  meeting interval, and direct change/remove actions for every member.
 - FR-8: Final submission MUST revalidate all results; a recommendation does not
   reserve seats.
+- FR-9: A recommendation request MUST include the expected plan rowversion and
+  request correlation ID; each result MUST identify the captured plan,
+  catalogue/group, policy, and optimizer-configuration versions.
+- FR-10: Applying an option MUST be one atomic versioned plan mutation and MUST
+  reject an option computed from a stale plan or dependency version.
 
 ## Non-Functional Requirements
 
@@ -57,7 +64,8 @@ And the gap and other score components are shown.
 Given every combination has a hard overlap<br>
 When search completes<br>
 Then no fake solution is returned<br>
-And the minimal/useful conflicting course set and manual actions are shown.
+And a minimal blocking set, hard reason codes/intervals, and change/remove
+actions for every member are shown.
 
 ### AC-4: Time budget (FR-6, NFR-3)
 Given search exceeds its configured budget<br>
@@ -72,6 +80,28 @@ When the student submits that option<br>
 Then final registration revalidates and rejects the stale group<br>
 And no recommendation is treated as a reservation.
 
+### AC-6: Plan changes during optimization (FR-9, FR-10)
+Given optimization starts for plan rowversion 5<br>
+When the student edits the plan to rowversion 6 before the result is applied<br>
+Then applying the old option returns 409 PLAN_CHANGED<br>
+And rowversion 6 remains unchanged.
+
+### AC-7: Out-of-order responses (FR-9, FR-10, NFR-2)
+Given request B for the current plan starts after request A<br>
+When B completes first and A completes later<br>
+Then the client renders only the response matching the current request
+correlation ID and plan version<br>
+And the server rejects any stale apply attempt.
+
+### AC-8: Optimizer pruning, performance, and coverage (FR-3, NFR-1, NFR-4)
+Given eight courses with ten groups each and fixtures exercising every
+constraint/pruning branch<br>
+When the optimizer benchmark and branch-coverage suite executes<br>
+Then constrained courses are processed first and invalid partial schedules are
+pruned<br>
+And p95 completion is at most 500 ms<br>
+And optimizer branch coverage is at least 90%.
+
 ## Edge Cases
 
 - EC-1: Group becomes full during search -> may be excluded from fresh query;
@@ -79,25 +109,50 @@ And no recommendation is treated as a reservation.
 - EC-2: One selected course has zero viable groups -> immediate no-solution.
 - EC-3: Equal scores -> stable tie-break by course/group identifiers.
 - EC-4: Invalid preference weight -> reject configuration, use last approved.
+- EC-5: Catalogue/group/policy changes during search -> the result uses one
+  coherent captured version set or returns STALE_INPUT; mixed-version options
+  MUST NOT be returned.
 
 ## API Contracts
 
 ```typescript
 interface ScheduleOptionDto {
+  optionId: string;
   rank: number;
   groups: GroupDto[];
   score: number;
   scoreExplanation: Array<{ factor: string; value: number; message: string }>;
 }
 interface OptimizationResultDto {
+  requestCorrelationId: string;
+  planRowVersion: string;
+  catalogueVersion: string;
+  policyVersion: string;
+  optimizerConfigurationVersion: string;
   status: "complete" | "no-solution" | "time-budget";
   options: ScheduleOptionDto[];
   conflicts: ScheduleConflictDto[];
   evaluatedAtUtc: string;
 }
+interface RecommendScheduleRequest {
+  expectedPlanRowVersion: string;
+  requestCorrelationId: string;
+  preferences: SchedulePreferencesDto;
+}
+interface ApplyScheduleOptionRequest {
+  optionId: string;
+  expectedPlanRowVersion: string;
+  requestCorrelationId: string;
+  catalogueVersion: string;
+  policyVersion: string;
+  optimizerConfigurationVersion: string;
+}
 ```
 
-Endpoint: POST /api/student/registration-plans/{id}/recommendations.
+Endpoints: POST /api/student/registration-plans/{id}/recommendations and PUT
+/api/student/registration-plans/{id}/recommended-option. Applying an option is
+an atomic versioned plan update; stale input returns 409 PLAN_CHANGED or
+STALE_INPUT.
 
 ## Data Models
 

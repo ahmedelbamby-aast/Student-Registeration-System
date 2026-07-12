@@ -1,6 +1,6 @@
 # Implementation Plan: Registration Capacity and Concurrency
 
-**Branch**: 014-registration-capacity-concurrency | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 014-registration-capacity-concurrency | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -29,7 +29,10 @@ Deliver Registration Capacity and Concurrency inside the modular monolith while 
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
+- [SPEC-008](../008-academic-term-student-profile/spec.md)
+- [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
 - [SPEC-011](../011-eligibility-subject-discovery/spec.md)
 - [SPEC-012](../012-schedule-builder-conflicts/spec.md)
@@ -48,14 +51,24 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+
+
 ## Non-Functional Requirements
 
-- NFR-1: Zero group overbooking and zero duplicate active offering enrollment.
-- NFR-2: Submission p95 MUST be <= 2 seconds at 75 submissions/s for 10 min.
-- NFR-3: A 200 submissions/s, 60-second spike MUST preserve all invariants.
-- NFR-4: Database transactions MUST be short and contain no remote calls.
+- NFR-1: There MUST be zero group overbooking, duplicate active offering
+  enrollment, partial schedule commit, or combined same-student policy/timetable
+  violation in every target and spike concurrency test.
+- NFR-2: Submission p95 MUST be at most 2 seconds at 75 submissions per second
+  for 10 minutes using the production-like dataset.
+- NFR-3: A 200-submission-per-second, 60-second spike MUST preserve every NFR-1
+  invariant across at least two application replicas.
+- NFR-4: Database transactions MUST be short, cancellation-aware before commit,
+  and contain no HTTP, message-broker, email, or other remote call.
 - NFR-5: Expected conflicts MUST not count as server failures; unexpected
-  failure rate MUST remain below 0.1% at target.
+  failure rate MUST remain below 0.1% at target load.
+- NFR-6: Deadlock count, lock-wait p95, idempotent replay count, conflict-code
+  count, and reconciliation mismatch count MUST be observable without logging
+  student credentials or full academic records.
 
 ## Complexity Tracking
 

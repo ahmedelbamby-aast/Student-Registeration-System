@@ -68,6 +68,15 @@ When validation is requested<br>
 Then validation rejects it<br>
 And no executable content is stored or run.
 
+### AC-5: Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4)
+Given an approved policy version, fixed input, Registrar boundary examples, and
+recorded provenance<br>
+When the evaluator runs repeatedly under the approved performance fixture<br>
+Then every result and reason is identical<br>
+And every boundary regression passes<br>
+And decision evaluation is at most 100 ms p95 excluding initial data retrieval<br>
+And source/access/approval/effective metadata remains auditable.
+
 ## Edge Cases
 
 - EC-1: No approved policy matches the student/term -> fail closed and alert

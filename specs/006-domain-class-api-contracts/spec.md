@@ -72,6 +72,46 @@ Given a client requests an oversized page from an existing API version<br>
 When the list endpoint validates the request<br>
 Then it caps/rejects the size according to contract<br>
 And a breaking shape change requires the approved versioning process.
+### User Story 6 - Complete idempotency contract (FR-4, FR-8) (P3)
+
+As a API consumer, I need the Complete idempotency contract (FR-4, FR-8) behavior so that Domain Classes and API Contracts produces a verifiable outcome.
+
+**Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-6)**
+
+Given a retryable command contract is reviewed<br>
+When its OpenAPI and integration cases are inspected<br>
+Then same-key/same-payload processing and replay are explicit<br>
+And same-key/different-payload returns 409 IDEMPOTENCY_KEY_REUSED<br>
+And cancellation before commit versus response loss after commit has distinct
+documented behavior.
+### User Story 7 - Privacy-safe public context (FR-9, NFR-3) (P3)
+
+As a API consumer, I need the Privacy-safe public context (FR-9, NFR-3) behavior so that Domain Classes and API Contracts produces a verifiable outcome.
+
+**Independent Test**: Execute AC-7 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-7)**
+
+Given an unauthenticated visitor opens AUTH-01<br>
+When GET /api/public/context succeeds<br>
+Then only the FR-9 fields are returned<br>
+And authenticated context, internal health, capacity, and personal data are
+absent.
+### User Story 8 - Application-service and serialization consistency (FR-1, NFR-4) (P3)
+
+As a API consumer, I need the Application-service and serialization consistency (FR-1, NFR-4) behavior so that Domain Classes and API Contracts produces a verifiable outcome.
+
+**Independent Test**: Execute AC-8 in requirements.md without relying on another story in this feature.
+
+**Acceptance Scenario (AC-8)**
+
+Given every approved endpoint contract and representative command/query<br>
+When architecture and JSON contract tests execute<br>
+Then endpoints delegate business decisions to focused application services<br>
+And field naming, UTC dates, timezone identifiers, and invariant decimal
+formats are identical across responses.
 
 ## Edge Cases
 
@@ -91,11 +131,29 @@ And a breaking shape change requires the approved versioning process.
   entities or password/security internals.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
   optional field details.
-- FR-4: Mutation endpoints MUST support cancellation and appropriate
-  idempotency/concurrency tokens.
+- FR-4: Update/delete endpoints MUST require an expected rowversion or
+  If-Match value; retryable create/confirm/submit commands MUST require an
+  idempotency key; cancellation behavior before and after commit MUST be
+  documented per endpoint.
 - FR-5: Listing endpoints MUST use bounded pagination.
 - FR-6: API versioning policy MUST be defined before the first breaking change.
 - FR-7: Domain code MUST use TimeProvider abstraction for current time.
+- FR-8: Idempotency contracts MUST define owner/scope, server-canonical payload,
+  atomic first claim, same-payload processing/replay, different-payload
+  IDEMPOTENCY_KEY_REUSED, and which final rejections are replayable.
+- FR-9: Public AUTH-01 status MUST use GET /api/public/context, returning only
+  server time/timezone, public teaching/registration term labels, window state,
+  maintenance state, and no user, role, student, capacity, or internal-health
+  data.
+
+### Non-Functional Requirements
+
+- NFR-1: OpenAPI output MUST match implementation in CI.
+- NFR-2: Every success/error response in approved feature specs MUST have a
+  contract/integration test.
+- NFR-3: Responses MUST NOT leak stack traces, SQL text, secrets, hashes, or
+  unauthorized identifiers.
+- NFR-4: JSON field naming and date/decimal formats MUST be consistent.
 
 ### Key Entities
 
@@ -121,6 +179,12 @@ And a breaking shape change requires the approved versioning process.
 
 - [SPEC-004](../004-architecture-engineering-principles/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
+
+## Frontend Route Ownership
+
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+| SYS-01 | /status/{code} | SystemStatusPage.razor | Feature contract contributor; does not edit page; design SPEC-003, implementation SPEC-003 |
 
 ## Out of Scope
 

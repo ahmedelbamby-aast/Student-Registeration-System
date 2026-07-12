@@ -1,6 +1,6 @@
 # Implementation Plan: Schedule Recommendations
 
-**Branch**: 013-schedule-recommendations | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 013-schedule-recommendations | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -29,6 +29,7 @@ Deliver Schedule Recommendations inside the modular monolith while keeping serve
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-012](../012-schedule-builder-conflicts/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
 
@@ -43,6 +44,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

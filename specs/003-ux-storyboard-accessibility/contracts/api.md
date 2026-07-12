@@ -1,10 +1,48 @@
-# API Contract: UX Storyboard and Accessibility
+# API Contract: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 ## Feature Contract
 
-UI consumes contracts in SPEC-006 through SPEC-017, including GET
-/api/context. UI state mapping from each stable error/reason code is mandatory
-in those specs.
+```typescript
+interface PageDesignRecord {
+  routeId: string;
+  routeTemplate: string;
+  designOwnerSpec: string;
+  implementationOwnerSpec: string;
+  ownerSpecs: string[];
+  actors: string[];
+  components: string[];
+  dataContracts: string[];
+  actions: string[];
+  states: UiStateCase[];
+  responsiveWidths: number[];
+  focusOrder: string[];
+  testIds: string[];
+  approvalVersion: string;
+}
+interface UiStateCase {
+  state: "loading" | "empty" | "success" | "validation-error" |
+    "service-error" | "unauthorized" | "session-expired" | "stale" | "offline";
+  applicability: "required" | "not-applicable";
+  reason?: string;
+  expectedFocusTarget?: string;
+  liveRegion?: "none" | "polite" | "assertive";
+}
+interface FrontendTestRecord {
+  testId: string;
+  routeId: string;
+  requirementIds: string[];
+  type: "component" | "contract" | "e2e" | "accessibility" | "visual";
+  fixture: string;
+  expectedOutcome: string;
+}
+```
+
+The UI consumes the versioned contracts in SPEC-006 through SPEC-017,
+including `GET /api/public/context` and the authenticated application-context
+resource owned by SPEC-008. This method/path is a consumed dependency, not an
+endpoint implemented or owned by SPEC-003.
+Stable error/reason codes MUST map to designed states; the client MUST retain
+unknown-code fallback behavior. SPEC-003 owns no server endpoint.
 
 ## Shared Rules
 

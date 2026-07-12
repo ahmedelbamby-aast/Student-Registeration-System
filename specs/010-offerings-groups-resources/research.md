@@ -1,4 +1,4 @@
-# Research: Offerings Groups and Resources
+# Research: Offerings, Groups, and Resources
 
 ## Decisions
 
@@ -19,6 +19,7 @@ interface GroupDto {
   groupCode: string;
   capacity: number;
   enrolledCount: number;
+  registrationPaused: boolean;
   state: "draft" | "published" | "closed" | "cancelled";
   staff: Array<{ role: "Lecturer" | "TeachingAssistant"; name: string }>;
   meetings: Array<{
@@ -30,12 +31,24 @@ interface GroupDto {
   }>;
   rowVersion: string;
 }
+interface OfferingMutationRequest {
+  expectedOfferingRowVersion: string;
+  expectedGroupRowVersions: Record<string, string>;
+  previewToken?: string;
+  clientRequestId: string;
+}
 ```
 
 Endpoints: GET /api/offerings/{id}, GET /api/groups/{id}, POST
 /api/admin/offerings, PUT /api/admin/groups/{id}, POST
 /api/admin/offerings/{id}/validate, and POST
 /api/admin/offerings/{id}/publish.
+Every group-state, capacity, meeting, room, and staff-assignment mutation
+requires the owning group rowversion. Retryable create/publish uses
+clientRequestId; stale resources return 409 GROUP_CHANGED,
+RESOURCE_CONFLICT, or IDEMPOTENCY_KEY_REUSED without partial publication.
+
+
 
 ## Open Research
 

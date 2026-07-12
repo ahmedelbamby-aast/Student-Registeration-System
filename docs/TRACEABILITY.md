@@ -2,7 +2,7 @@
 
 | User requirement | Primary specification(s) | Verification |
 |---|---|---|
-| Storyboard/screens | SPEC-003 | Route inventory, prototype, usability and accessibility tests |
+| Storyboard/frontend pages | SPEC-003 | 27 Page Design Records, design system, component/contract/E2E/visual/accessibility tests |
 | ERD | SPEC-005 | Model review, migration and constraint tests |
 | Class diagram | SPEC-006 | Architecture and dependency tests |
 | Engineering principles | SPEC-004, SPEC-018 | ADR and architecture-test review |
@@ -21,7 +21,7 @@
 | Multiple groups/capacity | SPEC-010, SPEC-014 | database and collision tests |
 | Conflict detection and best timetable | SPEC-012, SPEC-013 | deterministic constraint tests |
 | Red X and blocked unresolved conflict | SPEC-003, SPEC-012 | accessible E2E test |
-| Race-condition safety | SPEC-014 | parallel real-SQL integration test |
+| Race-condition safety | SPEC-003, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-012, SPEC-013, SPEC-014, SPEC-016, SPEC-017, SPEC-018 | duplicate-action UI, identity single-use, constraints, shared lock boundaries, idempotency, two-replica SQL concurrency/load/fault tests |
 | Easy future services/features | SPEC-004 | module dependency and ADR review |
 | Scalability | SPEC-018 | measurable performance/recovery gates |
 | Agile phased development | SPEC-001, project plan | sprint reviews and spec status matrix |
@@ -31,7 +31,11 @@
 Every implementation pull request must include:
 
 - At least one SPEC-NNN/FR-N reference.
-- At least one SPEC-NNN/AC-N test reference.
+- Every affected SPEC-NNN/FR-N and SPEC-NNN/NFR-N reference.
+- The SPEC-NNN/AC-N and SPEC-NNN/EC-N tests that prove the change.
+- The exact upstream SPEC dependency/contract version consumed.
+- The owned frontend route ID and page/functional/accessibility/visual evidence
+  when a route is affected.
 - The relevant ADR for a changed architecture decision.
 - Migration, UI evidence, observability, and policy-approval notes when
   applicable.

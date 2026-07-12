@@ -4,6 +4,12 @@ param()
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $manifest = Get-Content (Join-Path $root '.specify/spec-manifest.json') -Raw | ConvertFrom-Json
+$routeManifest = Get-Content (Join-Path $root '.specify/route-manifest.json') -Raw | ConvertFrom-Json
+$endpointManifest = Get-Content (Join-Path $root '.specify/endpoint-manifest.json') -Raw | ConvertFrom-Json
+$componentManifest = Get-Content (Join-Path $root '.specify/component-manifest.json') -Raw | ConvertFrom-Json
+$workstreamManifest = Get-Content (Join-Path $root '.specify/workstream-manifest.json') -Raw | ConvertFrom-Json
+$entityOwnership = Get-Content (Join-Path $root '.specify/entity-ownership.json') -Raw | ConvertFrom-Json
+$generationDate = Get-Date -Format 'yyyy-MM-dd'
 
 function Get-Section([string]$Text, [string]$Name) {
     $pattern = "(?ms)^## $([regex]::Escape($Name))\s*\r?\n(.*?)(?=^## |\z)"
@@ -16,6 +22,21 @@ function Get-Items([string]$Section, [string]$Prefix) {
     return [regex]::Matches($Section, "(?ms)^### ($Prefix-\d+):?\s*([^\r\n]*)\r?\n(.*?)(?=^### |\z)")
 }
 
+function Get-RequirementItems([string]$Section, [string]$PrefixPattern) {
+    return [regex]::Matches($Section, "(?ms)^- (($PrefixPattern)-\d+):\s*(.*?)(?=^- ($PrefixPattern)-\d+:|\z)")
+}
+
+function ConvertTo-OneLine([string]$Value) {
+    return ([regex]::Replace(($Value -replace '<br>', ' '), '\s+', ' ')).Trim().TrimEnd('.')
+}
+
+function New-TaskLine([ref]$Counter, [string]$Tags, [string]$Action) {
+    $Counter.Value++
+    $id = 'T{0:d3}' -f $Counter.Value
+    if ([string]::IsNullOrWhiteSpace($Tags)) { return "- [ ] $id $Action" }
+    return "- [ ] $id $Tags $Action"
+}
+
 foreach ($item in $manifest.specs) {
     $featureName = "$($item.id)-$($item.slug)"
     $featureDir = Join-Path $root "specs/$featureName"
@@ -24,6 +45,8 @@ foreach ($item in $manifest.specs) {
     $requirements = Join-Path $featureDir 'requirements.md'
     if (Test-Path $source) { Move-Item -LiteralPath $source -Destination $requirements }
     $raw = Get-Content $requirements -Raw
+    $sourceDateMatch = [regex]::Match($raw, '(?m)^\*\*Date:\*\*\s*([^<\r\n]+)')
+    $createdDate = if ($sourceDateMatch.Success) { $sourceDateMatch.Groups[1].Value.Trim() } else { $generationDate }
 
     if ($raw -notmatch '(?m)^\*\*Dependencies:\*\*') {
         $depText = if ($item.dependencies.Count -eq 0) { 'None' } else { ($item.dependencies | ForEach-Object { "SPEC-$_" }) -join ', ' }
@@ -40,6 +63,10 @@ foreach ($item in $manifest.specs) {
     $models = Get-Section $raw 'Data Models'
     $outScope = Get-Section $raw 'Out of Scope'
     $acs = Get-Items $acceptance 'AC'
+    $frItems = Get-RequirementItems $functional 'FR'
+    $nfrItems = Get-RequirementItems $nonFunctional 'NFR(?:-[A-Z]+)?'
+    $ecItems = Get-RequirementItems $edge 'EC'
+    $osItems = Get-RequirementItems $outScope 'OS'
     $depLinks = if ($item.dependencies.Count -eq 0) { '- None; this is a root specification.' } else {
         ($item.dependencies | ForEach-Object {
             $dep = $manifest.specs | Where-Object id -eq $_
@@ -48,7 +75,6 @@ foreach ($item in $manifest.specs) {
     }
 
     $stories = New-Object System.Collections.Generic.List[string]
-    $tasks = New-Object System.Collections.Generic.List[string]
     $storyNumber = 0
     foreach ($ac in $acs) {
         $storyNumber++
@@ -67,20 +93,329 @@ As a $($item.actor), I need the $acTitle behavior so that $($item.title) produce
 
 $body
 "@)
-        $frRefs = ([regex]::Matches("$acTitle $body", 'FR-\d+') | ForEach-Object Value | Select-Object -Unique) -join ', '
-        if (-not $frRefs) { $frRefs = 'linked functional requirements' }
-        $tasks.Add("- [ ] T$('{0:d3}' -f ($storyNumber * 2 + 2)) [P] [US$storyNumber] Add the future failing acceptance test for $acId ($frRefs) under tests/acceptance/$featureName/.")
-        $tasks.Add("- [ ] T$('{0:d3}' -f ($storyNumber * 2 + 3)) [US$storyNumber] Implement $acId only after approval, using the module paths declared in plan.md.")
+    }
+
+    $taskNumber = 0
+    $approvalTasks = New-Object System.Collections.Generic.List[string]
+    $foundationTasks = New-Object System.Collections.Generic.List[string]
+    $requirementTasks = New-Object System.Collections.Generic.List[string]
+    $testTasks = New-Object System.Collections.Generic.List[string]
+    $frontendTasks = New-Object System.Collections.Generic.List[string]
+    $qualityTasks = New-Object System.Collections.Generic.List[string]
+    $scopeTasks = New-Object System.Collections.Generic.List[string]
+
+    $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Record Ahmed ELbamby's human approval for SPEC-$($item.id) in specs/$featureName/checklists/approval.md before executing any later task."))
+    foreach ($depId in $item.dependencies) {
+        $dep = $manifest.specs | Where-Object id -eq $depId
+        $depName = "$depId-$($dep.slug)"
+        $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) "[DEP-SPEC-$depId]" "Validate the consumed upstream requirements, plan, data model, and API contract at specs/$depName/ and record the accepted versions in specs/$featureName/dependency-baseline.md."))
+    }
+    $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Freeze SPEC-$($item.id) requirements, API, data-model, policy approvals, and dependency versions in specs/$featureName/checklists/implementation-readiness.md."))
+
+    $moduleSafe = $item.module -replace '[^A-Za-z0-9]', ''
+    $specWorkstreams = @($workstreamManifest.specs.PSObject.Properties | Where-Object Name -eq $item.id | ForEach-Object Value)
+
+    foreach ($entity in $item.entities) {
+        $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties | Where-Object Name -eq $entity
+        $canonicalOwner = if ($ownerProperty) { [string]$ownerProperty.Value } else { [string]$item.id }
+        $ownerSpec = $manifest.specs | Where-Object id -eq $canonicalOwner
+        $ownerModule = $ownerSpec.module -replace '[^A-Za-z0-9]', ''
+        $entityFile = "src/StudentRegistration.Domain/Modules/$ownerModule/$entity.cs"
+        $overrideKey = "$($item.id):$entity"
+        $overrideProperty = $entityOwnership.artifactOverrides.PSObject.Properties | Where-Object Name -eq $overrideKey
+        if ($overrideProperty) { $entityFile = [string]$overrideProperty.Value }
+        if (-not $overrideProperty -and $canonicalOwner -ne $item.id) {
+            $ownerOverrideKey = "$canonicalOwner`:$entity"
+            $ownerOverrideProperty = $entityOwnership.artifactOverrides.PSObject.Properties | Where-Object Name -eq $ownerOverrideKey
+            if ($ownerOverrideProperty) { $entityFile = [string]$ownerOverrideProperty.Value }
+        }
+        if ($item.id -eq '005') { $entityFile = "src/StudentRegistration.Infrastructure/Persistence/Configurations/$($entity)Configuration.cs" }
+        if ($item.id -eq '006') { $entityFile = "src/StudentRegistration.Contracts/$entity.cs" }
+        if ($item.id -eq '003' -and -not $overrideProperty) { $entityFile = "src/StudentRegistration.Client/Features/Frontend/Models/$entity.cs" }
+        $entityTest = "tests/StudentRegistration.IntegrationTests/Specs/Spec$($item.id)/$($entity)ModelTests.cs"
+        if ($overrideProperty -and $entityFile -match '^(?:specs|docs)/') { $entityTest = "tests/StudentRegistration.SpecificationTests/Specs/Spec$($item.id)/$($entity)SchemaTests.cs" }
+        if ($item.id -eq '005') {
+            $entityTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] [PERSISTENCE-MAPPING]" "Create the future failing SQL mapping/constraint test for $entity in $entityTest against the canonical domain model owned by SPEC-$canonicalOwner."))
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[ENTITY-$entity] [PERSISTENCE-MAPPING]" "Map the canonical $entity model without redefining it at $entityFile after $entityTestTaskId fails for the expected reason (depends on $entityTestTaskId)."))
+        } elseif ($canonicalOwner -ne $item.id) {
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] [CONSUMER-SPEC-$canonicalOwner]" "Verify SPEC-$($item.id) consumes the canonical $entity at $entityFile without redefining ownership in $entityTest."))
+        } else {
+            $kindTag = if ($overrideProperty -and $entityFile -match '^(?:specs|docs)/') { '[ARTIFACT-OWNER]' } else { "[OWNER-SPEC-$canonicalOwner]" }
+            $entityTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] $kindTag" "Create the future failing invariant/schema/serialization checks for canonical $entity ownership in $entityTest."))
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[ENTITY-$entity] $kindTag" "Deliver the canonical $entity model or governed artifact at $entityFile after $entityTestTaskId fails for the expected reason (depends on $entityTestTaskId)."))
+        }
+    }
+
+    $endpoints = @($endpointManifest.endpoints | Where-Object owner -eq $item.id | ForEach-Object { "$($_.method) $($_.path)" })
+    $endpointIndex = 0
+    foreach ($endpoint in $endpoints) {
+        $endpoint = ConvertTo-OneLine $endpoint
+        $endpointIndex++
+        $endpointCode = 'Endpoint{0:d2}' -f $endpointIndex
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[API-$endpointCode] [OWNER-SPEC-$($item.id)]" "Finalize request, success, validation, authentication, authorization, conflict, rate-limit, and unexpected-error shapes for $endpoint in specs/$featureName/contracts/api.md."))
+        $endpointTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [API-$endpointCode]" "Verify every documented response and authorization outcome for $endpoint in tests/StudentRegistration.ContractTests/Specs/Spec$($item.id)/$($endpointCode)ContractTests.cs."))
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[API-$endpointCode] [OWNER-SPEC-$($item.id)]" "Deliver the sole canonical $endpoint handler at src/StudentRegistration.Server/Modules/$moduleSafe/Endpoints/Spec$($item.id)Endpoints.cs after $endpointTestTaskId fails for the expected reason (depends on $endpointTestTaskId)."))
+    }
+
+    $foundationTaskId = 'T{0:d3}' -f $taskNumber
+    $storyTaskNumber = 0
+    foreach ($ac in $acs) {
+        $storyTaskNumber++
+        $acId = $ac.Groups[1].Value
+        $refs = @([regex]::Matches("$($ac.Groups[2].Value) $($ac.Groups[3].Value)", '\b(?:FR-\d+|NFR(?:-[A-Z]+)?-?\d+)\b') | ForEach-Object Value | Select-Object -Unique)
+        $refTags = ($refs | ForEach-Object { "[$_]" }) -join ' '
+        $acTitle = ConvertTo-OneLine $ac.Groups[2].Value
+        $acSummary = ConvertTo-OneLine "$($ac.Groups[2].Value): $($ac.Groups[3].Value)"
+        $priority = if ($storyTaskNumber -le 2) { 'P1' } elseif ($storyTaskNumber -le 4) { 'P2' } else { 'P3' }
+        $testTasks.Add(@"
+### US$storyTaskNumber - $acTitle ($priority)
+
+**Goal**: Prove $acId as an independently demonstrable slice of $($item.title).
+
+**Independent Test**: Execute only the $acId Given/When/Then fixture with its declared data and dependency doubles.
+
+**Dependencies**: Approval/dependency/model/API baseline through $foundationTaskId.
+"@)
+        $testTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$acId] $refTags" "Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec$($item.id)/$($acId)Tests.cs for $($acId): $acSummary."))
+    }
+
+    foreach ($ec in $ecItems) {
+        $ecId = $ec.Groups[1].Value
+        $summary = ConvertTo-OneLine $ec.Groups[3].Value
+        $testTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$ecId]" "Exercise $ecId with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec$($item.id)/EdgeCases/$($ecId)Tests.cs and assert: $summary."))
+    }
+
+    if ($item.id -eq '014') {
+        $matrixPath = Join-Path $featureDir 'concurrency-matrix.md'
+        if (-not (Test-Path $matrixPath -PathType Leaf)) {
+            throw "SPEC-014 concurrency matrix is missing at $matrixPath."
+        }
+
+        $testTasks.Add(@"
+### SPEC-014 Concurrency Matrix Oracles
+
+**Goal**: Prove every race, serialization boundary, winner/loser result, and invariant declared in concurrency-matrix.md with deterministic real-SQL tests before delivery begins.
+"@)
+        $raceNumber = 0
+        foreach ($matrixLine in Get-Content $matrixPath) {
+            if ($matrixLine -notmatch '^\|') { continue }
+            $cells = @($matrixLine.Trim().Trim('|') -split '\|' | ForEach-Object { $_.Trim() })
+            if ($cells.Count -ne 5 -or $cells[0] -eq 'Race' -or $cells[0] -match '^---') { continue }
+
+            $raceNumber++
+            $raceId = 'R{0:d2}' -f $raceNumber
+            $race = ConvertTo-OneLine $cells[0]
+            $boundary = ConvertTo-OneLine $cells[1]
+            $winner = ConvertTo-OneLine $cells[2]
+            $loser = ConvertTo-OneLine $cells[3]
+            $invariant = ConvertTo-OneLine $cells[4]
+            $testPath = "tests/StudentRegistration.ConcurrencyTests/Specs/Spec014/ConcurrencyMatrix/Race$($raceId)Tests.cs"
+
+            $proof = 'Use deterministic SQL Server barriers'
+            if ($race -match '(?i)two students|one student|same idempotency|same key|vs submit|capacity reduction|process death|process/network loss') {
+                $proof += ' across two application replicas'
+            }
+            if ($race -match '(?i)multi-group allocation') {
+                $proof += ' and inject the losing group allocation before commit'
+            } elseif ($race -match '(?i)deadlock|transient error') {
+                $proof += ' and inject the deadlock/transient failure during the contested write'
+            } elseif ($race -match '(?i)process death') {
+                $proof += ' and inject application-process death after the idempotency claim but before commit, then retry on the second replica'
+            } elseif ($race -match '(?i)process/network loss') {
+                $proof += ' and inject process/network loss after database commit but before the HTTP result'
+            } elseif ($race -match '(?i)reconciliation mismatch') {
+                $proof += ' and inject the persisted counter/enrollment mismatch before reconciliation'
+            }
+
+            $oracle = "shared boundary/order '$boundary'; allowed winner '$winner'; required loser/result '$loser'; invariant '$invariant'"
+            $testTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [RACE-$raceId]" "Create the future failing real-SQL test for race '$race' from specs/014-registration-capacity-concurrency/concurrency-matrix.md in $testPath. $proof and assert the complete oracle: $oracle."))
+        }
+
+        if ($raceNumber -eq 0) {
+            throw 'SPEC-014 concurrency matrix contains no data rows.'
+        }
+    }
+
+    foreach ($fr in $frItems) {
+        $frId = $fr.Groups[1].Value
+        $summary = ConvertTo-OneLine $fr.Groups[3].Value
+        $frWorkstreams = @($specWorkstreams | Where-Object { @($_.requirements) -contains $frId })
+        if ($frWorkstreams.Count -ne 1) {
+            throw "SPEC-$($item.id) $frId must map to exactly one workstream; found $($frWorkstreams.Count)."
+        }
+        $workstream = $frWorkstreams[0]
+        $workstreamTag = ($workstream.name -replace '[^A-Za-z0-9]+', '-').Trim('-').ToUpperInvariant()
+        $testPath = [string]$workstream.testPath
+        $deliveryPath = [string]$workstream.deliveryPath
+        $testFocus = ConvertTo-OneLine ([string]$workstream.testFocus)
+        $frTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$frId] [WORKSTREAM-$workstreamTag]" "Create the future failing $frId checks in $testPath. Test focus: $testFocus. Prove the requirement against its linked AC/EC fixtures: $summary."))
+        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "[$frId] [WORKSTREAM-$workstreamTag]" "Deliver $frId through the bounded $($workstream.name) workstream at $deliveryPath only after $frTestTaskId fails for the expected reason (depends on $frTestTaskId): $summary."))
+    }
+
+    if ($item.id -eq '003') {
+        $tokenTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[P] [FR-3] [NFR-3]' 'Create failing token-schema, contrast, focus, and semantic-color checks in tests/StudentRegistration.Client.UnitTests/DesignSystem/DesignTokenContractTests.cs.'))
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[FR-3]' "Deliver the approved versioned token sources at src/StudentRegistration.Client/wwwroot/design/design-tokens.json and src/StudentRegistration.Client/wwwroot/css/design-tokens.css after $tokenTestTaskId fails for the expected reason (depends on $tokenTestTaskId); institutional brand values remain blocked by DEC-03."))
+        foreach ($component in $componentManifest.components) {
+            $componentTest = "tests/StudentRegistration.Client.UnitTests/Components/$($component.name)Tests.cs"
+            $componentTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [FR-4] [COMPONENT-$($component.name)]" "Create failing default, hover, active, focus, disabled, loading, error, keyboard, and accessible-name checks for $($component.name) in $componentTest."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[FR-4] [COMPONENT-$($component.name)]" "Deliver the reusable token-only $($component.name) component at $($component.path) after $componentTestTaskId fails for the expected reason (depends on $componentTestTaskId)."))
+        }
+        $browserMatrixTestId = 'T{0:d3}' -f ($taskNumber + 1)
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[P] [FR-12] [NFR-7] [BROWSER-MATRIX]' 'Create the future failing pinned OS/browser/version and actual-Safari-evidence contract checks in tests/StudentRegistration.SpecificationTests/Frontend/BrowserMatrixContractTests.cs.'))
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[FR-12] [NFR-7] [BROWSER-MATRIX]' "Deliver the versioned browser support matrix at tests/StudentRegistration.E2ETests/browser-matrix.json after $browserMatrixTestId fails for the expected reason (depends on $browserMatrixTestId); WebKit MUST remain distinct from Safari."))
+        $baselineManifestTestId = 'T{0:d3}' -f ($taskNumber + 1)
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[P] [FR-12] [NFR-9] [VISUAL-BASELINES]' 'Create the future failing baseline provenance, route/state/browser/viewport/token/fixture, approval, and no-auto-replacement checks in tests/StudentRegistration.SpecificationTests/Frontend/VisualBaselineManifestTests.cs.'))
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[FR-12] [NFR-9] [VISUAL-BASELINES]' "Deliver the governed baseline registry at tests/StudentRegistration.VisualTests/Baselines/baseline-manifest.json after $baselineManifestTestId fails for the expected reason (depends on $baselineManifestTestId)."))
+        $flakePolicyTestId = 'T{0:d3}' -f ($taskNumber + 1)
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[P] [FR-12] [NFR-7] [FLAKE-POLICY]' 'Create the future failing checks for first-run failure, diagnostics-only retry, critical-journey no-quarantine, and owned flake correction in tests/StudentRegistration.SpecificationTests/Frontend/FlakePolicyContractTests.cs.'))
+        $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) '[FR-12] [NFR-7] [FLAKE-POLICY]' "Deliver the enforced browser-test policy at tests/StudentRegistration.E2ETests/flake-policy.json after $flakePolicyTestId fails for the expected reason (depends on $flakePolicyTestId)."))
+    }
+
+    $ownedRoutes = @($routeManifest.routes | Where-Object { $_.owners -contains $item.id })
+    foreach ($route in $ownedRoutes) {
+        $routeId = $route.id
+        $page = $route.page
+        if ($item.id -eq '003') {
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [FR-1] [FR-2] [FR-11]" "Produce and approve the Page Design Record with annotated layouts at 320, 375, 768, 1024, 1280, and 1920 CSS pixels, complete state matrix, focus order, API/reason mapping, and test IDs for $routeId $($route.template) at specs/$featureName/design/pages/$routeId.md."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [FR-12] [FR-14]" "Create the route API/reason-code fixture and failing contract assertions for $routeId in tests/StudentRegistration.Client.ContractTests/Routes/$($page)ContractTests.cs."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [FR-5] [FR-12]" "Create failing component-state, navigation, form, focus, pending, and duplicate-action assertions for $routeId in tests/StudentRegistration.Client.UnitTests/Pages/$($page)ComponentTests.cs."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [NFR-1] [NFR-2] [NFR-5]" "Run axe, keyboard, focus, screen-reader, 400-percent zoom, and responsive assertions for $routeId in tests/StudentRegistration.AccessibilityTests/Routes/$($page)AccessibilityTests.cs."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [NFR-7] [NFR-9]" "Approve cross-browser visual baselines for $routeId at 375, 768, 1280, and 1920 CSS pixels in tests/StudentRegistration.VisualTests/Routes/$($page)VisualTests.cs."))
+            if ($route.implementationOwner -eq '003') {
+                $routeTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [AC-17]" "Create the future failing safe-status end-to-end journey for $routeId in tests/StudentRegistration.E2ETests/Routes/$($page)JourneyTests.cs."))
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [FR-4] [FR-5]" "Deliver the token-based $routeId page at src/StudentRegistration.Client/Pages/$page.razor only after $routeTestTaskId and the SPEC-003 route contract/component/accessibility checks fail for expected reasons (depends on $routeTestTaskId)."))
+            }
+        } else {
+            $link = $route.links | Where-Object spec -eq $item.id
+            $linkTags = (@($link.requirements) + @($link.criteria) | ForEach-Object { "[$_]" }) -join ' '
+            if ($route.implementationOwner -eq $item.id) {
+                $routeTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [UI-CONTRACT-SPEC-003] $linkTags" "Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for $routeId in tests/StudentRegistration.E2ETests/Specs/Spec$($item.id)/$($page)FeatureTests.cs."))
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [UI-CONTRACT-SPEC-003] $linkTags" "Deliver the sole canonical Blazor implementation for $routeId at src/StudentRegistration.Client/Pages/$page.razor after $routeTestTaskId and the SPEC-003 contract/component checks fail for expected reasons (depends on $routeTestTaskId)."))
+            } else {
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [UI-CONTRACT-SPEC-003] $linkTags" "Finalize SPEC-$($item.id) data, actions, stable reasons, authorization, and stale/concurrent contribution for $routeId at specs/$featureName/contracts/routes/$routeId.md without editing the canonical Razor page."))
+                $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [UI-CONTRACT-SPEC-003] $linkTags" "Verify the SPEC-$($item.id) contribution consumed by $routeId in tests/StudentRegistration.E2ETests/Specs/Spec$($item.id)/$($page)ContributorTests.cs."))
+            }
+        }
+    }
+
+    foreach ($nfr in $nfrItems) {
+        $nfrId = $nfr.Groups[1].Value
+        $summary = ConvertTo-OneLine $nfr.Groups[3].Value
+        if ($item.id -eq '003' -and $nfrId -eq 'NFR-7') {
+            $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[$nfrId] [MANUAL-EVIDENCE] [ACTUAL-SAFARI]" "Execute the signed actual-Safari-on-macOS protocol for $nfrId and record macOS/Safari versions, browser matrix version, journeys, results, defects, and approver in docs/release-evidence/frontend/safari-macos-evidence.md: $summary."))
+        } elseif ($summary -match '(?i)screen.reader|usability|participant|actual Safari|manual') {
+            $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[$nfrId] [MANUAL-EVIDENCE]" "Execute the controlled human/browser evidence protocol for $nfrId and record participants, environment, script, observations, pass/fail thresholds, defects, and approver in docs/release-evidence/SPEC-$($item.id)-$nfrId.md: $summary."))
+        } else {
+            $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$nfrId] [AUTOMATED-EVIDENCE]" "Produce measurable automated release evidence for $nfrId in tests/StudentRegistration.QualityTests/Specs/Spec$($item.id)/$($nfrId)EvidenceTests.cs and docs/release-evidence/SPEC-$($item.id)-$nfrId.md: $summary."))
+        }
+    }
+
+    foreach ($os in $osItems) {
+        $osId = $os.Groups[1].Value
+        $summary = ConvertTo-OneLine $os.Groups[3].Value
+        $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) "[$osId]" "Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-$($item.id)-scope-review.md that $osId remains excluded: $summary."))
+    }
+    $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) '[TRACE]' "Generate the completed FR/NFR/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-$($item.id)-traceability.md and reject release if any row lacks passing evidence."))
+    $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-$($item.id) in docs/release-evidence/SPEC-$($item.id)-release-approval.md."))
+
+    $routeOwnership = if ($ownedRoutes.Count) {
+        $routeRows = $ownedRoutes | ForEach-Object {
+            $role = if ($_.designOwner -eq $item.id) { 'Design/test contract owner' } elseif ($_.implementationOwner -eq $item.id) { 'Canonical page implementation owner' } else { 'Feature contract contributor; does not edit page' }
+            "| $($_.id) | $($_.template) | $($_.page).razor | $role; design SPEC-$($_.designOwner), implementation SPEC-$($_.implementationOwner) |"
+        }
+        @"
+| Route ID | Route template | Future Blazor page | Responsibility |
+|---|---|---|---|
+$($routeRows -join "`r`n")
+"@
+    } else {
+        'No route is directly owned. Any later UI exposure requires a SPEC-003 route-manifest amendment before implementation.'
     }
 
     $success = ($item.successCriteria | ForEach-Object -Begin { $n = 0 } -Process { $n++; "- **SC-$n**: $_" }) -join "`r`n"
     $entities = ($item.entities | ForEach-Object { "- **$_**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD." }) -join "`r`n"
 
+    $frontendPlan = if ($item.id -eq '003') {
+@"
+## Frontend Verification Toolchain and Evidence
+
+- Razor component behavior uses bUnit with deterministic render fixtures and no live institutional dependency.
+- Browser journeys use Microsoft.Playwright. Browser and operating-system builds MUST be pinned per release in tests/StudentRegistration.E2ETests/browser-matrix.json; floating latest labels are not release evidence.
+- Automated accessibility uses axe-core from the Playwright accessibility harness plus keyboard and focus assertions. Automated results supplement rather than replace manual assistive-technology review.
+- Visual regression uses Playwright screenshot comparisons with approved baselines stored by route, state, browser engine, and viewport under tests/StudentRegistration.VisualTests/Baselines/ and governed by tests/StudentRegistration.VisualTests/Baselines/baseline-manifest.json. Dynamic time, identifiers, animations, and nondeterministic content MUST use controlled fixtures or documented masks.
+- Chromium, Firefox, and WebKit automation runs in pinned CI images. WebKit results MUST NOT be reported as Safari results. Current stable Safari requires a manual run on pinned macOS/Safari versions with evidence recorded in docs/release-evidence/frontend/safari-macos-evidence.md.
+- Component and contract fixtures MUST pin server time, academic term, identity/role, policy version, capacity, rowversion, correlation IDs, and every applicable UI state. Fixtures MUST contain no production student data.
+- A first-run failure remains a failed gate under tests/StudentRegistration.E2ETests/flake-policy.json. A retry MAY collect trace, video, screenshot, console, and network diagnostics but MUST NOT convert the gate to pass. Critical journeys cannot be quarantined; every flake requires an owner, issue, cause, and correction before release.
+- Release evidence includes bUnit results, client contract results, Playwright traces/reports, axe-core output, visual-baseline approval, browser-matrix provenance, and the signed Safari/macOS manual record.
+
+## Frontend Test Project Structure
+
+- tests/StudentRegistration.Client.UnitTests: bUnit component and design-token checks.
+- tests/StudentRegistration.Client.ContractTests: route-to-API and stable-reason fixtures.
+- tests/StudentRegistration.E2ETests: Microsoft.Playwright primary, failure, authorization, stale, offline, and race journeys.
+- tests/StudentRegistration.AccessibilityTests: axe-core automation plus keyboard/focus protocols.
+- tests/StudentRegistration.VisualTests: deterministic screenshot assertions and approved baselines.
+- docs/release-evidence/frontend: manual screen-reader, usability, Safari/macOS, browser provenance, and baseline-approval records.
+"@
+    } else { '' }
+
+    $frontendResearch = if ($item.id -eq '003') {
+@"
+### Frontend verification stack
+**Decision**: Use bUnit for Blazor component behavior, Microsoft.Playwright for browser journeys, axe-core for automated accessibility, and Playwright screenshot comparison for visual regression.
+**Rationale**: These layers separate fast component feedback, client-contract behavior, real navigation, accessibility signals, and pixel-level review without treating snapshots as functional assertions.
+**Alternatives rejected**: Browser-only testing, snapshot-only testing, and manual-only accessibility review because each leaves important behavior unverified.
+
+### Browser evidence and version pinning
+**Decision**: Pin CI operating-system images and exact browser builds in a versioned browser matrix. Use Chromium, Firefox, and WebKit automation for repeatable coverage, then require a separately recorded run on actual stable Safari on pinned macOS for Safari support.
+**Rationale**: Playwright WebKit is useful compatibility evidence but is not the shipping Safari browser. Version-pinned provenance makes failures and visual baselines reproducible.
+**Alternatives rejected**: Floating latest browsers and labeling WebKit automation as Safari certification.
+
+### Deterministic fixtures and visual baselines
+**Decision**: Version fixtures for server time, term, role, policy, rowversion, capacity, reason codes, and UI states. Store visual baselines by route/state/browser/viewport with token version and UX approval; mask only reviewed nondeterministic regions.
+**Rationale**: Registration state is time- and concurrency-sensitive. Uncontrolled clocks, data, or animation create misleading failures and unreviewable baseline churn.
+**Alternatives rejected**: Production-data copies, arbitrary screenshot tolerances, and automatic baseline replacement.
+
+### Flake and evidence policy
+**Decision**: A first-run failure fails the gate; a retry can collect diagnostics only. Critical journeys cannot be quarantined, and every intermittent failure requires an owned defect before release. Machine reports and manual Safari, screen-reader, keyboard, and usability evidence are retained together.
+**Rationale**: Retrying until green hides race, timing, and accessibility defects in the system's highest-risk journeys.
+**Alternatives rejected**: Pass-on-retry, unowned quarantine, and unsupported claims based only on generated reports.
+"@
+    } else { '' }
+
+    $integrityRules = if ($item.id -eq '003') {
+@"
+- Every PageDesignRecord MUST declare a schema version, one route ID/template pair, nonempty ownerSpecs, exactly one design owner, exactly one canonical implementation owner, and an approval version.
+- Route IDs, templates, and canonical page names MUST be unique and MUST match route-manifest.json, page-matrix.md, and the owning feature specifications.
+- Every required responsive width and applicable UI state MUST be present; a not-applicable state requires a reviewed reason.
+- DesignTokenSet versions MUST be immutable after approval. Brand tokens require institutional approval, semantic tokens MUST meet the specified contrast rules, and pages/components MUST reference approved tokens rather than guessed literal values.
+- Every FrontendTestRecord MUST have a unique test ID, existing route ID, valid owning requirement/criterion IDs, deterministic fixture version, evidence type, and expected outcome.
+- Each route MUST trace to its PageDesignRecord, ownerSpecs, contributing API/reason contracts, implementation task, component tests, client-contract tests, Playwright journeys, axe/keyboard evidence, visual baselines, and manual evidence where required.
+- Every visual baseline MUST record route, state, viewport, browser/browser-engine build, operating-system image, token version, fixture version, approval actor, and approval date; automatic baseline replacement is prohibited.
+- PageDesignRecord, DesignTokenSet, and FrontendTestRecord are governed design/test metadata, not SQL entities, unless a separately approved runtime requirement introduces persistence.
+"@
+    } else {
+@"
+- Foreign keys and unique constraints enforce durable identity and relationship rules.
+- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
+- Audit timestamps use server time; academic activity references an explicit academic term.
+- Deletion and retention behavior follow the project data-lifecycle specification.
+"@
+    }
+
     @"
 # Feature Specification: $($item.title)
 
 **Feature Branch**: $featureName
-**Created**: 2026-07-12
+**Created**: $createdDate
 **Status**: In Review
 **Owner**: $($item.owner)
 **Normative detail**: [requirements.md](requirements.md)
@@ -103,6 +438,10 @@ $edge
 
 $functional
 
+### Non-Functional Requirements
+
+$nonFunctional
+
 ### Key Entities
 
 $entities
@@ -121,6 +460,10 @@ $success
 
 $depLinks
 
+## Frontend Route Ownership
+
+$routeOwnership
+
 ## Out of Scope
 
 $outScope
@@ -129,7 +472,7 @@ $outScope
     @"
 # Implementation Plan: $($item.title)
 
-**Branch**: $featureName | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: $featureName | **Date**: $generationDate | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -172,6 +515,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+$frontendPlan
+
 ## Non-Functional Requirements
 
 $nonFunctional
@@ -199,6 +544,8 @@ No constitution violation or distributed component is proposed. Additional infra
 ### Feature contract
 $api
 
+$frontendResearch
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
@@ -217,10 +564,7 @@ $models
 
 ## Integrity Rules
 
-- Foreign keys and unique constraints enforce durable identity and relationship rules.
-- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Audit timestamps use server time; academic activity references an explicit academic term.
-- Deletion and retention behavior follow the project data-lifecycle specification.
+$integrityRules
 "@ | Set-Content (Join-Path $featureDir 'data-model.md')
 
     @"
@@ -242,10 +586,16 @@ $api
     @"
 # Clarification Record: $($item.title)
 
-**Reviewed**: 2026-07-12
-**Result**: PASS - no unresolved NEEDS CLARIFICATION markers.
+**Reviewed**: $generationDate
+**Automated result**: PASS - no hidden NEEDS CLARIFICATION marker.
+**Human approval**: PENDING
 
-The specification was reviewed for scope, actors, data, business rules, errors, concurrency, security, accessibility, dependencies, and measurable outcomes. Assumptions and external approvals are explicit. Unknown AASTMT policy values are governed configuration with provenance and fail-closed behavior; they are not invented requirements.
+The specification was reviewed for scope, actors, data, business rules, errors,
+concurrency, security, accessibility, dependencies, and measurable outcomes.
+Unknown product/institutional decisions are registered in
+docs/OPEN_DECISIONS.md or docs/POLICY_RESEARCH.md with an owner and fail-closed
+planning rule. They are not invented requirements, and affected specs cannot
+become Approved until their owners decide them.
 "@ | Set-Content (Join-Path $featureDir 'clarifications.md')
 
     @"
@@ -265,7 +615,7 @@ This is a pre-implementation verification guide. It does not run or create appli
     @"
 # Requirements Quality Checklist: $($item.title)
 
-- [x] No unresolved clarification or placeholder remains.
+- [x] No hidden clarification or placeholder remains; every external decision is registered with an owner and fail-closed rule.
 - [x] Requirements are testable and use stable identifiers.
 - [x] Every acceptance scenario maps to a user story.
 - [x] Success criteria are measurable and technology-neutral.
@@ -283,7 +633,7 @@ This is a pre-implementation verification guide. It does not run or create appli
 
 - [x] G1 Constitution compliance
 - [x] G2 Specification completeness
-- [x] G3 Clarification resolution
+- [x] G3 Clarification registration and fail-closed handling
 - [x] G4 Dependency validity
 - [x] G5 Plan and research completeness
 - [x] G6 Data model and API contract consistency
@@ -299,27 +649,36 @@ Automated gates pass. Human approval remains pending and implementation MUST NOT
 # Tasks: $($item.title)
 
 **Status**: Planned only. Do not execute until human approval.
-**Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md
+**Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
+**Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
-## Phase 1 - Approval and Contracts
+## Phase 1 - Approval and Dependency Gates
 
-- [ ] T001 Obtain human approval for SPEC-$($item.id).
-- [ ] T002 Reconfirm upstream dependency versions and institutional policy approvals.
-- [ ] T003 Freeze the reviewed data and API contract for the implementation sprint.
+$($approvalTasks -join "`r`n")
 
-## Phase 2 - User Stories
+## Phase 2 - Models and API Contracts
 
-$($tasks -join "`r`n")
+$($foundationTasks -join "`r`n")
 
-## Phase 3 - Quality and Release
+## Phase 3 - User-Story Acceptance and Edge Tests
 
-- [ ] T090 Run unit, integration, concurrency, authorization, accessibility, and performance checks required by requirements.md.
-- [ ] T091 Verify every FR and AC has passing evidence and no capacity or authorization invariant regressed.
-- [ ] T092 Complete product-owner, policy-owner, QA, security, and operations release gates.
+$($testTasks -join "`r`n")
 
-## Requirement Traceability Reference
+## Phase 4 - Requirement Tests and Bounded Delivery
 
-$functional
+$($requirementTasks -join "`r`n")
+
+## Phase 5 - Frontend Route Tests and Integration
+
+$(if ($frontendTasks.Count) { $frontendTasks -join "`r`n" } else { 'No direct frontend route is owned by this specification; frontend integration remains governed by SPEC-003.' })
+
+## Phase 6 - Measurable Non-Functional Evidence
+
+$($qualityTasks -join "`r`n")
+
+## Phase 7 - Scope and Release Evidence
+
+$($scopeTasks -join "`r`n")
 
 No task is complete and no implementation file has been created.
 "@ | Set-Content (Join-Path $featureDir 'tasks.md')

@@ -17,6 +17,8 @@ Database design is exposed only through approved feature endpoints, for
 example GET /api/student/registrations; feature DTOs are defined in SPEC-006
 onward.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

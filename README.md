@@ -5,6 +5,9 @@ The 18 feature packages have completed automated Spec Kit planning gates. See
 [the readiness audit](docs/SPECKIT_AUDIT.md). Human approval remains pending;
 no implementation has started.
 
+Human choices that must be resolved before affected specs can be approved are
+tracked in [open decisions](docs/OPEN_DECISIONS.md).
+
 Planning repository for an AASTMT College of Artificial Intelligence student
 registration web application.
 

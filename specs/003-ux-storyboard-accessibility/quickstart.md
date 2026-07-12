@@ -1,4 +1,4 @@
-# Planning Quickstart: UX Storyboard and Accessibility
+# Planning Quickstart: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 This is a pre-implementation verification guide. It does not run or create application code.
 

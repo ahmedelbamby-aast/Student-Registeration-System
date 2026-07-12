@@ -1,4 +1,4 @@
-# Research: Admin Operations Audit and Reporting
+# Research: Admin Operations, Audit, and Reporting
 
 ## Decisions
 
@@ -16,7 +16,9 @@
 ```typescript
 interface AdminCommandMetadata {
   reason: string;
-  expectedRowVersion?: string;
+  expectedRowVersion: string;
+  clientRequestId: string;
+  previewToken?: string;
 }
 interface AuditEventDto {
   id: string;
@@ -32,6 +34,13 @@ interface AuditEventDto {
 
 Endpoints include GET /api/admin/operations/metrics, GET /api/admin/audit,
 POST /api/admin/exports, and approved feature commands under /api/admin.
+Update/delete commands require expectedRowVersion. Retryable create, export,
+import, correction, and confirmation commands require clientRequestId.
+Confirmation requires a previewToken bound to actor/scope/payload/dependency
+versions/expiry; conflicts return 409 STALE_PREVIEW, STALE_VERSION,
+FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
+
+
 
 ## Open Research
 

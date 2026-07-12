@@ -16,6 +16,8 @@
 Detailed contracts belong to SPEC-006 and feature specs. The charter's
 role/context boundary is observed through GET /api/context.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

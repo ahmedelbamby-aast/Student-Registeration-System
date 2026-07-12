@@ -35,6 +35,8 @@ interface RegistrationPlanDto {
 
 Endpoints: GET/PUT /api/student/registration-plans/{id}; POST validate.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

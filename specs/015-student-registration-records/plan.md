@@ -1,6 +1,6 @@
 # Implementation Plan: Student Registration Records
 
-**Branch**: 015-student-registration-records | **Date**: 2026-07-12 | **Spec**: [spec.md](spec.md)
+**Branch**: 015-student-registration-records | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Planning complete; implementation is not authorized.
 
 ## Summary
@@ -29,6 +29,7 @@ Deliver Student Registration Records inside the modular monolith while keeping s
 
 ## Dependency Check
 
+- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-014](../014-registration-capacity-concurrency/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
@@ -44,6 +45,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+
 
 ## Non-Functional Requirements
 

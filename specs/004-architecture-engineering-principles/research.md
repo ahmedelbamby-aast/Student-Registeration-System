@@ -17,6 +17,8 @@ This spec establishes dependency/deployment constraints. Its minimal
 composition boundary includes GET /api/health; public feature shapes belong to
 SPEC-006 onward.
 
+
+
 ## Open Research
 
 No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.

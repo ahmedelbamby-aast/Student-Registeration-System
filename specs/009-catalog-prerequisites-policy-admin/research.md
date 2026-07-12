@@ -1,4 +1,4 @@
-# Research: Catalogue Prerequisites and Policy Administration
+# Research: Catalogue, Prerequisites, and Policy Administration
 
 ## Decisions
 
@@ -25,12 +25,25 @@ interface CourseAdminDto {
 interface CatalogueValidationResult {
   valid: boolean;
   errors: Array<{ row?: number; code: string; message: string }>;
+  previewToken?: string;
+  expectedDraftRowVersion: string;
+  dependencyVersions: Record<string, string>;
+}
+interface PublishVersionRequest {
+  expectedDraftRowVersion: string;
+  previewToken: string;
+  clientRequestId: string;
 }
 ```
 
 Endpoints: GET /api/admin/programs, POST /api/admin/courses, PUT
 /api/admin/curricula/{id}, POST /api/admin/policies/{id}/validate, POST
 /api/admin/policies/{id}/simulate, and POST /api/admin/policies/{id}/publish.
+Every update/publish request uses expected version; retryable create/publish
+uses clientRequestId. Stale preview/version and idempotency payload mismatch
+return 409 STALE_PREVIEW, STALE_VERSION, or IDEMPOTENCY_KEY_REUSED.
+
+
 
 ## Open Research
 
