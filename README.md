@@ -1,5 +1,10 @@
 # Student Registration System
 
+The 18 feature packages have completed automated Spec Kit planning gates. See
+[the specification index](specs/README.md) and
+[the readiness audit](docs/SPECKIT_AUDIT.md). Human approval remains pending;
+no implementation has started.
+
 Planning repository for an AASTMT College of Artificial Intelligence student
 registration web application.
 

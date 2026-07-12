@@ -1,0 +1,458 @@
+{
+  "version": "1.0.0",
+  "specs": [
+    {
+      "id": "001",
+      "slug": "product-charter-rbac",
+      "title": "Product Charter and RBAC",
+      "owner": "Product Owner",
+      "actor": "Product Owner",
+      "module": "Governance",
+      "dependencies": [],
+      "entities": [
+        "Role",
+        "Permission",
+        "RoleAssignment"
+      ],
+      "successCriteria": [
+        "100% of MVP capabilities are assigned to an accountable owner and acceptance scenario.",
+        "Every protected role has an explicit permission boundary before implementation begins.",
+        "No delivery task is admitted without an approved requirement and acceptance reference."
+      ]
+    },
+    {
+      "id": "002",
+      "slug": "aastmt-policy-rulebook",
+      "title": "AASTMT Policy Rulebook",
+      "owner": "Registrar/Policy SME",
+      "actor": "Registrar/Policy SME",
+      "module": "Academics",
+      "dependencies": [
+        "001"
+      ],
+      "entities": [
+        "PolicySet",
+        "PolicyRule",
+        "PolicyDecisionSnapshot"
+      ],
+      "successCriteria": [
+        "Every registration decision identifies the governing policy version and reason.",
+        "All approved policy boundary examples can be evaluated deterministically.",
+        "No unresolved or unapproved policy value governs a student submission."
+      ]
+    },
+    {
+      "id": "003",
+      "slug": "ux-storyboard-accessibility",
+      "title": "UX Storyboard and Accessibility",
+      "owner": "UX Lead",
+      "actor": "Student or staff user",
+      "module": "Client",
+      "dependencies": [
+        "001",
+        "002"
+      ],
+      "entities": [
+        "AppContext",
+        "UiStatus",
+        "ConflictView"
+      ],
+      "successCriteria": [
+        "All 27 approved route templates define loading, empty, success, error, denied, and stale states where applicable.",
+        "Critical journeys meet WCAG 2.2 AA requirements before release.",
+        "At least 90% of representative users complete registration in usability validation."
+      ]
+    },
+    {
+      "id": "004",
+      "slug": "architecture-engineering-principles",
+      "title": "Architecture and Engineering Principles",
+      "owner": "Technical Lead/Architect",
+      "actor": "Technical Lead",
+      "module": "Architecture",
+      "dependencies": [
+        "001",
+        "003"
+      ],
+      "entities": [
+        "ModuleBoundary",
+        "ArchitectureDecision",
+        "DependencyRule"
+      ],
+      "successCriteria": [
+        "Every module dependency is explicit and free of cycles.",
+        "The system can run on at least two stateless application instances without changing user-visible behavior.",
+        "Every architecture exception is recorded with an approved decision and simpler alternatives considered."
+      ]
+    },
+    {
+      "id": "005",
+      "slug": "erd-data-lifecycle",
+      "title": "ERD and Data Lifecycle",
+      "owner": "Data/Backend Lead",
+      "actor": "Data Lead",
+      "module": "Infrastructure.SqlServer",
+      "dependencies": [
+        "002",
+        "004"
+      ],
+      "entities": [
+        "ApplicationUser",
+        "Student",
+        "Staff",
+        "Program",
+        "Course",
+        "AcademicTerm",
+        "PolicySet",
+        "CourseOffering",
+        "SectionGroup",
+        "RegistrationPlan",
+        "RegistrationSubmission",
+        "Enrollment",
+        "AuditEvent"
+      ],
+      "successCriteria": [
+        "All required uniqueness, capacity, relationship, and historical invariants are explicitly modeled.",
+        "Every imported academic record retains source provenance.",
+        "Migration, backup, and rollback requirements are documented before schema implementation."
+      ]
+    },
+    {
+      "id": "006",
+      "slug": "domain-class-api-contracts",
+      "title": "Domain Classes and API Contracts",
+      "owner": "Technical Lead",
+      "actor": "API consumer",
+      "module": "Contracts",
+      "dependencies": [
+        "004",
+        "005"
+      ],
+      "entities": [
+        "ApiError",
+        "Page",
+        "AppContext",
+        "CommandResult",
+        "DomainValue"
+      ],
+      "successCriteria": [
+        "Every declared interface has explicit success, validation, authorization, conflict, and unexpected-error outcomes.",
+        "No persistence-internal or credential field is part of a public contract.",
+        "All externally visible dates, identifiers, pagination, and error formats are consistent."
+      ]
+    },
+    {
+      "id": "018",
+      "slug": "quality-security-scalability-operations",
+      "title": "Quality Security Scalability and Operations",
+      "owner": "QA/DevOps/Security Leads",
+      "actor": "Operations and security reviewer",
+      "module": "Operations",
+      "dependencies": [
+        "001",
+        "004",
+        "005",
+        "006"
+      ],
+      "entities": [
+        "HealthSummary",
+        "OperationalMetric",
+        "StructuredLog",
+        "Trace",
+        "BackupEvidence",
+        "ReleaseEvidence"
+      ],
+      "successCriteria": [
+        "Correctness invariants remain intact at target, double-target, and spike traffic.",
+        "Critical flows meet WCAG 2.2 AA and have no unresolved critical or high security finding.",
+        "Recovery evidence demonstrates an RPO of at most 5 minutes and RTO of at most 1 hour."
+      ]
+    },
+    {
+      "id": "007",
+      "slug": "identity-account-lifecycle",
+      "title": "Identity and Account Lifecycle",
+      "owner": "Security Lead",
+      "actor": "Student or staff user",
+      "module": "IdentityAccess",
+      "dependencies": [
+        "004",
+        "005",
+        "006",
+        "018"
+      ],
+      "entities": [
+        "ApplicationUser",
+        "StudentActivation",
+        "RoleAssignment",
+        "SecurityAudit"
+      ],
+      "successCriteria": [
+        "Authorized students and staff reach only their permitted context.",
+        "Account activation cannot claim an unknown or already-claimed institutional identity.",
+        "Authentication and recovery failures reveal no account-existence information."
+      ]
+    },
+    {
+      "id": "008",
+      "slug": "academic-term-student-profile",
+      "title": "Academic Term and Student Profile",
+      "owner": "Backend Lead",
+      "actor": "Student or authorized registrar",
+      "module": "Academics",
+      "dependencies": [
+        "002",
+        "005",
+        "007",
+        "018"
+      ],
+      "entities": [
+        "AcademicTerm",
+        "RegistrationWindow",
+        "Student",
+        "TranscriptAttempt",
+        "StudentHold"
+      ],
+      "successCriteria": [
+        "Registration availability is determined only by authoritative institutional time and approved windows.",
+        "Every eligibility decision uses a complete, sourced academic profile.",
+        "No overlapping active registration context can apply to the same student."
+      ]
+    },
+    {
+      "id": "009",
+      "slug": "catalog-prerequisites-policy-admin",
+      "title": "Catalogue Prerequisites and Policy Administration",
+      "owner": "Registrar/Policy SME and Backend Lead",
+      "actor": "Authorized administrator",
+      "module": "Academics",
+      "dependencies": [
+        "002",
+        "005",
+        "006",
+        "008",
+        "018"
+      ],
+      "entities": [
+        "Program",
+        "Course",
+        "CurriculumCourse",
+        "CoursePrerequisite",
+        "PolicySet",
+        "PolicyRule",
+        "ImportBatch"
+      ],
+      "successCriteria": [
+        "Invalid or cyclic catalogue relationships cannot be published.",
+        "Every published catalogue and policy version is immutable and auditable.",
+        "Administrators can preview and explain all validation failures before publication."
+      ]
+    },
+    {
+      "id": "010",
+      "slug": "offerings-groups-resources",
+      "title": "Offerings Groups and Resources",
+      "owner": "Backend Lead",
+      "actor": "Authorized administrator",
+      "module": "Scheduling",
+      "dependencies": [
+        "005",
+        "006",
+        "009",
+        "018"
+      ],
+      "entities": [
+        "CourseOffering",
+        "SectionGroup",
+        "MeetingSlot",
+        "Room",
+        "GroupStaffAssignment",
+        "StaffAvailability"
+      ],
+      "successCriteria": [
+        "Only complete and conflict-free groups become visible for registration.",
+        "Every visible group identifies capacity, staff, location, day, and time.",
+        "Capacity can never be configured below active enrollment."
+      ]
+    },
+    {
+      "id": "011",
+      "slug": "eligibility-subject-discovery",
+      "title": "Eligibility and Subject Discovery",
+      "owner": "Product Owner",
+      "actor": "Student",
+      "module": "Registration",
+      "dependencies": [
+        "002",
+        "008",
+        "009",
+        "010",
+        "018"
+      ],
+      "entities": [
+        "OfferingEligibility",
+        "EligibilityReason",
+        "GroupSummary",
+        "PolicyVersion"
+      ],
+      "successCriteria": [
+        "Every available or unavailable subject has an understandable reason.",
+        "Students can find relevant offerings within the approved response-time target.",
+        "No client-side action can turn an ineligible offering into an eligible one."
+      ]
+    },
+    {
+      "id": "012",
+      "slug": "schedule-builder-conflicts",
+      "title": "Schedule Builder and Conflicts",
+      "owner": "Technical Lead",
+      "actor": "Student",
+      "module": "Registration",
+      "dependencies": [
+        "003",
+        "010",
+        "011",
+        "018"
+      ],
+      "entities": [
+        "RegistrationPlan",
+        "RegistrationPlanItem",
+        "ScheduleConflict",
+        "ValidationSnapshot"
+      ],
+      "successCriteria": [
+        "Every overlapping meeting interval is identified before review.",
+        "Unresolved hard conflicts always block submission with accessible resolution guidance.",
+        "Equivalent calendar and chronological views contain the same schedule information."
+      ]
+    },
+    {
+      "id": "013",
+      "slug": "schedule-recommendations",
+      "title": "Schedule Recommendations",
+      "owner": "Technical Lead",
+      "actor": "Student",
+      "module": "Registration",
+      "dependencies": [
+        "012",
+        "018"
+      ],
+      "entities": [
+        "SchedulePreferences",
+        "ScheduleOption",
+        "ScoreComponent",
+        "OptimizationDiagnostic"
+      ],
+      "successCriteria": [
+        "Every returned option contains exactly one viable group per selected course and no hard conflict.",
+        "Up to three options are ranked deterministically with understandable score reasons.",
+        "A no-solution or time-budget outcome never presents an incomplete schedule as valid."
+      ]
+    },
+    {
+      "id": "014",
+      "slug": "registration-capacity-concurrency",
+      "title": "Registration Capacity and Concurrency",
+      "owner": "Data/Backend Lead",
+      "actor": "Student",
+      "module": "Registration",
+      "dependencies": [
+        "007",
+        "010",
+        "011",
+        "012",
+        "013",
+        "018"
+      ],
+      "entities": [
+        "RegistrationSubmission",
+        "Enrollment",
+        "SectionGroup",
+        "DecisionSnapshot"
+      ],
+      "successCriteria": [
+        "Concurrent submissions never overbook a group or duplicate an active course enrollment.",
+        "A multi-group registration is either fully accepted or has no committed enrollment changes.",
+        "Retrying the same submission never allocates an additional seat."
+      ]
+    },
+    {
+      "id": "015",
+      "slug": "student-registration-records",
+      "title": "Student Registration Records",
+      "owner": "Product Owner",
+      "actor": "Student",
+      "module": "Registration",
+      "dependencies": [
+        "008",
+        "014",
+        "018"
+      ],
+      "entities": [
+        "RegistrationReceipt",
+        "RegistrationSubmission",
+        "Enrollment",
+        "DecisionSnapshot"
+      ],
+      "successCriteria": [
+        "Every accepted registration has a durable, uniquely identifiable receipt.",
+        "Rejected atomic submissions clearly state that no partial registration occurred.",
+        "Current and historical records remain understandable after later catalogue changes."
+      ]
+    },
+    {
+      "id": "016",
+      "slug": "lecturer-ta-workspace",
+      "title": "Lecturer and Teaching Assistant Workspace",
+      "owner": "Product Owner",
+      "actor": "Lecturer or Teaching Assistant",
+      "module": "StaffAdministration",
+      "dependencies": [
+        "007",
+        "010",
+        "015",
+        "018"
+      ],
+      "entities": [
+        "StaffAssignment",
+        "StaffAvailability",
+        "RosterRow",
+        "GroupSummary"
+      ],
+      "successCriteria": [
+        "Staff can view only assignments and roster data within their current scope.",
+        "Lecturer and TA contexts use shared journeys without merging their permissions.",
+        "Availability changes never silently move a published class."
+      ]
+    },
+    {
+      "id": "017",
+      "slug": "admin-operations-audit-reporting",
+      "title": "Admin Operations Audit and Reporting",
+      "owner": "Product Owner",
+      "actor": "Authorized administrator",
+      "module": "StaffAdministration",
+      "dependencies": [
+        "007",
+        "008",
+        "009",
+        "010",
+        "014",
+        "015",
+        "016",
+        "018"
+      ],
+      "entities": [
+        "AuditEvent",
+        "ImportBatch",
+        "ExportJob",
+        "OperationalMetric"
+      ],
+      "successCriteria": [
+        "Every sensitive administrative mutation records actor, reason, time, and before/after context.",
+        "Normal administrative actions cannot bypass capacity or timetable invariants.",
+        "Operational information is timestamped, scoped, and distinguishable from stale or unavailable data."
+      ]
+    }
+  ]
+}
