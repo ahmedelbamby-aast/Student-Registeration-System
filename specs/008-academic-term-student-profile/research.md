@@ -62,6 +62,19 @@ dependency while preventing hold-versus-submit write skew.
 **Alternatives rejected**: A downstream-owned guard consumed by SPEC-008 and
 application-instance locks.
 
+### Complete synthetic academic profiles
+**Decision**: The Academics seed contributor populates only the existing
+profile contract: University ID link, ProgramCode, cohort, GPA, earned and
+attempted credits, standing, transcript attempts, active blocking/non-blocking
+holds, StudentTermAcademicState, synthetic provenance, version, and as-of time.
+Logical values derive from the seed-profile version and stable fixture ordinal.
+**Rationale**: Development and tests exercise realistic normal and boundary
+states without importing real student data or quietly expanding the personal
+data model.
+**Alternatives rejected**: Partial student rows, random unrepeatable academic
+values, copied production records, and invented email/phone/address/birth-date
+fields.
+
 
 
 ## Open Research

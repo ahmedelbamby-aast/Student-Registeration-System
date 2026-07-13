@@ -1,7 +1,7 @@
 # Implementation Plan: Lecturer and Teaching Assistant Workspace
 
 **Branch**: 016-lecturer-ta-workspace | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
 
 ## Summary
 
@@ -10,7 +10,8 @@ Deliver shared Lecturer/TA pages and assignment-scoped queries in
 Scheduling-module application port: SPEC-010 remains canonical owner of
 `StaffTermAvailability` and `StaffAvailability`. A conflicting published
 assignment creates a durable, auditable impact alert and revalidation state; it
-never moves a class automatically.
+never moves a class automatically. Admin may view/import declared ranges into
+offering planning as read-only inputs, with no correction/override workflow.
 
 ## Technical Context
 
@@ -29,7 +30,8 @@ never moves a class automatically.
 1. Baseline IdentityAccess, Scheduling, Records, UX, and Quality dependencies;
    complete ownership and consistency analysis.
 2. Freeze exact roster fields, audit metadata, availability port, deadline,
-   impact alert lifecycle, routes, and API errors; obtain human approval last.
+   read-only Admin consumption boundary, impact alert lifecycle, routes, and
+   API errors against Ahmed ELbamby's recorded 2026-07-13 Gate A approval.
 3. Write failing DTO/schema, endpoint, authorization, acceptance, aggregate
    race, publication race, accessibility, and performance tests.
 4. Implement scoped reads and roster audit.
@@ -49,11 +51,17 @@ from SPEC-010/Scheduling. A roster exposes
 only University ID, display name, and enrollment state; GPA, holds, contact
 details, grades, and transcript data are forbidden.
 
+Staff own availability edits. Admin consumes only SPEC-010's bounded read-only
+view and may import staff-declared ranges into offering-planning input. No
+Admin availability correction/override route, permission, editable control,
+notification workflow, or correction-audit flow is part of the POC.
+
 ## Constitution and Approval Gate
 
-Server-side assignment scope is required for every object request. No source,
-test, migration, or page work may begin until dependencies and this package are
-Approved and the final human approval gate is recorded.
+Server-side assignment scope is required for every object request. Gate A
+authorizes non-production demo implementation while this package and dependency
+baselines remain Approved. Gate B-D evidence and production/release approval
+remain separate and mandatory for their respective milestones.
 
 ## Artifacts
 
@@ -65,5 +73,5 @@ Approved and the final human approval gate is recorded.
 ## Complexity Tracking
 
 The feature shares page templates and a narrow Scheduling application port. It
-does not duplicate the availability aggregate or introduce automatic
-rescheduling.
+does not duplicate the availability aggregate, add an Admin correction facade,
+or introduce automatic rescheduling.

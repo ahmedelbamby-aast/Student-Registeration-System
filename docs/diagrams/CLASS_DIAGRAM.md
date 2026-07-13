@@ -64,6 +64,10 @@ classDiagram
 classDiagram
   class StudentAuthenticationService
   class StudentActivationService
+  class StaffAuthenticationService
+  class DemoDatabaseInitializer
+  class DemoIdentitySeedContributor
+  class DemoStudentProfileSeedContributor
   class AdminUserLifecycleService
   class IAdminUserLifecycleCommands
   class AcademicContextResolver
@@ -91,6 +95,8 @@ classDiagram
   class ObservabilityExtensions
 
   AdminUserLifecycleService ..|> IAdminUserLifecycleCommands
+  DemoDatabaseInitializer --> DemoIdentitySeedContributor
+  DemoDatabaseInitializer --> DemoStudentProfileSeedContributor
   AcademicContextResolver --> RegistrationWindowService
   EligibilityService --> IPolicyEvaluator
   EligibilityService --> ISchedulingReader

@@ -8,13 +8,15 @@ Deliver a simple, accessible, secure registration system in which:
   and password, sees the server date and current academic context, discovers
   eligible subjects, selects groups, resolves schedule conflicts, and submits
   one atomic registration.
-- Admin, Lecturer, and Teaching Assistant use one shared staff login. The
-  server derives roles and data scope; a login form never lets a user claim a
-  role.
+- Admin, Lecturer, and Teaching Assistant use one shared password-only demo
+  staff login with no MFA/2FA. The server derives roles and data scope; a login
+  form never lets a user claim a role.
 - Admin publishes valid terms, policies, offerings, groups, staff assignments,
   rooms, times, and capacities.
 - Lecturers and TAs see only their assignments, timetable, authorized rosters,
   and availability.
+- Staff own availability edits. Admin may view/import availability but has no
+  correction or override command in the POC.
 
 Success means zero overbooked groups, zero partial submissions, every policy
 decision is explainable, and future features can attach at stable module
@@ -25,14 +27,26 @@ boundaries.
 ### MVP
 
 - Institutional student activation and two login experiences.
+- Isolated migration-first Development and per-run Testing databases populated
+  with wholly synthetic student profiles, generated unique University IDs,
+  generated PIN/passwords, and password-hash-only SQL persistence.
 - Role-based access for Student, Admin, Lecturer, and Teaching Assistant.
 - Server-authoritative time, institutional timezone, academic term, and
   registration windows.
 - Student academic profile, GPA, standing, transcript, prerequisites, holds,
   cohort, program, and earned credits.
 - Effective-dated AASTMT policy configuration with rule provenance.
-- Course catalogue, offerings, groups, capacities, lecturers, TAs, rooms, and
-  meeting slots.
+- A simple `DEMO-POC-2026.1` policy profile: empty starting plan, 18-credit
+  default target/normal maximum, 9-credit submitted-plan minimum, probation
+  maximum 12, hard prerequisites/capacity/overlap checks, no travel buffer,
+  first-commit seat allocation, and no advisor/exception/drop/withdrawal flow.
+- The small curated, provenance-recorded AASTMT College of AI snapshot in
+  [DEMO_CURRICULUM.md](DEMO_CURRICULUM.md), with clearly labeled synthetic gap
+  rows, plus offerings, groups, capacities, lecturers, TAs, rooms, and meeting
+  slots.
+- Every open subject has a staffed Lecture and at least one staffed
+  Tutorial/Section or Laboratory; each present Tutorial/Section and Laboratory
+  activity has a TA.
 - Explainable subject eligibility and search.
 - Draft schedule, overlap detection, manual resolution, and up to three
   recommended group combinations.
@@ -65,9 +79,19 @@ boundaries.
 One person may fill multiple roles on a small team, but accountabilities and
 approval gates remain distinct.
 
+For this non-production design-capability demo, Ahmed ELbamby is the sole
+developer and sole human approval authority. He fulfills every accountability
+in the table as a distinct review perspective. No additional person or
+institutional sign-off is required to approve demo implementation, and demo
+approval is not represented as official AASTMT production authorization.
+
 ## 4. Exact specification inventory
 
 There are exactly 18 living specifications.
+
+**Gate A status:** APPROVED by Ahmed ELbamby on 13 July 2026 for
+non-production demo implementation. Gate B-D and production release approval
+remain separate.
 
 | ID | Name | Accountable owner | Primary focus | First target |
 |---|---|---|---|---|
@@ -77,7 +101,7 @@ There are exactly 18 living specifications.
 | SPEC-004 | Architecture and Engineering Principles | Architect | Modular monolith, dependencies, deployment, extension strategy | S0 |
 | SPEC-005 | ERD and Data Lifecycle | Data Lead | Entities, ownership, constraints, indexes, audit, migrations | S0-S1 |
 | SPEC-006 | Domain Classes and API Contracts | Technical Lead | Aggregates, services, DTOs, endpoints, error model | S0-S1 |
-| SPEC-007 | Identity and Account Lifecycle | Security Lead | Activation, login, recovery, RBAC, MFA, lockout, sessions | S1 |
+| SPEC-007 | Identity and Account Lifecycle | Security Lead | Generated demo identities, activation, password-only login, recovery, RBAC, lockout, sessions | S1 |
 | SPEC-008 | Academic Term and Student Profile | Backend Lead | Time, terms/windows, GPA, transcript, standing, holds | S1 |
 | SPEC-009 | Catalogue, Prerequisites, and Policy Admin | Policy SME + Backend | Courses, curricula, typed rules, validation, simulation | S2 |
 | SPEC-010 | Offerings, Groups, and Resources | Backend Lead | Groups, capacity, staff, rooms, times, publish validation | S2 |
@@ -254,7 +278,7 @@ A story may enter a sprint when:
 
 | Sprint | Goal | Specifications | Demonstrable exit |
 |---|---|---|---|
-| S0 Discovery/design | Remove policy, UX, data, and architecture ambiguity | 001-006; 018 baseline | Gate A artifacts approved; policy questions owned |
+| S0 Discovery/design | Remove policy, UX, data, and architecture ambiguity | 001-006; 018 baseline | Completed: Gate A and all demo decisions approved 13 July 2026 |
 | S1 Walking skeleton | Authenticate and show authoritative current context | 005-008 | Student and staff sign in; role route, date, and term display |
 | S2 Admin master data | Configure and publish a registerable term | 009-010; 017 slice | Admin publishes a validated offering |
 | S3 Explainable availability | Show correct available subjects | 011 | Student sees eligible/unavailable subjects and reasons |
@@ -273,10 +297,20 @@ task, updates the shared EF snapshot in dependency order, and must pass fresh
 database, prior-version upgrade, idempotent-script, rollback, and model-parity
 checks. Production never auto-migrates on application startup.
 
-## 8. Provisional non-functional targets
+Non-production data is not embedded in migrations. After migrations, an
+explicit environment-guarded bootstrap composes SPEC-007 identity and SPEC-008
+academic contributors for `StudentRegistration_Development` or an isolated
+`StudentRegistration_Test_{runId}` database. Development credentials are
+revealed once through a Git-ignored local artifact; tests receive credentials
+in memory. Plaintext credentials never enter SQL, source, logs, or reports.
+Per-run Testing databases are disposed after use; Development state persists
+until an explicit guarded reset. Git-ignored credentials, logs, and exports
+expire within seven days.
 
-These are planning hypotheses, not promises. Replace them with AASTMT
-enrollment and registration-window forecasts during Sprint 0.
+## 8. Approved demo non-functional targets
+
+These values are approved POC engineering targets, not production sizing,
+availability commitments, or an AASTMT SLA.
 
 | Area | Initial target |
 |---|---|
@@ -290,6 +324,13 @@ enrollment and registration-window forecasts during Sprint 0.
 | Availability | 99.9% during announced registration windows |
 | Recovery | RPO <= 5 min; RTO <= 1 hour |
 | Accessibility | WCAG 2.2 AA on critical flows |
+
+The approved POC platform is SQL Server 2022 Developer at compatibility level
+160 through Docker/Testcontainers. Browser gates cover current stable Chrome,
+Edge, and Firefox plus Playwright WebKit; actual Safari/macOS is future
+production-readiness scope. Secrets use User Secrets/environment variables,
+and two-replica tests share SQL-backed Data Protection keys protected by a
+generated local certificate outside Git.
 
 Tests run at target for 10 minutes (75 submissions/s plus 300 reads/s), 2x for
 10 minutes (150 plus 600), the existing 60-second burst (200 plus 300), and a
@@ -318,8 +359,9 @@ group and must produce exactly 30 active enrollments.
 
 ## 10. Release gates
 
-- Gate A, end S0: Product Owner, Registrar/SME, UX, Architect, Data Lead,
-  Security, and QA approve the planning contracts.
+- Gate A, end S0: Ahmed ELbamby approves the planning contracts after recording
+  Product Owner, Registrar/SME, UX, Architect, Data Lead, Security, and QA
+  review perspectives. **Completed 13 July 2026.**
 - Gate B, end S2: secure walking skeleton and valid published master data.
 - Gate C, end S6: end-to-end beta with proven atomic seat allocation.
 - Gate D, end S8: UAT, accessibility, security, load, recovery, and release

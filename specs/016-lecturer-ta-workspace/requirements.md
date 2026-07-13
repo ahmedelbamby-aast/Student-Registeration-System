@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Lecturer/TA representatives, Security, UX, QA<br>
 **Target:** Sprint 7<br>
@@ -12,7 +12,9 @@
 
 Lecturers and TAs share staff components but have different assignment scopes.
 They need their timetable, partner staff, authorized group rosters, and
-availability without access to policy, user, or unrelated student data.
+availability without access to policy, user, or unrelated student data. Staff
+own availability edits; Admin use is limited to a bounded read-only view and
+importing staff-declared ranges into offering planning as read-only inputs.
 
 ## Functional Requirements
 
@@ -33,13 +35,19 @@ availability without access to policy, user, or unrelated student data.
   deadline through the Scheduling application port owned by SPEC-010, using
   the expected StaffTermAvailability rowversion and complete-range
   replacement; SPEC-016 MUST NOT redefine or bypass that aggregate.
-- FR-7: Staff MUST NOT manage policy, users, capacity, terms, or unrelated
-  rosters.
+- FR-7: Lecturer and TA MUST NOT manage policy, users, capacity, terms, or
+  unrelated rosters. Staff own availability edits in the POC. Admin MAY
+  consume the bounded read-only availability view and import staff-declared
+  ranges into offering planning as read-only inputs, but no Admin availability
+  mutation/correction/override command, permission, editable control,
+  notification workflow, or correction-audit flow exists.
 - FR-8: If an accepted availability change conflicts with a published
   assignment, the same transaction MUST create or update a durable
   ScheduleImpactAlert containing term, staff, affected group, availability and
   group versions, detected time, reason, and revalidation state. Admin MUST be
-  able to discover it through SPEC-017; no class moves automatically.
+  able to discover it through SPEC-017 as read-only impact/revalidation state;
+  it is not an availability-correction notification and no class moves
+  automatically.
 - FR-9: SPEC-016 MUST consume SPEC-010's versioned staff-plus-term
   StaffTermAvailability aggregate. Edits MUST validate the complete range set
   and replace it atomically through the Scheduling port; independent child
@@ -80,16 +88,19 @@ Then the command is rejected with deadline/server time<br>
 And existing availability remains unchanged.
 
 ### AC-4: Staff detail and privilege boundary (FR-4, FR-7)
-Given staff opens an assigned group and attempts an Admin capacity route<br>
-When both requests are authorized<br>
-Then assigned subject/staff/room/time/capacity details are returned<br>
-And the Admin operation is denied.
+Given staff opens an assigned group and Admin reads/imports staff-declared
+availability into offering planning<br>
+When staff attempts an Admin capacity route and Admin attempts an availability
+correction or override<br>
+Then assigned group details and read-only availability inputs are returned<br>
+And both mutation attempts are denied or have no mapped route, permission,
+editable control, notification workflow, or correction-audit flow.
 
 ### AC-5: Post-publication availability warning (FR-8)
 Given an approved availability change conflicts with a published assignment<br>
 When the change is saved through the allowed process<br>
 Then one durable open ScheduleImpactAlert records the affected group and
-captured versions for Admin revalidation<br>
+captured versions for Admin discovery and revalidation<br>
 And no class, room or staff assignment moves automatically.
 
 ### AC-6: Concurrent availability insert (FR-6, FR-9, FR-10)
@@ -170,6 +181,12 @@ Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
 returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
 fails.
 
+Admin availability consumption uses SPEC-010's bounded read-only Admin view.
+Import means copying staff-declared ranges into offering-planning input; it
+does not mutate StaffTermAvailability. No Admin availability correction or
+override endpoint, request contract, permission, editable control,
+notification workflow, or correction-audit flow belongs to this POC.
+
 ## Data Models
 
 | Field/example | Type | Constraints |
@@ -189,4 +206,6 @@ through an endpoint or transaction that bypasses the aggregate root.
 - OS-1: Grade entry, attendance entry, or messaging.
 - OS-2: Staff capacity/policy/term administration.
 - OS-3: Access to unrelated groups/students.
-- OS-4: Staff-driven automatic room/time changes.
+- OS-4: Staff-driven automatic room/time changes and any Admin availability
+  mutation/correction/override, permission, editable control, notification, or
+  correction-audit flow.

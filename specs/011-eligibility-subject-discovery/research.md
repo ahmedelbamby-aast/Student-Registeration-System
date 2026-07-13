@@ -12,6 +12,16 @@
 **Rationale**: Browser state is stale and untrusted during registration peaks.
 **Alternatives rejected**: Client-only validation and check-then-write capacity logic.
 
+### Simple demo policy and catalogue
+
+**Decision**: Evaluate the approved `DEMO-POC-2026.1` rules against the
+19-course `docs/DEMO_CURRICULUM.md` snapshot. Return current/projected credits,
+the default target 18, and the applicable maximum 18 or probation 12 with the
+same provenance-backed reasons as other eligibility checks.
+
+**Rationale**: A bounded, visible load projection proves the POC without an
+advisor or exception workflow and keeps final submission server-authoritative.
+
 ### Feature contract
 ```typescript
 interface OfferingEligibilityDto {
@@ -19,6 +29,10 @@ interface OfferingEligibilityDto {
   courseCode: string;
   title: string;
   credits: number;
+  currentPlanCredits: number;
+  projectedPlanCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
   eligible: boolean;
   reasons: Array<{ code: string; passed: boolean; message: string }>;
   groups: GroupSummaryDto[];

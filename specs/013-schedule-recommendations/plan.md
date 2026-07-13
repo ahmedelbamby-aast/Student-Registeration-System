@@ -1,7 +1,7 @@
 # Implementation Plan: Schedule Recommendations
 
 **Branch**: 013-schedule-recommendations | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
 
 ## Summary
 
@@ -31,7 +31,7 @@ registration-plan version check.
 
 1. Baseline SPEC-003, SPEC-010, SPEC-011, SPEC-012, and SPEC-018; complete consistency analysis.
 2. Freeze token payload, optimizer input snapshot, diagnostics, and API
-   contracts; obtain Ahmed ELbamby's approval as the last planning gate.
+   contracts against Ahmed ELbamby's recorded 2026-07-13 Gate A approval.
 3. Write failing model, contract, acceptance, edge, deterministic, tamper,
    stale-version, cancellation, and performance tests.
 4. Implement constrained-first search and deterministic score/tie behavior.
@@ -51,13 +51,16 @@ registration-plan version check.
   that reported hard conflict no longer hold. Results are deterministically
   ordered by set size and stable course/group identifiers.
 - Recommendation never reserves capacity; SPEC-014 remains final authority.
+- The simple demo optimizer enforces exact meeting overlaps and leaves travel-
+  buffer scoring/constraints disabled without guessing a duration or matrix.
 
 ## Constitution and Dependency Gates
 
 The design is a single-deployable modular monolith, contains no remote call in
-a transaction, keeps server decisions authoritative, and creates planning
-artifacts only. Implementation remains blocked while this package or a required
-dependency is In Review or its approval checklist is incomplete.
+a transaction, and keeps server decisions authoritative. Gate A authorizes
+non-production demo implementation while this package and required dependency
+baselines remain Approved. Gate B-D evidence and production/release approval
+remain separate and mandatory for their respective milestones.
 
 ## Artifacts
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Schedule Builder and Conflicts
 
 **Branch**: 012-schedule-builder-conflicts | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; DEC-06 remains fail-closed/disabled and human approval is pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13, with the travel-buffer rule disabled.
 
 ## Summary
 
@@ -53,13 +53,16 @@ or duplicate upstream aggregate is introduced.
    version ValidationSnapshot; stale/unavailable groups block review.
 4. Keep capacity advisory and validation side-effect-free; SPEC-014 revalidates
    everything for submission.
-5. Disable travel-buffer conflicts until DEC-06 is institutionally approved.
+5. Keep travel-buffer conflicts disabled for the simple demo POC; do not guess
+   a room/campus duration or matrix.
 
 ## Execution and Gate Order
 
-Dependency baselines, DEC-06/fail-closed review, and consistency analysis
-precede Ahmed ELbamby's final approval. Failing model/contract, acceptance,
-concurrency, domain, and frontend tests precede every delivery and handler.
+Ahmed ELbamby's Gate A demo approval is recorded. Dependency baselines, the
+approved demo travel-rule review, and consistency analysis remain the first
+execution tasks. Failing model/contract, acceptance, concurrency, domain, and
+frontend tests precede every delivery and handler. Gate B-D, release,
+production deployment, and official AASTMT go-live approvals remain separate.
 
 ## Design Artifacts
 

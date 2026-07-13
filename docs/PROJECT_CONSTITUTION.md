@@ -3,8 +3,9 @@
 **Project:** Student Registration System<br>
 **Owner:** Ahmed ELbamby<br>
 **Status:** Binding<br>
-**Version:** 1.0.0<br>
+**Version:** 1.1.0<br>
 **Ratified:** 2026-07-12
+**Last amended:** 2026-07-13
 
 This constitution governs every specification, source change, test, document,
 database migration, and repository commit in this project. Where another
@@ -30,6 +31,12 @@ precedence until it is formally amended.
 6. Automated workflows MUST NOT create commits with a bot or service identity.
    Any repository commit produced through automation MUST still use the exact
    owner identity above and remain under the owner's review.
+7. This project is a non-production design-capability demo. Ahmed ELbamby is
+   the sole developer and sole human approval authority. Named product,
+   policy, UX, architecture, data, QA, security, and operations roles are
+   review perspectives Ahmed fulfills, not external approval dependencies.
+8. Demo approval MUST NOT be described as official AASTMT production
+   authorization or as institutional endorsement of provisional policy.
 
 ## Article II: Specification-First Development
 
@@ -39,8 +46,10 @@ precedence until it is formally amended.
    and acceptance criterion.
 3. A missing or changed requirement is resolved in the specification before
    code changes.
-4. AASTMT policy behavior requires Registrar/Policy SME approval and an
-   effective-dated source.
+4. For this demo, Ahmed performs the Registrar/Policy SME review perspective
+   and approves selected policy behavior with its source, effective date, and
+   demo/provisional status. Such approval is not official AASTMT production
+   policy approval.
 
 ## Article III: Simplicity and Modular Design
 
@@ -109,8 +118,10 @@ The commit message/body MUST contain no AI attribution trailers.
 ## Amendment Process
 
 1. An amendment MUST state the affected article, rationale, owner, and date.
-2. Amendments MUST be reviewed by Ahmed ELbamby and relevant project owners.
-3. Material architecture, security, data, or policy amendments also require
-   the approvals defined by their specifications.
+2. Amendments MUST be reviewed and approved by Ahmed ELbamby as the sole human
+   approval authority.
+3. Material architecture, security, data, or policy amendments MUST record
+   Ahmed's review against every applicable role perspective defined by their
+   specifications.
 4. The constitution version MUST be incremented and the amendment recorded in
    Git using the identity rules in Article I.

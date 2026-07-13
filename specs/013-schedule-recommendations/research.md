@@ -57,6 +57,14 @@ token ownership/expiry and every current version, then atomically updates the
 SPEC-012 plan. SPEC-014 performs final registration revalidation; a
 recommendation never reserves capacity.
 
+### Demo travel rule
+
+**Decision**: Enforce exact meeting overlaps but do not emit or optimize a
+travel-buffer constraint in the simple demo POC.
+
+**Rationale**: Ahmed approved the disabled rule and no authoritative travel
+duration or room/campus matrix is needed to prove schedule recommendation.
+
 ## Open Research
 
 No unresolved implementation clarification remains. Institutional policy

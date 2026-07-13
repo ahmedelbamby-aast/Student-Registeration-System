@@ -32,10 +32,10 @@ git status
 
 ## Tools introduced by implementation specs
 
-Install/pin these only after Gate A, in repository manifests/configuration:
+Gate A is approved. Pin these during the applicable implementation slice in
+repository manifests/configuration:
 
-- SQL Server Developer container compatible with the approved production
-  version.
+- SQL Server 2022 Developer container at compatibility level 160.
 - xUnit for unit and integration tests.
 - Testcontainers for real SQL Server concurrency tests.
 - Microsoft Playwright for Blazor browser tests.
@@ -44,14 +44,13 @@ Install/pin these only after Gate A, in repository manifests/configuration:
 - Built-in ASP.NET Core OpenAPI, health checks, rate limiting.
 - OpenTelemetry SDK and an exporter selected for the deployment environment.
 
-Docker is installed, but a SQL Server image is intentionally not pulled during
-planning. DEC-14 requires Data/Operations approval of the version,
-compatibility level, benchmark hardware/topology/dataset, container licensing,
-secrets, storage, and CI strategy before migration/load evidence is accepted.
+Docker is installed. DEC-14 approves SQL Server 2022 Developer compatibility
+level 160 for local Docker/Testcontainers evidence; no production
+edition/topology or licensing conclusion is implied.
 
-## Planned solution creation after approval
+## Approved solution creation
 
-No source projects are created until Gate A. The approved scaffold will:
+Gate A was approved by Ahmed ELbamby on 13 July 2026. The scaffold will:
 
 1. Create the solution and module/test projects targeting net10.0.
 2. Reference EF Core SQL Server packages at the approved 10.0 patch.
@@ -62,7 +61,23 @@ No source projects are created until Gate A. The approved scaffold will:
    and S7 incremental migrations. SPEC-004 owns the single DbContext;
    SPEC-005 governs schema/lifecycle; each declared slice owner is the sole
    writer of its migration file and shared snapshot update.
-6. Run build, architecture, unit, real-SQL integration, and E2E smoke tests.
+6. Provision `StudentRegistration_Development` or an isolated
+   `StudentRegistration_Test_{runId}` only after migrations, using the
+   environment-guarded seed profiles in `.specify/persistence-manifest.json`.
+    Development emits generated credentials once to a restricted Git-ignored
+    local artifact; Testing keeps deterministic fixture credentials in memory.
+   SQL receives only ASP.NET Core Identity password hashes. Production,
+    non-demo connection strings, and implicit destructive reset are rejected.
+    Testing databases are disposed after each run; Development persists until
+    explicit guarded reset. Git-ignored local credentials, logs, and exports
+    expire within seven days.
+7. Run build, architecture, unit, real-SQL integration, and E2E smoke tests.
+
+POC browser evidence covers current stable Chrome, Edge, and Firefox plus
+Playwright WebKit. Actual Safari/macOS validation is deferred and WebKit is not
+reported as Safari. Secrets use .NET User Secrets or environment variables;
+two-replica tests use a SQL-backed shared Data Protection key ring protected by
+a generated local certificate stored outside Git.
 
 ## CI quality order
 

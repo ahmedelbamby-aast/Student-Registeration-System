@@ -1,7 +1,8 @@
 # Implementation Plan: AASTMT Policy Rulebook
 
 **Branch**: 002-aastmt-policy-rulebook | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
+and production release approval remain required.
 
 ## Summary
 
@@ -52,8 +53,20 @@ runtime policy aggregates and evaluator.
 
 ## Feature Design
 
-- Keep public-source findings and every unresolved `POLICY-Q` explicitly In
-  Review; no unapproved numeric value becomes a production default.
+- Treat `DEMO-POC-2026.1` as an Ahmed-approved, demo-only profile. It combines
+  sourced public AASTMT findings with explicitly product-owned simplifications
+  and MUST NOT be presented as an official production rulebook.
+- Encode the profile as a small set of typed rules: configured window,
+  standing/hold/prerequisite gates, regular load 9-18 with default/recommended
+  target 18, probation maximum 12 for GPA below 2.0, first-successful-commit
+  capacity, and hard meeting-overlap rejection with no travel buffer.
+- Curate the 19-course Data Science snapshot in `docs/DEMO_CURRICULUM.md`
+  from the official College of Artificial Intelligence curriculum page.
+  Preserve URL/access-date provenance and label every synthetic gap-filling
+  row; never silently blend synthetic content into official curriculum data.
+- Keep waitlists, overrides, automatic exceptions, add/drop, withdrawal, and
+  advisor workflows outside this demo profile. Other unresolved `POLICY-Q`
+  values remain In Review and fail closed rather than becoming defaults.
 - Publish a typed policy contract and boundary examples for SPEC-009 to
   implement. `PolicySet`, `PolicyRule`, and decision snapshots are reference
   models here, not downstream runtime prerequisites.
@@ -62,9 +75,13 @@ runtime policy aggregates and evaluator.
 
 ## Execution Strategy
 
-1. Validate SPEC-001 and the institutional provenance/approval register.
-2. Complete consistency analysis and freeze only approved policy inputs.
-3. Record Registrar/SME and Ahmed ELbamby approval as the final planning gate.
+1. Validate SPEC-001, the official curriculum URLs, and the
+   product-owned-versus-source-derived provenance register.
+2. Complete consistency analysis and freeze `DEMO-POC-2026.1`, its boundary
+   examples, and its clearly labelled demo curriculum snapshot.
+3. Verify Ahmed ELbamby's 2026-07-13 approval in the Registrar/SME review
+   perspective before implementation; retain later release and production
+   policy approvals.
 4. Test the rulebook schema and boundary fixtures before publishing them;
    runtime evaluator work waits for approved SPEC-009 and endpoint work for
    approved SPEC-011.

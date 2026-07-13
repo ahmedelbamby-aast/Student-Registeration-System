@@ -1,7 +1,7 @@
 # Implementation Plan: Catalogue, Prerequisites, and Policy Administration
 
 **Branch**: 009-catalog-prerequisites-policy-admin | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; policy/catalogue authority and human approval remain pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13.
 
 ## Summary
 
@@ -47,24 +47,31 @@ project or second catalogue writer is introduced.
 
 ## Feature Design
 
-1. Manual changes occur only in `CatalogueDraft`; import batches attach to a
-   draft and preserve source/hash/status/row errors.
+1. Manual changes occur only in `CatalogueDraft`; the initial POC draft is the
+   19-course official-source snapshot in `docs/DEMO_CURRICULUM.md`, and import batches
+   preserve source/access/hash/status/row errors plus field-level synthetic
+   classifications.
 2. Validation computes canonical content/dependency hashes and returns a
    bounded signed preview.
 3. Confirmation locks one normalized publication scope, revalidates, and
    atomically writes the immutable version, activation change, idempotency
    result, and audit fact.
 4. PolicySet uses the same draft/preview/version discipline with typed rules,
-   never arbitrary executable expressions.
+   never arbitrary executable expressions. The initial rule set proves window,
+   prerequisite, GPA/earned-credit, standing, 18-credit normal and 12-credit
+   probation limits, capacity, and conflict behavior without advisor or other
+   exception workflows.
 5. ADM-05 consumes only Academics owner APIs plus SPEC-017 audit/report
    contributions.
 
 ## Execution and Gate Order
 
-Dependency and policy-authority baselines plus consistency analysis precede
-Ahmed ELbamby's final approval. After approval, failing model/contract,
+Ahmed ELbamby's Gate A demo approval is recorded. Dependency baselines plus
+consistency analysis remain the first execution tasks. Failing model/contract,
 acceptance, race, and workstream tests precede domain/application delivery;
-handlers and the page follow their contract/behavior and E2E tests.
+handlers and the page follow their contract/behavior and E2E tests. Gate B-D,
+release, production catalogue/policy publication, and official AASTMT go-live
+approvals remain separate.
 
 ## Design Artifacts
 

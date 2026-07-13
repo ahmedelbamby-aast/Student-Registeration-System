@@ -1,7 +1,8 @@
 # Implementation Plan: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 **Branch**: 003-ux-storyboard-accessibility | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; route-owner
+contract pins, Gates B-D, and production release approval remain required.
 
 ## Summary
 
@@ -68,8 +69,9 @@ Infrastructure.SqlServer projects plus `tests/`.
 
 1. Validate SPEC-001/SPEC-002, route ownership, component ownership, and the
    cross-spec contributor matrix; complete consistency analysis.
-2. Record UX/brand decisions and Ahmed ELbamby's approval as the final planning
-   gate. Unapproved institutional brand values remain blocked and tokenized.
+2. Enforce Ahmed ELbamby's approved English-first neutral UI and the official
+   AASTMT logo provenance contract in `docs/BRAND_ASSETS.md`; additional
+   institutional brand values remain blocked rather than inferred.
 3. Build design/test schemas, then failing component/contract/accessibility/E2E
    tests, then the smallest page/component implementation that passes them.
 4. Run each route slice only after its owner/contributor approval gate; collect
@@ -82,10 +84,17 @@ Infrastructure.SqlServer projects plus `tests/`.
 - Browser journeys use Microsoft.Playwright. Browser and operating-system builds MUST be pinned per release in tests/StudentRegistration.E2ETests/browser-matrix.json; floating latest labels are not release evidence.
 - Automated accessibility uses axe-core from the Playwright accessibility harness plus keyboard and focus assertions. Automated results supplement rather than replace manual assistive-technology review.
 - Visual regression uses Playwright screenshot comparisons with approved baselines stored by route, state, browser engine, and viewport under tests/StudentRegistration.VisualTests/Baselines/ and governed by tests/StudentRegistration.VisualTests/Baselines/baseline-manifest.json. Dynamic time, identifiers, animations, and nondeterministic content MUST use controlled fixtures or documented masks.
-- Chromium, Firefox, and WebKit automation runs in pinned CI images. WebKit results MUST NOT be reported as Safari results. Current stable Safari requires a manual run on pinned macOS/Safari versions with evidence recorded in docs/release-evidence/frontend/safari-macos-evidence.md.
+- Current stable Chrome, Edge, and Firefox plus a version-pinned Playwright
+  WebKit target form the POC browser gate. CI image, browser, and engine builds
+  are recorded in the versioned matrix; WebKit evidence MUST NOT be labelled
+  Safari. Actual Safari/macOS verification is deferred to a separately
+  approved future browser-support/release decision.
 - Component and contract fixtures MUST pin server time, academic term, identity/role, policy version, capacity, rowversion, correlation IDs, and every applicable UI state. Fixtures MUST contain no production student data.
 - A first-run failure remains a failed gate under tests/StudentRegistration.E2ETests/flake-policy.json. A retry MAY collect trace, video, screenshot, console, and network diagnostics but MUST NOT convert the gate to pass. Critical journeys cannot be quarantined; every flake requires an owner, issue, cause, and correction before release.
-- Release evidence includes bUnit results, client contract results, Playwright traces/reports, axe-core output, visual-baseline approval, browser-matrix provenance, and the signed Safari/macOS manual record.
+- POC release evidence includes bUnit results, client contract results,
+  Playwright traces/reports, axe-core output, visual-baseline approval, and the
+  Chrome/Edge/Firefox/WebKit browser-matrix provenance. It contains no claim
+  that WebKit proves Safari support.
 
 ## Frontend Test Project Structure
 
@@ -94,7 +103,9 @@ Infrastructure.SqlServer projects plus `tests/`.
 - tests/StudentRegistration.E2ETests: Microsoft.Playwright primary, failure, authorization, stale, offline, and race journeys.
 - tests/StudentRegistration.AccessibilityTests: axe-core automation plus keyboard/focus protocols.
 - tests/StudentRegistration.VisualTests: deterministic screenshot assertions and approved baselines.
-- docs/release-evidence/frontend: manual screen-reader, usability, Safari/macOS, browser provenance, and baseline-approval records.
+- docs/release-evidence/frontend: manual screen-reader, usability, browser
+  provenance, WebKit-not-Safari labeling, and baseline-approval records;
+  actual Safari/macOS evidence is a future separately approved artifact.
 
 ## Non-Functional Requirements
 
@@ -113,10 +124,12 @@ Infrastructure.SqlServer projects plus `tests/`.
   Contentful Paint at or below 2.5 seconds at p75 with production compression,
   cold browser cache, a four-core/4-GB client profile, 10-Mbps down/2-Mbps up,
   100-ms round-trip latency, and server APIs meeting their specified p95.
-- NFR-7: Functional journeys MUST pass in the current and previous stable
-  versions of Chrome, Edge, and Firefox, plus current stable Safari on macOS.
-  Playwright WebKit MAY provide earlier feedback but MUST NOT be reported as
-  proof that actual Safari passed.
+- NFR-7: The POC browser gate MUST pass in current stable Chrome, Edge, and
+  Firefox plus a version-pinned Playwright WebKit target. Browser and engine
+  builds MUST be recorded in the versioned evidence matrix, and WebKit results
+  MUST be labelled WebKit rather than Safari. Actual Safari/macOS verification
+  is deferred from the POC and requires a separately approved future browser
+  support/release decision.
 - NFR-8: Go-live registration usability completion MUST be at least 90% across
   at least eight representative students including novice, keyboard-only, and
   screen-reader participants, plus at least three Admin, three Lecturer, and
@@ -124,8 +137,10 @@ Infrastructure.SqlServer projects plus `tests/`.
   critical or major core-flow usability defect.
 - NFR-9: Visual regression MUST reject every unapproved difference from the
   versioned baseline at 375, 768, 1280, and 1920 CSS pixels.
-- NFR-10: Text, labels, formats, and layout MUST be localization-ready; user
-  text MUST NOT be embedded as component control logic.
+- NFR-10: The MVP MUST be English-first and localization-ready: user-facing
+  strings MUST be externalized, formats MUST be culture-aware, layout MUST be
+  direction-safe, and user text MUST NOT be embedded as component control
+  logic.
 
 ## Complexity Tracking
 

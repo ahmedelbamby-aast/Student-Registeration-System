@@ -8,8 +8,8 @@ families; executable tests are not created in this phase.
 |---|---|---|---|---|
 | AUTH-01 | / | SPEC-008 | Public status, role gateway | normal, maintenance, unavailable, named navigation |
 | AUTH-02 | /student/login | SPEC-007 | Auth layout, University-ID field, password field, validation summary | valid, invalid, locked, rate-limited, keyboard/error focus |
-| AUTH-03 | /student/activate | SPEC-007 | Auth layout, institutional verification, password creation | valid, unknown, mismatch, claimed, expired, weak password, double submit |
-| AUTH-04 | /staff/login | SPEC-007 | Staff auth layout without role picker | Admin/Lecturer/TA routing, invalid, disabled, no-role, MFA |
+| AUTH-03 | /student/activate | SPEC-007 | Auth layout, generated University-ID/PIN first-use activation | valid, unknown, mismatch, activated, locked/rate-limited, double submit |
+| AUTH-04 | /staff/login | SPEC-007 | Staff auth layout without role picker | Admin/Lecturer/TA routing, invalid, disabled, no-role, password-only/no-second-factor |
 | AUTH-05 | /account/recovery | SPEC-007 | Recovery form and generic confirmation | sent, expired, used, rate-limited, success, enumeration resistance |
 | STU-01 | /student | SPEC-008 | Student shell, academic summary, holds, registration CTA | open, upcoming, closed, no term, hold, incomplete profile |
 | STU-02 | /student/subjects | SPEC-011 | Search/filter, offering list, reason panels | eligible, unavailable reasons, no results, reset, stale capacity, service error |

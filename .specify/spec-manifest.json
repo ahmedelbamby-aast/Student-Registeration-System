@@ -195,7 +195,6 @@
         "Staff",
         "StudentActivation",
         "AccountRecoveryChallenge",
-        "StaffMfaChallenge",
         "AuthenticationAbuseState",
         "IdentityImportBatch",
         "RoleAssignment",

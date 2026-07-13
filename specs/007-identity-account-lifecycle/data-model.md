@@ -3,7 +3,7 @@
 ## Ownership
 
 SPEC-007 owns `ApplicationUser`, `Staff`, `StudentActivation`,
-`AccountRecoveryChallenge`, `StaffMfaChallenge`, `RoleAssignment`, and
+`AccountRecoveryChallenge`, `RoleAssignment`, and
 `AuthenticationAbuseState`, `IdentityImportBatch`, append-only `SecurityEvent`,
 and singleton `AdminSecurityGuard`. SPEC-017 consumes/queries SecurityEvent and
 the guard outcome through an upstream
@@ -14,10 +14,9 @@ facility without redefining it.
 
 | Entity | Key fields |
 |---|---|
-| ApplicationUser | normalized login, filtered-unique University ID for a pre-provisioned student identity, enabled/locked state, password hash/provider subject, optional academic/staff link, security stamp, access-failure state, rowversion |
-| StudentActivation | hashed token, pre-imported ApplicationUser ID, approved-factor reference, expiry, attempt count, used timestamp, rowversion |
+| ApplicationUser | normalized login, filtered-unique synthetic University ID for a pre-provisioned demo student identity, enabled/locked state, ASP.NET Core Identity password hash, optional academic/staff link, security stamp, access-failure state, rowversion |
+| StudentActivation | pre-imported ApplicationUser ID, provisioned timestamp, activated timestamp, failed-attempt state, rowversion; no plaintext PIN/password column |
 | AccountRecoveryChallenge | hashed token, user ID, approved-channel reference, expiry, attempt count, used timestamp, rowversion |
-| StaffMfaChallenge | opaque provider transaction hash/reference, user ID, expiry, attempt count, used timestamp, rowversion |
 | RoleAssignment | user, role, effective dates, assigning actor |
 | AuthenticationAbuseState | normalized privacy-safe subject/network key, operation, count, window, blocked-until, rowversion |
 | IdentityImportBatch | source, content hash, Uploaded/Invalid/Validated/Published/Failed state, rowversion, row errors, idempotent publish result |
@@ -28,7 +27,7 @@ facility without redefining it.
 
 - Foreign keys and unique constraints enforce durable identity and relationship rules.
 - Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Activation, recovery, and MFA consumption use a conditional update from
+- Activation and recovery consumption use a conditional update from
   unused to used and never a read-then-write check.
 - University ID is owned by IdentityAccess on ApplicationUser; active role
   assignment constraints are unique in their

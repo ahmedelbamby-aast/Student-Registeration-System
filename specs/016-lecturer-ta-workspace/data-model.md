@@ -14,6 +14,9 @@
   its identifier/state through the Scheduling application port.
 - SPEC-016 edits availability only through the Scheduling application port; it
   does not map or persist a duplicate aggregate.
+- Admin may consume a bounded read-only projection and copy declared ranges
+  into offering-planning input; no Admin mutation model, permission, editable
+  state, notification, or correction-audit model is introduced.
 
 ## Detailed Model
 
@@ -38,5 +41,7 @@
   retry idempotent.
 - Alert revalidation/resolution uses expected rowversion and is audited; the
   workspace MUST NOT invent an acknowledgement state or transition.
+- ScheduleImpactAlert remains distinct from an availability-correction
+  notification or correction-audit workflow.
 - Roster authorization is checked before query; audit metadata records actor,
   group, purpose, outcome, row count, and correlation ID without roster rows.

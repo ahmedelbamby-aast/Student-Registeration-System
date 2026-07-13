@@ -2,7 +2,7 @@
 
 **Feature Branch**: 017-admin-operations-audit-reporting
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -12,7 +12,8 @@ Admins need safe master-data operations, registration-record inspection, peak
 monitoring, audit evidence, and operational exports. Broad Admin access still
 uses least privilege, reasons, optimistic concurrency, immutable audit, and
 durable cross-replica work claims. Enrollment correction, drop, and withdrawal
-are not part of this MVP.
+are not part of this MVP. Staff own availability edits; Admin availability use
+is limited to bounded viewing and read-only import into offering planning.
 
 ## User Scenarios and Testing
 
@@ -74,7 +75,9 @@ As a Authorized administrator, I need the Governed bounded master-data command (
 Given authorized Admin filters a large master-data list and previews a change<br>
 When the bounded request and confirmed mutation execute<br>
 Then only a paged parameterized result is returned<br>
-And the confirmed feature-spec command is validated/audited.
+And staff availability can be viewed/imported as read-only planning input<br>
+And no Admin availability correction/override command, permission, editable
+control, notification workflow, or correction-audit flow exists.
 ### User Story 6 - Stale preview confirmation (FR-8, FR-10, FR-11) (P3)
 
 As a Authorized administrator, I need the Stale preview confirmation (FR-8, FR-10, FR-11) behavior so that Admin Operations, Audit, and Reporting produces a verifiable outcome.
@@ -151,7 +154,9 @@ anti-forgery checks.
 - FR-1: Authorized Admin pages MUST call feature-owner endpoints/commands for
   terms/windows, users/roles, student records/holds, catalogue/policies,
   resources, offerings/groups, and imports; no generic AdminCommandService is
-  permitted.
+  permitted. Availability access is limited to SPEC-010's bounded read-only
+  view; Admin MAY import staff-declared ranges into offering planning as
+  read-only inputs.
 - FR-2: Admin audit search MUST merge scoped SPEC-004 AuditEvent and SPEC-007
   SecurityEvent records with actor, reason, timestamp, redacted before/after,
   correlation, action, and source stream.
@@ -161,7 +166,9 @@ anti-forgery checks.
 - FR-4: Admin orchestration MUST NOT expose enrollment correction, drop,
   withdrawal, or seat-decrement commands in MVP. Delegated master-data
   commands MUST preserve capacity and timetable invariants and cannot bypass
-  the owning feature module.
+  the owning feature module. It also MUST NOT expose an Admin availability
+  mutation/correction/override command, permission, editable control,
+  notification workflow, or correction-audit flow.
 - FR-5: Exports MUST enforce the same row/data scope and PII minimization as
   UI and use an explicit request/status/download lifecycle. ExportJob MUST be
   durable, owner/scope/request-bound, expiring, and claimed by workers through
@@ -172,7 +179,9 @@ anti-forgery checks.
 - FR-7: Consumed AuditEvent and SecurityEvent records MUST be append-only to normal users.
 - FR-8: Import, publication, and other approved sensitive feature-spec
   mutations MUST use preview and explicit confirmation; this does not
-  authorize enrollment correction.
+  authorize enrollment correction. Availability import copies staff-declared
+  ranges into offering-planning input and MUST NOT mutate
+  StaffTermAvailability or create an Admin correction workflow.
 - FR-9: Break-glass behavior MUST NOT exist without a separate approved spec.
 - FR-10: Update/delete commands MUST require expected rowversion; retryable
   creates, imports, exports, and confirmed feature-spec mutations MUST require
@@ -252,6 +261,9 @@ anti-forgery checks.
 ## Out of Scope
 
 - OS-1: Unrestricted super-admin and unaudited direct database edits.
-- OS-2: Break-glass capacity/conflict override and any enrollment correction, drop, withdrawal, or seat-decrement workflow.
+- OS-2: Break-glass capacity/conflict override; enrollment correction, drop,
+  withdrawal, or seat-decrement; and any Admin availability
+  mutation/correction/override, permission, editable control, notification, or
+  correction-audit workflow.
 - OS-3: Business-intelligence warehouse.
 - OS-4: Long-term report replica until primary impact is measured.

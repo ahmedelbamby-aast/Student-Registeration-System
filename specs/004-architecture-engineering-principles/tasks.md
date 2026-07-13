@@ -1,6 +1,6 @@
 # Tasks: Architecture and Engineering Principles
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
@@ -8,9 +8,9 @@
 
 - [ ] T001 [DEP-SPEC-001] Validate the consumed upstream requirements, plan, data model, and API contract at specs/001-product-charter-rbac/ and record the accepted versions in specs/004-architecture-engineering-principles/dependency-baseline.md.
 - [ ] T002 [DEP-SPEC-003] Validate the consumed upstream requirements, plan, data model, and API contract at specs/003-ux-storyboard-accessibility/ and record the accepted versions in specs/004-architecture-engineering-principles/dependency-baseline.md.
-- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-004; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and planning-only status; record findings and resolutions in specs/004-architecture-engineering-principles/checklists/consistency-analysis.md.
+- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-004; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/004-architecture-engineering-principles/checklists/consistency-analysis.md.
 - [ ] T004 [GATE] After T003 passes, freeze the SPEC-004 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/004-architecture-engineering-principles/checklists/implementation-readiness.md.
-- [ ] T005 [GATE] After T004 passes, record the accountable owner and Ahmed ELbamby's human approval for SPEC-004 in specs/004-architecture-engineering-principles/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute before this approval.
+- [ ] T005 [GATE] After T004 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-004 in specs/004-architecture-engineering-principles/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
 
 ## Phase 2 - Models and API Contracts
 
@@ -70,15 +70,15 @@
 **Independent Test**: Execute only the AC-6 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T011.
-- [ ] T017 [AC-6] [FR-1] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec004/AC-6Tests.cs for the approved stack, exact project-per-business-module solution shape, absence of generic Server/Domain/Application/Infrastructure projects, and framework-free business-module Domain code.
+- [ ] T017 [AC-6] [FR-1] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec004/AC-6Tests.cs for the approved stack, SQL Server 2022 Developer compatibility 160 demo runtime through Docker/Testcontainers, exact project-per-business-module solution shape, absence of generic Server/Domain/Application/Infrastructure projects, and framework-free business-module Domain code.
 - [ ] T018 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec004/EdgeCases/EC-1Tests.cs and assert: A module needs an additional read -> add a narrow query interface, not direct table ownership leakage.
 - [ ] T019 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec004/EdgeCases/EC-2Tests.cs and assert: Cross-module transaction emerges -> keep it in the single DbContext or stop for an architectural review.
 - [ ] T020 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec004/EdgeCases/EC-3Tests.cs and assert: A read cache is stale -> final registration never trusts it.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
-- [ ] T021 [FR-1] [WORKSTREAM-APPROVED-SOLUTION-STACK] Create the future failing FR-1 checks in tests/StudentRegistration.ArchitectureTests/ApprovedStackTests.cs. Test focus: pinned .NET, ASP.NET Core, Blazor WebAssembly, EF Core, LINQ and SQL Server references. Prove the requirement against its linked AC/EC fixtures: The solution MUST use .NET 10 LTS, ASP.NET Core, Blazor WebAssembly, EF Core/LINQ, and SQL Server.
-- [ ] T022 [FR-1] [WORKSTREAM-APPROVED-SOLUTION-STACK] Deliver FR-1 through the bounded Approved solution stack workstream at global.json only after T021 fails for the expected reason (depends on T021): The solution MUST use .NET 10 LTS, ASP.NET Core, Blazor WebAssembly, EF Core/LINQ, and SQL Server.
+- [ ] T021 [FR-1] [WORKSTREAM-APPROVED-SOLUTION-STACK] Create the future failing FR-1 checks in tests/StudentRegistration.ArchitectureTests/ApprovedStackTests.cs. Test focus: pinned .NET, ASP.NET Core, Blazor WebAssembly, EF Core, LINQ, SQL Server 2022 Developer compatibility 160, Docker Development, Testcontainers Testing, and the no-production-edition/topology-claim boundary.
+- [ ] T022 [FR-1] [WORKSTREAM-APPROVED-SOLUTION-STACK] Deliver FR-1 through the bounded Approved solution stack workstream at global.json, infra/docker/compose.development.yml, and tests/StudentRegistration.IntegrationTests/Infrastructure/SqlServerContainerFixture.cs only after T021 fails for the expected reason (depends on T021): use SQL Server 2022 Developer compatibility 160 through Docker/Testcontainers for the demo without representing it as a production edition/topology decision.
 - [ ] T023 [FR-2] [WORKSTREAM-MODULE-BOUNDARIES] Create the future failing exact project-shape checks in tests/StudentRegistration.ArchitectureTests/ModuleDependencyTests.cs. Test focus: declared business-module projects, allowed interfaces, no internals crossing and no cycles.
 - [ ] T024 [FR-2] [WORKSTREAM-MODULE-BOUNDARIES] Create the exact Client, Api, Contracts, IdentityAccess, Academics, Scheduling, Registration, StaffAdministration, and Infrastructure.SqlServer project composition at src/StudentRegistration.Api/Composition/ModuleRegistration.cs only after T023 fails for the expected reason (depends on T023); do not create generic Server, Domain, Application, or Infrastructure projects.
 - [ ] T025 [FR-3] [WORKSTREAM-MODULE-BOUNDARIES] Create the future failing FR-3 checks in tests/StudentRegistration.ArchitectureTests/ModuleDependencyTests.cs. Test focus: declared business-module projects, allowed interfaces, no internals crossing and no cycles. Prove the requirement against its linked AC/EC fixtures.
@@ -101,7 +101,7 @@ No direct frontend route is owned by this specification; frontend integration re
 ## Phase 6 - Measurable Non-Functional Evidence
 
 - [ ] T037 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec004/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-004-NFR-1.md: Architecture tests MUST fail on forbidden module references/cycles.
-- [ ] T038 [NFR-2] [AUTOMATED-EVIDENCE] Produce two-replica, cross-instance authentication/plan-state evidence without sticky sessions and verify approved encrypted-at-rest, least-privilege, rotated shared Data Protection keys in tests/StudentRegistration.QualityTests/Specs/Spec004/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-004-NFR-2.md; fail closed when the production repository/encryption authority lacks Security/DevOps approval.
+- [ ] T038 [NFR-2] [AUTOMATED-EVIDENCE] Produce two-replica, cross-instance authentication/plan-state evidence without sticky sessions and verify approved encrypted-at-rest, least-privilege, rotated shared Data Protection keys in tests/StudentRegistration.QualityTests/Specs/Spec004/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-004-NFR-2.md; also prove per-run Testing disposal, guarded Development persistence/reset, synthetic-only data, Git-ignored local credential/log/export artifacts, and removal within seven days, while failing closed when the production repository/encryption authority lacks Security/DevOps approval.
 - [ ] T039 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec004/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-004-NFR-3.md: The architecture MUST support at least two application replicas.
 - [ ] T040 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence in tests/StudentRegistration.QualityTests/Specs/Spec004/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-004-NFR-4.md that business-module Domain code references no ASP.NET, Blazor, EF Core, or SQL Server type/namespace.
 

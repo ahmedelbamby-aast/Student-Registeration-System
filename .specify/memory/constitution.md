@@ -1,10 +1,13 @@
 <!--
 Sync Impact Report
-- Version: template -> 1.0.0
+- Version: 1.0.0 -> 1.1.0
 - Ratified: 2026-07-12
-- Last amended: 2026-07-12
+- Last amended: 2026-07-13
 - Templates requiring alignment: plan-template.md, spec-template.md, tasks-template.md
 - Source of truth: docs/PROJECT_CONSTITUTION.md
+- Amendment: Ahmed ELbamby is the sole developer and human approval authority
+  for this non-production design-capability demo; named roles remain review
+  perspectives rather than external approval dependencies.
 -->
 # Student Registration System Constitution
 
@@ -12,6 +15,13 @@ Sync Impact Report
 
 ### I. Ahmed ELbamby Owns Every Repository Contribution
 Every Git commit MUST use author and committer `Ahmed ELbamby <A.Elbamby61869@student.aast.edu>`. Commit messages, trailers, repository documents, and generated metadata MUST NOT name Codex, an AI assistant, or another automated system as author, committer, co-author, or contributor. This identity gate is mandatory before every commit.
+
+This project is a non-production design-capability demo. Ahmed ELbamby is its
+sole developer and sole human approval authority. Product Owner, Registrar,
+UX, Architecture, Data, QA, Security, and Operations labels identify distinct
+review perspectives that Ahmed MUST evaluate; they do not require a separate
+person or external institutional sign-off for demo implementation. Demo
+approval MUST NOT be represented as official AASTMT production authorization.
 
 ### II. Specification First and Traceable Delivery
 Every feature MUST have an approved specification before implementation. Requirements MUST use stable identifiers; acceptance scenarios and planned tasks MUST trace back to those identifiers. Clarification, planning, checklist, task, and consistency-analysis gates MUST pass before implementation begins. This repository remains planning-only until the appropriate human approval changes a specification from In Review to Approved.
@@ -47,4 +57,4 @@ A feature passes automated readiness only when all required artifacts exist, no 
 
 This constitution governs all repository work. Amendments require a documented rationale, impact review across templates and specifications, semantic version increment, and Ahmed ELbamby's approval. A compliance review is required during planning analysis and before every merge. Exceptions MUST be explicit, time-bounded, owned, and recorded; convenience alone is not an exception.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-12
+**Version**: 1.1.0 | **Ratified**: 2026-07-12 | **Last Amended**: 2026-07-13

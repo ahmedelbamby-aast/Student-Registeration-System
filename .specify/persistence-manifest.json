@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "dbContext": {
     "owner": "004",
     "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
@@ -14,7 +14,7 @@
     },
     "007": {
       "mode": "writable",
-      "entities": ["ApplicationUser", "Staff", "StudentActivation", "AccountRecoveryChallenge", "StaffMfaChallenge", "AuthenticationAbuseState", "IdentityImportBatch", "RoleAssignment", "SecurityEvent", "AdminSecurityGuard"],
+      "entities": ["ApplicationUser", "Staff", "StudentActivation", "AccountRecoveryChallenge", "AuthenticationAbuseState", "IdentityImportBatch", "RoleAssignment", "SecurityEvent", "AdminSecurityGuard"],
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/IdentityAccessModelConfiguration.cs",
       "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec007/IdentityAccessModelConfigurationTests.cs"
     },
@@ -67,6 +67,30 @@
       "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/AdministrationAuditModelConfigurationTests.cs"
     }
   },
+  "nonProductionDataProfiles": [
+    {
+      "id": "Development",
+      "databasePattern": "StudentRegistration_Development",
+      "allowedEnvironments": ["Development"],
+      "orchestratorPath": "src/StudentRegistration.Api/Development/DemoDatabaseInitializer.cs",
+      "identityContributorPath": "src/StudentRegistration.IdentityAccess/Application/DemoIdentitySeedContributor.cs",
+      "academicContributorPath": "src/StudentRegistration.Academics/Application/DemoStudentProfileSeedContributor.cs",
+      "credentialHandling": "one-time Git-ignored local artifact; SQL contains ASP.NET Core Identity hashes only",
+      "resetMode": "explicit-command-only",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/EnvironmentDatabaseProvisioningTests.cs"
+    },
+    {
+      "id": "Testing",
+      "databasePattern": "StudentRegistration_Test_{runId}",
+      "allowedEnvironments": ["Testing"],
+      "orchestratorPath": "tests/StudentRegistration.IntegrationTests/Infrastructure/SqlServerTestDatabaseFixture.cs",
+      "identityContributorPath": "src/StudentRegistration.IdentityAccess/Application/DemoIdentitySeedContributor.cs",
+      "academicContributorPath": "src/StudentRegistration.Academics/Application/DemoStudentProfileSeedContributor.cs",
+      "credentialHandling": "in-memory deterministic fixture input; SQL contains ASP.NET Core Identity hashes only",
+      "resetMode": "isolated-per-run-dispose",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/EnvironmentDatabaseProvisioningTests.cs"
+    }
+  ],
   "migrations": [
     {
       "id": "S1IdentityAcademicFoundation",

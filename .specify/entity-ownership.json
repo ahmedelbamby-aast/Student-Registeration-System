@@ -30,7 +30,6 @@
     "SectionGroup": "010",
     "ScheduleImpactAlert": "010",
     "Staff": "007",
-    "StaffMfaChallenge": "007",
     "StaffTermAvailability": "010",
     "StaffAvailability": "010",
     "StudentTermRegistrationGuard": "014",

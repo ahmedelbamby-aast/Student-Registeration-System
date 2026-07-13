@@ -2,7 +2,7 @@
 
 **Feature Branch**: 012-schedule-builder-conflicts
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Technical Lead
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -36,7 +36,8 @@ As a Student, I need the Adjacent meetings (FR-2) behavior so that Schedule Buil
 
 Given Group A ends Monday 11:00 and Group B starts Monday 11:00<br>
 When both are selected<br>
-Then no overlap exists unless an approved travel-buffer rule applies.
+Then no overlap exists<br>
+And the demo's disabled travel-buffer rule adds no conflict.
 ### User Story 3 - Submission blocked (FR-5) (P2)
 
 As a Student, I need the Submission blocked (FR-5) behavior so that Schedule Builder and Conflicts produces a verifiable outcome.
@@ -93,8 +94,9 @@ And one stale editor receives 409 without a lost update.
 
 - FR-1: The student MUST add at most one group per course offering to a plan.
 - FR-2: The server MUST detect overlap for every meeting slot using strict
-  half-open interval logic; adjacent meetings do not overlap and DEC-06 travel
-  buffers remain disabled until approved.
+  half-open interval logic; adjacent meetings do not overlap. The approved
+  simple demo policy disables travel-buffer conflicts and MUST NOT guess a
+  room/campus travel duration or matrix.
 - FR-3: Each conflict MUST identify both groups, subjects, day, times, and
   exact overlap interval plus accessible change/remove actions.
 - FR-4: The UI MUST render a red X plus text/icon-accessible conflict state.

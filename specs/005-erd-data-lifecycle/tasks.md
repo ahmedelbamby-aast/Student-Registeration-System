@@ -1,6 +1,6 @@
 # Tasks: ERD and Data Lifecycle
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; production migration-window, later release, and production gates remain required.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
@@ -8,9 +8,9 @@
 
 - [ ] T001 [DEP-SPEC-002] Validate the consumed upstream requirements, plan, data model, and API contract at specs/002-aastmt-policy-rulebook/ and record the accepted versions in specs/005-erd-data-lifecycle/dependency-baseline.md.
 - [ ] T002 [DEP-SPEC-004] Validate the consumed upstream requirements, plan, data model, and API contract at specs/004-architecture-engineering-principles/ and record the accepted versions in specs/005-erd-data-lifecycle/dependency-baseline.md.
-- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-005; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and planning-only status; record findings and resolutions in specs/005-erd-data-lifecycle/checklists/consistency-analysis.md.
+- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-005; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/005-erd-data-lifecycle/checklists/consistency-analysis.md.
 - [ ] T004 [GATE] After T003 passes, freeze the SPEC-005 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/005-erd-data-lifecycle/checklists/implementation-readiness.md.
-- [ ] T005 [GATE] After T004 passes, record the accountable owner and Ahmed ELbamby's human approval for SPEC-005 in specs/005-erd-data-lifecycle/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute before this approval.
+- [ ] T005 [GATE] After T004 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-005 in specs/005-erd-data-lifecycle/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
 
 ## Phase 2 - ERD Ownership and Schema Contracts
 
@@ -83,7 +83,7 @@ spec is approved and its mapping contribution is present.
 **Independent Test**: Execute only the AC-4 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T035 [AC-4] [FR-1] [FR-4] [FR-6] [FR-8] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec005/AC-4Tests.cs for AC-4: Code First invariant model (FR-1, FR-4, FR-6, FR-8): Given the approved Code First model is migrated to an empty SQL Server When schema inspection and seed import tests run Then rowversion and offering/group referential constraints match the ERD And imported academic rows retain source provenance.
+- [ ] T035 [AC-4] [FR-1] [FR-4] [FR-6] [FR-8] Create future failing coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec005/AC-4Tests.cs and tests/StudentRegistration.IntegrationTests/Persistence/EnvironmentDatabaseProvisioningTests.cs for SQL Server 2022 Developer compatibility 160, Docker Development, Testcontainers per-run Testing creation/disposal, persistent-until-reset Development, migration-first provisioning, deterministic synthetic-only provenance-bearing fixtures, idempotent reseed, explicit guarded reset, unique University IDs, ASP.NET Identity hash-only persistence, and absence of plaintext credentials or real data.
 ### US5 - Controlled production migration (FR-7) (P3)
 
 **Goal**: Prove AC-5 as an independently demonstrable slice of ERD and Data Lifecycle.
@@ -108,15 +108,15 @@ spec is approved and its mapping contribution is present.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
 - [ ] T038 [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec005/AC-7Tests.cs for inventoried actual plans with no unapproved unbounded scan, rehearsal within 80% of the approved numeric Operations window, SPEC-018 restore targets, and privacy-safe logs.
-- [ ] T039 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-1Tests.cs and assert: Migration fails partway -> deployment stops and follows tested rollback.
+- [ ] T039 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-1Tests.cs and assert that partial migration/bootstrap never marks a database ready and every seed/reset request outside Development or Testing is rejected without mutation.
 - [ ] T040 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-2Tests.cs and assert: Import references missing prerequisite -> preview rejects row and publish remains blocked.
 - [ ] T041 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-3Tests.cs and assert: rowversion is stale -> return 409 with current version, no lost update.
 - [ ] T042 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-4Tests.cs and assert: Enrollment counter mismatch -> alert and reconcile through controlled operation; do not silently alter history.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
-- [ ] T043 [FR-1] [WORKSTREAM-CODE-FIRST-MODEL] Create the future failing FR-1 checks in tests/StudentRegistration.SpecificationTests/Spec005/CodeFirstOwnershipMapTests.cs. Test focus: schema and aggregate ownership contracts without pre-implementing downstream feature models.
-- [ ] T044 [FR-1] [WORKSTREAM-CODE-FIRST-MODEL] Deliver the bounded Code First model workstream at docs/data/code-first-ownership-map.md only after T043 fails for the expected reason (depends on T043); Infrastructure.SqlServer owns the sole DbContext/migrations and each feature owner owns its mapping contribution.
+- [ ] T043 [FR-1] [WORKSTREAM-CODE-FIRST-MODEL] Create the future failing FR-1 checks in tests/StudentRegistration.SpecificationTests/Spec005/CodeFirstOwnershipMapTests.cs. Test focus: schema/aggregate ownership plus SQL Server 2022 Developer compatibility 160, Docker Development persistence, Testcontainers per-run Testing disposal, migration-first profiles, no seed rows in migrations, and no production bootstrap/reset path.
+- [ ] T044 [FR-1] [WORKSTREAM-CODE-FIRST-MODEL] Deliver the bounded Code First model and non-production database-profile contract at docs/data/code-first-ownership-map.md only after T043 fails for the expected reason (depends on T043); Infrastructure.SqlServer owns the sole DbContext/migrations, canonical feature owners own mappings/seed rows, and the Docker/Testcontainers environment bootstrap composes them only after migrations with the approved persistence/disposal lifecycle.
 - [ ] T045 [FR-2] [WORKSTREAM-RELATIONAL-INVARIANTS] Create the future failing FR-2 checks in tests/StudentRegistration.SpecificationTests/Spec005/RelationalInvariantContractTests.cs. Test focus: unique, check, alternate-key, foreign-key, rowversion and history contracts for owner-spec persistence mappings.
 - [ ] T046 [FR-2] [WORKSTREAM-RELATIONAL-INVARIANTS] Publish uniqueness and alternate-key invariants at specs/005-erd-data-lifecycle/contracts/unique-invariants.md only after T045 fails for the expected reason (depends on T045).
 - [ ] T047 [FR-3] [WORKSTREAM-RELATIONAL-INVARIANTS] Create the future failing FR-3 checks in tests/StudentRegistration.SpecificationTests/Spec005/RelationalInvariantContractTests.cs. Test focus: unique, check, alternate-key, foreign-key, rowversion and history contracts for owner-spec persistence mappings.
@@ -129,8 +129,8 @@ spec is approved and its mapping contribution is present.
 - [ ] T054 [FR-2] [FR-3] [FR-4] [FR-5] [FR-6] [WORKSTREAM-RELATIONAL-INVARIANTS] Deliver the bounded Relational invariants workstream at docs/data/relational-invariants.md only after T045, T047, T049, T051, and T053 fail for their expected reasons (depends on T045, T047, T049, T051, T053).
 - [ ] T055 [FR-7] [WORKSTREAM-CONTROLLED-MIGRATIONS] Create the future failing FR-7 checks in tests/StudentRegistration.MigrationTests/MigrationBundleTests.cs. Test focus: reviewed bundle, no startup migration, rehearsal and rollback. Prove the requirement against its linked AC/EC fixtures: Production migrations MUST be reviewed scripts/bundles, not automatic startup migrations.
 - [ ] T056 [FR-7] [WORKSTREAM-CONTROLLED-MIGRATIONS] Deliver the bounded Controlled migrations workstream at src/StudentRegistration.Infrastructure.SqlServer/Migrations/README.md only after T055 fails for the expected reason (depends on T055).
-- [ ] T057 [FR-8] [WORKSTREAM-IMPORTED-PROVENANCE] Create the future failing FR-8 checks in tests/StudentRegistration.SpecificationTests/Spec005/ImportedProvenanceContractTests.cs. Test focus: required source, batch, actor and timestamp required of owner-spec mappings.
-- [ ] T058 [FR-8] [WORKSTREAM-IMPORTED-PROVENANCE] Deliver the bounded Imported provenance workstream at docs/data/import-provenance-contract.md only after T057 fails for the expected reason (depends on T057).
+- [ ] T057 [FR-8] [WORKSTREAM-IMPORTED-PROVENANCE] Create the future failing FR-8 checks in tests/StudentRegistration.SpecificationTests/Spec005/ImportedProvenanceContractTests.cs. Test focus: required source/batch/actor/time for imports plus synthetic source, seed-profile version, stable fixture ordinal, idempotent reseed, explicit Development/Testing reset guards, and rejection of real institutional/student data from demo profiles.
+- [ ] T058 [FR-8] [WORKSTREAM-IMPORTED-PROVENANCE] Deliver the bounded imported/synthetic provenance and synthetic-only non-production seed contract at docs/data/import-provenance-contract.md only after T057 fails for the expected reason (depends on T057).
 - [ ] T059 [FR-9] [WORKSTREAM-REGISTRATION-GUARD-AND-IDEMPOTENCY-PERSISTENCE] Create the future failing FR-9 checks in tests/StudentRegistration.SpecificationTests/Spec005/RegistrationGuardSchemaContractTests.cs. Test focus: student-term guard and RegistrationSubmission owner/scope/key/payload/state/result/timestamp uniqueness and durability.
 - [ ] T060 [FR-9] [WORKSTREAM-REGISTRATION-GUARD-AND-IDEMPOTENCY-PERSISTENCE] Deliver the bounded Registration guard and idempotency persistence workstream at docs/data/registration-transaction-schema.md only after T059 fails for the expected reason (depends on T059); RegistrationSubmission remains the sole idempotency record and no separate IdempotencyRecord entity/mapping is allowed.
 
@@ -143,7 +143,7 @@ No direct frontend route is owned by this specification; frontend integration re
 - [ ] T061 [NFR-1] [AUTOMATED-EVIDENCE] Publish the approved critical-query/row-count inventory at docs/data/critical-query-inventory.md and produce actual-plan, p95, bounded-scan, index, and expiring-exception evidence in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-1.md.
 - [ ] T062 [NFR-2] [AUTOMATED-EVIDENCE] Verify the AASTMT Operations numeric deployment window is approved, fail closed when absent, and record production-like rehearsal duration at or below 80% plus tested rollback in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-2.md.
 - [ ] T063 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-3.md: Backup/restore MUST meet SPEC-018 RPO/RTO.
-- [ ] T064 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-4.md: Sensitive fields MUST be minimized and excluded from unsafe logs.
+- [ ] T064 [NFR-4] [AUTOMATED-EVIDENCE] Produce evidence in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-4.md proving SQL rows, migrations, checked-in fixtures, snapshots, logs, traces, and test reports contain no plaintext generated PIN/password or full student profile, password verification uses ASP.NET Identity without asserting deterministic hash bytes, local credential/log/export artifacts are Git-ignored, and cleanup removes them within seven days.
 
 ## Phase 7 - Scope and Release Evidence
 

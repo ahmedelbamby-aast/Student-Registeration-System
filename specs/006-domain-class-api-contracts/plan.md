@@ -1,7 +1,8 @@
 # Implementation Plan: Domain Classes and API Contracts
 
 **Branch**: 006-domain-class-api-contracts | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
+and production release approval remain required.
 
 ## Summary
 
@@ -67,7 +68,9 @@ Server, Domain, Application, or Infrastructure project is introduced.
 
 1. Validate SPEC-004/SPEC-005 and complete DTO, endpoint-owner, error,
    pagination, concurrency, and OpenAPI consistency analysis.
-2. Record Technical Lead and Ahmed ELbamby approval as the final planning gate.
+2. Verify Ahmed ELbamby's 2026-07-13 approval in the Technical Lead review
+   perspective before implementation; retain later release and production
+   contract approvals.
 3. Write failing shared-contract and OpenAPI-baseline tests before contract
    source; feature endpoint handlers remain in their approved owner specs.
 4. Run downstream contract integration only against approved, version-pinned

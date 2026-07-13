@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Registrar/Policy SME and Backend Lead<br>
 **Reviewers:** Admin representative, Data, QA, Security<br>
 **Target:** Sprint 2<br>
@@ -10,25 +10,41 @@
 
 ## Context
 
-Public College-of-AI curriculum pages contain missing and inconsistent
-references. Production catalogue and rules need an approved import, validation
-preview, source provenance, and controlled publication.
+The demo needs a small, believable curriculum without pretending to reproduce
+the complete current AASTMT catalogue. Its initial catalogue is the 19-course
+curated AASTMT College of Artificial Intelligence Data Science snapshot in
+`docs/DEMO_CURRICULUM.md`, accessed 2026-07-13; every locally supplied gap value
+is labelled synthetic and demo-only. Production catalogue and rules still
+require an approved import, validation preview, source provenance, and
+controlled publication.
 
 ## Functional Requirements
 
 - FR-1: Admin MUST manage programs, curricula, courses, credit values, status,
   prerequisites, minimum grades/GPA/earned credits, and cohort scope inside a
   versioned `CatalogueDraft`; published catalogue records are never edited in
-  place.
+  place. The initial demo draft MUST use the curated official College-of-AI
+  snapshot defined in `docs/DEMO_CURRICULUM.md`; copied codes, titles, term sequence, and
+  prerequisite facts retain the official source URL/access date, while every
+  locally supplied gap field is explicitly marked synthetic-demo-only and is
+  never represented as a complete or current official curriculum.
 - FR-2: Imports MUST provide preview, row-level validation, provenance, and
-  all-or-nothing publication. Each `ImportBatch` MUST record the target draft,
-  source, access/import time, content hash, status, rowversion, errors, and the
-  resulting published version when successful.
+  field-level synthetic-demo markers where applicable, and all-or-nothing
+  publication. Each `ImportBatch` MUST record the target draft, source,
+  access/import time, content hash, status, rowversion, errors, synthetic field
+  classifications, and the resulting published version when successful.
 - FR-3: The system MUST detect missing references, duplicate codes, invalid
   credits, and prerequisite cycles before publish.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
+  The initial simple demo PolicySet MUST cover registration-window state,
+  prerequisites, course-specific GPA/earned-credit gates, academic standing,
+  a normal recommended target and hard maximum of 18 credits, a 12-credit hard
+  maximum when GPA is below 2.0, published group capacity, and timetable
+  conflict. Each value MUST distinguish an official-source fact from an
+  Ahmed-approved synthetic demo rule.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
-  before publication.
+  before publication, including the 18/19-credit normal boundary, 12/13-credit
+  probation boundary, and any source-backed course GPA/prerequisite boundary.
 - FR-6: Published `CatalogueVersion` and `PolicySet` versions MUST be immutable
   and superseded. Drafts use Editing, Validated, Published, or Abandoned state;
   import batches use Uploaded, Validating, Invalid, Validated, Publishing,
@@ -68,10 +84,15 @@ When the curriculum is validated<br>
 Then publication is blocked with the cycle path.
 
 ### AC-3: Policy simulation (FR-4, FR-5)
-Given a draft Project I rule requiring GPA 2.0 and 96 credits<br>
-When simulated with GPA 2.1 and 95 credits<br>
-Then it fails with the earned-credit reason<br>
-And identifies the draft policy version/source.
+Given the source-backed DS413 Project I rule requires GPA 2.0 and 96 earned
+credits, the normal demo target/maximum is 18 credits, and GPA below 2.0 has a
+12-credit maximum<br>
+When the admin simulates the Project I boundary plus normal 18/19-credit and
+probation 12/13-credit plans<br>
+Then 95 earned credits fails Project I, 18 and 12 pass their respective load
+boundaries, and 19 and 13 fail<br>
+And every result identifies the draft policy version, value classification,
+and source.
 
 ### AC-4: Governed catalogue publish (FR-1, FR-6, FR-7)
 Given an authorized Admin has a valid draft course/curriculum/policy version<br>
@@ -116,16 +137,23 @@ And each published change records actor, reason, source, and timestamp.
 ## API Contracts
 
 ```typescript
+interface CatalogueFieldProvenanceDto {
+  sourceReference: string;
+  accessedOn: string;
+  sourceKind: "official-source" | "synthetic-demo";
+  syntheticFields: string[];
+}
 interface CourseAdminDto {
   id: string;
   code: string;
   title: string;
   credits: number;
   active: boolean;
+  provenance: CatalogueFieldProvenanceDto;
   rowVersion: string;
 }
-interface ProgramAdminDto { id: string; code: string; displayName: string; active: boolean; }
-interface CurriculumCourseAdminDto { programCode: string; courseCode: string; level: number; termSequence?: number; required: boolean; }
+interface ProgramAdminDto { id: string; code: string; displayName: string; active: boolean; provenance: CatalogueFieldProvenanceDto; }
+interface CurriculumCourseAdminDto { programCode: string; courseCode: string; level: number; termSequence?: number; required: boolean; provenance: CatalogueFieldProvenanceDto; }
 interface CatalogueDraftDto {
   id: string;
   scope: string;
@@ -142,7 +170,7 @@ type CatalogueDraftOperation =
   | { kind: "upsert-course"; course: CourseAdminDto }
   | { kind: "upsert-curriculum-course"; curriculumCourse: CurriculumCourseAdminDto }
   | { kind: "remove-curriculum-course"; programCode: string; courseCode: string }
-  | { kind: "set-prerequisites"; courseCode: string; requiredCourseCodes: string[] };
+  | { kind: "set-prerequisites"; courseCode: string; requiredCourseCodes: string[]; provenance: CatalogueFieldProvenanceDto };
 interface CatalogueDraftMutationRequest { expectedDraftRowVersion: string; reason: string; source: string; operations: CatalogueDraftOperation[]; }
 interface CatalogueVersionSummaryDto {
   id: string;
@@ -158,6 +186,7 @@ interface ImportBatchDto {
   state: "uploaded" | "validating" | "invalid" | "validated" | "publishing" | "published" | "failed";
   source: string;
   contentHash: string;
+  syntheticFieldCount: number;
   rowVersion: string;
   errors: Array<{ row?: number; field?: string; code: string; message: string }>;
   publishedVersionId?: string;
@@ -214,15 +243,19 @@ IDEMPOTENCY_KEY_REUSED.
 | Course.Code | string | normalized unique, not null |
 | Course.Credits | decimal | positive approved range |
 | CoursePrerequisite | composite key | course != required course; acyclic graph |
+| Catalogue field provenance | owned value | source URL/reference, access date, source kind, explicit synthetic field names |
 | PolicySet.Version | string | unique in scope; published immutable |
 | ImportRowError.SourceRow | integer | required when input row is known |
 | CatalogueDraft | aggregate root | scope + rowversion; editable/validated lifecycle; canonical content hash |
 | CatalogueVersion | immutable aggregate | unique scope + version; published/superseded lifecycle |
-| ImportBatch | aggregate root | target draft, source, hash, lifecycle, rowversion, row errors, published version |
+| ImportBatch | aggregate root | target draft, source/access date, hash, lifecycle, rowversion, row errors, synthetic field classifications, published version |
 
 ## Out of Scope
 
-- OS-1: Scraping public web pages as production catalogue source.
-- OS-2: Arbitrary policy scripting.
+- OS-1: Live web scraping as a runtime/production catalogue source, or claiming
+  the curated snapshot and synthetic gap values are the complete current
+  official curriculum.
+- OS-2: Arbitrary policy scripting and advisor, overload, prerequisite-waiver,
+  or other exception workflows.
 - OS-3: Silent auto-correction of referential errors.
 - OS-4: Deleting historical course/policy records.

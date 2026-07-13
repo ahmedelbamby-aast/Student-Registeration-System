@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
 **Owner:** AASTMT Registrar/Policy SME<br>
 **Reviewers:** Product Owner, Data Lead, QA Lead<br>
 **Target:** Sprint 0; maintained thereafter<br>
@@ -18,12 +18,27 @@ not scattered as constants in UI or application code.
 The research baseline and unresolved POLICY-Q items are documented in
 docs/POLICY_RESEARCH.md.
 
+For this non-production proof of concept, Ahmed ELbamby approved the bounded
+`DEMO-POC-2026.1` profile on 2026-07-13. It intentionally demonstrates policy
+evaluation with simple rules and a small, sourced curriculum; it is not an
+official AASTMT production rulebook.
+
 ## Functional Requirements
 
 - FR-1: The system MUST version policy sets by effective dates and academic
   scope.
 - FR-2: Approved rules MUST cover registration window, standing, holds, load,
   prerequisites, earned credits, repeats, and conflict/capacity product rules.
+  The demo profile MUST enforce configured registration windows, eligible
+  standing, absence of blocking holds, and completed prerequisites; accept a
+  regular load from 9 through 18 credits with 18 as both the default/recommended
+  target and hard normal maximum; limit GPA below 2.0 to 12 credits; allocate
+  capacity to the first successful commit with no waitlist or override; block
+  every unresolved meeting overlap with travel-time buffering disabled; and
+  provide no automatic exception, add/drop, withdrawal, or advisor workflow.
+  Its catalogue MUST be the 19-course AASTMT College of Artificial Intelligence
+  Data Science snapshot in `docs/DEMO_CURRICULUM.md`, with any gap-filling synthetic row
+  clearly labelled as synthetic and never represented as official curriculum.
 - FR-3: Every decision MUST return reason code, explanation, policy version,
   input summary, and source.
 - FR-4: A draft or unapproved policy set MUST NOT govern student submission.
@@ -51,11 +66,12 @@ When eligibility is evaluated for a regular-term plan above 12 credits<br>
 Then the decision fails with the probation load reason<br>
 And cites the governing version/source and 12-credit maximum.
 
-### AC-2: Unapproved conflict (FR-4, FR-5)
-Given withdrawal week is unresolved between sources<br>
-When an admin attempts to publish that rule<br>
+### AC-2: Unapproved demo-policy conflict (FR-4, FR-5)
+Given an imported rule conflicts with the approved demo profile by enabling a
+waitlist or capacity override<br>
+When an admin attempts to publish that conflicting rule<br>
 Then publication is blocked<br>
-And POLICY-Q04 is shown as requiring Registrar approval.
+And the rule is shown as requiring a separately approved policy amendment.
 
 ### AC-3: Historical explainability (FR-3, FR-7)
 Given a registration used policy version 2026.1<br>
@@ -84,7 +100,8 @@ And source/access/approval/effective metadata remains auditable.
 - EC-2: Two sets have equal scope/priority -> publication validation fails.
 - EC-3: Source URL becomes unavailable -> retain recorded metadata and flag
   source review; do not alter historical decisions.
-- EC-4: Catalogue references missing course -> reject catalogue publication.
+- EC-4: A demo catalogue row lacks official-source provenance or an explicit
+  synthetic-gap label -> reject catalogue publication.
 
 ## API Contracts
 
@@ -124,5 +141,7 @@ snapshots by SPEC-015.
 
 - OS-1: Legal interpretation by software.
 - OS-2: Arbitrary scripting/expressions uploaded by users.
-- OS-3: Advisor or Deanery approval workflow until separately approved.
+- OS-3: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop,
+  withdrawal, and Advisor or Deanery approval workflows until separately
+  approved.
 - OS-4: Automatic dismissal or academic-path decisions.

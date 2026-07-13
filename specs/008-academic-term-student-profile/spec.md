@@ -2,7 +2,7 @@
 
 **Feature Branch**: 008-academic-term-student-profile
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -97,10 +97,13 @@ As a Student or authorized registrar, I need the Term and profile quality gate (
 
 **Acceptance Scenario (AC-7)**
 
-Given fake-clock boundary fixtures, approved dashboard read load, persistence
-inspection, and student/staff authorization matrix<br>
+Given fake-clock boundary fixtures, two rebuilds of the same synthetic seed
+version, approved dashboard read load, persistence inspection, and
+student/staff authorization matrix<br>
 When the feature quality gate executes<br>
 Then time behavior passes opening/closing boundary tests<br>
+And both rebuilds contain the same logical students and complete existing
+academic profile values<br>
 And dashboard context is at most 300 ms p95<br>
 And instants use UTC datetime2 while recurring meetings use local day/time plus
 IANA timezone<br>
@@ -140,7 +143,9 @@ change nothing.
 ## Edge Cases
 
 - EC-1: Overlapping active windows for same scope -> publication fails.
-- EC-2: Missing GPA/provenance -> affected policy decision fails closed.
+- EC-2: Missing GPA/provenance in an imported record, or any missing required
+  existing academic-profile field in a synthetic seed row -> the affected
+  policy decision fails closed and the seed profile is not marked ready.
 - EC-3: Daylight/timezone rule changes -> UTC window remains unambiguous and
   display uses configured timezone library.
 - EC-4: Stale admin edit -> 409 with current rowversion.
@@ -160,7 +165,13 @@ change nothing.
   instant.
 - FR-5: Student profile MUST include University ID, program/cohort, GPA,
   earned credits, standing, transcript summary/attempts, all active holds with
-  blocking flags, provenance, data version, and as-of time.
+  blocking flags, provenance, data version, and as-of time. Each Development
+  and Testing synthetic student MUST populate this same complete existing
+  field set, including linked `Student`, `TranscriptAttempt`, `StudentHold`,
+  and `StudentTermAcademicState` rows where applicable. Fixture values and
+  stable University-ID/ApplicationUser links are determined by seed-profile
+  version plus fixture ordinal; no production student data or new demographic
+  fields are inferred.
 - FR-6: Registration commands MUST re-resolve time, term, window, student
   state, and holds.
 - FR-7: Admin profile corrections MUST require authorization, reason, source,
@@ -185,7 +196,8 @@ change nothing.
 - NFR-3: Instants MUST be stored in UTC datetime2; recurring class times use
   DayOfWeek/TimeOnly and term timezone.
 - NFR-4: Student academic data MUST be restricted to self and approved staff
-  scopes.
+  scopes. Non-production fixtures MUST be wholly synthetic, and logs, traces,
+  snapshots, and test reports MUST NOT contain a full student profile.
 
 ### Key Entities
 
@@ -199,7 +211,7 @@ change nothing.
 ## Success Criteria
 
 - **SC-1**: Registration availability is determined only by authoritative institutional time and approved windows.
-- **SC-2**: Every eligibility decision uses a complete, sourced academic profile.
+- **SC-2**: Every eligibility decision uses a complete, sourced academic profile, and the same synthetic seed version reproduces the same logical profile values without production student data.
 - **SC-3**: No overlapping active registration context can apply to the same student.
 
 ## Assumptions

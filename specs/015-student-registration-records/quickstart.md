@@ -1,11 +1,12 @@
-# Planning Quickstart: Student Registration Records
+# Implementation Quickstart: Student Registration Records
 
-This is a pre-implementation verification guide. It does not run or create application code.
+Gate A is recorded. This guide verifies the approved baseline before demo implementation work.
 
-1. Confirm the feature remains In Review and that implementation is not authorized.
-2. Review requirements.md and resolve all external approvals recorded there.
+1. Confirm the feature is Approved and the 2026-07-13 Gate A record remains current.
+2. Review requirements.md and identify any later Gate B-D or production decisions that still fail closed.
 3. Verify each functional requirement appears in spec.md and tasks.md.
 4. Walk through each acceptance scenario with the accountable owner.
 5. Review data-model.md and contracts/api.md against upstream dependencies.
 6. Run the repository Spec Kit gate script.
-7. Obtain human approval before creating any source, test, migration, or deployment file.
+7. Begin non-production demo implementation only while dependency baselines and
+   automated gates pass. Gate B-D and production/release approvals remain separate.

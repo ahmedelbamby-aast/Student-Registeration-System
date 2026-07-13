@@ -12,8 +12,9 @@
 | Code First SQL Server | SPEC-004, SPEC-005, SPEC-008, SPEC-010, SPEC-012, SPEC-015, SPEC-017 | declared mapping contributions plus five dependency-ordered migrations on real SQL Server |
 | EF Core and LINQ | SPEC-005, SPEC-006 | integration tests and query review |
 | Student login/register | SPEC-007 | identity acceptance tests |
-| Shared Admin/Lecturer/TA login | SPEC-007 | role-routing and authorization tests |
-| University ID + password | SPEC-007 | activation and login tests |
+| Shared Admin/Lecturer/TA login | SPEC-007 | password-only/no-second-factor role-routing and authorization tests |
+| Generated Development/Testing databases | SPEC-005, SPEC-007, SPEC-008, SPEC-018 | migration-first environment guards, isolated database, synthetic profile, idempotent seed/reset, and credential-leakage tests |
+| University ID + PIN/password | SPEC-007 | generated synthetic identity, hash-only persistence, first-use activation, and login tests |
 | Current date and academic term | SPEC-008 | fake-clock and term-boundary tests |
 | User/load handling | SPEC-018 | target, 2x, and spike load tests |
 | GPA/policy-based availability | SPEC-002, SPEC-009, SPEC-011 | rule-unit and decision-explanation tests |

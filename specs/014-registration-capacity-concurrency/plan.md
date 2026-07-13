@@ -1,7 +1,7 @@
 # Implementation Plan: Registration Capacity and Concurrency
 
 **Branch**: 014-registration-capacity-concurrency | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
 
 ## Summary
 
@@ -33,8 +33,8 @@ no claim or partial state.
 1. Baseline all declared upstream specifications and shared serialization
    boundaries; complete consistency/concurrency analysis.
 2. Freeze the student+term idempotency scope, receipt snapshot, SQL constraints,
-   transaction/savepoint sequence, error map, and both endpoints; obtain human
-   approval last.
+   transaction/savepoint sequence, error map, and both endpoints against Ahmed
+   ELbamby's recorded 2026-07-13 Gate A approval.
 3. Write failing schema, contract, acceptance, every-row concurrency-matrix,
    fault-injection, and load tests against real SQL Server.
 4. Implement the authenticated command, student-term guard, canonical payload
@@ -69,9 +69,10 @@ messages, email, or other remote work inside the transaction.
 
 ## Constitution and Approval Gate
 
-Implementation is forbidden until every dependency is Approved, SQL/race
-evidence is planned, consistency analysis passes, and Ahmed ELbamby's approval
-is recorded as the final planning gate.
+Gate A authorizes non-production demo implementation while every dependency
+baseline remains Approved and the planned SQL/race and consistency gates pass.
+Gate B-D evidence and production/release approval remain separate and
+mandatory for their respective milestones.
 
 ## Artifacts
 

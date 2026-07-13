@@ -46,12 +46,13 @@ lost updates, and ambiguous partial patch behavior.
 
 ### Conflict and travel semantics
 **Decision**: Use half-open interval overlap, return both meeting details plus
-exact overlap and change/remove actions, and disable TRAVEL_BUFFER until DEC-06
-has an approved matrix/duration.
+exact overlap and change/remove actions, and keep TRAVEL_BUFFER disabled for
+the simple demo POC without inventing a matrix or duration.
 **Rationale**: Deterministic adjacency and explicit recovery actions meet the
 student UX requirement without inventing institutional policy.
 **Alternatives rejected**: Closed intervals, guessed travel minutes, and a red
-X with no resolution contract.
+X with no resolution contract. A future approved specification may add travel
+semantics without changing the meeting-overlap rule.
 
 
 

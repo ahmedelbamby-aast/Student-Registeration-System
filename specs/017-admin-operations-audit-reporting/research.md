@@ -49,6 +49,17 @@ generic command or confirmation facade; term,
 identity, academics, policy, and scheduling mutations to their public module
 ports and preserves their preview/version invariants.
 
+### Read-only availability consumption
+
+**Decision**: Staff own availability edits. Admin consumes SPEC-010's bounded
+read-only view and may copy staff-declared ranges into offering-planning input.
+There is no Admin availability mutation/correction/override route, permission,
+editable control, notification workflow, or correction-audit flow.
+
+**Rationale**: This supports POC planning without creating a second writer or a
+policy-heavy correction workflow. Schedule-impact alerts from staff changes
+remain durable and discoverable.
+
 ## Open Research
 
 Export retention and institutional audit retention remain approved

@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Backend Lead<br>
 **Reviewers:** Registrar/Policy SME, Data, QA<br>
 **Target:** Sprint 1<br>
@@ -30,7 +30,13 @@ never open a window or change an academic decision.
 - FR-5: Student profile MUST include University ID, program/cohort, GPA,
   earned credits, standing, transcript summary and attempt data, every active
   hold (including non-blocking holds with `blocksRegistration`), provenance,
-  data version, and as-of time.
+  data version, and as-of time. Each Development and Testing synthetic student
+  MUST populate this same complete existing field set, including linked
+  `Student`, `TranscriptAttempt`, `StudentHold`, and
+  `StudentTermAcademicState` rows where applicable. Fixture values and stable
+  University-ID/ApplicationUser links are determined by seed-profile version
+  plus fixture ordinal; no production student data or new demographic fields
+  are inferred.
 - FR-6: Registration commands MUST re-resolve time, term, window, student
   state, and holds.
 - FR-7: Admin profile corrections MUST require authorization, reason, source,
@@ -62,7 +68,8 @@ never open a window or change an academic decision.
 - NFR-3: Instants MUST be stored in UTC datetime2; recurring class times use
   DayOfWeek/TimeOnly and term timezone.
 - NFR-4: Student academic data MUST be restricted to self and approved staff
-  scopes.
+  scopes. Non-production fixtures MUST be wholly synthetic, and logs, traces,
+  snapshots, and test reports MUST NOT contain a full student profile.
 
 ## Acceptance Criteria
 
@@ -106,10 +113,13 @@ And the loser receives 409 STALE_VERSION or WINDOW_OVERLAP<br>
 And no student matches two permitted registration contexts.
 
 ### AC-7: Term and profile quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
-Given fake-clock boundary fixtures, approved dashboard read load, persistence
-inspection, and student/staff authorization matrix<br>
+Given fake-clock boundary fixtures, two rebuilds of the same synthetic seed
+version, approved dashboard read load, persistence inspection, and
+student/staff authorization matrix<br>
 When the feature quality gate executes<br>
 Then time behavior passes opening/closing boundary tests<br>
+And both rebuilds contain the same logical students and complete existing
+academic profile values<br>
 And dashboard context is at most 300 ms p95<br>
 And instants use UTC datetime2 while recurring meetings use local day/time plus
 IANA timezone<br>
@@ -135,7 +145,9 @@ nothing and return their stable reason.
 ## Edge Cases
 
 - EC-1: Overlapping active windows for same scope -> publication fails.
-- EC-2: Missing GPA/provenance -> affected policy decision fails closed.
+- EC-2: Missing GPA/provenance in an imported record, or any missing required
+  existing academic-profile field in a synthetic seed row -> the affected
+  policy decision fails closed and the seed profile is not marked ready.
 - EC-3: Daylight/timezone rule changes -> UTC window remains unambiguous and
   display uses configured timezone library.
 - EC-4: Stale admin edit -> 409 with current rowversion.
@@ -231,6 +243,14 @@ handlers.
 | TranscriptAttempt | course/term/grade/status/provenance |
 | StudentHold | type, blocking flag, effective period, source |
 | StudentTermAcademicState | student, term, rowversion; shared serialization/version boundary consumed by registration |
+
+The synthetic Development/Testing fixture is configuration, not a new entity.
+For each fixture ordinal it creates one SPEC-007 ApplicationUser link and the
+existing SPEC-008 Student/profile graph with synthetic provenance. Rebuilding a
+seed-profile version reproduces the same logical University ID, ProgramCode,
+cohort, GPA, credits, standing, transcript attempts, holds, term state, data
+version, and as-of time; password hash bytes are outside this spec and need not
+be deterministic.
 
 ## Out of Scope
 

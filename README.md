@@ -2,17 +2,18 @@
 
 The 18 feature packages have completed automated Spec Kit planning gates. See
 [the specification index](specs/README.md) and
-[the readiness audit](docs/SPECKIT_AUDIT.md). Human approval remains pending;
-no implementation has started.
+[the readiness audit](docs/SPECKIT_AUDIT.md). Ahmed ELbamby approved Gate A for
+all 18 non-production demo specifications on 13 July 2026; approved-slice
+implementation may begin.
 
-Human choices that must be resolved before affected specs can be approved are
-tracked in [open decisions](docs/OPEN_DECISIONS.md).
+The completed demo choices and production-only boundaries are tracked in the
+[decision register](docs/OPEN_DECISIONS.md).
 
 Planning repository for an AASTMT College of Artificial Intelligence student
 registration web application.
 
-> Status: planning baseline in review. No application code should be created
-> until the relevant specification is approved.
+> Status: Gate A approved for demo implementation. Gate B-D and production
+> deployment/release remain separate approvals.
 
 ## Outcome
 
@@ -40,6 +41,8 @@ The design deliberately keeps the first release small:
 - [Screen storyboard](docs/STORYBOARD.md)
 - [Architecture and engineering principles](docs/ARCHITECTURE.md)
 - [AASTMT policy research](docs/POLICY_RESEARCH.md)
+- [Demo curriculum](docs/DEMO_CURRICULUM.md)
+- [Brand asset provenance](docs/BRAND_ASSETS.md)
 - [ERD](docs/diagrams/ERD.md)
 - [Class diagram](docs/diagrams/CLASS_DIAGRAM.md)
 - [Development environment](docs/DEVELOPMENT_ENVIRONMENT.md)
@@ -52,19 +55,21 @@ The design deliberately keeps the first release small:
 - 18 specifications
 - 27 route-level screen templates
 - 9 two-week sprints, including Sprint 0 discovery/design
-- Gate A: approve product, policy, UX, architecture, ERD, and class contracts
+- Gate A: product, policy, UX, architecture, ERD, and class contracts —
+  **completed 13 July 2026**
 - Gate B: secure walking skeleton and publishable master data
 - Gate C: end-to-end registration beta with proven seat safety
 - Gate D: UAT, security, accessibility, load, recovery, and release approval
 
-## Approval required before implementation
+## Approval boundary
 
-The Product Owner, AASTMT Registrar/Policy SME, UX Lead, Technical Lead, Data
-Lead, QA Lead, Security Reviewer, and DevOps owner should review the specs
-assigned to them. In particular, the College/Deanery must confirm policy
-questions marked POLICY-Q before production rules are implemented.
+Ahmed ELbamby completed the Product, Policy, UX, Architecture, Data, QA,
+Security, and Operations review perspectives for the demo. Official AASTMT
+production policy, real-data retention, hosting, Safari support, and go-live
+remain outside this approval.
 
 ## Repository state
 
-The repository intentionally contains planning, specifications, diagrams, and
-ADRs only. Source and test projects are created in Sprint 1 after Gate A.
+At this checkpoint the repository contains planning, specifications, diagrams,
+and ADRs. Source and test projects are authorized to begin in Sprint 1 under
+the approved dependency and test-first task order.

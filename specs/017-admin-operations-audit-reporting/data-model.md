@@ -14,6 +14,9 @@
 - Registration records are consumed read-only from SPEC-015.
 - Master data and ScheduleImpactAlert actions delegate to owning feature
   modules; SPEC-017 does not redefine them.
+- Staff availability is a consumed bounded read-only projection. Import copies
+  ranges into offering-planning input; no Admin mutation, correction,
+  permission, notification, or correction-audit model is owned here.
 
 ## Detailed Model
 

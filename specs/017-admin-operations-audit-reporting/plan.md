@@ -1,7 +1,7 @@
 # Implementation Plan: Admin Operations, Audit, and Reporting
 
 **Branch**: 017-admin-operations-audit-reporting | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
 
 ## Summary
 
@@ -9,7 +9,8 @@ Implement least-privilege Admin orchestration, append-only audit, operational
 metrics, and durable asynchronous exports in
 `StudentRegistration.StaffAdministration`. Enrollment correction, drop, and
 withdrawal are excluded from MVP; Admin registration views are inspection and
-monitoring only.
+monitoring only. Staff own availability edits; Admin may view/import declared
+ranges only as read-only offering-planning inputs.
 
 ## Technical Context
 
@@ -34,7 +35,8 @@ monitoring only.
    analysis.
 2. Freeze Admin delegation, audit aggregation, preview/idempotency,
    Identity-owned final-Admin behavior, metric semantics, export lifecycle,
-   and APIs; obtain approval last.
+   read-only availability consumption, and APIs against Ahmed ELbamby's
+   recorded 2026-07-13 Gate A approval.
 3. Write failing model/contract, authorization, acceptance, atomic-audit,
    preview, two-replica export-worker, final-Admin write-skew, and E2E tests.
 4. Implement audit/security-event aggregation; verify Admin pages call
@@ -69,11 +71,16 @@ impact alerts, and SPEC-018 operational metric contracts. It does not own role
 mutation, audit transaction writing, a generic Admin command/confirmation
 facade, or enrollment correction behavior.
 
+Availability consumption is read-only: no Admin availability correction or
+override command/permission, editable control, notification workflow, or
+correction-audit flow is introduced. Schedule-impact alerts remain visible.
+
 ## Constitution and Approval Gate
 
-Every operation is server-authorized and audited, and implementation is
-forbidden until all dependency baselines and consistency analysis pass and
-Ahmed ELbamby's approval is recorded last.
+Every operation is server-authorized and audited. Gate A authorizes
+non-production demo implementation while all dependency baselines and
+consistency gates pass. Gate B-D evidence and production/release approval
+remain separate and mandatory for their respective milestones.
 
 ## Artifacts
 

@@ -1,7 +1,8 @@
 # Implementation Plan: Product Charter and RBAC
 
 **Branch**: 001-product-charter-rbac | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
+and production release approval remain required.
 
 ## Summary
 
@@ -62,7 +63,8 @@ role assignments, authorization policies, and staff/student login behavior.
 ## Execution Strategy
 
 1. Validate the root scope, consistency analysis, and traceability inventory.
-2. Record Ahmed ELbamby's approval as the final planning gate.
+2. Verify Ahmed ELbamby's 2026-07-13 Gate A approval record before starting
+   implementation; retain the later Gate B-D and production release gates.
 3. Write failing charter/permission conformance tests before governance
    artifacts or release evidence.
 4. Defer runtime authorization implementation to approved SPEC-007 tasks and

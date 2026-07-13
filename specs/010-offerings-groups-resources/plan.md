@@ -1,7 +1,7 @@
 # Implementation Plan: Offerings, Groups, and Resources
 
 **Branch**: 010-offerings-groups-resources | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; DEC-11/DEC-12 institutional confirmation and human approval remain pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13, including staff-owned availability and read-only Admin use.
 
 ## Summary
 
@@ -46,25 +46,33 @@ it does not create a second StaffAdministration aggregate.
 
 ## Feature Design
 
-1. CourseOffering owns versioned SectionGroups; a group contains activity-
-   typed meeting slots, room references, assignments, capacity, and state.
-2. Apply DEC-11 staffing requirements by activity and display all assigned
-   staff in the complete group choice.
+1. CourseOffering owns versioned SectionGroups; each student-selectable group
+   is one complete activity bundle containing typed meeting slots, room
+   references, per-activity staff assignments, capacity, and state.
+2. Apply the approved simple demo staffing rule: every published/open bundle
+   has a Lecture with a Lecturer plus a Tutorial or Laboratory (or both), and
+   every present Tutorial/Laboratory has a TA. Display activity type, staff,
+   room/location, day, and time together. `Tutorial` is canonical; the UI may
+   label it `Section`.
 3. Scheduling owns Room and StaffTermAvailability resource versions plus
    persistent ScheduleImpactAlert state.
 4. Validation binds every group/room/staff dependency version; publication
    locks the canonical stable order and repeats all checks in one transaction.
-5. Staff edit through SPEC-016; DEC-12 Admin correction uses the separate
-   previewed/audited/notified owner contract.
+5. Staff edit availability through SPEC-016. Admin may view and import those
+   declarations into offering planning as read-only inputs; no Admin
+   availability edit or override route exists in
+   the POC. Staff-owned changes can create Scheduling-owned impact alerts.
 6. ADM-06/ADM-07 use Scheduling owner APIs; SPEC-017 contributes monitoring
    and audit views without duplicate writers.
 
 ## Execution and Gate Order
 
-Dependency baselines, DEC confirmation/fail-closed review, and consistency
-analysis precede Ahmed ELbamby's final approval. Failing model/contract,
-acceptance/race, and consolidated workstream tests precede all domain,
-application, handler, and page delivery.
+Ahmed ELbamby's Gate A demo approval is recorded. Dependency baselines,
+staff-owned/read-only Admin availability review, and consistency analysis remain the first
+execution tasks. Failing model/contract, acceptance/race, and consolidated
+workstream tests precede all domain, application, handler, and page delivery.
+Gate B-D, release, production deployment, and official AASTMT go-live
+approvals remain separate.
 
 ## Design Artifacts
 

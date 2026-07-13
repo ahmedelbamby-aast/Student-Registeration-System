@@ -33,6 +33,10 @@ interface OfferingEligibilityDto {
   courseCode: string;
   title: string;
   credits: number;
+  currentPlanCredits: number;
+  projectedPlanCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
   eligible: boolean;
   reasons: EligibilityReasonDto[];
   groups: GroupSummaryDto[];

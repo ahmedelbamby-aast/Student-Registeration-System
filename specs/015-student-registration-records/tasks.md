@@ -1,18 +1,18 @@
 # Tasks: Student Registration Records
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; tasks remain unstarted.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
-## Phase 1 - Planning Analysis, Dependency Baseline, and Final Human Approval
+## Phase 1 - Planning Baseline and Recorded Gate A Verification
 
 - [ ] T001 [GATE] Run and record the constitution-compliance review for SPEC-015 in specs/015-student-registration-records/checklists/approval.md; this is planning analysis and does not authorize implementation.
 - [ ] T002 [DEP-SPEC-003] Validate the consumed upstream requirements, plan, data model, and API contract at specs/003-ux-storyboard-accessibility/ and record the accepted versions in specs/015-student-registration-records/dependency-baseline.md.
 - [ ] T003 [DEP-SPEC-008] Validate the consumed upstream requirements, plan, data model, and API contract at specs/008-academic-term-student-profile/ and record the accepted versions in specs/015-student-registration-records/dependency-baseline.md.
 - [ ] T004 [DEP-SPEC-014] Validate the consumed upstream requirements, plan, data model, and API contract at specs/014-registration-capacity-concurrency/ and record the accepted versions in specs/015-student-registration-records/dependency-baseline.md.
 - [ ] T005 [DEP-SPEC-018] Validate the consumed upstream requirements, plan, data model, and API contract at specs/018-quality-security-scalability-operations/ and record the accepted versions in specs/015-student-registration-records/dependency-baseline.md.
-- [ ] T006 [GATE] Complete dependency validation, cross-spec consistency analysis, model/API/policy/task trace review, and freeze SPEC-015 in specs/015-student-registration-records/checklists/implementation-readiness.md; record pass/fail and keep the package In Review. This readiness task does not authorize implementation.
-- [ ] T007 [GATE] Only after T001-T006 pass, record Ahmed ELbamby's human approval in specs/015-student-registration-records/checklists/approval.md and update the package status to Approved; no later model, test, source, migration, page, or deployment task may begin before this final planning gate is complete.
+- [ ] T006 [GATE] Complete dependency validation, cross-spec consistency analysis, model/API/policy/task trace review, and verify the approved SPEC-015 baseline in specs/015-student-registration-records/checklists/implementation-readiness.md; record pass/fail and return the package to In Review if this gate fails.
+- [ ] T007 [GATE] Before any later model, test, source, migration, page, or deployment task, verify Ahmed ELbamby's 2026-07-13 Gate A demo approval recorded in specs/015-student-registration-records/clarifications.md remains current; a superseding baseline change returns the package to In Review.
 
 ## Phase 2 - Models and API Contracts
 

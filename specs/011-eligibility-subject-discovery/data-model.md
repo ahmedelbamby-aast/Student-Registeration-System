@@ -12,6 +12,7 @@ aggregates are not redefined or persisted as SPEC-011-owned entities.
 | Field/example | Type | Constraints |
 |---|---|---|
 | OfferingEligibility.Course | projection | code, title, credits |
+| OfferingEligibility.Load | projection | current-plan credits, projected credits, default target 18, applicable maximum 18 or probation 12 |
 | OfferingEligibility.Reasons | array | code, pass/block flags, safe required/current values, message, PolicySet/version/source/effective/support metadata per evaluated rule |
 | OfferingEligibility.Groups | array | published and unavailable group summaries with state, selectable flag, capacity/count/seats, staff, activity/room/time, SectionGroup rowversion |
 | OfferingEligibility.Context | value | evaluated time plus StudentTermAcademicState/policy/catalogue dependency versions |

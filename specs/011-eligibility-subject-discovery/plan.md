@@ -1,7 +1,7 @@
 # Implementation Plan: Eligibility and Subject Discovery
 
 **Branch**: 011-eligibility-subject-discovery | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; Policy SME and human approval remain pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13, including the Policy SME review perspective.
 
 ## Summary
 
@@ -51,18 +51,25 @@ redefined in Registration.
 1. Resolve one versioned academic, policy, catalogue, offering, and group input
    set for the authenticated student and authorized term.
 2. Evaluate all relevant approved rules and create complete per-rule reasons;
-   missing required input fails closed.
-3. Project group activity/staff/room/time/capacity/version details from
-   Scheduling without treating advisory capacity as a reservation.
+   missing required input fails closed. The demo rule set explicitly covers
+   window, standing, holds, prerequisites, course GPA/earned credits, 18-credit
+   normal target/maximum, 12-credit probation maximum, capacity, and exact
+   meeting conflict without advisor/exception workflows.
+3. Project current/projected/applicable load plus group activity/staff/room/
+   time/capacity/version details from upstream modules without treating
+   advisory capacity as a reservation.
 4. Apply bounded server search/filter/sort/page only after eligibility
    evaluation and expose a dedicated complete detail endpoint.
 5. STU-02/STU-03 render stable reasons and non-color states from SPEC-003.
 
 ## Execution and Gate Order
 
-Dependency and policy baselines plus consistency analysis precede Ahmed
-ELbamby's final approval. Failing projection/contract, acceptance, search,
-quality, and frontend tests precede application, handler, and page delivery.
+Ahmed ELbamby's Gate A demo approval, including the Policy SME review
+perspective, is recorded. Dependency and policy baselines plus consistency
+analysis remain the first execution tasks. Failing projection/contract,
+acceptance, search, quality, and frontend tests precede application, handler,
+and page delivery. Gate B-D, release, production policy use, and official
+AASTMT go-live approvals remain separate.
 
 ## Design Artifacts
 

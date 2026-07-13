@@ -63,8 +63,12 @@ current range set, and 409 `AVAILABILITY_DEADLINE_PASSED` includes server time
 and deadline. If a published assignment conflicts, availability and a unique
 Open ScheduleImpactAlert commit atomically; no class moves automatically.
 
-SPEC-017 supplies the Admin alert discovery/revalidation surface. SPEC-016
-does not expose an Admin mutation endpoint.
+SPEC-010 supplies the bounded read-only Admin availability view; import means
+copying staff-declared ranges into offering-planning input and does not mutate
+StaffTermAvailability. SPEC-017 supplies the Admin alert discovery/revalidation
+surface. SPEC-016 exposes no Admin availability mutation/correction/override
+endpoint, request, permission, editable control, notification workflow, or
+correction-audit flow.
 
 ## Shared Rules
 

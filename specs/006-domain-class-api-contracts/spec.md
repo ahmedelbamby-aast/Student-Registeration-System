@@ -2,7 +2,7 @@
 
 **Feature Branch**: 006-domain-class-api-contracts
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: Approved (Gate A demo implementation, 2026-07-13)
 **Owner**: Technical Lead
 **Normative detail**: [requirements.md](requirements.md)
 

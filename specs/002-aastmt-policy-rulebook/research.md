@@ -33,8 +33,40 @@ Endpoint ownership is intentionally downstream: SPEC-009 owns
 `GET /api/student/offerings/{offeringId}/eligibility`. This rulebook supplies
 the decision/provenance shape but no handler.
 
+### Accepted demo POC policy profile
+**Decision**: Use the bounded `DEMO-POC-2026.1` profile approved by Ahmed
+ELbamby on 2026-07-13:
+
+- configured registration window, eligible standing, no blocking hold, and
+  completed prerequisites are mandatory;
+- regular plans are 9-18 credits, with 18 as the default/recommended target
+  and hard normal maximum;
+- GPA below 2.0 is probation and has a 12-credit maximum;
+- the first successful capacity commit wins, with no waitlist or override;
+- every unresolved meeting overlap blocks submission and the travel buffer is
+  zero/disabled; and
+- automatic exceptions, add/drop, withdrawal, and advisor workflows are not
+  part of the POC.
+
+**Rationale**: These rules are sufficient to prove explainable eligibility,
+capacity, and conflict concepts without implementing ambiguous institutional
+workflows.
+
+**Curriculum decision**: Seed the exact 19-course Data Science snapshot in
+`docs/DEMO_CURRICULUM.md`, curated from the official AASTMT College of
+Artificial Intelligence page registered in `docs/POLICY_RESEARCH.md`.
+Every copied row retains its URL and access date. A missing row needed to make
+the POC coherent may be synthetic only when explicitly labelled synthetic in
+data and UI; it cannot be attributed to AASTMT.
+
+**Authority boundary**: Public AASTMT pages provide provenance. Ahmed's
+approval authorizes this non-production demo profile only and is not AASTMT
+production authorization.
+
 
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+No unresolved requirement clarification remains for the bounded demo profile.
+Institutional values outside it remain release prerequisites/configuration
+provenance and are not guessed as production defaults.

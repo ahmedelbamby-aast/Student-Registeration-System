@@ -7,7 +7,12 @@
 - [x] Assumptions, dependencies, and out-of-scope boundaries are explicit.
 - [x] Key entities are identified and refined in data-model.md.
 - [x] Security, accessibility, concurrency, scale, and failure behavior are addressed where applicable.
+- [x] The approved simple demo staffing rule defines complete selectable
+  activity bundles and canonical Tutorial/display Section terminology without
+  introducing another entity.
+- [x] Availability mutation is staff-owned; Admin use is view/read-only
+  planning import, and no Admin edit or override endpoint exists.
 - [x] This package contains planning artifacts only.
 
 **Automated readiness**: PASS
-**Human approval**: PENDING
+**Human approval**: APPROVED by Ahmed ELbamby on 2026-07-13 for Gate A demo implementation

@@ -1,10 +1,10 @@
 # Tasks: Registration Capacity and Concurrency
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; tasks remain unstarted.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
-## Phase 1 - Planning Analysis, Dependency Baseline, and Final Human Approval
+## Phase 1 - Planning Baseline and Recorded Gate A Verification
 
 - [ ] T001 [GATE] Run and record the constitution-compliance review for SPEC-014 in specs/014-registration-capacity-concurrency/checklists/approval.md; this is planning analysis and does not authorize implementation.
 - [ ] T002 [DEP-SPEC-003] Validate the consumed upstream requirements, plan, data model, and API contract at specs/003-ux-storyboard-accessibility/ and record the accepted versions in specs/014-registration-capacity-concurrency/dependency-baseline.md.
@@ -16,8 +16,8 @@
 - [ ] T008 [DEP-SPEC-012] Validate the consumed upstream requirements, plan, data model, and API contract at specs/012-schedule-builder-conflicts/ and record the accepted versions in specs/014-registration-capacity-concurrency/dependency-baseline.md.
 - [ ] T009 [DEP-SPEC-013] Validate the consumed upstream requirements, plan, data model, and API contract at specs/013-schedule-recommendations/ and record the accepted versions in specs/014-registration-capacity-concurrency/dependency-baseline.md.
 - [ ] T010 [DEP-SPEC-018] Validate the consumed upstream requirements, plan, data model, and API contract at specs/018-quality-security-scalability-operations/ and record the accepted versions in specs/014-registration-capacity-concurrency/dependency-baseline.md.
-- [ ] T011 [GATE] Complete dependency validation, cross-spec consistency analysis, model/API/policy/task trace review, and freeze SPEC-014 in specs/014-registration-capacity-concurrency/checklists/implementation-readiness.md; record pass/fail and keep the package In Review. This readiness task does not authorize implementation.
-- [ ] T012 [GATE] Only after T001-T011 pass, record Ahmed ELbamby's human approval in specs/014-registration-capacity-concurrency/checklists/approval.md and update the package status to Approved; no later model, test, source, migration, page, or deployment task may begin before this final planning gate is complete.
+- [ ] T011 [GATE] Complete dependency validation, cross-spec consistency analysis, model/API/policy/task trace review, and verify the approved SPEC-014 baseline in specs/014-registration-capacity-concurrency/checklists/implementation-readiness.md; record pass/fail and return the package to In Review if this gate fails.
+- [ ] T012 [GATE] Before any later model, test, source, migration, page, or deployment task, verify Ahmed ELbamby's 2026-07-13 Gate A demo approval recorded in specs/014-registration-capacity-concurrency/clarifications.md remains current; a superseding baseline change returns the package to In Review.
 
 ## Phase 2 - Models and API Contracts
 

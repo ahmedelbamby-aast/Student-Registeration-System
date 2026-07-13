@@ -43,7 +43,8 @@ PUT replaces the complete selection atomically and requires
 current authorized plan. Validation is non-mutating. Selection validation
 returns `DUPLICATE_OFFERING_SELECTION`, `GROUP_CHANGED`, `GROUP_FULL`,
 `GROUP_UNAVAILABLE`, or complete conflict data and actions. Conflict detection
-uses half-open intervals. `TRAVEL_BUFFER` is not emitted while DEC-06 is open.
+uses half-open intervals. `TRAVEL_BUFFER` is reserved for a future approved
+policy and is not emitted by the demo.
 Neither read, PUT, nor validate reserves a seat.
 
 ## Shared Rules

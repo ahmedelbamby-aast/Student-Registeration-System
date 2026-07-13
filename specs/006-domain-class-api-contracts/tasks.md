@@ -1,6 +1,6 @@
 # Tasks: Domain Classes and API Contracts
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
@@ -8,9 +8,9 @@
 
 - [ ] T001 [DEP-SPEC-004] Validate the consumed upstream requirements, plan, data model, and API contract at specs/004-architecture-engineering-principles/ and record the accepted versions in specs/006-domain-class-api-contracts/dependency-baseline.md.
 - [ ] T002 [DEP-SPEC-005] Validate the consumed upstream requirements, plan, data model, and API contract at specs/005-erd-data-lifecycle/ and record the accepted versions in specs/006-domain-class-api-contracts/dependency-baseline.md.
-- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-006; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and planning-only status; record findings and resolutions in specs/006-domain-class-api-contracts/checklists/consistency-analysis.md.
+- [ ] T003 [GATE] Run cross-spec consistency analysis for SPEC-006; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/006-domain-class-api-contracts/checklists/consistency-analysis.md.
 - [ ] T004 [GATE] After T003 passes, freeze the SPEC-006 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/006-domain-class-api-contracts/checklists/implementation-readiness.md.
-- [ ] T005 [GATE] After T004 passes, record the accountable owner and Ahmed ELbamby's human approval for SPEC-006 in specs/006-domain-class-api-contracts/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute before this approval.
+- [ ] T005 [GATE] After T004 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-006 in specs/006-domain-class-api-contracts/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
 
 ## Phase 2 - Models and API Contracts
 

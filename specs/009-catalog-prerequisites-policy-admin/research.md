@@ -20,7 +20,14 @@ interface CourseAdminDto {
   title: string;
   credits: number;
   active: boolean;
+  provenance: CatalogueFieldProvenanceDto;
   rowVersion: string;
+}
+interface CatalogueFieldProvenanceDto {
+  sourceReference: string;
+  accessedOn: string;
+  sourceKind: "official-source" | "synthetic-demo";
+  syntheticFields: string[];
 }
 interface CatalogueValidationResult {
   valid: boolean;
@@ -49,6 +56,45 @@ and historical meaning explicit without event sourcing or a generic workflow
 engine.
 **Alternatives rejected**: Editing published rows and one overloaded table
 with implicit states.
+
+### Curated demo curriculum and provenance
+
+**Decision**: Seed the exact 19-course snapshot in
+`docs/DEMO_CURRICULUM.md`, curated from the official AASTMT College of
+Artificial Intelligence Data Science curriculum and accessed 2026-07-13. This
+is a demo fixture, not a live scraper and not a claim that the snapshot is the
+complete or current official catalogue.
+
+The public program list does not publish per-course credit values. The demo
+therefore assigns three credits per snapshot course and supplies required/
+active flags and fixture identifiers locally; those fields are
+`synthetic-demo-only` in the provenance manifest and UI. Codes, titles, term
+placement, and the documented prerequisite facts are `official-source`. Any
+later locally created course uses a `DEMO-` code and the `synthetic-demo`
+classification.
+
+**Rationale**: Nineteen records provide clean prerequisite chains, the DS413
+GPA/earned-credit boundary, and an 18-credit plan while keeping one canonical
+curriculum document and avoiding an unverified full import.
+
+**Alternatives rejected**: Runtime web scraping, presenting synthetic credits
+as official values, and building a complete curriculum before the POC proves
+the registration workflow.
+
+### Simple demo policy baseline
+
+**Decision**: Publish typed demo rules for an open registration window,
+prerequisites, course-specific GPA/earned-credit gates, academic standing,
+normal target/maximum 18 credits, GPA-below-2.0 maximum 12 credits, selectable
+capacity, and timetable conflict. The 18/12 load values are Ahmed-approved
+demo rules rather than claims about current official AASTMT policy. Advisor,
+overload, waiver, and other exception workflows are excluded.
+
+**Rationale**: This is the smallest explainable rule set that proves policy
+configuration and meaningful eligible/ineligible outcomes end to end.
+
+**Alternatives rejected**: A generic policy DSL and implementing institutional
+exception workflows in the demo.
 
 ### Admin API ownership
 **Decision**: Academics owns catalogue/policy reads and mutations; SPEC-017

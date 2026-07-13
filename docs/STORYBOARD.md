@@ -76,8 +76,8 @@ or presents a cached success.
 |---|---|---|
 | AUTH-01 / | The visitor chooses Student or Staff and sees current system/window status. | Normal, maintenance, unavailable; links are named by destination. |
 | AUTH-02 /student/login | A student enters University ID and password. | Generic invalid credentials, locked, rate-limited, expired session; labels, password reveal state, and error focus are accessible. |
-| AUTH-03 /student/activate | A student verifies a pre-imported University ID and institutional activation factor, then creates a password. | Unknown/mismatch, already activated, expired token, weak password; no open self-created university identities. |
-| AUTH-04 /staff/login | Admin, Lecturer, and TA use one login. The server derives roles and routes. | No role selector; invalid/disabled/no-role/MFA states never reveal account existence. |
+| AUTH-03 /student/activate | A student submits the system-generated University ID and PIN/password to activate the matching pre-provisioned demo identity. | Unknown/mismatch, already activated, locked/rate-limited, double submit; no open self-created university identities. |
+| AUTH-04 /staff/login | Admin, Lecturer, and TA use one password-only demo login. The server derives roles and routes. | No role selector or second factor; invalid/disabled/no-role states never reveal account existence. |
 | AUTH-05 /account/recovery | A user activates or resets a password through a verified institutional channel. | Sent, expired/used token, rate limit, success; focus moves to confirmation. |
 
 ## Student screens
@@ -103,7 +103,7 @@ or presents a cached success.
 | ADM-04 /admin/students | Authorized admin inspects GPA, transcript, holds, and provenance and performs reasoned corrections. | Read-only source/stale version/invalid correction/required reason. |
 | ADM-05 /admin/catalogue | Admin manages programs, curricula, courses, prerequisites, and effective-dated typed policy values. | Draft/published/superseded, prerequisite cycle, invalid range, policy simulation. |
 | ADM-06 /admin/offerings | Admin creates offerings/groups, capacity, Lecturer/TA assignments, rooms and meeting slots, then validates/publishes. | Missing resource, staff/room overlap, capacity mismatch, stale edit; validation links to the field. |
-| ADM-07 /admin/resources | Admin manages versioned rooms and views staff-owned availability plus published-schedule impact alerts. A separately permitted availability correction requires reason, preview, version check, audit, and staff notification. | Imported/empty/unavailable/overlap/stale resource; table/list editor is an alternative to timetable grid. |
+| ADM-07 /admin/resources | Admin manages versioned rooms and may view/import staff-owned availability plus published-schedule impact alerts. The POC exposes no Admin availability correction or override. | Imported/empty/unavailable/overlap/stale resource; table/list editor is an alternative to timetable grid. |
 | ADM-08 /admin/registrations | Admin monitors and inspects submissions, receipts, fill, failures, and reconciliation alerts. Registration correction, drop, withdrawal, and reconciliation repair commands are absent from the Admin UI in MVP. | Live/stale/degraded/collision/restricted record; paused-group alerts provide a support reference while repair remains an operations-service runbook action. |
 | ADM-09 /admin/audit | Admin searches immutable audit events and requests scoped operational exports. | Empty/large result/export queued/running/ready/expired/failed/restricted event; status and authorized download are separate states. |
 
@@ -117,7 +117,7 @@ scope and available actions, not a client-selected role.
 | STF-01 /staff | Staff dashboard shows own role context, assignments, deadlines, and warnings. | Lecturer sees assigned lecture groups; TA sees assigned tutorial/lab groups. |
 | STF-02 /staff/timetable | Staff sees assigned subject/group, colleagues, rooms, days, times, and history. | Direct URLs to unassigned data return 403. Calendar has table/list equivalent. |
 | STF-03 /staff/groups/{groupId}/roster | Staff sees the minimum authorized roster and counts for an assigned group. | No unrelated students or groups; semantic table and accessible paging. |
-| STF-04 /staff/availability | Staff records available/unavailable time ranges before the configured deadline through the Scheduling-owned availability aggregate. | Draft/saved/overlap/deadline passed/audited admin override/stale edit/published-group impact warning. Availability changes never silently move a class; keyboard and text-range entry are supported. |
+| STF-04 /staff/availability | Staff records available/unavailable time ranges before the configured deadline through the Scheduling-owned availability aggregate. | Draft/saved/overlap/deadline passed/stale edit/published-group impact warning. Availability changes never silently move a class; Admin cannot edit them in the POC; keyboard and text-range entry are supported. |
 
 ## System screen
 
@@ -162,7 +162,11 @@ The conflict presentation contains:
 - Status changes use restrained live regions.
 - Reflow at 400% zoom and usable layouts from 320 to 1920 CSS pixels.
 - Reduced-motion preference and accessible session timeout warning.
-- Localization-ready resources and layout; Arabic/RTL is a future spec.
+- English-first, localization-ready resources and direction-safe layout;
+  Arabic translation and RTL delivery are a future spec.
+- App shells use the unchanged official AASTMT logo through the local,
+  provenance-recorded asset contract in [BRAND_ASSETS.md](BRAND_ASSETS.md);
+  neutral accessible tokens do not infer a palette from the logo.
 
 ## Usability validation
 

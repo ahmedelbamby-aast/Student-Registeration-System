@@ -9,6 +9,8 @@
 - [x] G7 Requirement-to-acceptance traceability
 - [x] G8 Requirement-to-task traceability
 - [x] G9 Cross-spec analysis
-- [x] G10 Planning-only boundary
+- [x] G10 Pre-Gate-A planning-only boundary
+- [x] G11 Gate A demo implementation approval by Ahmed ELbamby on 2026-07-13
 
-Automated gates pass. Human approval remains pending and implementation MUST NOT begin.
+Automated gates and Gate A human approval pass. Demo implementation MAY begin;
+Gates B-D and production release approval remain required.

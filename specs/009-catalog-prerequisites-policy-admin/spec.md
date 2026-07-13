@@ -2,15 +2,19 @@
 
 **Feature Branch**: 009-catalog-prerequisites-policy-admin
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Registrar/Policy SME and Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
 ## Context
 
-Public College-of-AI curriculum pages contain missing and inconsistent
-references. Production catalogue and rules need an approved import, validation
-preview, source provenance, and controlled publication.
+The demo needs a small, believable curriculum without pretending to reproduce
+the complete current AASTMT catalogue. Its initial catalogue is the 19-course
+curated AASTMT College of Artificial Intelligence Data Science snapshot in
+`docs/DEMO_CURRICULUM.md`, accessed 2026-07-13; every locally supplied gap value
+is labelled synthetic and demo-only. Production catalogue and rules still
+require an approved import, validation preview, source provenance, and
+controlled publication.
 
 ## User Scenarios and Testing
 
@@ -45,10 +49,15 @@ As a Authorized administrator, I need the Policy simulation (FR-4, FR-5) behavio
 
 **Acceptance Scenario (AC-3)**
 
-Given a draft Project I rule requiring GPA 2.0 and 96 credits<br>
-When simulated with GPA 2.1 and 95 credits<br>
-Then it fails with the earned-credit reason<br>
-And identifies the draft policy version/source.
+Given the source-backed DS413 Project I rule requires GPA 2.0 and 96 earned
+credits, the normal demo target/maximum is 18 credits, and GPA below 2.0 has a
+12-credit maximum<br>
+When the admin simulates the Project I boundary plus normal 18/19-credit and
+probation 12/13-credit plans<br>
+Then 95 earned credits fails Project I, 18 and 12 pass their respective load
+boundaries, and 19 and 13 fail<br>
+And every result identifies the draft policy version, value classification,
+and source.
 ### User Story 4 - Governed catalogue publish (FR-1, FR-6, FR-7) (P2)
 
 As a Authorized administrator, I need the Governed catalogue publish (FR-1, FR-6, FR-7) behavior so that Catalogue, Prerequisites, and Policy Administration produces a verifiable outcome.
@@ -120,14 +129,27 @@ And each published change records actor, reason, source, and timestamp.
 
 - FR-1: Admin MUST manage programs, curricula, courses, credit values, status,
   prerequisites, minimum grades/GPA/earned credits, and cohort scope in a
-  versioned CatalogueDraft rather than editing published records.
-- FR-2: Imports MUST provide preview, row-level validation, provenance, and
-  all-or-nothing publication.
+  versioned CatalogueDraft rather than editing published records. The initial
+  demo draft MUST use the curated official College-of-AI snapshot defined in
+  `docs/DEMO_CURRICULUM.md`; copied codes, titles, term sequence, and prerequisite facts
+  retain the official source URL/access date, while every locally supplied gap
+  field is explicitly marked synthetic-demo-only and is never represented as
+  a complete or current official curriculum.
+- FR-2: Imports MUST provide preview, row-level validation, provenance,
+  field-level synthetic-demo markers where applicable, and all-or-nothing
+  publication.
 - FR-3: The system MUST detect missing references, duplicate codes, invalid
   credits, and prerequisite cycles before publish.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
+  The initial simple demo PolicySet MUST cover registration-window state,
+  prerequisites, course-specific GPA/earned-credit gates, academic standing,
+  a normal recommended target and hard maximum of 18 credits, a 12-credit hard
+  maximum when GPA is below 2.0, published group capacity, and timetable
+  conflict. Each value MUST distinguish an official-source fact from an
+  Ahmed-approved synthetic demo rule.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
-  before publication.
+  before publication, including the 18/19-credit normal boundary, 12/13-credit
+  probation boundary, and any source-backed course GPA/prerequisite boundary.
 - FR-6: Draft/import/publication lifecycles MUST be explicit and versioned;
   published catalogue/policy versions MUST be immutable and superseded.
 - FR-7: Only approved Admin/Registrar permissions MAY publish.
@@ -171,7 +193,8 @@ And each published change records actor, reason, source, and timestamp.
 
 - Server time, the configured academic term, authenticated identity, and authorization scope are authoritative.
 - Approved upstream specifications provide their published contracts; failures are handled safely and do not bypass policy.
-- Policy values that lack institutional approval remain configurable and fail closed.
+- These rules are approved by Ahmed ELbamby for a design-capability demo only;
+  they MUST NOT be described as official AASTMT production policy.
 
 ## Dependencies
 
@@ -190,7 +213,10 @@ And each published change records actor, reason, source, and timestamp.
 
 ## Out of Scope
 
-- OS-1: Scraping public web pages as production catalogue source.
-- OS-2: Arbitrary policy scripting.
+- OS-1: Live web scraping as a runtime/production catalogue source, or claiming
+  the curated snapshot and synthetic gap values are the complete current
+  official curriculum.
+- OS-2: Arbitrary policy scripting and advisor, overload, prerequisite-waiver,
+  or other exception workflows.
 - OS-3: Silent auto-correction of referential errors.
 - OS-4: Deleting historical course/policy records.

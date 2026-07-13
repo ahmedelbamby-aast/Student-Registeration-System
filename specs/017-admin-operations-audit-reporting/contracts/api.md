@@ -102,6 +102,11 @@ Enrollment correction, drop, withdrawal, and seat-decrement endpoints do not
 exist in MVP. Registration Administration is read/monitor only and delegates
 all approved master-data mutations to owner-spec commands.
 
+Admin availability viewing consumes SPEC-010's bounded read-only endpoint;
+import means copying declared ranges into offering-planning input. SPEC-017 has
+no availability mutation/correction/override endpoint, request, permission,
+editable control, notification workflow, or correction-audit flow.
+
 ## Shared Responses
 
 Authentication is 401; authorization is 403; privacy-sensitive absent/out-of-

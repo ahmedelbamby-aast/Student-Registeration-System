@@ -1,15 +1,15 @@
 # Tasks: Product Charter and RBAC
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
 ## Phase 1 - Dependency, Consistency, Readiness, and Final Approval Gates
 
 - [ ] T001 [DEP-ROOT] Confirm SPEC-001 is the dependency root, has no upstream feature dependency, and records the constitution/project-plan baseline in specs/001-product-charter-rbac/dependency-baseline.md.
-- [ ] T002 [GATE] Run cross-spec consistency analysis for SPEC-001; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and planning-only status; record findings and resolutions in specs/001-product-charter-rbac/checklists/consistency-analysis.md.
+- [ ] T002 [GATE] Run cross-spec consistency analysis for SPEC-001; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/001-product-charter-rbac/checklists/consistency-analysis.md.
 - [ ] T003 [GATE] After T002 passes, freeze the SPEC-001 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/001-product-charter-rbac/checklists/implementation-readiness.md.
-- [ ] T004 [GATE] After T003 passes, record the accountable owner and Ahmed ELbamby's human approval for SPEC-001 in specs/001-product-charter-rbac/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute before this approval.
+- [ ] T004 [GATE] After T003 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-001 in specs/001-product-charter-rbac/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
 
 ## Phase 2 - Models and API Contracts
 

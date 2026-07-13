@@ -2,7 +2,7 @@
 
 **Feature Branch**: 007-identity-account-lifecycle
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Security Lead
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -12,6 +12,12 @@ Students require University-ID login and controlled first-time activation.
 Admin, Lecturer, and TA need one staff login without a role selector. Blazor
 client state is not a security boundary, so identity and authorization are
 enforced by ASP.NET Core.
+
+For this non-production demo, explicit Development and Testing database
+bootstrap generates synthetic pre-provisioned users, unique University IDs,
+and initial PIN/password credentials. SQL Server stores only ASP.NET Core
+Identity password hashes; plaintext credentials never enter the database,
+source control, migrations, logs, telemetry, snapshots, or test reports.
 
 ## User Scenarios and Testing
 
@@ -47,7 +53,8 @@ As a Student or staff user, I need the Shared staff login (FR-3, FR-4, FR-6) beh
 
 **Acceptance Scenario (AC-3)**
 
-Given a staff account with TA claim and valid MFA<br>
+Given a pre-provisioned staff account with TA claim and valid generated demo
+credentials<br>
 When staff login succeeds<br>
 Then the server supplies TA context<br>
 And no client parameter can add Lecturer or Admin permissions.
@@ -82,8 +89,8 @@ As a Student or staff user, I need the Parallel activation is single-use (FR-2, 
 
 **Acceptance Scenario (AC-6)**
 
-Given one valid activation token for one unclaimed University ID<br>
-When ten activation requests use that token concurrently through two
+Given one pre-provisioned inactive University ID and its generated password<br>
+When ten first-use activation requests use those credentials concurrently through two
 application replicas<br>
 Then exactly one account link is created<br>
 And every other request receives the same safe already-used result<br>
@@ -123,7 +130,7 @@ As a Student or staff user, I need the Authentication quality gate (NFR-1, NFR-2
 Given the SPEC-018 approved load and positive/negative role matrix<br>
 When authentication performance, enumeration, configuration, and authorization
 tests execute<br>
-Then login is at most 500 ms p95 excluding MFA-provider latency<br>
+Then login is at most 500 ms p95<br>
 And errors do not reveal account existence<br>
 And credential configuration passes the current approved ASP.NET Core security
 baseline<br>
@@ -163,23 +170,27 @@ or final-enabled-Admin removal attempts change nothing.
 
 - FR-1: Student login MUST accept normalized University ID and password.
 - FR-2: Student activation MUST only claim a pre-imported Identity-owned
-  ApplicationUser institutional identity with normalized unique University ID after
-  verification through the institutional factor approved under DEC-01. Until
-  it is approved, production activation fails closed.
+  ApplicationUser identity with normalized unique University ID. For the demo,
+  first use verifies the system-generated initial PIN/password against its
+  ASP.NET Core Identity hash and atomically marks the pre-provisioned identity
+  active; the browser cannot create an identity, choose a University ID, or
+  write a plaintext credential to SQL.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
 - FR-5: The system MUST support generic request-and-complete recovery,
   password change, logout, and revoke-all-sessions with security-stamp
   rotation across replicas.
-- FR-6: Staff MUST use the approved institutional MFA provider before a staff
-  session is issued; production staff login fails closed while DEC-02 is open.
+- FR-6: Demo staff MUST authenticate on the shared staff page with their
+  pre-provisioned local username and generated password. No MFA, 2FA, role
+  selector, or public staff registration is used; the server derives roles and
+  issues the session only after password verification and account-state checks.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
   plus antiforgery for mutations.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
-- FR-10: Activation, recovery, and MFA challenges MUST be time/attempt bounded
-  and atomically single-use.
+- FR-10: First-use activation and recovery proofs MUST be attempt-bounded and
+  atomically single-use; recovery proofs MUST also be time-bounded.
 - FR-11: Claiming an institutional University ID MUST be protected by a unique
   database constraint so parallel activation requests cannot link it twice.
 - FR-12: Lockout/rate-limit state, challenges, security stamps, role state,
@@ -195,7 +206,7 @@ or final-enabled-Admin removal attempts change nothing.
 ### Non-Functional Requirements
 
 - NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load, excluding MFA-provider latency.
+  production-like authenticated-session load.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
 - NFR-3: Password/credential configuration MUST follow current ASP.NET Core
   Identity and AASTMT security policy.
@@ -205,7 +216,7 @@ or final-enabled-Admin removal attempts change nothing.
 ### Key Entities and References
 
 - **ApplicationUser**, **Staff**, **StudentActivation**,
-  **AccountRecoveryChallenge**, **StaffMfaChallenge**, **RoleAssignment**, and
+  **AccountRecoveryChallenge**, **RoleAssignment**, and
   **AuthenticationAbuseState**, **IdentityImportBatch**, **SecurityEvent**, and
   **AdminSecurityGuard** are owned by SPEC-007.
 - SPEC-017 may consume/query append-only SecurityEvent records because it
@@ -252,9 +263,12 @@ or final-enabled-Admin removal attempts change nothing.
 - OS-3: Authorization based only on Blazor route/component visibility.
 - OS-4: Final identity-provider integration until AASTMT confirms provider.
 
-## Approval Blockers
+## Approval State
 
-DEC-01, DEC-02, and DEC-13 remain institutional decisions. Production
-activation, staff authentication/MFA, and shared-key protection respectively
-fail closed until their accountable owners approve named providers and
-configuration. This specification therefore remains In Review.
+DEC-01 and DEC-02 are resolved for this non-production demo through generated,
+pre-provisioned local credentials and password-only student/staff
+authentication. DEC-13 remains a future production secret/key-custody
+decision and does not block local demo implementation. Ahmed ELbamby approved
+Gate A demo implementation on 2026-07-13. This approval does not authorize
+production deployment, official AASTMT go-live, or later Gate B-D/release
+decisions.

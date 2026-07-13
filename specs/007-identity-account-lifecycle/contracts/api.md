@@ -7,7 +7,6 @@ interface StudentLoginRequest { universityId: string; password: string; }
 interface StaffLoginRequest { userName: string; password: string; }
 interface ActivateStudentRequest {
   universityId: string;
-  activationCode: string;
   password: string;
 }
 interface SessionDto {
@@ -18,8 +17,6 @@ interface SessionDto {
   expiresAtUtc: string;
   securityStampVersion: string;
 }
-interface MfaChallengeDto { challengeId: string; expiresAtUtc: string; providerDisplayName: string; }
-interface MfaVerifyRequest { challengeId: string; providerProof: string; }
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
 interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
@@ -37,8 +34,8 @@ interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssist
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
-POST /api/auth/staff/login, POST /api/auth/staff/mfa/verify, POST
-/api/auth/logout, POST /api/auth/recovery/request, POST
+POST /api/auth/staff/login, POST /api/auth/logout, POST
+/api/auth/recovery/request, POST
 /api/auth/recovery/complete, POST /api/auth/password/change, POST
 /api/auth/sessions/revoke-all, GET /api/auth/session, and PUT
 /api/auth/session/context; plus GET /api/admin/users, POST
@@ -48,9 +45,9 @@ POST /api/auth/staff/login, POST /api/auth/staff/mfa/verify, POST
 
 ## Endpoint Semantics
 
-- Student login returns `200 SessionDto`; staff login returns `202
-  MfaChallengeDto` until `/staff/mfa/verify` succeeds. No password-only staff
-  session is issued.
+- Student and staff login return `200 SessionDto` after direct password and
+  account-state verification. The demo uses no MFA or second-factor endpoint;
+  staff roles are derived exclusively from server-side assignments.
 - Recovery request always returns the same `202` envelope. It never returns a
   challenge token; the approved institutional channel delivers the proof.
 - Challenge expiry, attempt exhaustion, replay, or concurrent second use
@@ -64,7 +61,8 @@ POST /api/auth/staff/login, POST /api/auth/staff/mfa/verify, POST
   In that state `SessionDto.activeRole` is null; it is non-null when
   `sessionState` is `active` or `expiring`. A selected role must be present in
   `roles`.
-- DEC-01, DEC-02, and DEC-13 remain fail-closed production approval gates.
+- DEC-01 and DEC-02 are resolved for the demo-only local credential model;
+  DEC-13 remains a production approval gate.
 - Admin lists default to 20 and reject page sizes above 100. Import creation
   binds source/content hash/clientRequestId; publication is all-or-nothing and
   replay-safe. Status/role commands require reason and expected versions.

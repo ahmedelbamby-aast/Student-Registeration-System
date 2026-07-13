@@ -8,7 +8,6 @@ erDiagram
   APPLICATION_USER ||--o| STAFF : represents
   APPLICATION_USER ||--o{ ROLE_ASSIGNMENT : receives
   APPLICATION_USER ||--o{ ACCOUNT_RECOVERY_CHALLENGE : requests
-  APPLICATION_USER ||--o{ STAFF_MFA_CHALLENGE : challenges
   APPLICATION_USER ||--o{ SECURITY_EVENT : produces
   APPLICATION_USER ||--o{ IDENTITY_IMPORT_BATCH : requests
   APPLICATION_USER ||--o| STUDENT_ACTIVATION : is_claimed_through
@@ -70,6 +69,7 @@ erDiagram
     string UserName UK
     string NormalizedUserName UK
     string UniversityId UK
+    string PasswordHash
     bool IsEnabled
     rowversion Version
   }
@@ -84,23 +84,15 @@ erDiagram
   STUDENT_ACTIVATION {
     uniqueidentifier Id PK
     uniqueidentifier UserId FK
-    string VerificationProvider
-    string VerificationSubjectHash
+    datetime2 ProvisionedAtUtc
     datetime2 ActivatedAtUtc
+    int FailedAttemptCount
     rowversion Version
   }
   ACCOUNT_RECOVERY_CHALLENGE {
     uniqueidentifier Id PK
     uniqueidentifier UserId FK
     string TokenHash UK
-    datetime2 ExpiresAtUtc
-    datetime2 ConsumedAtUtc
-    rowversion Version
-  }
-  STAFF_MFA_CHALLENGE {
-    uniqueidentifier Id PK
-    uniqueidentifier UserId FK
-    string ChallengeHash UK
     datetime2 ExpiresAtUtc
     datetime2 ConsumedAtUtc
     rowversion Version
@@ -441,8 +433,7 @@ Required constraints/indexes:
   immutable CatalogueVersion, and never edits an existing published version.
 - Unique RoleAssignment(UserId, RoleCode, EffectiveFromUtc),
   StudentActivation(UserId), AccountRecoveryChallenge(TokenHash),
-  StaffMfaChallenge(ChallengeHash), AuthenticationAbuseState(SubjectKeyHash),
-  and IdentityImportBatch(SourceHash).
+  AuthenticationAbuseState(SubjectKeyHash), and IdentityImportBatch(SourceHash).
 - Unique CourseOffering(TermId, CourseId).
 - Unique SectionGroup(OfferingId, GroupCode).
 - Alternate key SectionGroup(Id, OfferingId), referenced by Enrollment, so a
@@ -517,10 +508,10 @@ published state.
 - Decision snapshots retain the exact rule version and input summary used.
 - Audit events are append-only for sensitive administrative actions.
 - Account recovery challenges store only a token hash and are atomically
-  consumed once; expired challenge material is removed under the approved
-  identity-retention schedule.
-- Export artifacts expire and are deleted after the approved retention period;
-  the append-only audit event for the request and download is retained under
-  its separately approved classification.
-- Retention and deletion durations require AASTMT privacy/records approval in
-  SPEC-005 before production.
+  consumed once; expired challenge material is removed by the demo lifecycle.
+- Git-ignored local export, log, and generated-credential artifacts expire and
+  are deleted within seven days. Per-run Testing databases are disposed after
+  use; Development academic/audit/idempotency rows persist until explicit
+  guarded reset.
+- These durations apply only to wholly synthetic POC data. Real-data and
+  production retention require a future AASTMT privacy/records decision.

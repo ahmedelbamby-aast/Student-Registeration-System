@@ -8,6 +8,8 @@
 - [x] Key entities are identified and refined in data-model.md.
 - [x] Security, accessibility, concurrency, scale, and failure behavior are addressed where applicable.
 - [x] This package contains planning artifacts only.
+- [x] The approved demo policy/curriculum, 18/12 load projection, and no-
+      advisor/exception boundary are explicit and testable.
 
 **Automated readiness**: PASS
-**Human approval**: PENDING
+**Human approval**: APPROVED by Ahmed ELbamby on 2026-07-13 for Gate A demo implementation

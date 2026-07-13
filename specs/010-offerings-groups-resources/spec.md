@@ -2,15 +2,16 @@
 
 **Feature Branch**: 010-offerings-groups-resources
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
 ## Context
 
-Students need accurate groups with capacity, Lecturer/TA, room, day and time.
-Only complete, conflict-free administrative schedules should become visible
-for registration.
+Students need accurate, complete activity bundles with capacity, Lecturer/TA,
+room, day, and time. Only offerings whose selectable groups satisfy the simple
+demo staffing pattern and whose schedules are conflict-free should become
+visible for registration.
 
 ## User Scenarios and Testing
 
@@ -22,10 +23,12 @@ As a Authorized administrator, I need the Valid group publish (FR-1, FR-2, FR-3)
 
 **Acceptance Scenario (AC-1)**
 
-Given a group has capacity 30, room capacity 35, valid times, and available
-Lecturer/TA<br>
+Given an offering has one group containing a Lecture with an available
+Lecturer and a Tutorial with an available TA, capacity 30, room capacity 35,
+and valid times<br>
 When Admin validates and publishes<br>
-Then the group becomes visible to eligible students with all details.
+Then the group becomes visible to eligible students with activity type, staff,
+room/location, day, and time for both activities.
 ### User Story 2 - Room overlap (FR-3) (P1)
 
 As a Authorized administrator, I need the Room overlap (FR-3) behavior so that Offerings, Groups, and Resources produces a verifiable outcome.
@@ -117,21 +120,22 @@ Then the registration re-read detects GROUP_CHANGED and cannot enroll against
 rowversion 8<br>
 And concurrent availability/publication uses one valid staff-term serial order.
 
-### User Story 9 - Audited Admin availability correction (FR-6, FR-8, FR-10) (P3)
+### User Story 9 - Staff-owned availability and read-only Admin use (FR-6, FR-8, FR-10) (P3)
 
-As an authorized Admin with the separate correction permission, I need a
-previewed, versioned correction path so that staff-owned availability is never
-silently overwritten and published groups are revalidated.
+As an authorized Admin, I need to view and import staff declarations into
+offering planning as read-only inputs so that availability ownership remains
+with staff and affected published groups are revalidated.
 
 **Independent Test**: Execute AC-9 with one staff-term aggregate, one affected
-published group, an audit double, and a staff-notification double.
+published group, the endpoint registry, and an alert persistence double.
 
 **Acceptance Scenario (AC-9)**
 
-Given reason, signed preview, current version, and correction permission<br>
-When the Admin replaces the complete availability range set<br>
-Then one versioned write, audit fact, staff notification, and durable schedule
-impact alert are produced; stale or unauthorized writes change nothing.
+Given a staff-owned declaration and an authorized Admin using ADM-07<br>
+When the Admin views or imports that declaration into offering planning<br>
+Then the declaration remains read-only and no edit or override action is exposed<br>
+And an attempted Admin availability mutation has no mapped endpoint and changes nothing<br>
+And a staff-owned change affecting a published group creates a durable schedule impact alert.
 
 ## Edge Cases
 
@@ -150,19 +154,27 @@ impact alert are produced; stale or unauthorized writes change nothing.
 ### Functional Requirements
 
 - FR-1: Admin MUST create term course offerings and one or more section groups.
-- FR-2: Each group MUST have code, capacity, state, meeting slots, room(s), and
-  activity-type staff assignments before publish: Lecture requires Lecturer,
-  Tutorial/Laboratory requires TA, and a group containing both requires both.
+- FR-2: Before a course offering can enter Published/Open registration state,
+  each student-selectable group MUST be a complete activity bundle with code,
+  capacity, state, and at least one Lecture meeting assigned to at least one
+  Lecturer, plus at least one Tutorial meeting or Laboratory meeting (or both).
+  Each present Tutorial and Laboratory activity MUST be assigned at least one
+  Teaching Assistant. Every activity MUST expose its type, assigned staff
+  names, room/location, day, and start/end time to students. `Tutorial` is the
+  canonical activity value; the UI MAY display it as `Section`.
 - FR-3: Publish validation MUST reject staff overlap/unavailability, room
   overlap/unavailability, room capacity below group capacity, invalid slots,
-  missing roles, and duplicate offering/group codes.
+  an incomplete FR-2 activity bundle or missing activity role, and duplicate
+  offering/group codes.
 - FR-4: Students MUST NOT select full, unpublished, cancelled, or closed
   groups.
 - FR-5: Capacity MUST NOT be set below active EnrolledCount.
 - FR-6: Staff assignments/availability and resource changes MUST be
-  optimistic-concurrency protected and audited. Staff own declarations;
-  DEC-12 Admin correction requires separate permission, reason, preview,
-  expected version, audit, and notification.
+  optimistic-concurrency protected and audited. Staff own and edit their
+  declarations through the SPEC-016 workspace contract. Admin MAY view the
+  declarations and import them into offering planning as read-only inputs, but
+  MUST NOT create, replace, edit, or override availability in this POC; no
+  Admin availability mutation endpoint exists.
 - FR-7: Publication MUST be transactional.
 - FR-8: Publication MUST lock every touched offering, room, and staff resource
   in stable identifier order and revalidate overlaps/availability inside the
@@ -187,17 +199,17 @@ impact alert are produced; stale or unauthorized writes change nothing.
 
 - **CourseOffering**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **SectionGroup**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **MeetingSlot**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **MeetingSlot**: Feature-owned activity occurrence; canonical type is Lecture, Tutorial, or Laboratory and attributes/relationships are refined in requirements.md and the shared ERD.
 - **Room**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **GroupStaffAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **GroupStaffAssignment**: Feature-owned assignment tying staff and teaching role to a group activity/meeting; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StaffAvailability**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StaffTermAvailability**: SPEC-010-owned aggregate root for the complete staff-plus-term range set.
 - **ScheduleImpactAlert**: SPEC-010-owned durable revalidation state for availability/resource changes affecting published groups.
 
 ## Success Criteria
 
-- **SC-1**: Only complete and conflict-free groups become visible for registration.
-- **SC-2**: Every visible group identifies capacity, staff, location, day, and time.
+- **SC-1**: Only offerings whose selectable groups satisfy the complete FR-2 activity bundle and conflict checks become visible for registration.
+- **SC-2**: Every visible group identifies capacity and, for every Lecture/Tutorial/Laboratory activity, its assigned staff, room/location, day, and time.
 - **SC-3**: Capacity can never be configured below active enrollment.
 
 ## Assumptions

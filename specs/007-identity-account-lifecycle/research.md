@@ -18,7 +18,6 @@ interface StudentLoginRequest { universityId: string; password: string; }
 interface StaffLoginRequest { userName: string; password: string; }
 interface ActivateStudentRequest {
   universityId: string;
-  activationCode: string;
   password: string;
 }
 interface SessionDto {
@@ -30,7 +29,7 @@ interface SessionDto {
 ```
 
 Endpoints are split by lifecycle action so recovery request and completion,
-MFA verification, password change, revoke-all, and role-context selection have
+password change, revoke-all, and role-context selection have
 separate authorization, antiforgery, rate-limit, and replay semantics.
 
 ### Replica-safe session state
@@ -44,13 +43,15 @@ one without sticky routing.
 sessions as correctness mechanisms.
 
 ### Institutional providers
-**Decision**: Keep DEC-01, DEC-02, and DEC-13 explicit fail-closed production
-gates. Provider adapters expose narrow verification ports; no local fallback
-credential is treated as institutional proof.
-**Rationale**: Provider identity and MFA are security/institutional decisions,
-not implementation defaults.
-**Alternatives rejected**: Invented activation secrets or self-managed staff
-MFA promoted without AASTMT approval.
+**Decision**: For the non-production demo, generate pre-provisioned local
+student/staff identities and passwords, persist only ASP.NET Core Identity
+hashes, and use password-only authentication with no MFA/2FA. Any later real
+institutional provider is a separately approved production integration.
+**Rationale**: The demo remains self-contained and testable without claiming
+official AASTMT identity integration or weakening credential storage.
+**Alternatives rejected**: Public self-registration, plaintext database
+credentials, second-factor scope not requested by Ahmed, and fake production
+provider claims.
 
 ### Governed Admin user lifecycle
 **Decision**: Identity owns pre-provisioned user import/list/status/role

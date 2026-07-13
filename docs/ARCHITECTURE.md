@@ -121,18 +121,27 @@ DTOs and never expose EF entities. Reads use projection and AsNoTracking.
 - One identity system with Student, Admin, Lecturer, and TeachingAssistant
   claims/roles.
 - Student activation only claims a pre-imported institutional record after a
-  verified university channel or activation code.
-- Staff accounts are provisioned, not publicly registered; staff MFA is
-  required before production.
+- Development and Testing bootstrap generate synthetic pre-provisioned
+  identities, unique University IDs, and PIN/passwords; only ASP.NET Core
+  Identity password hashes are stored in SQL.
+- Staff accounts are provisioned, not publicly registered; this demo uses the
+  shared password-only staff login with no MFA/2FA and server-derived roles.
 - Same-origin HttpOnly, Secure, SameSite cookie; antiforgery on state changes.
 - Do not store long-lived bearer tokens in browser local storage.
 - API authorization and ownership checks are mandatory because client-side
   Blazor checks can be modified.
 - Replicas share ASP.NET Core Data Protection keys.
-- Production replicas persist Data Protection keys in the primary SQL Server
-  through the infrastructure project and protect keys at rest with a
-  deployment certificate/private key obtained from the approved secret
-  provider. Sticky sessions are not a correctness mechanism.
+- POC replicas persist Data Protection keys in SQL Server through the
+  infrastructure project and protect keys with a generated local certificate
+  kept outside Git; connection secrets use User Secrets or environment
+  variables. A production secret provider/certificate custody decision is not
+  implied. Sticky sessions are not a correctness mechanism.
+
+Database bootstrap always runs after Code First migrations and only when the
+environment is exactly Development or Testing. It composes module-owned seed
+contributors into one database, is idempotent unless an explicit reset is
+requested, rejects production connection/environment combinations, and never
+stores plaintext demo credentials or synthetic fixtures in migrations.
 - Rate-limit login, optimizer, and registration endpoints using measured
   production thresholds.
 

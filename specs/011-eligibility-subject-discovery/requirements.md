@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Registrar/Policy SME, UX, Backend, QA<br>
 **Target:** Sprint 3<br>
@@ -13,10 +13,17 @@
 Students need to see available subjects based on program, GPA, standing,
 earned credits, prerequisites, repeats, holds, term, published groups, and
 policy. The system must explain both eligible and unavailable outcomes.
+The demo evaluates the approved `DEMO-POC-2026.1` rules against the exact
+curated catalogue in `docs/DEMO_CURRICULUM.md`.
 
 ## Functional Requirements
 
 - FR-1: The system MUST evaluate every relevant approved rule on the server.
+  For `DEMO-POC-2026.1`, this includes configured window, standing, blocking
+  hold, prerequisite, course GPA/earned-credit, current-plan load, published
+  capacity, and exact meeting-conflict checks. A normal plan targets and caps
+  at 18 credits; GPA below 2.0 caps at 12 credits. Advisor/exception workflows
+  are not evaluated because they are outside the demo.
 - FR-2: Default discovery MUST list eligible offerings having at least one
   published selectable group.
 - FR-3: Students MUST be able to search by code/title and filter by
@@ -26,7 +33,9 @@ policy. The system must explain both eligible and unavailable outcomes.
 - FR-5: Results MUST show course code/title/credits and group capacity, staff,
   location, activity, day and time. Each group summary MUST also carry its
   current state, selectable flag, seats remaining, and SectionGroup rowversion
-  so the client can identify stale advisory data.
+  so the client can identify stale advisory data. Each offering MUST also show
+  current-plan credits, projected credits if selected, default target 18, and
+  the applicable maximum 18 or 12.
 - FR-6: Each evaluated rule MUST return a stable code, passed/failed and
   blocking flags, plain-language message, required/current values when safe,
   approved PolicySet ID/version, source/effective metadata, and support/manual-
@@ -51,10 +60,11 @@ policy. The system must explain both eligible and unavailable outcomes.
 ## Acceptance Criteria
 
 ### AC-1: Eligible offering (FR-1, FR-2, FR-5)
-Given a student meets prerequisites/load rules and one group is open<br>
+Given a normal-standing student has 15 selected credits, meets the next
+three-credit course prerequisites, and one complete group is open<br>
 When discovery loads<br>
-Then the offering is listed with credits and all group staff/location/time
-details.
+Then the offering is listed with a projected 18 of 18 credits<br>
+And all Lecture/Tutorial/Laboratory staff, location, and time details are shown.
 
 ### AC-2: Explain unavailable (FR-4, FR-6)
 Given a course requires 96 earned credits and the student has 95<br>
@@ -95,7 +105,7 @@ And every status has text/icon meaning independent of color.
   text.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
   codes, reset-filter action, current window state, and the configured
-  Registrar/advisor support path.
+  Registrar support path.
 
 ## API Contracts
 
@@ -130,6 +140,10 @@ interface OfferingEligibilityDto {
   courseCode: string;
   title: string;
   credits: number;
+  currentPlanCredits: number;
+  projectedPlanCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
   eligible: boolean;
   reasons: EligibilityReasonDto[];
   groups: GroupSummaryDto[];

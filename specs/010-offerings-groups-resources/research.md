@@ -21,8 +21,15 @@ interface GroupDto {
   enrolledCount: number;
   registrationPaused: boolean;
   state: "draft" | "published" | "closed" | "cancelled";
-  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; name: string }>;
+  staff: Array<{
+    meetingSlotId: string;
+    activityType: "Lecture" | "Tutorial" | "Laboratory";
+    role: "Lecturer" | "TeachingAssistant";
+    name: string;
+  }>;
   meetings: Array<{
+    id: string;
+    activityType: "Lecture" | "Tutorial" | "Laboratory";
     dayOfWeek: number;
     startLocal: string;
     endLocal: string;
@@ -42,8 +49,9 @@ interface OfferingMutationRequest {
 ```
 
 Endpoints include offering/group reads, bounded Admin offering/room/resource
-lists, create/update, validate/publish, and the separately authorized Admin
-staff-availability correction contract documented in contracts/api.md.
+lists, create/update, validate/publish, and a bounded read-only Admin view of
+staff-declared availability documented in contracts/api.md. No Admin
+availability mutation route exists.
 Every group-state, capacity, meeting, room, and staff-assignment mutation
 requires the owning group rowversion. Retryable create/publish uses
 clientRequestId; stale resources return 409 GROUP_CHANGED,
@@ -58,14 +66,24 @@ version/lock boundary without a dependency cycle.
 **Alternatives rejected**: Downstream SPEC-016 ownership and independent range
 rowversions.
 
-### Staffing and Admin correction
-**Decision**: Apply DEC-11 by activity type and DEC-12 by staff ownership plus
-a separately authorized, previewed, reasoned, versioned, audited Admin
-correction with notification.
-**Rationale**: These defaults are least-privilege and fail safely while keeping
-institutional exceptions explicit.
-**Alternatives rejected**: Requiring both roles for every activity, silent
-Admin overwrites, and unpublished role exceptions.
+### Staffing and availability ownership
+**Decision**: Ahmed ELbamby approved DEC-11's simple demo rule. Every
+Published/Open student-selectable group is a complete activity bundle with at
+least one Lecture assigned to a Lecturer and at least one Tutorial or
+Laboratory (or both); each present Tutorial/Laboratory is assigned to a TA.
+`Tutorial` is canonical and the UI may display `Section`. Staff assignments
+target the existing meeting/activity, so no additional entity is introduced.
+DEC-12 keeps availability edits staff-owned through SPEC-016. Admin may view
+the declarations and import them into offering planning as read-only inputs,
+but cannot create, replace, edit, or override them in this POC. A staff-owned
+change affecting a published group creates the durable schedule-impact alert.
+**Rationale**: The rule demonstrates publish-time staffing validation and gives
+students complete staff/room/time detail without a generalized curriculum or
+teaching-pattern engine.
+**Alternatives rejected**: Allowing lecture-only published groups, requiring
+both Tutorial and Laboratory for every course, inventing a separate Activity
+entity, any Admin availability mutation or override route, silent Admin
+overwrites, and unpublished role exceptions.
 
 ### Resource dependency versions
 **Decision**: Validation/publish bind offering, group, room, and
@@ -77,4 +95,6 @@ StaffTermAvailability versions and lock them in stable type/ID order.
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+DEC-11 and DEC-12 are resolved for this demo. A future production Admin
+mutation or override workflow requires a separately approved specification;
+it is not implied by the read-only POC view/import behavior.

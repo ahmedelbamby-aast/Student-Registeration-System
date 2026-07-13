@@ -1,19 +1,19 @@
 # Tasks: Eligibility and Subject Discovery
 
-**Status**: Planned only. Do not execute until policy inputs, readiness, and Ahmed ELbamby's approval pass.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. Execute remaining readiness and test-first tasks in dependency order.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Approval is the final planning gate. Tests precede projection, query, endpoint, and page delivery; parallel tasks use distinct files.
 
-## Phase 1 - Planning Readiness and Final Approval
+## Phase 1 - Planning Readiness and Recorded Gate A Approval
 
-- [ ] T001 [DEP-SPEC-002] Baseline approved rules, unresolved policy decisions, reason codes, and provenance from specs/002-aastmt-policy-rulebook/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
+- [ ] T001 [DEP-SPEC-002] Baseline `DEMO-POC-2026.1`, its 18-credit normal target/maximum, 12-credit probation maximum, reason codes, provenance, and remaining non-demo decisions from specs/002-aastmt-policy-rulebook/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
 - [ ] T002 [DEP-SPEC-003] Baseline STU-02/STU-03 states, explanations, accessibility, and functional tests from specs/003-ux-storyboard-accessibility/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
 - [ ] T003 [DEP-SPEC-006] [DEP-SPEC-008] Baseline the canonical Page<T> response with applied-sort echo from specs/006-domain-class-api-contracts/ plus authenticated academic context, profile, holds, and StudentTermAcademicState versions from specs/008-academic-term-student-profile/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
 - [ ] T004 [DEP-SPEC-009] Baseline canonical catalogue and approved PolicySet versions from specs/009-catalog-prerequisites-policy-admin/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
 - [ ] T005 [DEP-SPEC-010] Baseline offering/group/activity/staff/room/capacity/version projections from specs/010-offerings-groups-resources/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
 - [ ] T006 [DEP-SPEC-018] Baseline read-load, security, accessibility, and operations gates from specs/018-quality-security-scalability-operations/ in specs/011-eligibility-subject-discovery/dependency-baseline.md.
-- [ ] T007 [GATE] Analyze policy approval/fail-closed behavior, projection ownership, explanation completeness, pagination/sort protocol, endpoints, routes, and task traces and freeze the result in specs/011-eligibility-subject-discovery/checklists/implementation-readiness.md.
-- [ ] T008 [GATE] As the final planning action, record Ahmed ELbamby's human approval and Policy SME approval in specs/011-eligibility-subject-discovery/checklists/approval.md; T009 and later are forbidden before T001-T008 pass.
+- [ ] T007 [GATE] Analyze the approved demo policy/curriculum, 18/12 load projection, fail-closed behavior, projection ownership, explanation completeness, pagination/sort protocol, endpoints, routes, and task traces and freeze the result in specs/011-eligibility-subject-discovery/checklists/implementation-readiness.md.
+- [x] T008 [GATE] Record Ahmed ELbamby's 2026-07-13 Gate A demo approval while fulfilling the Policy SME review perspective in specs/011-eligibility-subject-discovery/checklists/approval.md; T009 and later remain blocked until T001-T007 pass.
 
 ## Phase 2 - Failing Projection and Contract Tests
 
@@ -27,7 +27,7 @@
 
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
-- [ ] T016 [P] [AC-1] [FR-1] [FR-2] [FR-5] Create eligible offering and complete group-detail coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec011/AC-1Tests.cs.
+- [ ] T016 [P] [AC-1] [FR-1] [FR-2] [FR-5] Create 15-plus-3-to-default-18 eligible offering, load projection, and complete activity/group-detail coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec011/AC-1Tests.cs.
 - [ ] T017 [P] [AC-2] [FR-4] [FR-6] Create unavailable required/current/policy/source explanation coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec011/AC-2Tests.cs.
 - [ ] T018 [P] [AC-3] [FR-2] Create all-groups-full unavailable coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec011/AC-3Tests.cs.
 - [ ] T019 [P] [AC-4] [FR-3] [FR-7] [FR-8] Create oversized-page rejection, valid stable page, and client-bypass coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec011/AC-4Tests.cs.
@@ -42,7 +42,7 @@
 
 ## Phase 4 - Consolidated Behavior Tests and Delivery
 
-- [ ] T028 [FR-1] [FR-2] [FR-4] [FR-6] [FR-7] [WORKSTREAM-SERVER-AUTHORITATIVE-ELIGIBILITY] Create the failing consolidated all-rules/reasons/fail-closed/no-client-override suite in tests/StudentRegistration.ApplicationTests/Registration/EligibilityDecisionTests.cs.
+- [ ] T028 [FR-1] [FR-2] [FR-4] [FR-6] [FR-7] [WORKSTREAM-SERVER-AUTHORITATIVE-ELIGIBILITY] Create the failing consolidated demo window/standing/hold/prerequisite/GPA/earned-credit/load/capacity/conflict, 18/19 and 12/13 boundaries, reasons, fail-closed, and no-client-override suite in tests/StudentRegistration.ApplicationTests/Registration/EligibilityDecisionTests.cs.
 - [ ] T029 [FR-3] [FR-8] [WORKSTREAM-BOUNDED-OFFERING-SEARCH] Create the failing consolidated query normalization/filter/page-limit/stable-sort suite in tests/StudentRegistration.IntegrationTests/Registration/OfferingSearchTests.cs.
 - [ ] T030 [FR-5] [WORKSTREAM-DISCOVERY-PROJECTION] Create the failing complete course/group/activity/staff/room/time/capacity/version suite in tests/StudentRegistration.ContractTests/Registration/GroupSummaryProjectionTests.cs.
 - [ ] T031 [ENTITY-OfferingEligibility] [OWNER-SPEC-011] Deliver the canonical OfferingEligibility projection at src/StudentRegistration.Registration/Domain/OfferingEligibility.cs after T009 fails.
@@ -59,7 +59,7 @@
 
 ## Phase 6 - Frontend Functional Tests and Pages
 
-- [ ] T039 [P] [STU-02] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Create failing discovery search/filter/page/empty/error/reason journeys in tests/StudentRegistration.E2ETests/Specs/Spec011/SubjectDiscoveryPageFeatureTests.cs.
+- [ ] T039 [P] [STU-02] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Create failing discovery load-projection/search/filter/page/empty/error/reason journeys in tests/StudentRegistration.E2ETests/Specs/Spec011/SubjectDiscoveryPageFeatureTests.cs.
 - [ ] T040 [STU-02] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Deliver SubjectDiscoveryPage at src/StudentRegistration.Client/Pages/SubjectDiscoveryPage.razor after T039 fails.
 - [ ] T041 [P] [STU-03] [UI-CONTRACT-SPEC-003] [FR-2] [FR-4] [FR-5] [FR-6] [AC-1] [AC-2] [AC-3] Create failing complete offering/group/reason/full/stale journeys in tests/StudentRegistration.E2ETests/Specs/Spec011/SubjectDetailsPageFeatureTests.cs.
 - [ ] T042 [STU-03] [UI-CONTRACT-SPEC-003] [FR-2] [FR-4] [FR-5] [FR-6] [AC-1] [AC-2] [AC-3] Deliver SubjectDetailsPage at src/StudentRegistration.Client/Pages/SubjectDetailsPage.razor after T041 and the SPEC-010 contribution tests fail.

@@ -1,7 +1,7 @@
 # Implementation Plan: Academic Term and Student Profile
 
 **Branch**: 008-academic-term-student-profile | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; human approval and institutional data-source approval remain pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. Production institutional data-source approval remains separate.
 
 ## Summary
 
@@ -11,7 +11,9 @@ Deliver Academic Term and Student Profile inside the modular monolith while keep
 
 **Language/Version**: C# / .NET 10
 **Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
+**Storage**: SQL Server with Code First migrations plus canonical-owner
+synthetic seed contribution after the Development/per-run Testing migration
+completes
 **Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
 **Project Type**: Web application with hosted WebAssembly client and server API
 **Performance Goals**: Governed by SPEC-018 and feature NFRs
@@ -57,14 +59,21 @@ business project is introduced.
    registration serialization.
 5. Keep term and student Admin list/mutation handlers in Academics; publish
    bounded audit facts for SPEC-017 rather than duplicating writes.
+6. Contribute the complete existing Student/profile graph to the shared
+   versioned non-production seed profile. Values are synthetic and logically
+   deterministic by profile version/ordinal, re-seeding is idempotent, and no
+   production record or unapproved demographic field is introduced.
 
 ## Execution and Gate Order
 
-Dependency baselines and consistency analysis precede Ahmed ELbamby's final
-planning approval. After approval: create failing model/contract, acceptance,
-race, and workstream tests; deliver domain/application behavior; add handlers;
-then add route E2E/pages and release evidence. Every handler and page is
-preceded by its contract and behavior tests.
+Ahmed ELbamby's Gate A demo approval is recorded. Dependency baselines and
+consistency analysis remain the first execution tasks. Create failing
+model/contract, acceptance, race, deterministic synthetic-profile, and
+workstream tests; deliver domain/application behavior and the Academics seed
+contributor; add handlers; then add route E2E/pages and release evidence.
+Every handler and page is preceded by its contract and behavior tests.
+Production data-source, Gate B-D, release, and official AASTMT go-live
+approvals remain separate.
 
 ## Design Artifacts
 

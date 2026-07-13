@@ -1,17 +1,17 @@
 # Tasks: Schedule Builder and Conflicts
 
-**Status**: Planned only. Do not execute until DEC-06 is confirmed disabled/approved, consistency analysis passes, and Ahmed ELbamby approves.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. Execute remaining readiness and test-first tasks in dependency order.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Approval is the final planning gate. Failing tests precede every model, service, endpoint, and page; `[P]` never targets one shared file.
 
-## Phase 1 - Planning Readiness and Final Approval
+## Phase 1 - Planning Readiness and Recorded Gate A Approval
 
 - [ ] T001 [DEP-SPEC-003] Baseline STU-04/STU-05 conflict, calendar/list, accessibility, and functional-test contracts from specs/003-ux-storyboard-accessibility/ in specs/012-schedule-builder-conflicts/dependency-baseline.md.
 - [ ] T002 [DEP-SPEC-010] Baseline canonical group/activity/meeting/capacity/state/version data from specs/010-offerings-groups-resources/ in specs/012-schedule-builder-conflicts/dependency-baseline.md.
 - [ ] T003 [DEP-SPEC-011] Baseline eligible offering/group and explanation contracts from specs/011-eligibility-subject-discovery/ in specs/012-schedule-builder-conflicts/dependency-baseline.md.
 - [ ] T004 [DEP-SPEC-018] Baseline performance, security, accessibility, two-editor, and operations gates from specs/018-quality-security-scalability-operations/ in specs/012-schedule-builder-conflicts/dependency-baseline.md.
-- [ ] T005 [GATE] Analyze DEC-06 fail-closed state, ownership, plan routes/versions, conflict details/actions, dependency snapshots, review blocking, frontend links, and task traces and freeze the result in specs/012-schedule-builder-conflicts/checklists/implementation-readiness.md.
-- [ ] T006 [GATE] As the final planning action, record Ahmed ELbamby's human approval in specs/012-schedule-builder-conflicts/checklists/approval.md; T007 and later are forbidden before T001-T006 pass.
+- [ ] T005 [GATE] Analyze the approved demo travel-buffer-disabled state, ownership, plan routes/versions, conflict details/actions, dependency snapshots, review blocking, frontend links, and task traces and freeze the result in specs/012-schedule-builder-conflicts/checklists/implementation-readiness.md.
+- [x] T006 [GATE] Record Ahmed ELbamby's 2026-07-13 Gate A demo approval in specs/012-schedule-builder-conflicts/checklists/approval.md; T007 and later remain blocked until T001-T005 pass.
 
 ## Phase 2 - Failing Model and Contract Tests
 
@@ -29,7 +29,7 @@
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
 - [ ] T017 [P] [AC-1] [FR-2] [FR-3] [FR-4] Create exact overlap/red-X/text/both-subject/action coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-1Tests.cs.
-- [ ] T018 [P] [AC-2] [FR-2] Create adjacent half-open interval and disabled DEC-06 travel coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-2Tests.cs.
+- [ ] T018 [P] [AC-2] [FR-2] Create adjacent half-open interval and approved disabled-demo-travel coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-2Tests.cs.
 - [ ] T019 [P] [AC-3] [FR-5] Create blocked Review and accessible resolution-link coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-3Tests.cs.
 - [ ] T020 [P] [AC-4] [FR-1] [FR-6] [FR-7] [FR-8] Create versioned add/change/remove/stale/advisory capacity coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-4Tests.cs.
 - [ ] T021 [P] [AC-5] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create performance/determinism/view-equivalence/two-editor quality coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-5Tests.cs.
@@ -75,7 +75,7 @@
 - [ ] T049 [P] [NFR-2] Produce fixed-input deterministic conflict evidence in tests/StudentRegistration.QualityTests/Specs/Spec012/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-012-NFR-2.md.
 - [ ] T050 [P] [NFR-3] Produce calendar/list semantic equivalence evidence in tests/StudentRegistration.QualityTests/Specs/Spec012/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-012-NFR-3.md.
 - [ ] T051 [P] [NFR-4] Produce two-editor no-lost-update evidence in tests/StudentRegistration.QualityTests/Specs/Spec012/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-012-NFR-4.md.
-- [ ] T052 [OS-1] [OS-2] [OS-3] [OS-4] Record verified schedule-builder scope exclusions including disabled DEC-06 travel rules in docs/release-evidence/SPEC-012-scope-review.md.
+- [ ] T052 [OS-1] [OS-2] [OS-3] [OS-4] Record verified schedule-builder scope exclusions including the disabled demo travel-buffer rule in docs/release-evidence/SPEC-012-scope-review.md.
 - [ ] T053 [TRACE] [SC-1] [SC-2] [SC-3] Generate the complete FR/NFR/AC/EC/SC/route/entity/endpoint trace matrix in docs/release-evidence/SPEC-012-traceability.md.
 - [ ] T054 [GATE] Record product, UX, Policy SME, backend, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-012-release-approval.md.
 

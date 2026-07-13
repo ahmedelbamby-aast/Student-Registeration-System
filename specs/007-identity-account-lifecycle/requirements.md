@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Security Lead<br>
 **Reviewers:** Product Owner, Backend, QA, AASTMT identity owner<br>
 **Target:** Sprint 1<br>
@@ -15,15 +15,20 @@ Admin, Lecturer, and TA need one staff login without a role selector. Blazor
 client state is not a security boundary, so identity and authorization are
 enforced by ASP.NET Core.
 
+Development and Testing database bootstrap generates wholly synthetic,
+pre-provisioned accounts, unique University IDs, and initial PIN/password
+credentials. Only ASP.NET Core Identity password hashes are persisted.
+
 ## Functional Requirements
 
 - FR-1: Student login MUST accept normalized University ID and password.
 - FR-2: Student activation MUST only claim a pre-imported Identity-owned
-  institutional student identity (`ApplicationUser` with normalized unique
-  University ID) after
-  verification through the institutional factor approved under DEC-01. Until
-  that factor is named and security-reviewed, production activation MUST fail
-  closed and this specification MUST remain In Review.
+  student identity (`ApplicationUser` with normalized unique University ID).
+  In Development and Testing, a guarded bootstrap MUST generate the synthetic
+  University ID and initial PIN/password, persist only its ASP.NET Core
+  Identity hash, and allow first use to atomically activate that existing
+  identity after password verification. The browser MUST NOT create an
+  identity, choose a University ID, or persist plaintext credentials.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
@@ -32,17 +37,17 @@ enforced by ASP.NET Core.
   responses MUST be indistinguishable for existing and unknown accounts;
   completion MUST rotate the security stamp and invalidate every earlier
   session on every replica.
-- FR-6: Staff MUST complete MFA through the institutional identity provider
-  approved under DEC-02. A password-only staff session MUST never be issued,
-  and production staff login MUST fail closed until the provider and MFA
-  method are approved and configured.
+- FR-6: Demo staff MUST use the shared staff login with a pre-provisioned local
+  username and generated password. No MFA or other second factor is required;
+  no role selector or public staff registration is allowed, and the server
+  MUST derive the effective roles after password and account-state checks.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
   plus antiforgery for mutations.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
-- FR-10: Activation, recovery, and MFA challenges MUST be opaque, hashed at
-  rest where locally persisted, time-bounded, attempt-bounded, and single-use
-  through an atomic database transition; concurrent uses of one challenge
+- FR-10: First-use activation and recovery proofs MUST be attempt-bounded and
+  single-use through an atomic database transition; recovery proofs MUST also
+  be opaque, hashed at rest, and time-bounded. Concurrent first-use attempts
   MUST change at most one account state.
 - FR-11: Claiming an institutional University ID MUST be protected by a unique
   database constraint so parallel activation requests cannot link it twice.
@@ -66,7 +71,7 @@ enforced by ASP.NET Core.
 ## Non-Functional Requirements
 
 - NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load, excluding MFA-provider latency.
+  production-like authenticated-session load.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
 - NFR-3: Password/credential configuration MUST follow current ASP.NET Core
   Identity and AASTMT security policy.
@@ -88,11 +93,12 @@ Then no account is created or linked<br>
 And a generic safe response is returned.
 
 ### AC-3: Shared staff login (FR-3, FR-4, FR-6)
-Given a provisioned staff account with TA claim and an MFA proof accepted by
-the approved institutional provider<br>
+Given a provisioned staff account with TA claim and valid generated demo
+credentials<br>
 When the shared staff login succeeds<br>
 Then the server supplies TA context<br>
-And no client parameter can add Lecturer or Admin permissions.
+And no second-factor prompt or client parameter can add Lecturer or Admin
+permissions.
 
 ### AC-4: Antiforgery (FR-7)
 Given an authenticated cookie without a valid antiforgery token<br>
@@ -107,8 +113,8 @@ And no long-lived credential is written to browser local storage<br>
 And recovery request responses do not disclose whether the account exists.
 
 ### AC-6: Parallel activation is single-use (FR-2, FR-10, FR-11)
-Given one valid activation token for one unclaimed University ID<br>
-When ten activation requests use that token concurrently through two
+Given one pre-provisioned inactive University ID and its generated password<br>
+When ten first-use activation requests use those credentials concurrently through two
 application replicas<br>
 Then exactly one account link is created<br>
 And every other request receives the same safe already-used result<br>
@@ -130,7 +136,7 @@ Then every route/state maps to SPEC-003 and the owning identity FR/AC IDs.
 Given the SPEC-018 approved load and positive/negative role matrix<br>
 When authentication performance, enumeration, configuration, and authorization
 tests execute<br>
-Then login is at most 500 ms p95 excluding MFA-provider latency<br>
+Then login is at most 500 ms p95<br>
 And errors do not reveal account existence<br>
 And credential configuration passes the current approved ASP.NET Core security
 baseline<br>
@@ -165,7 +171,6 @@ interface StudentLoginRequest { universityId: string; password: string; }
 interface StaffLoginRequest { userName: string; password: string; }
 interface ActivateStudentRequest {
   universityId: string;
-  activationCode: string;
   password: string;
 }
 interface SessionDto {
@@ -176,8 +181,6 @@ interface SessionDto {
   expiresAtUtc: string;
   securityStampVersion: string;
 }
-interface MfaChallengeDto { challengeId: string; expiresAtUtc: string; providerDisplayName: string; }
-interface MfaVerifyRequest { challengeId: string; providerProof: string; }
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
 interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
@@ -197,8 +200,8 @@ interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssist
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
-POST /api/auth/staff/login, POST /api/auth/staff/mfa/verify, POST
-/api/auth/logout, POST /api/auth/recovery/request, POST
+POST /api/auth/staff/login, POST /api/auth/logout, POST
+/api/auth/recovery/request, POST
 /api/auth/recovery/complete, POST /api/auth/password/change, POST
 /api/auth/sessions/revoke-all, GET /api/auth/session, and PUT
 /api/auth/session/context; plus GET /api/admin/users, POST
@@ -213,9 +216,8 @@ all account mutations use antiforgery and server-side rate limits.
 | Entity | Key fields |
 |---|---|
 | ApplicationUser | Identity fields, normalized unique University ID for student identities, enabled state, optional academic/staff link |
-| StudentActivation | ApplicationUser ID, hashed one-time token, expiry, used timestamp |
+| StudentActivation | ApplicationUser ID, provisioned timestamp, activated timestamp, rowversion; no plaintext PIN/password field |
 | AccountRecoveryChallenge | hashed token, subject, expiry, attempts, used timestamp |
-| StaffMfaChallenge | provider transaction reference, expiry, attempts, used timestamp |
 | RoleAssignment | user, role, effective dates, assigning actor |
 | AuthenticationAbuseState | normalized privacy-safe key, counters, lockout/rate-limit windows, rowversion |
 | IdentityImportBatch | source/hash, lifecycle, rowversion, row errors, idempotent publication result |
@@ -229,12 +231,15 @@ all account mutations use antiforgery and server-side rate limits.
 - OS-3: Authorization based only on Blazor route/component visibility.
 - OS-4: Final identity-provider integration until AASTMT confirms provider.
 
-## Approval Blockers
+## Approval State
 
-- DEC-01 must name the institutional student-ownership verification factor.
-- DEC-02 must name the staff identity provider and managed MFA method.
+- DEC-01 and DEC-02 are resolved for this demo by generated pre-provisioned
+  local credentials and password-only authentication with no MFA/2FA.
 - DEC-13 must name the production secret provider and certificate custody
-  process for the shared Data Protection key ring.
-- Until those decisions are approved, affected production flows fail closed;
-  no local substitute, test credential, or guessed provider behavior may be
-  promoted to production.
+  process for the shared Data Protection key ring before production approval;
+  it does not block Gate A demo implementation.
+- Generated demo credentials MUST remain limited to Development and Testing
+  and MUST NOT be presented as an institutional or production identity method.
+- Ahmed ELbamby approved Gate A demo implementation on 2026-07-13. Gate B-D,
+  release, production deployment, and official AASTMT go-live approvals remain
+  separate.

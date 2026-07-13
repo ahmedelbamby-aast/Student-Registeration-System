@@ -3,12 +3,19 @@
 ## Feature Contract
 
 ```typescript
+interface CatalogueFieldProvenanceDto {
+  sourceReference: string;
+  accessedOn: string;
+  sourceKind: "official-source" | "synthetic-demo";
+  syntheticFields: string[];
+}
 interface CourseAdminDto {
   id: string;
   code: string;
   title: string;
   credits: number;
   active: boolean;
+  provenance: CatalogueFieldProvenanceDto;
   rowVersion: string;
 }
 interface ProgramAdminDto {
@@ -16,6 +23,7 @@ interface ProgramAdminDto {
   code: string;
   displayName: string;
   active: boolean;
+  provenance: CatalogueFieldProvenanceDto;
 }
 interface CurriculumCourseAdminDto {
   programCode: string;
@@ -23,6 +31,7 @@ interface CurriculumCourseAdminDto {
   level: number;
   termSequence?: number;
   required: boolean;
+  provenance: CatalogueFieldProvenanceDto;
 }
 interface CatalogueDraftDto {
   id: string;
@@ -40,7 +49,7 @@ type CatalogueDraftOperation =
   | { kind: "upsert-course"; course: CourseAdminDto }
   | { kind: "upsert-curriculum-course"; curriculumCourse: CurriculumCourseAdminDto }
   | { kind: "remove-curriculum-course"; programCode: string; courseCode: string }
-  | { kind: "set-prerequisites"; courseCode: string; requiredCourseCodes: string[] };
+  | { kind: "set-prerequisites"; courseCode: string; requiredCourseCodes: string[]; provenance: CatalogueFieldProvenanceDto };
 interface CatalogueDraftMutationRequest {
   expectedDraftRowVersion: string;
   reason: string;
@@ -61,6 +70,7 @@ interface ImportBatchDto {
   state: "uploaded" | "validating" | "invalid" | "validated" | "publishing" | "published" | "failed";
   source: string;
   contentHash: string;
+  syntheticFieldCount: number;
   rowVersion: string;
   errors: Array<{ row?: number; field?: string; code: string; message: string }>;
   publishedVersionId?: string;
@@ -142,6 +152,10 @@ are no longer current, publication returns `409 STALE_PREVIEW` without writes.
 Catalogue and policy mutations accept only the discriminated operation
 allow-lists above. Arbitrary property names, navigation graphs, and untyped
 values are rejected; rule `value` must match its declared `valueType`.
+Catalogue validation also rejects absent/malformed field provenance. Official-
+source records retain the URL/access date and enumerate any synthetic gap
+fields; fully local records use `synthetic-demo` and cannot be presented as
+official curriculum data.
 
 ## Shared Rules
 

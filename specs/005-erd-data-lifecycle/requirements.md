@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
 **Owner:** Data/Backend Lead<br>
 **Reviewers:** Architect, Registrar, QA, Security<br>
 **Target:** Sprint 0-S1<br>
@@ -16,7 +16,15 @@ proposed model is in docs/diagrams/ERD.md.
 
 ## Functional Requirements
 
-- FR-1: EF Core Code First migrations MUST define the approved ERD.
+- FR-1: EF Core Code First migrations MUST define the approved ERD. The demo
+  MUST run SQL Server 2022 Developer at compatibility level 160, provisioned
+  through Docker for Development and Testcontainers for Testing. The
+  non-production bootstrap MUST create an isolated Development database and an
+  isolated per-run Testing database from those migrations before seeding; each
+  Testing database MUST be disposed after its run, Development MUST persist
+  until an explicit guarded reset, and seed rows MUST NOT be embedded in schema
+  migrations. This demo runtime does not approve a production edition or
+  topology.
 - FR-2: Student University ID, course/program/term codes, group codes, active
   enrollment, and submission idempotency MUST have database uniqueness guards.
 - FR-3: Capacity and time/date bounds MUST have database check constraints.
@@ -28,6 +36,12 @@ proposed model is in docs/diagrams/ERD.md.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
   startup migrations.
 - FR-8: Data provenance MUST be recorded for imported academic/catalogue data.
+  The Development and Testing seed profiles MUST use synthetic data, a
+  versioned deterministic logical fixture, stable unique identifiers, and
+  explicit synthetic provenance; real institutional/student data MUST NOT be
+  loaded into either demo profile. Seed is idempotent for the same profile
+  version; destructive reset is a separate explicit operation guarded to
+  Development/Testing and MUST reject every other environment.
 - FR-9: The ERD MUST model a unique student-term registration guard and MUST
   use `RegistrationSubmission` as the single idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
@@ -45,9 +59,16 @@ proposed model is in docs/diagrams/ERD.md.
 - NFR-2: A production-like migration rehearsal MUST complete inside 80% of the
   numeric deployment window approved by AASTMT Operations and include tested
   rollback instructions. Until that institutional window is recorded, this
-  requirement and implementation readiness remain In Review/fail closed.
+  production deployment/release readiness remains fail closed until approved.
 - NFR-3: Backup/restore MUST meet SPEC-018 RPO/RTO.
 - NFR-4: Sensitive fields MUST be minimized and excluded from unsafe logs.
+  Generated PIN/password plaintext MUST exist only transiently while the
+  owning identity component hashes it with ASP.NET Identity; SQL rows,
+  migrations, checked-in fixtures, snapshots, logs, traces, and test evidence
+  MUST contain only the password hash or redacted metadata, never plaintext
+  credentials or full student profiles. Local credential artifacts, logs, and
+  exports MUST be Git-ignored and removed no later than seven days after
+  creation.
 
 ## Acceptance Criteria
 
@@ -68,10 +89,16 @@ When version 2026.2 supersedes it<br>
 Then 2026.1 remains immutable and queryable by historical submission.
 
 ### AC-4: Code First invariant model (FR-1, FR-4, FR-6, FR-8)
-Given the approved Code First model is migrated to an empty SQL Server<br>
-When schema inspection and seed import tests run<br>
+Given isolated empty Development and per-run Testing SQL databases<br>
+When the approved Code First migrations run before the versioned synthetic
+seed and schema/seed inspection tests execute<br>
 Then rowversion and offering/group referential constraints match the ERD<br>
-And imported academic rows retain source provenance.
+And seeded academic rows have deterministic logical values and synthetic
+provenance<br>
+And only ASP.NET Identity password hashes, never plaintext PINs/passwords, are
+persisted<br>
+And the Testing database is disposed after the run while Development persists
+until an explicit guarded reset.
 
 ### AC-5: Controlled production migration (FR-7)
 Given a reviewed migration bundle and production-like backup<br>
@@ -100,7 +127,9 @@ And sensitive fields are absent from unsafe logs.
 
 ## Edge Cases
 
-- EC-1: Migration fails partway -> deployment stops and follows tested rollback.
+- EC-1: Migration/bootstrap fails partway, or a seed/reset targets an
+  environment other than Development or Testing -> stop without treating the
+  database as ready; production data is never seeded or reset.
 - EC-2: Import references missing prerequisite -> preview rejects row and
   publish remains blocked.
 - EC-3: rowversion is stale -> return 409 with current version, no lost update.
@@ -140,6 +169,8 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | SectionGroup.Version | SPEC-010 | rowversion | concurrency token |
 | Enrollment offering/group | SPEC-014 | composite FK | group must belong to offering |
 | ImportedRecord.Source | owning import feature | string | required provenance |
+| Non-production seed profile | SPEC-005 contract; canonical owners write their rows | configuration, not an entity | Development or per-run Testing only; versioned deterministic logical fixture; idempotent seed; explicit guarded reset |
+| ApplicationUser password credential | SPEC-007 | password hash | ASP.NET Identity hash only; no plaintext PIN/password persistence |
 | StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
 | RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, timestamps |
 

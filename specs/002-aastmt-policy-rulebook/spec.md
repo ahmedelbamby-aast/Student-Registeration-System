@@ -2,7 +2,7 @@
 
 **Feature Branch**: 002-aastmt-policy-rulebook
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: Approved (Gate A demo implementation, 2026-07-13)
 **Owner**: Registrar/Policy SME
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -15,6 +15,11 @@ not scattered as constants in UI or application code.
 
 The research baseline and unresolved POLICY-Q items are documented in
 docs/POLICY_RESEARCH.md.
+
+For this non-production proof of concept, Ahmed ELbamby approved the bounded
+`DEMO-POC-2026.1` profile on 2026-07-13. It intentionally demonstrates policy
+evaluation with simple rules and a small, sourced curriculum; it is not an
+official AASTMT production rulebook.
 
 ## User Scenarios and Testing
 
@@ -30,7 +35,7 @@ Given an active student with GPA 1.99 under an approved general policy<br>
 When eligibility is evaluated for a regular-term plan above 12 credits<br>
 Then the decision fails with the probation load reason<br>
 And cites the governing version/source and 12-credit maximum.
-### User Story 2 - Unapproved conflict (FR-4, FR-5) (P1)
+### User Story 2 - Unapproved demo-policy conflict (FR-4, FR-5) (P1)
 
 As a Registrar/Policy SME, I need the Unapproved conflict (FR-4, FR-5) behavior so that AASTMT Policy Rulebook produces a verifiable outcome.
 
@@ -38,10 +43,11 @@ As a Registrar/Policy SME, I need the Unapproved conflict (FR-4, FR-5) behavior 
 
 **Acceptance Scenario (AC-2)**
 
-Given withdrawal week is unresolved between sources<br>
-When an admin attempts to publish that rule<br>
+Given an imported rule conflicts with the approved demo profile by enabling a
+waitlist or capacity override<br>
+When an admin attempts to publish that conflicting rule<br>
 Then publication is blocked<br>
-And POLICY-Q04 is shown as requiring Registrar approval.
+And the rule is shown as requiring a separately approved policy amendment.
 ### User Story 3 - Historical explainability (FR-3, FR-7) (P2)
 
 As a Registrar/Policy SME, I need the Historical explainability (FR-3, FR-7) behavior so that AASTMT Policy Rulebook produces a verifiable outcome.
@@ -88,7 +94,8 @@ And source/access/approval/effective metadata remains auditable.
 - EC-2: Two sets have equal scope/priority -> publication validation fails.
 - EC-3: Source URL becomes unavailable -> retain recorded metadata and flag
   source review; do not alter historical decisions.
-- EC-4: Catalogue references missing course -> reject catalogue publication.
+- EC-4: A demo catalogue row lacks official-source provenance or an explicit
+  synthetic-gap label -> reject catalogue publication.
 
 ## Requirements
 
@@ -98,6 +105,16 @@ And source/access/approval/effective metadata remains auditable.
   scope.
 - FR-2: Approved rules MUST cover registration window, standing, holds, load,
   prerequisites, earned credits, repeats, and conflict/capacity product rules.
+  The demo profile MUST enforce configured registration windows, eligible
+  standing, absence of blocking holds, and completed prerequisites; accept a
+  regular load from 9 through 18 credits with 18 as both the default/recommended
+  target and hard normal maximum; limit GPA below 2.0 to 12 credits; allocate
+  capacity to the first successful commit with no waitlist or override; block
+  every unresolved meeting overlap with travel-time buffering disabled; and
+  provide no automatic exception, add/drop, withdrawal, or advisor workflow.
+  Its catalogue MUST be the 19-course AASTMT College of Artificial Intelligence
+  Data Science snapshot in `docs/DEMO_CURRICULUM.md`, with any gap-filling synthetic row
+  clearly labelled as synthetic and never represented as official curriculum.
 - FR-3: Every decision MUST return reason code, explanation, policy version,
   input summary, and source.
 - FR-4: A draft or unapproved policy set MUST NOT govern student submission.
@@ -138,6 +155,8 @@ decision snapshot is owned by SPEC-015; none is a SPEC-002 runtime entity.
 - Server time, the configured academic term, authenticated identity, and authorization scope are authoritative.
 - Approved upstream specifications provide their published contracts; failures are handled safely and do not bypass policy.
 - Policy values that lack institutional approval remain configurable and fail closed.
+- `DEMO-POC-2026.1` is approved only by Ahmed for this design-capability demo;
+  the public AASTMT sources establish provenance, not production authorization.
 
 ## Dependencies
 
@@ -151,5 +170,7 @@ No route is directly owned. Any later UI exposure requires a SPEC-003 route-mani
 
 - OS-1: Legal interpretation by software.
 - OS-2: Arbitrary scripting/expressions uploaded by users.
-- OS-3: Advisor or Deanery approval workflow until separately approved.
+- OS-3: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop,
+  withdrawal, and Advisor or Deanery approval workflows until separately
+  approved.
 - OS-4: Automatic dismissal or academic-path decisions.

@@ -1,7 +1,7 @@
 # Implementation Plan: Identity and Account Lifecycle
 
 **Branch**: 007-identity-account-lifecycle | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Design complete; DEC-01, DEC-02, and DEC-13 plus human approval are pending. Implementation is not authorized.
+**Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. DEC-13 remains a future production decision.
 
 ## Summary
 
@@ -49,10 +49,12 @@ placed in a generic Server or Domain project.
 
 1. `ApplicationUser` is the security-stamp root; role assignments and
    challenge/abuse state are shared durable Identity data.
-2. Student activation and recovery call approved institutional verification
-   ports and atomically consume single-use challenges.
-3. Staff authentication creates an MFA challenge and issues a session only
-   after the approved provider verifies it.
+2. A Development/Testing-only bootstrap generates pre-provisioned identities,
+   unique synthetic University IDs, and initial PIN/passwords, persisting only
+   ASP.NET Core Identity hashes; first use atomically activates the student.
+3. Staff authentication directly verifies the pre-provisioned local password
+   and account state, derives roles on the server, and issues a session without
+   MFA, 2FA, or a role selector.
 4. Recovery, password change, and revoke-all rotate the security stamp;
    protected APIs validate it on every replica.
 5. Identity owns Admin pre-provisioned import/list/status/role commands and
@@ -65,12 +67,14 @@ placed in a generic Server or Domain project.
 
 ## Execution and Gate Order
 
-Dependency baselines and cross-spec consistency analysis run first. The final
-planning action is Ahmed ELbamby's approval after DEC-01, DEC-02, and DEC-13
-are resolved. Implementation then proceeds test-first: contract/model and
+Ahmed ELbamby's Gate A demo approval is recorded. Dependency baselines and
+cross-spec consistency analysis remain the first execution tasks; DEC-13 is a
+future production concern and does not block demo implementation. Delivery
+then proceeds test-first: contract/model and
 acceptance tests, domain/application delivery, endpoint handlers, frontend E2E
 tests/pages, and measurable release evidence. No handler precedes its linked
-behavior and contract tests.
+behavior and contract tests. Gate B-D, release, production deployment, and
+official AASTMT go-live approvals remain separate.
 
 ## Design Artifacts
 
@@ -85,7 +89,7 @@ behavior and contract tests.
 ## Non-Functional Requirements
 
 - NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load, excluding MFA-provider latency.
+  production-like authenticated-session load.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
 - NFR-3: Password/credential configuration MUST follow current ASP.NET Core
   Identity and AASTMT security policy.

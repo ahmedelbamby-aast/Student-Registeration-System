@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Backend Lead<br>
 **Reviewers:** Admin, Lecturer/TA representatives, Data, QA<br>
 **Target:** Sprint 2<br>
@@ -10,31 +10,37 @@
 
 ## Context
 
-Students need accurate groups with capacity, Lecturer/TA, room, day and time.
-Only complete, conflict-free administrative schedules should become visible
-for registration.
+Students need accurate, complete activity bundles with capacity, Lecturer/TA,
+room, day, and time. Only offerings whose selectable groups satisfy the simple
+demo staffing pattern and whose schedules are conflict-free should become
+visible for registration.
 
 ## Functional Requirements
 
 - FR-1: Admin MUST create term course offerings and one or more section groups.
-- FR-2: Each group MUST have code, capacity, state, meeting slots, room(s), and
-  required staff assignments before publish. Under DEC-11's safe rule, every
-  Lecture activity requires at least one Lecturer and every Tutorial or
-  Laboratory activity requires at least one Teaching Assistant; a group that
-  contains both activity types requires both and displays all assigned staff.
-  Any institution-specific exception remains unpublished until approved.
+- FR-2: Before a course offering can enter Published/Open registration state,
+  each student-selectable group MUST be a complete activity bundle with code,
+  capacity, state, and at least one Lecture meeting assigned to at least one
+  Lecturer, plus at least one Tutorial meeting or Laboratory meeting (or both).
+  Each present Tutorial and Laboratory activity MUST be assigned at least one
+  Teaching Assistant. Every activity MUST expose its type, assigned staff
+  names, room/location, day, and start/end time to students. `Tutorial` is the
+  canonical activity value; the UI MAY display it as `Section`.
 - FR-3: Publish validation MUST reject staff overlap/unavailability, room
   overlap/unavailability, room capacity below group capacity, invalid slots,
-  missing roles, and duplicate offering/group codes.
+  an incomplete FR-2 activity bundle or missing activity role, and duplicate
+  offering/group codes.
 - FR-4: Students MUST NOT select full, unpublished, cancelled, or closed
   groups.
 - FR-5: Capacity MUST NOT be set below active EnrolledCount.
 - FR-6: SPEC-010 MUST own the `StaffTermAvailability` aggregate and child
   `StaffAvailability` ranges. Staff edit their own declarations through the
-  SPEC-016 workspace contract. An Admin correction is allowed only with the
-  separate permission, reason, signed preview, expected aggregate version,
-  audit, and staff-notification contract in DEC-12. All staff assignment,
-  availability, room, and resource changes are concurrency protected.
+  SPEC-016 workspace contract. Admin MAY view the declarations and import them
+  into offering planning as read-only inputs, but MUST NOT create, replace,
+  edit, or override availability in this POC. The Admin surface MUST expose
+  no availability mutation endpoint or editable
+  availability control. All staff assignment, staff-owned availability, room,
+  and resource changes are concurrency protected and audited.
 - FR-7: Publication MUST be transactional.
 - FR-8: Publication MUST lock every touched offering, room, and staff resource
   in stable order: CourseOffering, SectionGroup IDs, Room IDs, then
@@ -61,11 +67,12 @@ for registration.
 ## Acceptance Criteria
 
 ### AC-1: Valid group publish (FR-1, FR-2, FR-3)
-Given a group has Lecture and Laboratory activities, capacity 30, room
-capacity 35, valid times, an available Lecturer for Lecture, and an available
-TA for Laboratory<br>
+Given an offering has one group containing a Lecture with an available
+Lecturer and a Tutorial with an available TA, capacity 30, room capacity 35,
+and valid times<br>
 When Admin validates and publishes<br>
-Then the group becomes visible to eligible students with all details.
+Then the group becomes visible to eligible students with activity type, staff,
+room/location, day, and time for both activities.
 
 ### AC-2: Room overlap (FR-3)
 Given two groups use the same room at overlapping times<br>
@@ -115,15 +122,15 @@ Then the registration re-read detects GROUP_CHANGED and cannot enroll against
 rowversion 8<br>
 And concurrent availability/publication uses one valid staff-term serial order.
 
-### AC-9: Audited Admin availability correction (FR-6, FR-8, FR-10)
+### AC-9: Staff-owned availability and read-only Admin use (FR-6, FR-8, FR-10)
 Given staff owns a current term availability declaration and an authorized
-Admin has separate correction permission, reason, signed preview, and current
-StaffTermAvailability rowversion<br>
-When the Admin submits a correction that affects a published group<br>
-Then the complete range set is atomically replaced, the aggregate version
-advances, an audit fact and staff notification are recorded, and a durable
-ScheduleImpactAlert requires Admin revalidation<br>
-And a stale, unauthorized, or unpreviewed correction changes nothing.
+Admin opens ADM-07<br>
+When the Admin views or imports the declaration into offering planning<br>
+Then the declaration is read-only and no edit or override action is exposed<br>
+And the Admin availability mutation route is absent and an attempted mutation
+changes no StaffTermAvailability state<br>
+And a staff-owned update affecting a published group creates a durable
+ScheduleImpactAlert requiring Admin revalidation.
 
 ## Edge Cases
 
@@ -147,8 +154,15 @@ interface GroupDto {
   enrolledCount: number;
   registrationPaused: boolean;
   state: "draft" | "published" | "closed" | "cancelled";
-  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; name: string }>;
+  staff: Array<{
+    meetingSlotId: string;
+    activityType: "Lecture" | "Tutorial" | "Laboratory";
+    role: "Lecturer" | "TeachingAssistant";
+    name: string;
+  }>;
   meetings: Array<{
+    id: string;
+    activityType: "Lecture" | "Tutorial" | "Laboratory";
     dayOfWeek: number;
     startLocal: string;
     endLocal: string;
@@ -178,13 +192,6 @@ interface StaffTermAvailabilityDto {
   rowVersion: string;
   ranges: Array<{ dayOfWeek: number; startLocal: string; endLocal: string; kind: "available" | "unavailable" }>;
 }
-interface AdminAvailabilityCorrectionRequest {
-  expectedStaffTermRowVersion: string;
-  previewToken: string;
-  clientRequestId: string;
-  reason: string;
-  ranges: StaffTermAvailabilityDto["ranges"];
-}
 interface ScheduleImpactAlertDto {
   id: string;
   groupId: string;
@@ -200,8 +207,7 @@ Endpoints: GET /api/offerings/{offeringId}, GET /api/groups/{groupId}, GET
 /api/admin/groups/{groupId}, POST /api/admin/offerings/{offeringId}/validate, POST
 /api/admin/offerings/{offeringId}/publish, GET /api/admin/rooms, POST
 /api/admin/rooms, PUT /api/admin/rooms/{roomId}, GET
-/api/admin/staff-availability, and PUT
-/api/admin/staff/{staffId}/terms/{termId}/availability; plus GET
+/api/admin/staff-availability, GET
 /api/admin/schedule-impact-alerts, POST
 /api/admin/schedule-impact-alerts/{alertId}/revalidate, and POST
 /api/admin/schedule-impact-alerts/{alertId}/resolve.
@@ -209,6 +215,9 @@ Every group-state, capacity, meeting, room, and staff-assignment mutation
 requires the owning group rowversion. Retryable create/publish uses
 clientRequestId; stale resources return 409 GROUP_CHANGED,
 RESOURCE_CONFLICT, or IDEMPOTENCY_KEY_REUSED without partial publication.
+GET /api/admin/staff-availability is bounded and read-only; it may supply
+staff-declared ranges as inputs to offering planning but exposes no Admin
+availability mutation, edit, or override route.
 
 ## Data Models
 
@@ -216,8 +225,8 @@ RESOURCE_CONFLICT, or IDEMPOTENCY_KEY_REUSED without partial publication.
 |---|---|---|
 | CourseOffering | entity | unique term + course |
 | SectionGroup.Capacity | integer | >= EnrolledCount; nonnegative |
-| MeetingSlot | value/entity | EndLocal > StartLocal |
-| GroupStaffAssignment | bridge | unique group + staff + teaching role |
+| MeetingSlot | value/entity | Lecture/Tutorial/Laboratory; EndLocal > StartLocal; room/day/start/end required |
+| GroupStaffAssignment | bridge | unique meeting slot + staff + teaching role; Lecturer only covers Lecture; TA only covers Tutorial/Laboratory |
 | StaffTermAvailability | aggregate root | unique staff + term; deadline; complete range-set rowversion |
 | StaffAvailability | child range | parent aggregate; valid day/start/end/type; no independent rowversion |
 | ScheduleImpactAlert | durable child/entity | affected group/resource/version, reason, detected time, revalidation state |

@@ -1,7 +1,8 @@
 # Implementation Plan: Architecture and Engineering Principles
 
 **Branch**: 004-architecture-engineering-principles | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
+and production release approval remain required.
 
 ## Summary
 
@@ -11,7 +12,9 @@ Deliver Architecture and Engineering Principles inside the modular monolith whil
 
 **Language/Version**: C# / .NET 10
 **Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
+**Storage**: Demo SQL Server 2022 Developer, compatibility level 160, through
+Docker for Development and Testcontainers for per-run Testing; Code First
+migrations; no production edition/topology decision
 **Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
 **Project Type**: Web application with hosted WebAssembly client and server API
 **Performance Goals**: Governed by SPEC-018 and feature NFRs
@@ -56,6 +59,12 @@ forbidden alternative shape.
   architecture rules.
 - Keep one deployable API and one SQL Server database/DbContext while allowing
   each module to own its model/configuration contribution through narrow ports.
+- Pin the demo database runtime to SQL Server 2022 Developer compatibility 160:
+  Docker provisions Development and Testcontainers provisions isolated Testing
+  databases. Dispose Testing after each run; retain Development until an
+  explicit guarded reset. No real institutional data is permitted.
+- Keep local credential artifacts, logs, and exports Git-ignored and remove
+  them no later than seven days after creation.
 - Require encrypted, least-privilege shared Data Protection keys for all API
   replicas without sticky sessions; production repository/encryption authority
   remain fail-closed until Security/DevOps approval.
@@ -70,10 +79,14 @@ forbidden alternative shape.
 
 1. Validate SPEC-001 and SPEC-003, then reconcile architecture documents,
    module contracts, and planned paths through consistency analysis.
-2. Record Architect and Ahmed ELbamby approval as the final planning gate.
+2. Verify Ahmed ELbamby's 2026-07-13 approval in the Architect review
+   perspective before implementation; retain later release and production
+   architecture approvals.
 3. Write failing solution-shape, dependency, DTO-isolation, persistence, and
-   atomic-audit boundary tests before creating the solution, composition,
-   persistence, and audit seams.
+   atomic-audit boundary tests, including the SQL version/compatibility,
+   provisioner, lifecycle, synthetic-only, Git-ignore, and seven-day-retention
+   guards, before creating the solution, composition, persistence, and audit
+   seams.
 4. Require an approved ADR plus updated tests for every later boundary or
    deployment change.
 
@@ -83,7 +96,10 @@ forbidden alternative shape.
 
 - NFR-1: Architecture tests MUST fail on forbidden module references/cycles.
 - NFR-2: Application instances MUST be stateless except for shared database
-  and approved key/config stores.
+  and approved key/config stores. Demo Testing databases are disposed per run,
+  Development persists until guarded reset, all data is synthetic, and local
+  credential/log/export artifacts are Git-ignored and retained at most seven
+  days; production key-store decisions remain fail closed.
 - NFR-3: The architecture MUST support at least two application replicas.
 - NFR-4: Domain code inside each business-module project MUST reference no
   ASP.NET, Blazor, EF Core, or SQL Server type or namespace.

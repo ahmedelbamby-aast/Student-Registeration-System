@@ -2,7 +2,7 @@
 
 **Feature Branch**: 011-eligibility-subject-discovery
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: APPROVED
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -11,6 +11,8 @@
 Students need to see available subjects based on program, GPA, standing,
 earned credits, prerequisites, repeats, holds, term, published groups, and
 policy. The system must explain both eligible and unavailable outcomes.
+The demo evaluates the approved `DEMO-POC-2026.1` rules against the exact
+curated catalogue in `docs/DEMO_CURRICULUM.md`.
 
 ## User Scenarios and Testing
 
@@ -22,10 +24,11 @@ As a Student, I need the Eligible offering (FR-1, FR-2, FR-5) behavior so that E
 
 **Acceptance Scenario (AC-1)**
 
-Given a student meets prerequisites/load rules and one group is open<br>
+Given a normal-standing student has 15 selected credits, meets the next
+three-credit course prerequisites, and one complete group is open<br>
 When discovery loads<br>
-Then the offering is listed with credits and all group staff/location/time
-details.
+Then the offering is listed with a projected 18 of 18 credits<br>
+And all Lecture/Tutorial/Laboratory staff, location, and time details are shown.
 ### User Story 2 - Explain unavailable (FR-4, FR-6) (P1)
 
 As a Student, I need the Explain unavailable (FR-4, FR-6) behavior so that Eligibility and Subject Discovery produces a verifiable outcome.
@@ -88,13 +91,18 @@ And every status has text/icon meaning independent of color.
   text.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
   codes, reset-filter action, current window state, and the configured
-  Registrar/advisor support path.
+  Registrar support path.
 
 ## Requirements
 
 ### Functional Requirements
 
 - FR-1: The system MUST evaluate every relevant approved rule on the server.
+  For `DEMO-POC-2026.1`, this includes configured window, standing, blocking
+  hold, prerequisite, course GPA/earned-credit, current-plan load, published
+  capacity, and exact meeting-conflict checks. A normal plan targets and caps
+  at 18 credits; GPA below 2.0 caps at 12 credits. Advisor/exception workflows
+  are not evaluated because they are outside the demo.
 - FR-2: Default discovery MUST list eligible offerings having at least one
   published selectable group.
 - FR-3: Students MUST be able to search by code/title and filter by
@@ -103,6 +111,8 @@ And every status has text/icon meaning independent of color.
   blocking reason.
 - FR-5: Results MUST show course code/title/credits and group capacity, staff,
   location, activity, day/time, state, seats remaining, and advisory version.
+  Each offering MUST also show current-plan credits, projected credits if
+  selected, default target 18, and the applicable maximum 18 or 12.
 - FR-6: Each decision MUST include complete stable per-rule explanations,
   approved PolicySet/source metadata, safe required/current values, and a
   fail-closed reason/support path when decision data is unavailable.

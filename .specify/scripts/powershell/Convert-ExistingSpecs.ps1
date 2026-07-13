@@ -356,8 +356,8 @@ $body
         $nfrId = $nfr.Groups[1].Value
         $summary = ConvertTo-OneLine $nfr.Groups[3].Value
         if ($item.id -eq '003' -and $nfrId -eq 'NFR-7') {
-            $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[$nfrId] [MANUAL-EVIDENCE] [ACTUAL-SAFARI]" "Execute the signed actual-Safari-on-macOS protocol for $nfrId and record macOS/Safari versions, browser matrix version, journeys, results, defects, and approver in docs/release-evidence/frontend/safari-macos-evidence.md: $summary."))
-        } elseif ($summary -match '(?i)screen.reader|usability|participant|actual Safari|manual') {
+            $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[$nfrId] [AUTOMATED-EVIDENCE] [POC-BROWSER-MATRIX]" "Execute the current-stable Chrome/Edge/Firefox plus pinned Playwright WebKit gate and record exact builds, WebKit-not-Safari labeling, journeys, results, and actual Safari/macOS deferral in tests/StudentRegistration.QualityTests/Specs/Spec003/NFR-7EvidenceTests.cs and docs/release-evidence/SPEC-003-NFR-7.md: $summary."))
+        } elseif ($summary -match '(?i)screen.reader|usability|participant|manual') {
             $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[$nfrId] [MANUAL-EVIDENCE]" "Execute the controlled human/browser evidence protocol for $nfrId and record participants, environment, script, observations, pass/fail thresholds, defects, and approver in docs/release-evidence/SPEC-$($item.id)-$nfrId.md: $summary."))
         } else {
             $qualityTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$nfrId] [AUTOMATED-EVIDENCE]" "Produce measurable automated release evidence for $nfrId in tests/StudentRegistration.QualityTests/Specs/Spec$($item.id)/$($nfrId)EvidenceTests.cs and docs/release-evidence/SPEC-$($item.id)-$nfrId.md: $summary."))

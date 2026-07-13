@@ -2,9 +2,11 @@
 
 ## Status and authority
 
-Research accessed 12 July 2026. Use an effective-dated policy baseline named
-AASTMT-General-2016 plus a College-of-AI overlay. Public sources are enough for
-a prototype but not production approval.
+Research accessed 12 July 2026. The demo uses an effective-dated policy
+baseline named `DEMO-POC-2026.1`, derived from AASTMT-General-2016 plus a
+College-of-AI overlay and simplified by Ahmed ELbamby's 13 July 2026 demo
+approval. Public sources are enough for this prototype but do not constitute
+official production approval.
 
 Primary sources:
 
@@ -59,6 +61,38 @@ concerns Maritime credit transfers and is not used as a College-of-AI rule.
 These demonstrate why prerequisites require minimum-grade, GPA, earned-credit,
 program, and cohort dimensions.
 
+## Approved simple demo POC profile
+
+`DEMO-POC-2026.1` proves the policy, eligibility, capacity, and scheduling
+concepts without implementing every academic exception:
+
+- A normal plan begins empty and uses 18 credits as its displayed default
+  target and hard normal-term maximum. Nine credits remains the minimum for a
+  submitted regular-term plan; the demo does not show the former 12-credit
+  guidance.
+- GPA below 2.0 is probation and limits the plan to 12 credits. Prerequisites,
+  earned-credit/GPA conditions, holds, the current registration window,
+  published group state, available capacity, and exact timetable overlaps are
+  server-authoritative hard checks.
+- Eligible students may use online registration. The demo does not implement
+  advisor selection/approval, graduating-student overload/underload,
+  prerequisite exceptions, withdrawal, drop, correction, or other manual
+  exception workflows.
+- Contested capacity is first successful serialized SQL commit wins. There is
+  no waitlist, priority queue, temporary reservation, or capacity override.
+- Every unresolved exact meeting overlap blocks submission. Travel-time
+  buffers are disabled; no room/campus duration or matrix is guessed.
+- Every published offering contains a Lecture taught by at least one Lecturer
+  and at least one Tutorial/Section or Laboratory activity. Every present
+  Tutorial/Section and Laboratory activity has at least one TA.
+- The seed catalogue is the exact small curated snapshot in
+  [DEMO_CURRICULUM.md](DEMO_CURRICULUM.md), based on the official AASTMT
+  College of Artificial Intelligence Intelligent Systems and Data Science
+  curriculum pages listed above. Each copied row records its source URL and
+  access date. A missing/inconsistent relationship may be replaced only by a
+  clearly marked synthetic demo row with no claim that AASTMT published it;
+  all rows still pass duplicate, referential, credit, and cycle validation.
+
 ## Current calendar example
 
 On 12 July 2026, the public calendar shows Summer 2025-2026:
@@ -72,18 +106,21 @@ The public event listing does not show a summer registration closing timestamp.
 Production must use an approved explicit OpensUtc and ClosesUtc record, never
 infer an open window from the month or device clock.
 
-## Unverified, contradictory, or product-owned decisions
+## Demo resolutions for unverified or product-owned questions
 
-| ID | Issue | Safe initial behavior / required owner |
+These resolutions apply only to `DEMO-POC-2026.1`. Production use requires a
+new effective-dated institutional approval.
+
+| ID | Issue | Approved demo resolution |
 |---|---|---|
-| POLICY-Q01 | No public CAI capacity/waitlist/seat-allocation policy found. | First-commit-wins within approved group capacity; Registrar/Deanery approval required. |
-| POLICY-Q02 | No CAI authority for automatic conflict exceptions. | Hard block every unresolved meeting overlap; no override. |
-| POLICY-Q03 | 2017 summary suggests GPA/earned-credit portal restriction; final regulation permits electronic/advisor registration. | Do not lock lower-GPA students out; prepare plan and require approved path after SME decision. |
-| POLICY-Q04 | Withdrawal deadline appears as week 15 in final rules and week 14 in older sources. | Configure but do not publish until CAI confirms. |
-| POLICY-Q05 | CAI says usual minimum 12; general hard minimum is 9. | Enforce 9 and present 12 as guidance until confirmed. |
-| POLICY-Q06 | Public curriculum contains missing/misordered prerequisite references. | Prototype seed only; obtain approved status report/catalogue before production. |
-| POLICY-Q07 | Advisor approval workflow details are absent. | Out of MVP until actors, states, deadlines, and authority are approved. |
-| POLICY-Q08 | Data retention/privacy periods are absent. | Security/privacy owner and AASTMT records authority must define before go-live. |
+| POLICY-Q01 | No public CAI capacity/waitlist/seat-allocation policy found. | First successful serialized SQL commit wins within capacity; no waitlist, reservation, priority queue, or override. |
+| POLICY-Q02 | No CAI authority for automatic conflict exceptions. | Hard block every unresolved exact meeting overlap; no override. |
+| POLICY-Q03 | Public sources differ on portal/advisor restrictions. | Eligible students may register online; probation still caps the plan at 12 credits. Advisor approval is outside the demo. |
+| POLICY-Q04 | Withdrawal deadline differs between sources. | Withdrawal and drop are outside the demo, so no deadline is published. |
+| POLICY-Q05 | CAI says usual minimum 12; general hard minimum is 9. | Enforce 9 as submitted-plan minimum, use 18 as the default target and normal maximum, and do not show 12-credit guidance. |
+| POLICY-Q06 | Public curriculum contains missing/misordered references. | Use a curated official-source snapshot; replace only unusable gaps with clearly synthetic demo rows and validate the complete graph. |
+| POLICY-Q07 | Advisor approval workflow details are absent. | Advisor and other manual exception workflows are outside the demo. |
+| POLICY-Q08 | Data retention/privacy periods are absent. | For the synthetic POC only, use DEC-07: per-run Testing disposal, guarded Development reset, seven-day local artifacts, and no real student data. Production retention remains a separate go-live decision. |
 
 Examples of public catalogue integrity issues include GN211 shown before GN121,
 references to absent IN321/DS121, and missing displayed DS222. Imports therefore
@@ -119,5 +156,6 @@ Do not store arbitrary executable expressions or scripts.
 - Registrar supplies at least two example students per boundary.
 - Admin imports verified term windows and curriculum.
 - Product/Registrar approve conflict and capacity product rules.
-- Security/privacy owner approves retention and data scope.
+- Production security/privacy owners approve any future real-data retention and
+  data scope; the POC uses only DEC-07's synthetic profile.
 - QA converts approved examples into immutable rule regression tests.

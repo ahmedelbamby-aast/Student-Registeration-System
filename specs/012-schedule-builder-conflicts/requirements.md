@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** APPROVED<br>
 **Owner:** Technical Lead<br>
 **Reviewers:** UX, Registrar/Policy SME, Backend, QA<br>
 **Target:** Sprint 4<br>
@@ -19,9 +19,9 @@ submission until the plan is valid.
 - FR-1: The student MUST add at most one group per course offering to a plan.
 - FR-2: The server MUST detect overlap for every meeting slot using strict
   half-open interval logic (`startA < endB && startB < endA`). Adjacent
-  meetings do not conflict. The DEC-06 travel-buffer rule is disabled and MUST
-  NOT create a hard conflict until an approved typed room/campus matrix and
-  duration are published.
+  meetings do not conflict. The approved simple demo policy disables the
+  travel-buffer rule, which MUST NOT create a conflict or guess a room/campus
+  duration or matrix.
 - FR-3: Each conflict MUST identify both groups, subjects, day, times, and
   exact overlap interval. It MUST include accessible resolution actions to
   change either group or remove either selection; actions are identifiers and
@@ -62,7 +62,7 @@ subjects, and 11:00-11:30 overlap.
 Given Group A ends Monday 11:00 and Group B starts Monday 11:00<br>
 When both are selected<br>
 Then no overlap exists<br>
-And DEC-06's disabled travel-buffer rule adds no conflict.
+And the demo's disabled travel-buffer rule adds no conflict.
 
 ### AC-3: Submission blocked (FR-5)
 Given an unresolved hard conflict<br>

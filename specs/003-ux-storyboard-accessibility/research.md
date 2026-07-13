@@ -61,17 +61,31 @@ unknown-code fallback behavior. SPEC-003 owns no server endpoint.
 **Alternatives rejected**: Browser-only testing, snapshot-only testing, and manual-only accessibility review because each leaves important behavior unverified.
 
 ### Browser evidence and version pinning
-**Decision**: Pin CI operating-system images and exact browser builds in a versioned browser matrix. Use Chromium, Firefox, and WebKit automation for repeatable coverage, then require a separately recorded run on actual stable Safari on pinned macOS for Safari support.
-**Rationale**: Playwright WebKit is useful compatibility evidence but is not the shipping Safari browser. Version-pinned provenance makes failures and visual baselines reproducible.
-**Alternatives rejected**: Floating latest browsers and labeling WebKit automation as Safari certification.
+**Decision**: Use current stable Chrome, Edge, and Firefox plus a
+version-pinned Playwright WebKit target for the POC browser gate. Record the CI
+image, browser, and engine builds in a versioned matrix, label WebKit only as
+WebKit, and defer actual Safari/macOS to a separately approved future support
+decision.
+**Rationale**: This proves broad POC browser behavior on the available
+repeatable toolchain without misrepresenting Playwright WebKit as the shipping
+Safari browser. Version-pinned provenance makes failures and visual baselines
+reproducible.
+**Alternatives rejected**: Floating latest browsers, labelling WebKit
+automation as Safari certification, and blocking the POC on unavailable
+macOS/Safari evidence.
 
 ### Deterministic fixtures and visual baselines
 **Decision**: Version fixtures for server time, term, role, policy, rowversion, capacity, reason codes, and UI states. Store visual baselines by route/state/browser/viewport with token version and UX approval; mask only reviewed nondeterministic regions.
 **Rationale**: Registration state is time- and concurrency-sensitive. Uncontrolled clocks, data, or animation create misleading failures and unreviewable baseline churn.
 **Alternatives rejected**: Production-data copies, arbitrary screenshot tolerances, and automatic baseline replacement.
 
+### Demo language and brand asset
+**Decision**: Deliver an English-first, localization-ready UI with neutral accessible semantic tokens. Use only the unchanged official AASTMT logo whose official-domain provenance is recorded in `docs/BRAND_ASSETS.md`; after Gate A, verify and serve a local copy rather than hotlinking it.
+**Rationale**: This gives the demo an authentic institutional identifier while preserving accessibility, reproducibility, offline resilience, and a clear limit on Ahmed ELbamby's demo approval.
+**Alternatives rejected**: Runtime hotlinking, copying a logo from a third-party domain, deriving a full palette or typography system from the image, and claiming official production-brand authorization.
+
 ### Flake and evidence policy
-**Decision**: A first-run failure fails the gate; a retry can collect diagnostics only. Critical journeys cannot be quarantined, and every intermittent failure requires an owned defect before release. Machine reports and manual Safari, screen-reader, keyboard, and usability evidence are retained together.
+**Decision**: A first-run failure fails the gate; a retry can collect diagnostics only. Critical journeys cannot be quarantined, and every intermittent failure requires an owned defect before release. Machine reports and manual screen-reader, keyboard, and usability evidence are retained together; the browser matrix explicitly records that WebKit is not Safari evidence.
 **Rationale**: Retrying until green hides race, timing, and accessibility defects in the system's highest-risk journeys.
 **Alternatives rejected**: Pass-on-retry, unowned quarantine, and unsupported claims based only on generated reports.
 

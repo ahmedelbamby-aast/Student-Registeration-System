@@ -13,6 +13,11 @@ aggregate.
 Keeping one aggregate owner removes the former downstream dependency cycle and
 gives availability edits and group publication one SQL serialization boundary.
 
+Admin consumes SPEC-010's bounded read-only view and may import staff-declared
+ranges into offering planning as read-only inputs. The POC deliberately has no
+Admin availability mutation/correction/override route, permission, editable
+control, notification workflow, or correction-audit flow.
+
 ### Durable schedule impact
 
 **Decision**: If an accepted availability update conflicts with a published
@@ -24,6 +29,9 @@ automatic move occurs.
 **Rationale**: A transient toast can be lost and cannot prove revalidation.
 One Scheduling-owned durable versioned state survives replicas/restarts,
 supports audit, and avoids duplicate ownership.
+
+The alert is schedule-impact state, not a notification or authorization for an
+Admin availability correction workflow.
 
 ### Minimal roster
 

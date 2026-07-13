@@ -152,8 +152,9 @@ if (($endpointKeys | Select-Object -Unique).Count -ne $endpointKeys.Count) { Add
 if (-not (Has-Property $persistenceManifest 'version') -or
     -not (Has-Property $persistenceManifest 'dbContext') -or
     -not (Has-Property $persistenceManifest 'contributions') -or
+    -not (Has-Property $persistenceManifest 'nonProductionDataProfiles') -or
     -not (Has-Property $persistenceManifest 'migrations')) {
-    Add-Failure 'Persistence manifest must contain version, dbContext, contributions, and migrations.'
+    Add-Failure 'Persistence manifest must contain version, dbContext, contributions, nonProductionDataProfiles, and migrations.'
 } else {
     Assert-RequiredProperties 'Persistence DbContext' $persistenceManifest.dbContext @('owner','path','testPath')
     if ([string]$persistenceManifest.dbContext.owner -ne '004') { Add-Failure 'SPEC-004 must be the sole StudentRegistrationDbContext owner.' }
@@ -176,6 +177,28 @@ if (-not (Has-Property $persistenceManifest 'version') -or
             if (@($declaredSpec.entities) -notcontains [string]$entity) {
                 Add-Failure "SPEC-$specId persistence contribution lists undeclared entity $entity."
             }
+        }
+    }
+    $profileIds = @($persistenceManifest.nonProductionDataProfiles.id)
+    if ((Compare-Object @('Development','Testing') @($profileIds | Sort-Object))) {
+        Add-Failure 'Persistence non-production profiles must be exactly Development and Testing.'
+    }
+    foreach ($profile in @($persistenceManifest.nonProductionDataProfiles)) {
+        Assert-RequiredProperties "Non-production data profile $($profile.id)" $profile @(
+            'id','databasePattern','allowedEnvironments','orchestratorPath',
+            'identityContributorPath','academicContributorPath',
+            'credentialHandling','resetMode','testPath'
+        )
+        if (@($profile.allowedEnvironments).Count -ne 1 -or
+            [string]$profile.allowedEnvironments[0] -ne [string]$profile.id) {
+            Add-Failure "Non-production profile $($profile.id) is not restricted to its matching environment."
+        }
+        if ([string]$profile.databasePattern -match '(?i)production' -or
+            [string]$profile.credentialHandling -notmatch '(?i)hash') {
+            Add-Failure "Non-production profile $($profile.id) has an unsafe database or credential contract."
+        }
+        if ([string]$profile.testPath -ne 'tests/StudentRegistration.IntegrationTests/Persistence/EnvironmentDatabaseProvisioningTests.cs') {
+            Add-Failure "Non-production profile $($profile.id) does not use the canonical provisioning test."
         }
     }
     $migrationIds = @($persistenceManifest.migrations.id)
@@ -428,6 +451,13 @@ foreach ($item in $manifest.specs) {
     $tasks = Get-Content (Join-Path $dir 'tasks.md') -Raw
     $model = Get-Content (Join-Path $dir 'data-model.md') -Raw
     $apiContract = Get-Content (Join-Path $dir 'contracts/api.md') -Raw
+    $approvalPath = Join-Path $dir 'checklists/approval.md'
+    $approvalRecord = if (Test-Path $approvalPath -PathType Leaf) { Get-Content $approvalPath -Raw } else { '' }
+    $isApproved = $spec -match '(?mi)^\*\*Status\*\*:\s*APPROVED\b' -and
+        $requirements -match '(?mi)^\*\*Status:\*\*\s*APPROVED\b' -and
+        $approvalRecord -match '(?i)APPROVED' -and
+        $approvalRecord -match 'Ahmed ELbamby'
+    if (-not $isApproved) { Add-Failure "SPEC-$($item.id) lacks synchronized Gate A Approved status and Ahmed ELbamby approval record." }
 
     if ("$requirements`n$apiContract" -match ':\s*unknown(?:\[\])?\s*[;,}]') {
         Add-Failure "SPEC-$($item.id) requirements/API contract contains an untyped unknown field."
@@ -518,11 +548,16 @@ foreach ($item in $manifest.specs) {
         }
     }
 
-    $taskMatches = @([regex]::Matches($tasks, '(?m)^- \[ \] (T\d{3})\s+(.+)$'))
+    $taskMatches = @([regex]::Matches($tasks, '(?m)^- \[(?: |x)\] (T\d{3})\s+(.+)$'))
     if ($taskMatches.Count -eq 0) { Add-Failure "SPEC-$($item.id) has no actionable tasks." }
     $taskIds = @($taskMatches | ForEach-Object { $_.Groups[1].Value })
     Assert-Sequential $item.id 'task' $taskIds
-    if ($tasks -match '(?mi)^- \[[xX]\] T') { Add-Failure "SPEC-$($item.id) marks implementation tasks complete." }
+    $completedTaskMatches = @([regex]::Matches($tasks, '(?mi)^- \[[xX]\] (T\d{3})\s+(.+)$'))
+    foreach ($completedTask in $completedTaskMatches) {
+        if ($completedTask.Groups[2].Value -notmatch "(?i)Ahmed Elbamby's (?:human approval|.*Gate A demo approval)|human approval for SPEC|Gate A demo approval by Ahmed") {
+            Add-Failure "SPEC-$($item.id) marks non-approval task $($completedTask.Groups[1].Value) complete before implementation."
+        }
+    }
     foreach ($task in $taskMatches) {
         $taskId = $task.Groups[1].Value
         $body = $task.Groups[2].Value
@@ -550,7 +585,7 @@ foreach ($item in $manifest.specs) {
         Add-Failure "SPEC-$($item.id) falsely marks parallel tasks $collidingIds that write the same path $($parallelGroup.Name)."
     }
 
-    $approvalTasksForSpec = @($taskMatches | Where-Object { $_.Groups[2].Value -match "(?i)Ahmed Elbamby's human approval|human approval for SPEC" })
+    $approvalTasksForSpec = @($taskMatches | Where-Object { $_.Groups[2].Value -match "(?i)Ahmed Elbamby's (?:human approval|.*Gate A demo approval)|human approval for SPEC|Gate A demo approval by Ahmed" })
     if ($approvalTasksForSpec.Count -ne 1) {
         Add-Failure "SPEC-$($item.id) must have exactly one final pre-implementation human-approval task; found $($approvalTasksForSpec.Count)."
     } else {
@@ -841,8 +876,9 @@ foreach ($item in $manifest.specs) {
                 Add-Failure "SPEC-003 frontend governance delivery $($pair[1]) is not preceded by its contract test."
             }
         }
-        if ($taskLines -notmatch [regex]::Escape('docs/release-evidence/frontend/safari-macos-evidence.md')) {
-            Add-Failure 'SPEC-003 lacks the signed actual-Safari-on-macOS evidence task.'
+        if ($taskLines -notmatch [regex]::Escape('docs/release-evidence/SPEC-003-NFR-7.md') -or
+            $taskLines -notmatch '(?i)WebKit.*(?:not|rather than).*Safari|label WebKit only as WebKit') {
+            Add-Failure 'SPEC-003 lacks the approved POC browser-matrix evidence and WebKit-not-Safari rule.'
         }
     }
 
@@ -942,7 +978,7 @@ foreach ($item in $manifest.specs) {
         tasks = $taskMatches.Count
         requirementsScore = $score
         automatedGates = if ($failures.Count -eq $before) { 'PASS' } else { 'FAIL' }
-        humanApproval = 'PENDING'
+        humanApproval = if ($isApproved) { 'APPROVED' } else { 'PENDING' }
     })
 }
 
@@ -1060,9 +1096,27 @@ foreach ($staleTerm in @('RegistrationService', 'IRegistrationCommitter', 'SqlRe
     if ($classDiagram -match "\b$([regex]::Escape($staleTerm))\b") { Add-Failure "Shared class diagram still contains stale type $staleTerm." }
 }
 
+$identityPlanningText = @(
+    (Get-Content (Join-Path $root 'specs/007-identity-account-lifecycle/spec.md') -Raw),
+    (Get-Content (Join-Path $root 'specs/007-identity-account-lifecycle/requirements.md') -Raw),
+    (Get-Content (Join-Path $root 'specs/007-identity-account-lifecycle/data-model.md') -Raw),
+    (Get-Content (Join-Path $root 'specs/007-identity-account-lifecycle/contracts/api.md') -Raw),
+    (Get-Content (Join-Path $root 'specs/007-identity-account-lifecycle/tasks.md') -Raw),
+    (Get-Content (Join-Path $root 'docs/diagrams/ERD.md') -Raw)
+) -join "`n"
+foreach ($staleIdentityTerm in @(
+    'StaffMfaChallenge','MfaChallengeDto','MfaVerifyRequest',
+    '/api/auth/staff/mfa/verify','StaffMfaTests',
+    'WORKSTREAM-STAFF-AUTHENTICATION-AND-MFA'
+)) {
+    if ($identityPlanningText -match [regex]::Escape($staleIdentityTerm)) {
+        Add-Failure "Password-only demo identity design still contains stale MFA artifact $staleIdentityTerm."
+    }
+}
+
 $contractTermChecks = @{
     '006-domain-class-api-contracts' = @('TermSummaryDto','serviceState','role-selection-required','supportReferencePath','PAGE_SIZE_INVALID','expectedRowVersion','STALE_VERSION','If-Match','OpenAPI','semantic diff')
-    '007-identity-account-lifecycle' = @('MfaChallengeDto','IdentityImportBatchDto','SessionDto','sessionState','activeRole','recovery/complete','revoke-all','expectedRoleSetVersion','role-selection-required','AdminSecurityGuard','FINAL_ADMIN_REQUIRED')
+    '007-identity-account-lifecycle' = @('StaffLoginRequest','IdentityImportBatchDto','SessionDto','sessionState','activeRole','recovery/complete','revoke-all','expectedRoleSetVersion','role-selection-required','AdminSecurityGuard','FINAL_ADMIN_REQUIRED')
     '008-academic-term-student-profile' = @('TermSummaryDto','PublicContextDto','AcademicProfileCorrectionOperation','set-gpa','upsert-transcript-attempt','transcript','blocksRegistration','supportReferencePath','expectedStudentRowVersion','WINDOW_OVERLAP')
     '009-catalog-prerequisites-policy-admin' = @('CatalogueDraftDto','CatalogueDraftOperation','PolicyRuleAdminDto','PolicySetMutationRequest','PolicyPublishRequest','PolicySimulationResult','CatalogueVersionSummaryDto','ImportBatchDto','expectedDraftRowVersion','previewToken','clientRequestId','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
     '010-offerings-groups-resources' = @('registrationPaused','expectedGroupRowVersions','expectedRoomRowVersions','expectedStaffTermAvailabilityRowVersions','StaffTermAvailabilityDto','ScheduleImpactAlert','previewToken','clientRequestId','GROUP_CHANGED')
@@ -1122,8 +1176,8 @@ $overall = if ($failures.Count -eq 0) { 'PASS' } else { 'FAIL' }
 
 **Date**: $auditDate
 **Overall automated result**: $overall
-**Scope**: 18 connected specifications; planning artifacts only
-**Human approval**: Pending for every specification
+**Scope**: 18 connected specifications and their implementation gates
+**Human approval**: Gate A APPROVED by Ahmed ELbamby for demo implementation
 
 | Spec | Artifacts | FR+NFR | AC | EC | Actionable tasks | Strict score | Automated gates | Human approval |
 |---|---:|---:|---:|---:|---:|---:|---|---|

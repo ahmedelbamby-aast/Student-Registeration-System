@@ -14,8 +14,7 @@
     ],
     "AUTH-04": [
       "GET /api/public/context",
-      "POST /api/auth/staff/login",
-      "POST /api/auth/staff/mfa/verify"
+      "POST /api/auth/staff/login"
     ],
     "AUTH-05": [
       "POST /api/auth/recovery/request",
@@ -115,7 +114,6 @@
       "POST /api/admin/rooms",
       "PUT /api/admin/rooms/{roomId}",
       "GET /api/admin/staff-availability",
-      "PUT /api/admin/staff/{staffId}/terms/{termId}/availability",
       "GET /api/admin/schedule-impact-alerts",
       "POST /api/admin/schedule-impact-alerts/{alertId}/revalidate",
       "POST /api/admin/schedule-impact-alerts/{alertId}/resolve"

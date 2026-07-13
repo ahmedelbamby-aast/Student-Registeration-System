@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
 **Owner:** Technical Lead/Architect<br>
 **Reviewers:** Backend, Data, Security, DevOps, QA<br>
 **Target:** Sprint 0<br>
@@ -17,7 +17,10 @@ docs/ARCHITECTURE.md and ADR-001 define the proposed modular monolith.
 ## Functional Requirements
 
 - FR-1: The solution MUST use .NET 10 LTS, ASP.NET Core, Blazor WebAssembly,
-  EF Core/LINQ, and SQL Server.
+  EF Core/LINQ, and SQL Server. The demo database runtime MUST use SQL Server
+  2022 Developer at compatibility level 160, provisioned through Docker for
+  Development and Testcontainers for Testing. This demo choice MUST NOT be
+  represented as approval of a production SQL Server edition or topology.
 - FR-2: The solution MUST use the exact project-per-business-module shape from
   `docs/ARCHITECTURE.md`: Client, Api, Contracts, IdentityAccess, Academics,
   Scheduling, Registration, StaffAdministration, and Infrastructure.SqlServer.
@@ -49,7 +52,11 @@ docs/ARCHITECTURE.md and ADR-001 define the proposed modular monolith.
   replicas, encrypted at rest, rotated under an approved runbook, and readable
   by only the application identity. The production repository and key-encryption
   authority remain an explicit Security/DevOps institutional decision; release
-  readiness MUST fail closed until approved.
+  readiness MUST fail closed until approved. In the demo profile, every
+  per-run Testing database MUST be disposed after its run, the Development
+  database MUST persist until an explicit guarded reset, and all records MUST
+  be synthetic. Local credential artifacts, logs, and exports MUST be
+  Git-ignored and removed no later than seven days after creation.
 - NFR-3: The architecture MUST support at least two application replicas.
 - NFR-4: Domain code inside each business-module project MUST reference no
   ASP.NET, Blazor, EF Core, or SQL Server type or namespace.

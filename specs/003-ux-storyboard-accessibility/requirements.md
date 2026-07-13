@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
 **Owner:** UX Lead<br>
 **Reviewers:** Product Owner, QA, Student/Admin/Lecturer/TA representatives<br>
 **Target:** Sprint 0 design baseline; implemented incrementally with each feature<br>
@@ -31,9 +31,13 @@ is presented, operated, and verified in the Blazor WebAssembly client.
   responsive wireframes, component inventory, data dependencies, actions,
   navigation transitions, focus order, applicable UI states, and test IDs.
 - FR-3: The frontend MUST use a versioned design-token contract covering
-  institutional/semantic colors, typography, spacing, sizing, borders, focus,
-  elevation, motion, breakpoints, and z-index. Production brand values MUST be
-  approved by the institutional brand owner and MUST NOT be guessed.
+  neutral semantic colors, typography, spacing, sizing, borders, focus,
+  elevation, motion, breakpoints, and z-index. The official AASTMT logo MUST
+  use the unchanged asset sourced from the official `aast.edu` URL recorded in
+  `docs/BRAND_ASSETS.md`, MUST preserve its aspect ratio, and MUST be served
+  from a provenance-recorded local copy rather than a runtime hotlink. Other
+  institutional colors, typefaces, or usage rules MUST NOT be inferred from
+  the logo.
 - FR-4: Reusable components MUST cover application shell, role navigation,
   buttons, links, form fields, validation summary, search/filter, cards,
   status badges, alerts, loading/empty/error panels, confirmation dialog,
@@ -104,10 +108,12 @@ functional tests for each ID are normative in page-matrix.md.
   Contentful Paint at or below 2.5 seconds at p75 with production compression,
   cold browser cache, a four-core/4-GB client profile, 10-Mbps down/2-Mbps up,
   100-ms round-trip latency, and server APIs meeting their specified p95.
-- NFR-7: Functional journeys MUST pass in the current and previous stable
-  versions of Chrome, Edge, and Firefox, plus current stable Safari on macOS.
-  Playwright WebKit MAY provide earlier feedback but MUST NOT be reported as
-  proof that actual Safari passed.
+- NFR-7: The POC browser gate MUST pass in current stable Chrome, Edge, and
+  Firefox plus a version-pinned Playwright WebKit target. Browser and engine
+  builds MUST be recorded in the versioned evidence matrix, and WebKit results
+  MUST be labelled WebKit rather than Safari. Actual Safari/macOS verification
+  is deferred from the POC and requires a separately approved future browser
+  support/release decision.
 - NFR-8: Go-live registration usability completion MUST be at least 90% across
   at least eight representative students including novice, keyboard-only, and
   screen-reader participants, plus at least three Admin, three Lecturer, and
@@ -115,8 +121,10 @@ functional tests for each ID are normative in page-matrix.md.
   critical or major core-flow usability defect.
 - NFR-9: Visual regression MUST reject every unapproved difference from the
   versioned baseline at 375, 768, 1280, and 1920 CSS pixels.
-- NFR-10: Text, labels, formats, and layout MUST be localization-ready; user
-  text MUST NOT be embedded as component control logic.
+- NFR-10: The MVP MUST be English-first and localization-ready: user-facing
+  strings MUST be externalized, formats MUST be culture-aware, layout MUST be
+  direction-safe, and user text MUST NOT be embedded as component control
+  logic.
 
 ## Acceptance Criteria
 
@@ -133,6 +141,8 @@ When the design-system review occurs<br>
 Then every required token category and reusable component is documented<br>
 And component default/hover/active/focus/disabled/loading/error states use only
 approved tokens<br>
+And the official-logo source, local-copy provenance, unchanged rendering, and
+accessible name are verified<br>
 And contrast and pointer-target measurements pass.
 
 ### AC-3: Functional state coverage (FR-5, FR-12)
@@ -186,9 +196,11 @@ And focus order follows the Page Design Record<br>
 And only documented table exceptions scroll in two dimensions.
 
 ### AC-10: Cross-browser visual gate (FR-3, FR-12, NFR-7, NFR-9)
-Given an approved versioned visual baseline exists<br>
-When primary and error states run in every supported browser and visual width<br>
-Then functional assertions pass in every browser<br>
+Given an approved versioned visual baseline and POC browser matrix exist<br>
+When primary and error states run in current stable Chrome, Edge, and Firefox,
+plus the pinned Playwright WebKit target, at every visual width<br>
+Then functional assertions pass in every POC browser target<br>
+And WebKit evidence is labeled WebKit rather than Safari<br>
 And any visual difference blocks the gate until approved or corrected.
 
 ### AC-11: Server-authoritative stale response (FR-10, FR-14)
@@ -323,11 +335,15 @@ unknown-code fallback behavior. SPEC-003 owns no server endpoint.
 
 ## Out of Scope
 
-- OS-1: Inventing institutional brand colors, logos, typefaces, or production
-  visual identity without the institutional brand owner's approval.
-- OS-2: Arabic/RTL delivery; all structures remain localization-ready and a
-  separately approved localization spec is required before delivery.
+- OS-1: Inventing additional institutional brand colors, typefaces, logos, or
+  usage rules beyond the sourced official AASTMT logo, or recoloring, cropping,
+  stretching, or distorting that logo.
+- OS-2: Arabic translation and RTL delivery; the MVP remains English-first and
+  localization-ready, and a separately approved localization specification is
+  required before delivery.
 - OS-3: Native mobile applications.
 - OS-4: Drag-and-drop as the only schedule-editing interaction.
 - OS-5: Client-side authorization, eligibility, capacity, or commit decisions.
-- OS-6: Creating frontend source or executable tests during this planning phase.
+- OS-6: Creating frontend source or executable tests before Gate A approval.
+  Gate A was approved on 2026-07-13; implementation now follows FR-12's
+  route-owner and contributor-contract gates.

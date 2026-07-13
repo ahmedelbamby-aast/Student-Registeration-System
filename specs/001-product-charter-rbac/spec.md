@@ -2,7 +2,7 @@
 
 **Feature Branch**: 001-product-charter-rbac
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: Approved (Gate A demo implementation, 2026-07-13)
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 

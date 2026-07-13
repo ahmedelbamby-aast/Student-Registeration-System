@@ -6,9 +6,9 @@
 
 **Automated result:** PASS
 
-**Human approval:** Pending
+**Human approval:** APPROVED by Ahmed ELbamby for demo implementation on 13 July 2026
 
-**Implementation state:** Planning only; no application source, migration, or executable test has been created
+**Implementation state:** Gate A approved; application source, migrations, and executable tests may now begin by approved slice
 
 ## Outcome
 
@@ -20,7 +20,7 @@ sequential unchecked task plan. The current baseline contains:
 - 146 Given/When/Then acceptance criteria, 92 edge cases, and 75 explicit
   out-of-scope guards;
 - 1,593 exact-file tasks with test-before-delivery ordering;
-- 27 canonical routes, 20 reusable frontend components, and 82 canonical API
+- 27 canonical routes, 20 reusable frontend components, and 80 canonical API
   endpoints;
 - 15 explicit real-SQL concurrency races with deterministic oracles.
 
@@ -88,7 +88,7 @@ The frontend plan now includes:
 
 ### Endpoint and entity ownership
 
-[endpoint-manifest.json](../.specify/endpoint-manifest.json) assigns each of 82
+[endpoint-manifest.json](../.specify/endpoint-manifest.json) assigns each of 80
 method/path pairs to one feature. Only that feature plans its contract test and
 handler. [entity-ownership.json](../.specify/entity-ownership.json) assigns
 shared domain concepts and governed artifacts to one canonical owner; other
@@ -154,15 +154,14 @@ entity single ownership, every race row/oracle, concurrency API/ERD fields,
 strict Spec Kit scores, the planning-only boundary, and Ahmed ELbamby's exact
 Git identity in repository configuration and history.
 
-## Intentionally pending decisions
+## Gate A decision outcome
 
-No institutional value was invented to make validation pass. The decisions in
-[OPEN_DECISIONS.md](OPEN_DECISIONS.md) remain approval gates, especially the
-student activation factor, staff IdP/MFA, production brand pack, Arabic/RTL
-scope, browser/macOS availability, travel-time rule, retention schedule,
-production sizing owner, and POLICY-Q01 through POLICY-Q08 owners/effective
-dates. Affected specs remain In Review and fail closed until those decisions
-are recorded.
+Ahmed resolved every demo implementation decision in
+[OPEN_DECISIONS.md](OPEN_DECISIONS.md), including identity/data generation,
+English-first branding, simple academic policy, curriculum, browser/SQL/scale/
+retention/secrets profiles, and staff-owned availability. Gate A is approved
+for all 18 specs. Production deployment, real-data processing, institutional
+branding/policy authority, and Gate B-D release decisions remain separate.
 
 ## Development update rule
 
@@ -170,5 +169,5 @@ For each Agile slice, the team updates the normative requirements first, then
 the relevant ownership/dependency manifest, generated spec/plan/model/API/tasks,
 traceability, and evidence. A change is not ready for human approval until the
 full validator, Mermaid renderer, relative-link check, and applicable manual
-review all pass. Implementation remains blocked until the feature's named
-owners sign its approval and readiness checklists.
+review all pass. Implementation may proceed only within an Approved spec and
+its dependency/test-first task order.

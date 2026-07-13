@@ -2,7 +2,7 @@
 
 **Feature Branch**: 013-schedule-recommendations
 **Created**: 2026-07-12
-**Status**: In Review
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
 **Owner**: Technical Lead
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -136,8 +136,8 @@ And optimizer branch coverage is at least 90%.
 - FR-1: The optimizer MUST choose exactly one published viable group per
   selected course.
 - FR-2: It MUST enforce all hard meeting, availability, completeness,
-  eligibility, and credit constraints. A travel-buffer constraint MUST remain
-  disabled until a typed, sourced, approved policy defines its minutes/matrix.
+  eligibility, and credit constraints. The approved simple demo policy
+  disables travel-buffer constraints and MUST NOT guess a duration or matrix.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.

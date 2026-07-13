@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** In Review<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Admin/Registrar, Security, Data, DevOps, QA<br>
 **Target:** Sprint 2-S7<br>
@@ -14,14 +14,17 @@ Admins need safe master-data operations, registration-record inspection, peak
 monitoring, audit evidence, and operational exports. Broad Admin access still
 uses least privilege, reasons, optimistic concurrency, immutable audit, and
 durable cross-replica work claims. Enrollment correction, drop, and withdrawal
-are not part of this MVP.
+are not part of this MVP. Staff own availability edits; Admin availability use
+is limited to bounded viewing and read-only import into offering planning.
 
 ## Functional Requirements
 
 - FR-1: Authorized Admin MUST manage terms/windows, users/roles, student
   records/holds, catalogue/policies, resources, offerings/groups, and imports
   only through feature-owner endpoints/commands selected by each Admin page.
-  SPEC-017 MUST NOT add a generic AdminCommandService facade.
+  SPEC-017 MUST NOT add a generic AdminCommandService facade. Availability
+  access is limited to SPEC-010's bounded read-only view; Admin MAY import
+  staff-declared ranges into offering planning as read-only inputs.
 - FR-2: Admin audit search MUST merge the shared SPEC-004 `AuditEvent` stream
   with SPEC-007 `SecurityEvent` facts into one scoped chronological projection.
   Sensitive changes MUST expose reason, actor, timestamp, redacted before/after
@@ -32,7 +35,9 @@ are not part of this MVP.
 - FR-4: Admin orchestration MUST NOT expose enrollment correction, drop,
   withdrawal, or seat-decrement commands in MVP. Delegated master-data
   commands MUST preserve capacity and timetable invariants and cannot bypass
-  the owning feature module.
+  the owning feature module. It also MUST NOT expose an Admin availability
+  mutation/correction/override command, permission, editable control,
+  notification workflow, or correction-audit flow.
 - FR-5: Exports MUST enforce the same row/data scope and PII minimization as
   UI and use an explicit request/status/download lifecycle. ExportJob MUST be
   durable, owner/scope/request-bound, expiring, and claimed by workers through
@@ -44,7 +49,9 @@ are not part of this MVP.
   consumed records; normal users cannot update/delete either stream.
 - FR-8: Import, publication, and other approved sensitive feature-spec
   mutations MUST use preview and explicit confirmation; this does not
-  authorize enrollment correction.
+  authorize enrollment correction. Availability import copies staff-declared
+  ranges into offering-planning input and MUST NOT mutate
+  StaffTermAvailability or create an Admin correction workflow.
 - FR-9: Break-glass behavior MUST NOT exist without a separate approved spec.
 - FR-10: Update/delete commands MUST require expected rowversion; retryable
   creates, imports, exports, and confirmed feature-spec mutations MUST require
@@ -106,7 +113,9 @@ Then a timestamped alert identifies metric, threshold and investigation link.
 Given authorized Admin filters a large master-data list and previews a change<br>
 When the bounded request and confirmed mutation execute<br>
 Then only a paged parameterized result is returned<br>
-And the confirmed feature-spec command is validated/audited.
+And staff availability can be viewed/imported as read-only planning input<br>
+And no Admin availability correction/override command, permission, editable
+control, notification workflow, or correction-audit flow exists.
 
 ### AC-6: Stale preview confirmation (FR-8, FR-10, FR-11)
 Given an Admin previews an offering publication and its dependency version
@@ -213,6 +222,11 @@ Confirmation requires a previewToken bound to actor/scope/payload/dependency
 versions/expiry; conflicts return 409 STALE_PREVIEW, STALE_VERSION,
 FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
 
+Admin availability viewing consumes SPEC-010's bounded read-only endpoint.
+Import copies staff-declared ranges into offering-planning input; SPEC-017
+defines no availability mutation/correction/override endpoint, request,
+permission, editable control, notification workflow, or correction-audit flow.
+
 ## Data Models
 
 | Field/example | Type | Constraints |
@@ -225,6 +239,9 @@ FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
 ## Out of Scope
 
 - OS-1: Unrestricted super-admin and unaudited direct database edits.
-- OS-2: Break-glass capacity/conflict override and any enrollment correction, drop, withdrawal, or seat-decrement workflow.
+- OS-2: Break-glass capacity/conflict override; enrollment correction, drop,
+  withdrawal, or seat-decrement; and any Admin availability
+  mutation/correction/override, permission, editable control, notification, or
+  correction-audit workflow.
 - OS-3: Business-intelligence warehouse.
 - OS-4: Long-term report replica until primary impact is measured.

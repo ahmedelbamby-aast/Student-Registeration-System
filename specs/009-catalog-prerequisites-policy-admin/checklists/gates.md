@@ -11,4 +11,6 @@
 - [x] G9 Cross-spec analysis
 - [x] G10 Planning-only boundary
 
-Automated gates pass. Human approval remains pending and implementation MUST NOT begin.
+Automated gates pass. Ahmed ELbamby approved Gate A demo implementation on
+2026-07-13. Production catalogue/policy, Gate B-D, release, and official
+AASTMT go-live approvals remain separate.
