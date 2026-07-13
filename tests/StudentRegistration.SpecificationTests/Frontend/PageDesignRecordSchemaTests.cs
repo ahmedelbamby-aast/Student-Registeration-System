@@ -23,6 +23,7 @@ public sealed partial class PageDesignRecordSchemaTests
         "specs/003-ux-storyboard-accessibility/checklists/route-contributor-baseline.md";
     private const string PageDesignRecordSchemaPath =
         "specs/003-ux-storyboard-accessibility/schemas/page-design-record.schema.json";
+    private const string StoryboardPath = "docs/STORYBOARD.md";
 
     private static readonly IReadOnlyDictionary<string, string> ImplementationTasks =
         new Dictionary<string, string>(StringComparer.Ordinal)
@@ -98,12 +99,12 @@ public sealed partial class PageDesignRecordSchemaTests
             RepositoryFiles.Read(PageMatrixPath));
         var routes = manifest.RootElement.GetProperty("routes").EnumerateArray().ToArray();
 
-        Assert.Equal("2.1.0-draft", manifest.RootElement.GetProperty("version").GetString());
+        Assert.Equal("2.1.0", manifest.RootElement.GetProperty("version").GetString());
         RepositoryFiles.ContainsAll(
             inventory,
-            "route-inventory/1.1-draft",
-            "route-manifest.json` version `2.1.0-draft",
-            "Pending Ahmed ELbamby review",
+            "route-inventory/1.1",
+            "route-manifest.json` version `2.1.0",
+            "Approved by Ahmed ELbamby on 2026-07-13",
             "it changes no route, page, or",
             "implementation owner.");
         Assert.Equal(27, routes.Length);
@@ -164,8 +165,8 @@ public sealed partial class PageDesignRecordSchemaTests
             Assert.Contains(term, contract, StringComparison.Ordinal));
         RepositoryFiles.ContainsAll(
             contract,
-            "page-design-record/1.1-draft",
-            "Pending Ahmed ELbamby review",
+            "page-design-record/1.1",
+            "Approved by Ahmed ELbamby on 2026-07-13",
             "does not authorize route source",
             "exact immutable version",
             "required and forbidden content/actions",
@@ -211,8 +212,8 @@ public sealed partial class PageDesignRecordSchemaTests
             components.RootElement.GetProperty("components").GetArrayLength());
         RepositoryFiles.ContainsAll(
             index,
-            "frontend-design-index/1.1-draft",
-            "Pending Ahmed ELbamby review",
+            "frontend-design-index/1.1",
+            "Approved by Ahmed ELbamby on 2026-07-13",
             "Page Design Record",
             "owner SPEC and FR/AC",
             "implementation task",
@@ -233,8 +234,8 @@ public sealed partial class PageDesignRecordSchemaTests
         var baseline = RepositoryFiles.Read(ContributorBaselinePath);
         RepositoryFiles.ContainsAll(
             baseline,
-            "route-contributors/1.1-draft",
-            "Owner-reconciliation amendment:** Pending Ahmed ELbamby review",
+            "route-contributors/1.1",
+            "Owner-reconciliation amendment:** Approved by Ahmed ELbamby on 2026-07-13",
             "does not promote a route or",
             "change an implementation owner.");
         var rows = ContributorRowPattern().Matches(baseline);
@@ -266,10 +267,10 @@ public sealed partial class PageDesignRecordSchemaTests
         using var pageApiManifest = JsonDocument.Parse(RepositoryFiles.Read(PageApiManifestPath));
         using var endpointManifest = JsonDocument.Parse(RepositoryFiles.Read(EndpointManifestPath));
         Assert.Equal(
-            "1.1.0-draft",
+            "1.1.0",
             pageApiManifest.RootElement.GetProperty("version").GetString());
         Assert.Equal(
-            "2.1.0-draft",
+            "2.1.0",
             endpointManifest.RootElement.GetProperty("version").GetString());
         var endpointAuthorities = endpointManifest.RootElement.GetProperty("endpoints")
             .EnumerateArray()
@@ -318,7 +319,7 @@ public sealed partial class PageDesignRecordSchemaTests
     }
 
     [Fact]
-    public void All_route_design_drafts_match_governed_manifests_but_remain_pending_approval()
+    public void All_approved_route_design_records_match_governed_manifests_and_remain_design_only()
     {
         using var routeManifest = JsonDocument.Parse(RepositoryFiles.Read(RouteManifestPath));
         using var apiManifest = JsonDocument.Parse(RepositoryFiles.Read(PageApiManifestPath));
@@ -395,13 +396,14 @@ public sealed partial class PageDesignRecordSchemaTests
             RepositoryFiles.ContainsAll(
                 draft,
                 $"# {routeId} Page Design Record",
-                "**Approval status:** Pending Ahmed ELbamby review",
+                "**Record version:** `1.0`",
+                "**Approval status:** Approved by Ahmed ELbamby on 2026-07-13",
                 "**Readiness:** `design-only`",
                 $"**Design task:** {DesignTasks[routeId]}",
                 $"**Implementation task:** {ImplementationTasks[routeId]}",
                 "## Annotated responsive layouts",
                 "## Minimum journey and test traceability",
-                "page-design-record/1.1-draft",
+                "page-design-record/1.1",
                 "Forbidden content or action",
                 "Component test",
                 "E2E test",
@@ -583,6 +585,17 @@ public sealed partial class PageDesignRecordSchemaTests
                     RepositoryFiles.Read(
                         "specs/018-quality-security-scalability-operations/contracts/api.md"),
                     "\"healthy\" | \"degraded\" | \"unhealthy\"");
+
+                var storyboardRow = Assert.Single(
+                    RepositoryFiles.Read(StoryboardPath)
+                        .Split('\n', StringSplitOptions.TrimEntries),
+                    line => line.StartsWith("| SYS-01 /status/{code}", StringComparison.Ordinal));
+                RepositoryFiles.ContainsAll(
+                    storyboardRow,
+                    "healthy",
+                    "degraded",
+                    "unhealthy",
+                    "never a raw stack trace");
             }
 
             var jsonMatch = JsonRecordPattern().Match(draft);
@@ -935,12 +948,12 @@ public sealed partial class PageDesignRecordSchemaTests
             {
                 Assert.True(contributorVersions.TryGetProperty(owner, out var version));
                 Assert.Equal(
-                    owner == "SPEC-003" ? "frontend-design-index/1.1-draft" : "not-pinned",
+                    owner == "SPEC-003" ? "frontend-design-index/1.1" : "not-pinned",
                     version.GetString());
             }
 
             Assert.Equal("design-only", record.GetProperty("readinessState").GetString());
-            Assert.Equal("pending-Ahmed-review", record.GetProperty("approvalVersion").GetString());
+            Assert.Equal("1.0", record.GetProperty("approvalVersion").GetString());
         }
     }
 

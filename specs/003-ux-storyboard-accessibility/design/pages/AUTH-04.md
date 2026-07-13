@@ -1,15 +1,16 @@
 # AUTH-04 Page Design Record
 
-**Record version:** `draft/1.0`<br>
-**Approval status:** Pending Ahmed ELbamby review<br>
+**Record version:** `1.0`<br>
+**Approval status:** Approved by Ahmed ELbamby on 2026-07-13<br>
 **Readiness:** `design-only`<br>
 **Design owner:** SPEC-003<br>
 **Implementation owner:** SPEC-007<br>
 **Implementation task:** SPEC-007/T092<br>
 **Design task:** SPEC-003/T137
 
-This complete design draft is governed by `page-design-record/1.1-draft`. It may be
-reviewed as design evidence, but it does not authorize route source, API
+This immutable Page Design Record version 1.0 is governed by
+`page-design-record/1.1` and was approved by Ahmed ELbamby on 2026-07-13.
+Approval authorizes design review only; it does not authorize route source, API
 binding, route-specific executable tests, or visual-baseline approval. Exact
 downstream contributor versions remain `not-pinned`.
 
@@ -283,12 +284,12 @@ downstream contributor versions remain `not-pinned`.
     "AUTH-04-VIS-T141"
   ],
   "contributorContractVersions": {
-    "SPEC-003": "frontend-design-index/1.1-draft",
+    "SPEC-003": "frontend-design-index/1.1",
     "SPEC-007": "not-pinned",
     "SPEC-008": "not-pinned"
   },
   "readinessState": "design-only",
-  "approvalVersion": "pending-Ahmed-review"
+  "approvalVersion": "1.0"
 }
 ```
 
@@ -324,5 +325,6 @@ Required and forbidden content is normative; a forbidden item fails the route te
   command names its endpoint and navigation or browser-only actions say so.
 - Validation moves focus to the summary, while background offline/service
   changes preserve focus; successful navigation focuses the returned heading.
-- Ahmed ELbamby must approve this exact draft before its design task can close.
-  Approval does not promote the route beyond `design-only`.
+ Approval does not promote the route beyond `design-only`.
+- Ahmed ELbamby approved immutable record version 1.0 on 2026-07-13, so its
+  design task may close. Approval does not promote the route beyond `design-only`.

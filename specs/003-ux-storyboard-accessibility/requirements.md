@@ -8,9 +8,10 @@
 **Target:** Sprint 0 design baseline; implemented incrementally with each feature<br>
 **Dependencies:** SPEC-001, SPEC-002<br>
 
-**Draft Page Design Record amendment:** The 1.1 route-design batch, including
-trigger-aware empty states and complete SYS-01 health-status mapping, is pending
-Ahmed ELbamby's review and is not yet an immutable implementation pin.
+**Approved Page Design Record amendment:** Ahmed ELbamby approved the 1.1
+route-design batch on 2026-07-13, including trigger-aware empty states and
+complete SYS-01 health-status mapping. The records are immutable design pins;
+they remain `design-only` and do not authorize route implementation.
 
 ## Context
 

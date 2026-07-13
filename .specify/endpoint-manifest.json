@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0-draft",
+  "version": "2.1.0",
   "endpoints": [
     { "method": "POST", "path": "/api/auth/student/login", "owner": "007" },
     { "method": "POST", "path": "/api/auth/student/activate", "owner": "007" },

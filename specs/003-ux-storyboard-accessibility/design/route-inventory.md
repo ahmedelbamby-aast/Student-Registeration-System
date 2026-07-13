@@ -1,15 +1,15 @@
 # Canonical Route Inventory
 
-**Contract version:** `route-inventory/1.1-draft`<br>
-**Source:** `.specify/route-manifest.json` version `2.1.0-draft`<br>
+**Contract version:** `route-inventory/1.1`<br>
+**Source:** `.specify/route-manifest.json` version `2.1.0`<br>
 **Design owner:** `SPEC-003`<br>
-**Amendment status:** Pending Ahmed ELbamby review
+**Amendment status:** Approved by Ahmed ELbamby on 2026-07-13
 
 This is the exact MVP route inventory. A row marked `design-only` authorizes
 design review, not route source or executable route tests. Implementation stays
-with the single owner shown below. The version 1.1 draft reconciles omitted
+with the single owner shown below. Version 1.1 reconciles omitted
 API-authority and explicit composite contributors from the endpoint manifest;
-it changes no route, page, or implementation owner.
+it changes no route, page, or implementation owner and remains design-only.
 
 | Route ID | Template | Canonical page | Implementation owner | Owner/contributor specs | Readiness |
 |---|---|---|---|---|---|

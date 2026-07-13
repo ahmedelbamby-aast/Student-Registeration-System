@@ -1,15 +1,16 @@
 # ADM-02 Page Design Record
 
-**Record version:** `draft/1.0`<br>
-**Approval status:** Pending Ahmed ELbamby review<br>
+**Record version:** `1.0`<br>
+**Approval status:** Approved by Ahmed ELbamby on 2026-07-13<br>
 **Readiness:** `design-only`<br>
 **Design owner:** SPEC-003<br>
 **Implementation owner:** SPEC-008<br>
 **Implementation task:** SPEC-008/T080<br>
 **Design task:** SPEC-003/T192
 
-This complete design draft is governed by `page-design-record/1.1-draft`. It may be
-reviewed as design evidence, but it does not authorize route source, API
+This immutable Page Design Record version 1.0 is governed by
+`page-design-record/1.1` and was approved by Ahmed ELbamby on 2026-07-13.
+Approval authorizes design review only; it does not authorize route source, API
 binding, route-specific executable tests, or visual-baseline approval. Exact
 downstream contributor versions remain `not-pinned`.
 
@@ -289,12 +290,12 @@ downstream contributor versions remain `not-pinned`.
     "ADM-02-VIS-T196"
   ],
   "contributorContractVersions": {
-    "SPEC-003": "frontend-design-index/1.1-draft",
+    "SPEC-003": "frontend-design-index/1.1",
     "SPEC-008": "not-pinned",
     "SPEC-017": "not-pinned"
   },
   "readinessState": "design-only",
-  "approvalVersion": "pending-Ahmed-review"
+  "approvalVersion": "1.0"
 }
 ```
 
@@ -331,5 +332,6 @@ normative; a forbidden item fails the planned route test.
   server authorization and decisions remain with the named owner specifications.
 - Every UI state has a deterministic fixture, content, focus, live-region,
   next-action, and planned test identifier.
-- Ahmed ELbamby must approve this exact draft version before its PDR task can
-  close. Approval does not promote the route beyond `design-only`.
+ close. Approval does not promote the route beyond `design-only`.
+- Ahmed ELbamby approved immutable record version 1.0 on 2026-07-13, so its
+  design task may close. Approval does not promote the route beyond `design-only`.

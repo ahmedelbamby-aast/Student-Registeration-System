@@ -27,3 +27,6 @@
   WebKit is not labelled Safari and actual Safari/macOS remains deferred.
 - [x] Gate A approval is present and later route, browser, UAT, and release
   evidence gates remain intact.
+- [x] The approved 1.1 route, endpoint-authority, journey, and state amendment
+  is synchronized across all manifests, the storyboard, contributor baseline,
+  and 27 immutable Page Design Records without promoting any route.

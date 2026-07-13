@@ -1,8 +1,8 @@
 # Route Contributor Baseline
 
-**Baseline version:** `route-contributors/1.1-draft`<br>
+**Baseline version:** `route-contributors/1.1`<br>
 **Original baseline reviewed:** 2026-07-13 by Ahmed ELbamby<br>
-**Owner-reconciliation amendment:** Pending Ahmed ELbamby review<br>
+**Owner-reconciliation amendment:** Approved by Ahmed ELbamby on 2026-07-13<br>
 **Result:** shared SPEC-003 infrastructure may proceed; every route remains design-only
 
 All owner specifications have Gate A planning approval, but their runtime
@@ -10,7 +10,7 @@ contributions have not yet been delivered and validated at immutable contract
 versions. `not-pinned` is an explicit blocked value, not a wildcard or approval
 of “latest”. Page Design Records may be reviewed; canonical route source and
 route-specific contract, component, accessibility, visual, and E2E work remain
-blocked. The 1.1 draft adds only endpoint-authority and explicit composite
+blocked. The approved 1.1 amendment adds only endpoint-authority and explicit composite
 contributors omitted by the original rows; it does not promote a route or
 change an implementation owner.
 

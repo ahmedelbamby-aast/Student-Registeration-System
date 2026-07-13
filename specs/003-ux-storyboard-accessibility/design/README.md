@@ -1,12 +1,13 @@
 # Frontend Design and Traceability Index
 
-**Contract version:** `frontend-design-index/1.1-draft`<br>
-**Amendment status:** Pending Ahmed ELbamby review
+**Contract version:** `frontend-design-index/1.1`<br>
+**Amendment status:** Approved by Ahmed ELbamby on 2026-07-13
 
-Version 1.1 drafts the endpoint-composite ownership and exact Page Design
+Version 1.1 records the endpoint-composite ownership and exact Page Design
 Record journey/task trace rules discovered while preparing the 27 route
-records. The approved 1.0 index remains immutable; this draft is not an
-approved implementation pin.
+records. Ahmed ELbamby approved this amendment on 2026-07-13. The approved 1.0
+index remains immutable, and version 1.1 is a design-governance pin rather than
+an implementation authorization.
 
 This directory is the governed design source for SPEC-003. It does not replace
 runtime feature specifications, source ownership, or browser evidence.
@@ -32,9 +33,8 @@ runtime feature specifications, source ownership, or browser evidence.
 - `tokens/contract.md`: neutral primitive, semantic, and component token rules.
 - `components/catalogue.md`: the 20 reusable components and canonical writers.
 - `states/reason-map.md`: server-authoritative reason and UI state mapping.
-- `pages/*.md`: one governed design record per route ID; pending drafts remain
-  mutable until Ahmed approves an exact version, after which that version is
-  immutable.
+- `pages/*.md`: one immutable, Ahmed-approved design record per route ID;
+  approval remains design-only until every downstream contract is pinned.
 
 ## Required route trace row
 

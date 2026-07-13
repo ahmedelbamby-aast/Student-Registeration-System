@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0-draft",
+  "version": "2.1.0",
   "routes": [
     { "id": "AUTH-01", "template": "/", "page": "RoleGatewayPage", "designOwner": "003", "implementationOwner": "008", "owners": ["003", "008"], "links": [{ "spec": "008", "requirements": ["FR-1", "FR-2", "FR-4", "FR-10"], "criteria": ["AC-1", "AC-2", "AC-8"] }] },
     { "id": "AUTH-02", "template": "/student/login", "page": "StudentLoginPage", "designOwner": "003", "implementationOwner": "007", "owners": ["003", "007", "008"], "links": [{ "spec": "007", "requirements": ["FR-1", "FR-4"], "criteria": ["AC-1", "AC-9"] }, { "spec": "008", "requirements": ["FR-1", "FR-2", "FR-4"], "criteria": ["AC-1", "AC-2"] }] },

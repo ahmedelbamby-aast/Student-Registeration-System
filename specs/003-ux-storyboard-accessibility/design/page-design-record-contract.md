@@ -1,15 +1,15 @@
 # Page Design Record Contract
 
-**Version:** `page-design-record/1.1-draft`<br>
+**Version:** `page-design-record/1.1`<br>
 **Schema:** `schemas/page-design-record.schema.json`  
 **Approval authority:** Ahmed ELbamby<br>
-**Amendment status:** Pending Ahmed ELbamby review
+**Amendment status:** Approved by Ahmed ELbamby on 2026-07-13
 
-Version 1.1 drafts the task-link, endpoint-composite-authority, exact journey
+Version 1.1 records the task-link, endpoint-composite-authority, exact journey
 label, route-owned state/action trace, and trigger-aware live-region rules added
-while preparing the first 27 Page Design Records. The already approved 1.0
-contract remains immutable; this draft does not become an approved pin until
-Ahmed reviews it.
+while preparing the first 27 Page Design Records. Ahmed ELbamby approved this
+governance amendment on 2026-07-13; the already approved 1.0 contract remains
+immutable and version 1.1 is the current design-governance pin.
 The closed JSON field shape did not change, so each record correctly retains
 `schemaVersion: "1.0"`; the separate contract/index version carries this
 governance amendment.

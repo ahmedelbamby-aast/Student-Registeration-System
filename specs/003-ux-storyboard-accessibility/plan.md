@@ -1,8 +1,10 @@
 # Implementation Plan: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 **Branch**: 003-ux-storyboard-accessibility | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for Gate A demo implementation on 2026-07-13; route-owner
-contract pins, Gates B-D, and production release approval remain required.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; all 27 Page
+Design Records are approved as design-only version 1.0 records under the 1.1
+governance contract. Route-owner contract pins, Gates B-D, and production
+release approval remain required.
 
 ## Summary
 

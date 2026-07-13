@@ -123,7 +123,7 @@ scope and available actions, not a client-selected role.
 
 | ID / route | Story | States |
 |---|---|---|
-| SYS-01 /status/{code} | Reusable safe error/status page. | 403, 404, session expired, maintenance, offline, and unexpected error with reference ID; never a raw stack trace. |
+| SYS-01 /status/{code} | Reusable safe error/status page. | Safe healthy, degraded, unhealthy, 403, 404, session expired, maintenance, offline, and unexpected error with reference ID; never a raw stack trace. |
 
 ## Conflict storyboard
 

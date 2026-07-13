@@ -12,6 +12,8 @@
   have single planned writers.
 - [x] Shared models/tokens/components may proceed under SPEC-003 approval.
 - [x] Route Page Design Records may proceed as design-only.
+- [x] All 27 immutable Page Design Record version 1.0 designs and their 1.1
+      governance amendment were approved by Ahmed ELbamby on 2026-07-13.
 - [x] Route executable tests/source require an implementation-ready contributor
   row with exact contract versions.
 - [x] Production data, hotlinked assets, inferred brand rules, client

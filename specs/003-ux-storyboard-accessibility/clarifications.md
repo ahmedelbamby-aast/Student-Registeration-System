@@ -14,6 +14,9 @@ Ahmed also approved current stable Chrome, Edge, and Firefox plus a pinned
 Playwright WebKit target as the POC browser gate. WebKit is never labelled
 Safari; actual Safari/macOS validation is deferred to a separately approved
 future browser-support/release decision.
+Ahmed approved the synchronized Page Design Record/index 1.1 amendment and all
+27 immutable design-only record version 1.0 pages on 2026-07-13. This approval
+does not pin downstream contracts or authorize route implementation.
 Unknown product/institutional decisions are registered in
 docs/OPEN_DECISIONS.md or docs/POLICY_RESEARCH.md with an owner and fail-closed
 planning rule. They are not invented requirements; unresolved production-only

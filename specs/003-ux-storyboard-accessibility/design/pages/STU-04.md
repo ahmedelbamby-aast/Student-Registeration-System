@@ -1,15 +1,16 @@
 # STU-04 Page Design Record
 
-**Record version:** `draft/1.0`<br>
-**Approval status:** Pending Ahmed ELbamby review<br>
+**Record version:** `1.0`<br>
+**Approval status:** Approved by Ahmed ELbamby on 2026-07-13<br>
 **Readiness:** `design-only`<br>
 **Design owner:** SPEC-003<br>
 **Implementation owner:** SPEC-012<br>
 **Implementation task:** SPEC-012/T043<br>
 **Design task:** SPEC-003/T162
 
-This complete design draft is governed by `page-design-record/1.1-draft`. It may be
-reviewed as design evidence, but it does not authorize route source, API
+This immutable Page Design Record version 1.0 is governed by
+`page-design-record/1.1` and was approved by Ahmed ELbamby on 2026-07-13.
+Approval authorizes design review only; it does not authorize route source, API
 binding, route-specific executable tests, or visual-baseline approval. Exact
 downstream contributor versions remain `not-pinned`.
 
@@ -315,12 +316,12 @@ downstream contributor versions remain `not-pinned`.
     "STU-04-VIS-T166"
   ],
   "contributorContractVersions": {
-    "SPEC-003": "frontend-design-index/1.1-draft",
+    "SPEC-003": "frontend-design-index/1.1",
     "SPEC-012": "not-pinned",
     "SPEC-013": "not-pinned"
   },
   "readinessState": "design-only",
-  "approvalVersion": "pending-Ahmed-review"
+  "approvalVersion": "1.0"
 }
 ```
 
@@ -362,5 +363,6 @@ Required and forbidden content is normative; a forbidden item fails the route te
   amendment and remains `not-pinned` until Ahmed approves and versions it.
 - Background stale/offline/service updates preserve focus; submitted validation
   focuses its summary, and route-specific restoration is explicit in focusOrder.
-- Ahmed ELbamby must approve this exact draft before its design task can close.
-  Approval does not promote the route beyond `design-only`.
+ Approval does not promote the route beyond `design-only`.
+- Ahmed ELbamby approved immutable record version 1.0 on 2026-07-13, so its
+  design task may close. Approval does not promote the route beyond `design-only`.
