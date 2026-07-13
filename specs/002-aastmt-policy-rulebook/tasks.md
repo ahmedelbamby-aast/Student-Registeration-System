@@ -1,10 +1,10 @@
 # Tasks: AASTMT Policy Rulebook
 
 **Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
-**Implementation progress**: 42/43 tasks complete. The governed rulebook,
+**Implementation progress**: 43/43 tasks complete. The governed rulebook,
 schemas, provenance, contract tests, executable acceptance/edge coverage,
 measured governance-harness NFR evidence, scope review, and traceability are
-verified. Final release approval remains pending.
+verified. The scoped non-production governed-artifact approval is recorded.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task names an exact artifact and trace. Checked tasks have
 passing evidence and existing artifacts; unchecked tasks remain pending their
@@ -109,7 +109,7 @@ No direct frontend route is owned by this specification; frontend integration re
 - [x] T040 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-3 remains excluded: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop, withdrawal, and Advisor or Deanery approval workflows until separately approved.
 - [x] T041 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-4 remains excluded: Automatic dismissal or academic-path decisions.
 - [x] T042 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-002-traceability.md and reject release if any row lacks passing evidence.
-- [ ] T043 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-002 in docs/release-evidence/SPEC-002-release-approval.md.
+- [x] T043 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-002 in docs/release-evidence/SPEC-002-release-approval.md.
 
-Forty-two governance, executable-test, scope-review, and traceability tasks are
-complete. T043 release approval remains open.
+All forty-three governance, executable-test, scope-review, traceability, and
+scoped release-approval tasks are complete.

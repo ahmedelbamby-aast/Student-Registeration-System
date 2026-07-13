@@ -24,6 +24,7 @@ authority.
 |---|---|---|
 | Rulebook publication, deterministic policy selection, typed-rule validation, and runtime evaluation | SPEC-009 | Replay the applicable AC, EC, and PB fixtures against the server-authoritative implementation, including full decision and provenance comparisons. |
 | Student offering-eligibility projection | SPEC-011 | Replay applicable eligibility fixtures through the owned API projection and verify the complete `PolicyDecisionDto`, authorization scope, authoritative term context, and fail-closed responses. |
+| Atomic capacity allocation and first-successful-commit behavior | SPEC-014 | Replay the applicable capacity boundaries against the transactional SQL Server implementation and prove that concurrent attempts cannot overbook, partially commit, or bypass final policy revalidation. |
 | Durable registration decision snapshots and historical explainability | SPEC-015 | Persist and retrieve the exact version, bounded input summary, ordered results, explanations, and source metadata; replay AC-3 and EC-3 without rewriting history. |
 | Production-like performance, load, scalability, and release gates | SPEC-018 | Measure the owning server/runtime path under the approved production-like fixture and publish reproducible p95/load evidence. The SPEC-002 harness benchmark cannot satisfy this gate. |
 
@@ -52,7 +53,7 @@ into a server component does not constitute replay evidence.
 - **Contract-oracle evidence:** May report that the governed executable
   reference is internally consistent.
 - **Runtime evidence:** Remains pending until the applicable SPEC-009,
-  SPEC-011, or SPEC-015 implementation replay passes.
+  SPEC-011, SPEC-014, or SPEC-015 implementation replay passes.
 - **Release and performance evidence:** Remains pending until SPEC-018 records
   the required production-like measurements and approvals.
 

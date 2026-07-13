@@ -5,7 +5,7 @@
 **Evidence date:** 2026-07-13  
 **Evidence scope:** governed artifacts and executable governance-reference tests  
 **Runtime/system release is not claimed:** downstream replay remains owned by
-SPEC-009, SPEC-011, SPEC-015, and SPEC-018 under
+SPEC-009, SPEC-011, SPEC-014, SPEC-015, and SPEC-018 under
 `SPEC-002-CONTRACT-TEST-BOUNDARY.md`.
 
 ## Admission rule
@@ -77,8 +77,8 @@ The executable reference is intentionally isolated under
 do not reference it. The exact ownership and replay rule is recorded in
 `docs/release-evidence/SPEC-002-CONTRACT-TEST-BOUNDARY.md`.
 
-The content-bound Release run is recorded in `SPEC-002-test-run.json`: 6
-acceptance, 9 integration, 5 quality, and 28 specification tests passed; 0
-failed and 0 skipped (48 total). Ahmed ELbamby's T043 approval is the only
-remaining gate for the governed SPEC-002 artifact. Repository-wide validation
-is repeated after that decision and before commit.
+The final content-bound Release run is recorded in
+`SPEC-002-test-run.json`: 6 acceptance, 9 integration, 5 quality, and 26
+specification tests passed; 0 failed and 0 skipped (46 total). Ahmed ELbamby's
+T043 approval is recorded in `SPEC-002-release-approval.md`. Repository-wide
+validation is repeated before commit.

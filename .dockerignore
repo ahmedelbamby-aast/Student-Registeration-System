@@ -1,0 +1,35 @@
+# Source control and editor state
+.git/
+.gitignore
+.dockerignore
+Dockerfile*
+.vs/
+.vscode/
+.idea/
+
+# .NET build and test output
+**/bin/
+**/obj/
+artifacts/
+TestResults/
+coverage/
+playwright-report/
+test-results/
+load-test-results/
+
+# Local configuration, secrets, and generated demo data
+.env*
+!.env.example
+appsettings.*.local.json
+.local/
+credentials/
+logs/
+exports/
+*.log*
+
+# Local SQL Server files and OS metadata
+*.mdf
+*.ldf
+*.bak
+.DS_Store
+Thumbs.db

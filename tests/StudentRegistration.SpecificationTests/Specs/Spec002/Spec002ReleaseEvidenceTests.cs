@@ -68,7 +68,15 @@ public sealed class Spec002ReleaseEvidenceTests
             ["StudentRegistration.AcceptanceTests"] = 6,
             ["StudentRegistration.IntegrationTests"] = 9,
             ["StudentRegistration.QualityTests"] = 5,
-            ["StudentRegistration.SpecificationTests"] = 28
+            ["StudentRegistration.SpecificationTests"] = 26
+        };
+        var expectedFilters = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["StudentRegistration.AcceptanceTests"] = "FullyQualifiedName~Spec002",
+            ["StudentRegistration.IntegrationTests"] = "FullyQualifiedName~Spec002",
+            ["StudentRegistration.QualityTests"] = "FullyQualifiedName~Spec002",
+            ["StudentRegistration.SpecificationTests"] =
+                "FullyQualifiedName~Spec002|FullyQualifiedName~StudentRegistration.SpecificationTests.Policy."
         };
         Assert.Equal(
             expectedCounts.Keys.Order(StringComparer.Ordinal),
@@ -82,7 +90,9 @@ public sealed class Spec002ReleaseEvidenceTests
             Assert.Equal(
                 expectedCounts[command.GetProperty("project").GetString()!],
                 command.GetProperty("passed").GetInt32());
-            Assert.Contains("Spec002", command.GetProperty("filter").GetString()!, StringComparison.Ordinal);
+            Assert.Equal(
+                expectedFilters[command.GetProperty("project").GetString()!],
+                command.GetProperty("filter").GetString());
         });
 
         var digestRows = root.GetProperty("artifactDigests").EnumerateArray()
@@ -100,8 +110,11 @@ public sealed class Spec002ReleaseEvidenceTests
 
         foreach (var row in digestRows)
         {
+            var normalizedContent = File.ReadAllText(RepositoryFiles.PathTo(row.Path))
+                .Replace("\r\n", "\n", StringComparison.Ordinal)
+                .Replace('\r', '\n');
             var actual = Convert.ToHexString(SHA256.HashData(
-                    File.ReadAllBytes(RepositoryFiles.PathTo(row.Path))))
+                    Encoding.UTF8.GetBytes(normalizedContent)))
                 .ToLowerInvariant();
             Assert.Equal(row.Sha256, actual);
         }
@@ -132,7 +145,7 @@ public sealed class Spec002ReleaseEvidenceTests
             "Accessibility",
             "Data / concurrency",
             "Operations",
-            "48 passed, 0 failed, 0 skipped",
+            "46 passed, 0 failed, 0 skipped",
             "not official AASTMT",
             "does not release the Student Registration System",
             "SPEC-009",

@@ -81,6 +81,7 @@ public sealed class Spec002TestCompletionTests
             "not runtime or release evidence",
             "SPEC-009",
             "SPEC-011",
+            "SPEC-014",
             "SPEC-015",
             "SPEC-018",
             "must not call it as the implementation under test");

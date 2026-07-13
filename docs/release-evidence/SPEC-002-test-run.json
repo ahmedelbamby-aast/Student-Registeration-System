@@ -1,13 +1,13 @@
 {
   "version": "spec002-test-run/1.0",
   "evidenceScope": "governance-contract-reference-only",
-  "measuredAtUtc": "2026-07-13T11:56:44.2153814Z",
+  "measuredAtUtc": "2026-07-13T12:17:43.4825675Z",
   "buildConfiguration": "Release",
   "dotnetSdk": "10.0.301",
   "dotnetRuntime": "10.0.9",
   "operatingSystem": "Microsoft Windows NT 10.0.26200.0",
   "overallResult": "PASS",
-  "testedContentSha256": "2c048408bbe89ae7d21b228592c799adf5dd7e61f2a2b9e692d170e4c1702d80",
+  "testedContentSha256": "fb5ebae720cf8a24f785d2fd3923e7078460ad5adc88eeacea93406c454c4960",
   "commands": [
     {
       "project": "StudentRegistration.AcceptanceTests",
@@ -35,8 +35,8 @@
     },
     {
       "project": "StudentRegistration.SpecificationTests",
-      "filter": "FullyQualifiedName~Spec002|FullyQualifiedName~Policy",
-      "passed": 28,
+      "filter": "FullyQualifiedName~Spec002|FullyQualifiedName~StudentRegistration.SpecificationTests.Policy.",
+      "passed": 26,
       "failed": 0,
       "skipped": 0,
       "result": "PASS"
@@ -45,6 +45,14 @@
   "artifactDigests": [
     { "path": "docs/DEMO_CURRICULUM.md", "sha256": "ef0f1276bed708435ce2c385814eaddb282783fbb0afbf49190ee29efe682cf2" },
     { "path": "docs/POLICY_RESEARCH.md", "sha256": "ff0f066b5f578ffe2b2bc522650c930591d617e7d81d65bb6ad8024d42e5ab7d" },
+    { "path": "docs/release-evidence/SPEC-002-CONTRACT-TEST-BOUNDARY.md", "sha256": "e153f7bc55a1f16f99323e559af0e239d67a5d7afe325c0b73345c99a07ca3ff" },
+    { "path": "docs/release-evidence/SPEC-002-NFR-1.md", "sha256": "202ed1253d00d8570a0a77814caef295e329cbd98e2170e015061d3b934675b6" },
+    { "path": "docs/release-evidence/SPEC-002-NFR-2.md", "sha256": "a93b3089bfd0afb478717a9bc6135f7431b59241d1aaa2737580aed4607801b7" },
+    { "path": "docs/release-evidence/SPEC-002-NFR-3.md", "sha256": "8f5266fd73761209d564d0a3531caff9f6180003b70d7bb0fb50e5a8e7671c1b" },
+    { "path": "docs/release-evidence/SPEC-002-NFR-4.md", "sha256": "d8420eaa4de56718a7a7db19e70ad6238afd691d31452c4eab320bd53b8b10f7" },
+    { "path": "docs/release-evidence/SPEC-002-release-approval.md", "sha256": "14627c1936cf7a9380f067ad620ed3e56d5197f830fda3d94de39768757733bc" },
+    { "path": "docs/release-evidence/SPEC-002-scope-review.md", "sha256": "aa6039b0b40fbf26183b4fd44abb621509f4ac29966c1561586debe7fc5a5042" },
+    { "path": "docs/release-evidence/SPEC-002-traceability.md", "sha256": "9a134a6a3fb11fc41320ae31e5cc1ffe06136feb393229ccc42e445eafbc222d" },
     { "path": "specs/002-aastmt-policy-rulebook/checklists/approval.md", "sha256": "cae2f1bd4a45119314d95c85d50823c16bca82a25b761e0da484d61286b6165e" },
     { "path": "specs/002-aastmt-policy-rulebook/checklists/consistency-analysis.md", "sha256": "50efdc13b0b05e84663b222c495e751737ee9f5cadfc6e2cd919718085d0a6d8" },
     { "path": "specs/002-aastmt-policy-rulebook/checklists/gates.md", "sha256": "dc85a5702f14e75fdaf338d6868c0ceda704171be50c0f8c6d56c461be34c37e" },
@@ -60,16 +68,17 @@
     { "path": "specs/002-aastmt-policy-rulebook/contracts/source-resolution.md", "sha256": "27a681bb8288bc729eb2205a71a99c09a629decc520d4e100194f393b03ab8fc" },
     { "path": "specs/002-aastmt-policy-rulebook/data-model.md", "sha256": "094e93aaf64a5ec08ae9ddcd83e77d3fe3eb551fb0a2de0c844f2554859ff5b8" },
     { "path": "specs/002-aastmt-policy-rulebook/dependency-baseline.md", "sha256": "176d2b0179b7c2b7ced156a19260e253d81264e591983c5d1360cdc229228c89" },
-    { "path": "specs/002-aastmt-policy-rulebook/plan.md", "sha256": "db96d844d44b1727061d4f5cc13cb574878c84b43590a0f3ef20bea3faeeaa96" },
+    { "path": "specs/002-aastmt-policy-rulebook/plan.md", "sha256": "9b8da858a6fe27059c443197218c78af1aeb402ed3f5e54340dfd2fc0517261c" },
     { "path": "specs/002-aastmt-policy-rulebook/policy-boundary-examples.md", "sha256": "32fcfeebcfc69679a01b45cdbbbd5574f734d429083b3fa85502d13b70946cdb" },
     { "path": "specs/002-aastmt-policy-rulebook/policy-rules.md", "sha256": "8fdcddce29f388b2a42ade80a35076c6a3d7b6107697ee9f6b058c947879c9cb" },
     { "path": "specs/002-aastmt-policy-rulebook/policy-sources.md", "sha256": "6059161accd22560b474e7809c2fa3c7ba396857283a4f82968ca978a5a09472" },
     { "path": "specs/002-aastmt-policy-rulebook/quickstart.md", "sha256": "749b137361fc0e8c9e738a4643a97e0fa95f44f251dd361d299a44c22daa616f" },
-    { "path": "specs/002-aastmt-policy-rulebook/requirements.md", "sha256": "ee7144f4a50dd0401033fe626ed02142e0ee259eb4dbaacd656f6ecda0b655c5" },
+    { "path": "specs/002-aastmt-policy-rulebook/requirements.md", "sha256": "a2ae249a7115ce0f5f6dc8f9f2715fb06e1b948ff5609b755abeb6ab9801b649" },
     { "path": "specs/002-aastmt-policy-rulebook/research.md", "sha256": "b1d91a4e33a06b1a8dca8adf8acbb5e873f74738ada2697bdeb6e62158bb47ee" },
     { "path": "specs/002-aastmt-policy-rulebook/schemas/policy-rule-definition.schema.json", "sha256": "e15e00cfb83409ad6afc33d679119795a9481d1cf0f08dad4815fb0515fc3d7e" },
     { "path": "specs/002-aastmt-policy-rulebook/schemas/policy-rule-types.json", "sha256": "595c51a831222b96554de0b029ca0f1fa9a2b23d10843af678201f1643c1e1a1" },
-    { "path": "specs/002-aastmt-policy-rulebook/spec.md", "sha256": "69c53a1e4ab0c5f8d145a3c5149834b4cd93a1fa9d44f7620ca50cf36277c927" },
+    { "path": "specs/002-aastmt-policy-rulebook/spec.md", "sha256": "6169c35d1e8cbfae76b29110648868ccae194912a95174d9a2b6efa7eb1124ec" },
+    { "path": "specs/002-aastmt-policy-rulebook/tasks.md", "sha256": "ea5146acc22eb97a1a2256f053fa31db74927e216eed6be4133dcc9493f4f894" },
     { "path": "tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-1Tests.cs", "sha256": "26f66e6b06bfd95e17e21debe92dafb9f0193a70092f19dbb96440d650f031a8" },
     { "path": "tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-2Tests.cs", "sha256": "a08a87f8083a120a046b762cf83b20a539b5b1b988e944771563fe2bbe5329a0" },
     { "path": "tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-3Tests.cs", "sha256": "537b44f5f73d978c357dd3e914b52adbcf9b4326335962afab060364db066de7" },
@@ -92,8 +101,8 @@
     { "path": "tests/StudentRegistration.SpecificationTests/Spec002/PolicyRuleTypeRegistryTests.cs", "sha256": "1844e07515b7f5a97931a71b64b7a191a5d62c33db486d0eddd293c1493175cd" },
     { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyEvidenceSchemaTests.cs", "sha256": "460fd44b88a98c525fb589497f8d9514f162bb91cf42dd0d45619fbbcb274464" },
     { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyRulebookSchemaTests.cs", "sha256": "de0498699ee873147a23afd792bf9230ec00fadd4c0da8b48cefd77101d7b50c" },
-    { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/Spec002ReleaseEvidenceTests.cs", "sha256": "d485c532dcbd4e4c03017de9732adb2ed41e3b60b3b3ce0fb2fa13730cdd0737" },
-    { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/Spec002TestCompletionTests.cs", "sha256": "a249eab8f8f093f2d666632e60e6876fb61249ce5b632f95b4cf077774a22e9d" },
+    { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/Spec002ReleaseEvidenceTests.cs", "sha256": "c340a4d959ad48cddca6bd620a0cb9869453640ce0fe94d5c91e704baab9c2c8" },
+    { "path": "tests/StudentRegistration.SpecificationTests/Specs/Spec002/Spec002TestCompletionTests.cs", "sha256": "57de35f6fa53297586f88602bd41bb7bbb3c034609e596705e0e282c46dfe9b4" },
     { "path": "tests/StudentRegistration.TestSupport/Spec002/Spec002PolicyTestHarness.cs", "sha256": "3e750d8d6698ced803ef8cdc051d1e3b5f28aa1b3f7bd9f2caaf2ad9ebba24d0" }
   ]
 }
