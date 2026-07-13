@@ -66,8 +66,10 @@
 - Accepted inputs: `requirements.md`, `plan.md`, `data-model.md`, and
   `contracts/api.md` under `specs/006-domain-class-api-contracts/`.
 - Accepted versions: ApiError schema `1.0`, Page schema `1.0`, specification
-  manifest `2.0.2`, entity-ownership manifest `2.0.1`, and workstream manifest
-  `2.0.1`.
+  manifest `2.0.2`, and workstream manifest `2.0.1`. SPEC-018 does not consume
+  the entity-ownership manifest; SPEC-007 must reconcile its known
+  `StudentActivation` omission before freezing the Identity persistence
+  baseline.
 - Consumed boundary: privacy-safe errors, DTO isolation, deterministic JSON,
   page default `20`/maximum `100`, optimistic-concurrency and idempotency
   metadata, TimeProvider, and complete context composition rules.
