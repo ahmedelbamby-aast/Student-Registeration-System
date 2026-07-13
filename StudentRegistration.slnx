@@ -1,8 +1,14 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/StudentRegistration.Academics/StudentRegistration.Academics.csproj" />
+    <Project Path="src/StudentRegistration.Api/StudentRegistration.Api.csproj" />
     <Project Path="src/StudentRegistration.Client/StudentRegistration.Client.csproj" />
     <Project Path="src/StudentRegistration.Contracts/StudentRegistration.Contracts.csproj" />
+    <Project Path="src/StudentRegistration.IdentityAccess/StudentRegistration.IdentityAccess.csproj" />
     <Project Path="src/StudentRegistration.Infrastructure.SqlServer/StudentRegistration.Infrastructure.SqlServer.csproj" />
+    <Project Path="src/StudentRegistration.Registration/StudentRegistration.Registration.csproj" />
+    <Project Path="src/StudentRegistration.Scheduling/StudentRegistration.Scheduling.csproj" />
+    <Project Path="src/StudentRegistration.StaffAdministration/StudentRegistration.StaffAdministration.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/StudentRegistration.AcceptanceTests/StudentRegistration.AcceptanceTests.csproj" />
