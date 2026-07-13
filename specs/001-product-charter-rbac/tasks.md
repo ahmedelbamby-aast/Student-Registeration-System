@@ -1,9 +1,10 @@
 # Tasks: Product Charter and RBAC
 
 **Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
-**Implementation progress**: 26/42 tasks complete. Governed contracts and
-traceability controls are verified; runtime/Gate C/SPEC-018 evidence remains
-pending its owning specifications.
+**Implementation progress**: 27/42 tasks complete. Governed contracts,
+traceability controls, and the one-deployable modular-monolith evidence are
+verified; runtime/Gate C/SPEC-018 evidence remains pending its owning
+specifications.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task names an exact artifact and traces to a requirement,
 criterion, edge case, route, entity, endpoint, dependency, or gate. A checked
@@ -99,7 +100,7 @@ No direct frontend route is owned by this specification; frontend integration re
 - [ ] T033 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-1.md: Critical flows MUST meet WCAG 2.2 AA.
 - [ ] T034 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-2.md: The design MUST support the approved SPEC-018 scale targets without changing domain behavior.
 - [ ] T035 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-3.md: Authorization MUST be enforced by the API for every protected action.
-- [ ] T036 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-4.md: The initial solution MUST remain one deployable modular monolith.
+- [x] T036 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-4.md: The initial solution MUST remain one deployable modular monolith.
 
 ## Phase 7 - Scope and Release Evidence
 
@@ -110,6 +111,6 @@ No direct frontend route is owned by this specification; frontend integration re
 - [ ] T041 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-001-traceability.md and reject release if any row lacks passing evidence.
 - [ ] T042 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-001 in docs/release-evidence/SPEC-001-release-approval.md.
 
-Twenty-six tasks are complete. Sixteen runtime, Gate C, NFR, scope-audit, and
-release-approval tasks remain open until their owning downstream evidence is
-available; no completion is inferred from a placeholder or skipped fixture.
+Twenty-seven tasks are complete. Fifteen runtime, Gate C, NFR, scope-audit,
+and release-approval tasks remain open until their owning downstream evidence
+is available; no completion is inferred from a placeholder or skipped fixture.
