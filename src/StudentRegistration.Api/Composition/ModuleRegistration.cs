@@ -11,6 +11,7 @@ public static class Program
         builder.Services.AddStudentRegistrationModules();
 
         var app = builder.Build();
+        app.UseSafeApiErrors();
         app.Run();
     }
 }
@@ -21,6 +22,10 @@ public static class ModuleRegistration
         this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.AddAuthoritativeTime();
+        services.AddStudentRegistrationJsonContracts();
+        services.AddSafeApiErrors();
 
         return services;
     }

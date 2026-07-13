@@ -72,6 +72,8 @@ endpoint.
 - Omitted `page` and `pageSize` mean `1` and `20`; maximum `pageSize` is `100`.
 - `page < 1`, `pageSize < 1`, or `pageSize > 100` returns 400
   `PAGE_SIZE_INVALID`; servers do not silently cap.
+- A response contains no more items than its declared `pageSize`, and
+  `totalCount` is never smaller than the returned item count.
 - Each listing contract declares an allow-listed default sort ending with its
   unique identifier as a deterministic tie-breaker. `Page.sort` echoes the
   applied canonical sort.
@@ -86,6 +88,30 @@ endpoint.
   `ApiError.currentVersion`; unauthorized requests return 403 without resource
   or version disclosure.
 - `If-Match` and 412 are outside the MVP protocol.
+
+### Idempotency and cancellation protocol
+
+- `IdempotencyKey` is an opaque, non-empty shared value. Each feature owns its
+  request field name and declares the authenticated owner and uniqueness scope;
+  SPEC-006 does not define a generic command or result envelope.
+- The server derives and stores a hash of the server-canonical payload. The
+  feature contract defines that canonicalization; client-provided hashes are
+  never trusted as the comparison source.
+- The first durable operation is an atomic first claim in the same transaction
+  boundary as the feature-owned state and final result.
+- A retry with the same key, owner, scope, and canonical payload receives the
+  declared processing response without executing the command again. Once the
+  first request commits a final result, the retry replays the stored result.
+- Reusing the same owner/scope/key with a different canonical payload returns
+  409 `IDEMPOTENCY_KEY_REUSED`; the different canonical payload is never executed
+  and no result owned by another caller is disclosed.
+- Every retryable endpoint declares which deterministic business rejections are
+  stored as final replayable results. Accepted results are replayable. Transient
+  infrastructure failures are not final replayable results and roll back their
+  uncommitted claim.
+- Cancellation before commit rolls back the transaction, claim, and every
+  partial effect. Cancellation or response loss after commit does not undo the
+  committed effect; a same-key/same-payload retry replays the stored result.
 
 ### OpenAPI protocol
 

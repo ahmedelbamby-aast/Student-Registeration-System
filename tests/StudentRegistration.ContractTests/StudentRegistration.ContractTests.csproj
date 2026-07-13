@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/StudentRegistration.Api/StudentRegistration.Api.csproj" />
+    <ProjectReference Include="../../src/StudentRegistration.Contracts/StudentRegistration.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
              Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
