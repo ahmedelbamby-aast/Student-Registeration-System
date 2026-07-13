@@ -353,7 +353,7 @@ erDiagram
     string DecisionSnapshotJson
     datetime2 ReceivedAtUtc
     datetime2 UpdatedAtUtc
-    datetime2 CompletedAtUtc
+    datetime2 CompletedAtUtc "nullable"
   }
   STUDENT_TERM_REGISTRATION_GUARD {
     uniqueidentifier Id PK
@@ -415,6 +415,8 @@ erDiagram
   snapshot, and Enrollment. RegistrationReceipt is a read projection, not a
   second table.
 - audit foundation: AuditEvent is owned upstream by SPEC-004 infrastructure.
+- AuditEvent has no relational foreign keys; privacy-safe actor, subject,
+  entity, and correlation references connect it across modules.
 - admin reporting: ExportJob is owned by SPEC-017; it consumes AuditEvent and
   Identity-owned SecurityEvent without owning their write path.
 
@@ -442,6 +444,9 @@ Required constraints/indexes:
 - Unique Enrollment(StudentId, OfferingId); re-registration changes state on
   the same logical record.
 - Unique RegistrationSubmission(StudentId, TermId, ClientRequestId).
+- RegistrationSubmission.ReceivedAtUtc is its immutable creation instant;
+  UpdatedAtUtc records progress, and CompletedAtUtc is nullable until a final
+  outcome.
 - Unique non-null RegistrationSubmission.Reference; it and
   ReceiptSnapshotJson exist only for an accepted final submission.
 - Unique StudentTermRegistrationGuard(StudentId, TermId).
@@ -481,6 +486,8 @@ Required constraints/indexes:
 - RegistrationReceipt is projected from the accepted submission's atomic
   Reference and ReceiptSnapshotJson. It has no second table or write path;
   rejections have neither field.
+- RegistrationSubmission is the sole durable idempotency record. A separate
+  IdempotencyRecord table is prohibited.
 - ExportJob claims use a compare-and-set rowversion plus expiring lease so only
   one replica produces a result. Lease recovery is idempotent.
 - Every final-Admin role mutation is owned by SPEC-007 IdentityAccess, locks

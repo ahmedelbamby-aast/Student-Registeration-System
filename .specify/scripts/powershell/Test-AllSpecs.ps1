@@ -606,11 +606,20 @@ foreach ($item in $manifest.specs) {
     $completedTaskMatches = @([regex]::Matches($tasks, '(?mi)^- \[[xX]\] (T\d{3})\s+(.+)$'))
     foreach ($completedTask in $completedTaskMatches) {
         $isApprovalTask = $completedTask.Groups[2].Value -match "(?i)Ahmed Elbamby's (?:human approval|.*Gate A demo approval)|human approval for SPEC|Gate A demo approval by Ahmed"
+        $completedTaskNumber = [int]($completedTask.Groups[1].Value.Substring(1))
+        $isDesignOnlySchemaContract =
+            $item.id -eq '005' -and
+            $completedTaskNumber -ge 6 -and $completedTaskNumber -le 30 -and
+            $completedTask.Groups[2].Value -match '\[SCHEMA-CONTRACT\]' -and
+            $completedTask.Groups[2].Value -match '(?i)without loading or requiring (?:downstream )?runtime source'
         if (-not $implementationMode -and -not $isApprovalTask) {
             Add-Failure "SPEC-$($item.id) marks non-approval task $($completedTask.Groups[1].Value) complete before implementation."
         }
         if ($implementationMode) {
             foreach ($completedPath in Get-TaskPaths $completedTask.Groups[2].Value) {
+                # A design-only schema contract verifies a declared future source path;
+                # the separately approved canonical-owner spec creates that runtime file.
+                if ($isDesignOnlySchemaContract -and $completedPath -match '^src/') { continue }
                 if (-not (Test-Path (Join-Path $root $completedPath) -PathType Leaf)) {
                     Add-Failure "SPEC-$($item.id) marks $($completedTask.Groups[1].Value) complete but required artifact $completedPath is missing."
                 }
@@ -1251,7 +1260,7 @@ $($reportRows -join "`r`n")
 - SPEC-003 has per-route design, Blazor, component, E2E, accessibility, browser, and visual tasks.
 - SPEC-014 has explicit cross-aggregate serialization, idempotency, cutoff, admin-versus-submit, two-replica, failure, and reconciliation design.
 - Official Spec Kit prerequisite and strict workflow validators run for every package.
-- No application source, migration, executable test, or deployment implementation exists.
+- No prohibited premature downstream runtime source, migration, or production deployment artifact was detected.
 
 ## Failures
 

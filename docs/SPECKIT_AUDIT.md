@@ -11,7 +11,7 @@
 | SPEC-002 | 26 | 11 | 5 | 4 | 43 | 100 | PASS | APPROVED |
 | SPEC-003 | 59 | 24 | 17 | 10 | 276 | 100 | PASS | APPROVED |
 | SPEC-004 | 18 | 13 | 7 | 3 | 50 | 100 | PASS | APPROVED |
-| SPEC-005 | 15 | 13 | 7 | 4 | 70 | 100 | PASS | APPROVED |
+| SPEC-005 | 28 | 13 | 7 | 4 | 70 | 100 | PASS | APPROVED |
 | SPEC-006 | 12 | 14 | 9 | 4 | 63 | 100 | PASS | APPROVED |
 | SPEC-018 | 12 | 18 | 7 | 5 | 74 | 100 | PASS | APPROVED |
 | SPEC-007 | 12 | 18 | 10 | 6 | 133 | 100 | PASS | APPROVED |
@@ -36,7 +36,7 @@
 - SPEC-003 has per-route design, Blazor, component, E2E, accessibility, browser, and visual tasks.
 - SPEC-014 has explicit cross-aggregate serialization, idempotency, cutoff, admin-versus-submit, two-replica, failure, and reconciliation design.
 - Official Spec Kit prerequisite and strict workflow validators run for every package.
-- No application source, migration, executable test, or deployment implementation exists.
+- No prohibited premature downstream runtime source, migration, or production deployment artifact was detected.
 
 ## Failures
 
