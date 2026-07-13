@@ -1,0 +1,38 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#app,
+#application-root {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background: var(--srs-color-semantic-surface-default);
+    color: var(--srs-color-semantic-text-primary);
+    font-family: var(--srs-typography-primitive-font-family-sans);
+    font-size: var(--srs-typography-primitive-font-size-body);
+    line-height: var(--srs-typography-primitive-line-height-body);
+}
+
+.startup-progress {
+    block-size: var(--srs-sizing-progress-thickness);
+    background: var(--srs-color-semantic-information-text);
+    inline-size: var(--blazor-load-percentage, 0%);
+}
+
+#blazor-error-ui {
+    display: none;
+}
+
+:focus-visible {
+    outline-color: var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+    outline-style: var(--srs-focus-outline-style);
+    outline-width: var(--srs-focus-outline-width);
+}

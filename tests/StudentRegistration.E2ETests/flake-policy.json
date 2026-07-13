@@ -1,0 +1,38 @@
+{
+  "version": "flake-policy/1.0.0",
+  "firstRunFailureStaysFailed": true,
+  "silentPassAllowed": false,
+  "diagnosticsOnlyRetry": {
+    "enabled": true,
+    "maxRetries": 1,
+    "canChangeGateResult": false,
+    "artifacts": [
+      "trace",
+      "video",
+      "screenshot",
+      "console",
+      "network"
+    ]
+  },
+  "criticalJourneys": {
+    "quarantineAllowed": false,
+    "journeyIds": [
+      "AUTH-02-student-sign-in",
+      "AUTH-04-staff-sign-in",
+      "STU-04-conflict-resolution",
+      "STU-05-registration-submission",
+      "STU-06-registration-receipt"
+    ]
+  },
+  "flakeCorrection": {
+    "releaseBlockedUntilCorrected": true,
+    "defaultOwner": "Ahmed ELbamby",
+    "requiredFields": [
+      "owner",
+      "issue",
+      "cause",
+      "fixBy",
+      "correctionEvidence"
+    ]
+  }
+}

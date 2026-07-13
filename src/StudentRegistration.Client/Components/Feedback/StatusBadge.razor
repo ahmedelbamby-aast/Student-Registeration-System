@@ -1,0 +1,98 @@
+<span class="@CssClass"
+      role="@LiveRole"
+      aria-live="@LiveMode"
+      aria-disabled="@(IsDisabled ? "true" : null)"
+      aria-busy="@(IsLoading ? "true" : null)"
+      data-state="@StateName">
+    @if (!string.IsNullOrWhiteSpace(Icon))
+    {
+        <span class="srs-status-badge__icon" aria-hidden="true">@Icon</span>
+    }
+    <span class="srs-status-badge__text">@EffectiveText</span>
+</span>
+
+@code {
+    public enum BadgeTone
+    {
+        Neutral,
+        Information,
+        Success,
+        Warning,
+        Danger,
+        Pending,
+        Disabled
+    }
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public BadgeTone Tone { get; set; } = BadgeTone.Neutral;
+
+    [Parameter]
+    public bool Announce { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? ErrorText { get; set; }
+
+    private bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
+
+    private string EffectiveText => HasError
+        ? ErrorText!
+        : IsLoading
+            ? LoadingText!
+            : Text;
+
+    private BadgeTone EffectiveTone => HasError
+        ? BadgeTone.Danger
+        : IsLoading
+            ? BadgeTone.Pending
+            : IsDisabled
+                ? BadgeTone.Disabled
+                : Tone;
+
+    private string CssClass =>
+        $"srs-status-badge srs-status-badge--{EffectiveTone.ToString().ToLowerInvariant()}";
+
+    private string StateName => HasError
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+
+    private string? LiveRole => HasError
+        ? "alert"
+        : IsLoading || Announce
+            ? "status"
+            : null;
+
+    private string? LiveMode => HasError
+        ? "assertive"
+        : IsLoading || Announce
+            ? "polite"
+            : null;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Text);
+
+        if (IsLoading)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(LoadingText);
+        }
+    }
+}

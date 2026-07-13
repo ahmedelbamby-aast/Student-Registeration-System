@@ -1,0 +1,62 @@
+<nav class="@CssClass"
+     aria-label="@AccessibleName"
+     aria-busy="@(IsLoading ? "true" : null)">
+    @if (!string.IsNullOrWhiteSpace(StatusText))
+    {
+        <p class="srs-role-navigation__status"
+           data-navigation-status
+           role="@(HasError ? "alert" : "status")">
+            @StatusText
+        </p>
+    }
+
+    <ul class="srs-role-navigation__list">
+        @foreach (var item in Items)
+        {
+            <li>
+                @if (item.IsDisabled)
+                {
+                    <span class="srs-role-navigation__link srs-role-navigation__link--disabled"
+                          aria-disabled="true"
+                          tabindex="-1">
+                        @item.Label
+                    </span>
+                }
+                else
+                {
+                    <a class="@(item.IsActive ? "srs-role-navigation__link srs-role-navigation__link--active" : "srs-role-navigation__link")"
+                       href="@item.Href"
+                       aria-current="@(item.IsActive ? "page" : null)">
+                        @item.Label
+                    </a>
+                }
+            </li>
+        }
+    </ul>
+</nav>
+
+@code {
+    [Parameter]
+    public string AccessibleName { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<NavigationItem> Items { get; set; } = Array.Empty<NavigationItem>();
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public bool HasError { get; set; }
+
+    [Parameter]
+    public string? StatusText { get; set; }
+
+    private string CssClass =>
+        $"srs-role-navigation{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+
+    public sealed record NavigationItem(
+        string Label,
+        string Href,
+        bool IsActive = false,
+        bool IsDisabled = false);
+}

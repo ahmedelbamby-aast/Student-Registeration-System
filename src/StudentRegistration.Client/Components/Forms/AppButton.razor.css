@@ -1,0 +1,49 @@
+.srs-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--srs-spacing-primitive-2);
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-4);
+    color: var(--srs-color-component-button-primary-text);
+    background: var(--srs-color-component-button-primary-background);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-button:hover:not(:disabled) {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+    border-color: var(--srs-color-semantic-information-text);
+}
+
+.srs-button:active:not(:disabled) {
+    color: var(--srs-color-component-button-secondary-text);
+    background: var(--srs-color-component-button-secondary-background);
+    border-color: var(--srs-color-semantic-border);
+}
+
+.srs-button:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-button:disabled {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+    border-color: var(--srs-color-semantic-disabled-text);
+}
+
+.srs-button.is-loading {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-button.has-error {
+    border-color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-button__status {
+    font-size: var(--srs-typography-primitive-font-size-small);
+}

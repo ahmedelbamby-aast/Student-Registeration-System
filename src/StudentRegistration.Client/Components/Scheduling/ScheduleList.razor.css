@@ -1,0 +1,61 @@
+.srs-schedule-list {
+    display: grid;
+    gap: var(--srs-spacing-primitive-3);
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-schedule-list__items {
+    display: grid;
+    gap: var(--srs-spacing-primitive-3);
+    margin: var(--srs-spacing-primitive-0);
+    padding: var(--srs-spacing-primitive-0);
+    list-style: none;
+}
+
+.srs-schedule-list__items li {
+    padding: var(--srs-spacing-primitive-4);
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+}
+
+.srs-schedule-list__items a {
+    display: inline-flex;
+    min-height: var(--srs-sizing-interactive-minimum);
+    align-items: center;
+    color: var(--srs-color-semantic-link);
+    border-radius: var(--srs-border-primitive-radius-small);
+}
+
+.srs-schedule-list__items a:hover,
+.srs-schedule-list__items a:active {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-schedule-list__items a:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-schedule-list__items dl {
+    display: grid;
+    gap: var(--srs-spacing-primitive-1);
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-schedule-list__items dl div {
+    display: flex;
+    gap: var(--srs-spacing-primitive-2);
+}
+
+.srs-schedule-list__items dd,
+.srs-schedule-list__error,
+.srs-schedule-list__status,
+.srs-schedule-list__empty,
+.srs-schedule-list__disabled {
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-schedule-list__error {
+    color: var(--srs-color-semantic-danger-text);
+}

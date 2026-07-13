@@ -1,0 +1,67 @@
+.srs-schedule-calendar {
+    display: grid;
+    gap: var(--srs-spacing-primitive-3);
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-schedule-calendar__viewport {
+    overflow: auto;
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+}
+
+.srs-schedule-calendar__viewport:focus-visible,
+.srs-schedule-calendar__meeting:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-schedule-calendar table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.srs-schedule-calendar th,
+.srs-schedule-calendar td {
+    padding: var(--srs-spacing-primitive-3);
+    border-bottom: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    text-align: start;
+    vertical-align: top;
+}
+
+.srs-schedule-calendar__meeting {
+    display: grid;
+    gap: var(--srs-spacing-primitive-2);
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2);
+    color: var(--srs-color-semantic-link);
+    border-radius: var(--srs-border-primitive-radius-small);
+}
+
+.srs-schedule-calendar__meeting:hover,
+.srs-schedule-calendar__meeting:active {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-schedule-calendar__meeting dl {
+    display: grid;
+    gap: var(--srs-spacing-primitive-1);
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-schedule-calendar__meeting dl div {
+    display: flex;
+    gap: var(--srs-spacing-primitive-2);
+}
+
+.srs-schedule-calendar__meeting dd,
+.srs-schedule-calendar__error,
+.srs-schedule-calendar__status,
+.srs-schedule-calendar__empty,
+.srs-schedule-calendar__disabled {
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-schedule-calendar__error {
+    color: var(--srs-color-semantic-danger-text);
+}

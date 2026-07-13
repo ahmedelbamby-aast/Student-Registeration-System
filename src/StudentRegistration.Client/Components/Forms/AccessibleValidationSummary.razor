@@ -1,0 +1,48 @@
+@if (IsLoading)
+{
+    <section class="srs-validation-summary is-loading"
+             id="@SummaryId"
+             role="status"
+             aria-busy="true"
+             aria-labelledby="@HeadingId">
+        <h2 id="@HeadingId">@Heading</h2>
+        <p>@LoadingAnnouncement</p>
+    </section>
+}
+else if (Errors.Count > 0)
+{
+    <section class="srs-validation-summary has-error"
+             id="@SummaryId"
+             role="alert"
+             tabindex="-1"
+             aria-labelledby="@HeadingId">
+        <h2 id="@HeadingId">@Heading</h2>
+        <ul>
+            @foreach (var error in Errors)
+            {
+                <li><a href="#@error.ControlId">@error.Message</a></li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public string SummaryId { get; set; } = "validation-summary";
+
+    [Parameter]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<ValidationItem> Errors { get; set; } = Array.Empty<ValidationItem>();
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingAnnouncement { get; set; }
+
+    private string HeadingId => $"{SummaryId}-heading";
+
+    public sealed record ValidationItem(string ControlId, string Message);
+}

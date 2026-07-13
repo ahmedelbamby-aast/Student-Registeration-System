@@ -1,0 +1,74 @@
+{
+  "version": "browser-matrix/1.0.0",
+  "verifiedOn": "2026-07-13",
+  "scope": "POC current-stable desktop compatibility and pinned Playwright WebKit",
+  "executionOsImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+  "targets": [
+    {
+      "name": "Google Chrome",
+      "label": "Google Chrome Stable",
+      "channel": "stable",
+      "browserBuild": "150.0.7871.101",
+      "engine": "Blink/Chromium 150.0.7871.101",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "status": "required",
+      "result": "planned",
+      "observedLocalVersion": "150.0.7871.101",
+      "preflightStatus": "ready",
+      "source": "https://chromereleases.googleblog.com/2026/07/stable-channel-update-for-desktop.html"
+    },
+    {
+      "name": "Microsoft Edge",
+      "label": "Microsoft Edge Stable",
+      "channel": "stable",
+      "browserBuild": "150.0.4078.65",
+      "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "status": "required",
+      "result": "planned",
+      "observedLocalVersion": "150.0.4078.65",
+      "preflightStatus": "ready",
+      "source": "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnotes-security"
+    },
+    {
+      "name": "Mozilla Firefox",
+      "label": "Mozilla Firefox Release",
+      "channel": "release",
+      "browserBuild": "152.0.5",
+      "engine": "Gecko 152",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "status": "required",
+      "result": "planned",
+      "observedLocalVersion": "152.0.4",
+      "preflightStatus": "update-required-before-execution",
+      "source": "https://www.firefox.com/en-US/firefox/152.0.5/releasenotes/"
+    },
+    {
+      "name": "Playwright WebKit",
+      "label": "Playwright WebKit (not Safari)",
+      "channel": "Microsoft.Playwright bundled",
+      "browserBuild": "26.5",
+      "engine": "WebKit 26.5 bundled by Microsoft.Playwright 1.61.0",
+      "playwrightVersion": "1.61.0",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "status": "required",
+      "result": "planned",
+      "observedLocalVersion": "not-installed",
+      "preflightStatus": "install-required-before-execution",
+      "source": "https://playwright.dev/docs/release-notes#version-161"
+    },
+    {
+      "name": "Apple Safari",
+      "label": "Actual Safari on macOS",
+      "channel": "stable",
+      "browserBuild": "not-run",
+      "engine": "Safari WebKit build not observed",
+      "osImage": "macOS physical or hosted runner unavailable",
+      "status": "deferred",
+      "result": "not-passed",
+      "observedLocalVersion": "not-available",
+      "preflightStatus": "deferred-by-approved-poc-scope",
+      "source": "https://support.apple.com/downloads/safari"
+    }
+  ]
+}

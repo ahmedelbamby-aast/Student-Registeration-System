@@ -15,19 +15,27 @@
 ### Feature contract
 ```typescript
 interface PageDesignRecord {
+  schemaVersion: string;
   routeId: string;
   routeTemplate: string;
+  pageName: string;
   designOwnerSpec: string;
   implementationOwnerSpec: string;
   ownerSpecs: string[];
   actors: string[];
+  purpose: string;
+  informationHierarchy: string[];
+  responsiveWireframes: Record<string, string>;
   components: string[];
   dataContracts: string[];
   actions: string[];
+  navigationTransitions: string[];
   states: UiStateCase[];
   responsiveWidths: number[];
   focusOrder: string[];
   testIds: string[];
+  contributorContractVersions: Record<string, string>;
+  readinessState: "design-only" | "implementation-ready";
   approvalVersion: string;
 }
 interface UiStateCase {
@@ -35,8 +43,13 @@ interface UiStateCase {
     "service-error" | "unauthorized" | "session-expired" | "stale" | "offline";
   applicability: "required" | "not-applicable";
   reason?: string;
-  expectedFocusTarget?: string;
-  liveRegion?: "none" | "polite" | "assertive";
+  fixture: string;
+  fixtureVersion: string;
+  expectedContent: string[];
+  expectedFocusTarget: string;
+  liveRegion: "none" | "polite" | "assertive";
+  nextActions: string[];
+  testIds: string[];
 }
 interface FrontendTestRecord {
   testId: string;
@@ -44,6 +57,7 @@ interface FrontendTestRecord {
   requirementIds: string[];
   type: "component" | "contract" | "e2e" | "accessibility" | "visual";
   fixture: string;
+  fixtureVersion: string;
   expectedOutcome: string;
 }
 ```

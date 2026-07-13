@@ -1,0 +1,128 @@
+<form class="@CssClass"
+      role="search"
+      aria-label="@AccessibleName"
+      aria-busy="@(IsLoading ? "true" : null)"
+      @onsubmit="HandleSearchAsync"
+      @onsubmit:preventDefault>
+    <div class="srs-search-filter__query">
+        <label for="@InputId">@SearchLabel</label>
+        <input id="@InputId"
+               name="@Name"
+               type="search"
+               value="@Query"
+               disabled="@IsUnavailable"
+               aria-invalid="@(HasError ? "true" : null)"
+               aria-describedby="@(HasError ? ErrorId : null)"
+               @oninput="HandleInputAsync" />
+    </div>
+
+    @if (FilterContent is not null)
+    {
+        <div class="srs-search-filter__filters">@FilterContent</div>
+    }
+
+    <div class="srs-search-filter__actions">
+        <button type="submit"
+                data-action="search"
+                disabled="@IsUnavailable">
+            @SubmitLabel
+        </button>
+        <button type="button"
+                data-action="clear"
+                disabled="@IsUnavailable"
+                @onclick="HandleClearAsync">
+            @ClearLabel
+        </button>
+    </div>
+
+    @if (IsLoading && !string.IsNullOrWhiteSpace(LoadingAnnouncement))
+    {
+        <p class="srs-search-filter__status" role="status">@LoadingAnnouncement</p>
+    }
+
+    @if (HasError)
+    {
+        <p class="srs-search-filter__error" id="@ErrorId" role="alert">@ErrorMessage</p>
+    }
+</form>
+
+@code {
+    [Parameter]
+    public string AccessibleName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string InputId { get; set; } = "search-query";
+
+    [Parameter]
+    public string Name { get; set; } = "query";
+
+    [Parameter]
+    public string SearchLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SubmitLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ClearLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Query { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> QueryChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnSearch { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingAnnouncement { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public RenderFragment? FilterContent { get; set; }
+
+    private bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private bool IsUnavailable => Disabled || IsLoading;
+
+    private string ErrorId => $"{InputId}-error";
+
+    private string CssClass =>
+        $"srs-search-filter{(Disabled ? " is-disabled" : string.Empty)}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+
+    private async Task HandleInputAsync(ChangeEventArgs args)
+    {
+        if (!IsUnavailable)
+        {
+            await QueryChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+        }
+    }
+
+    private async Task HandleSearchAsync()
+    {
+        if (!IsUnavailable)
+        {
+            await OnSearch.InvokeAsync();
+        }
+    }
+
+    private async Task HandleClearAsync()
+    {
+        if (!IsUnavailable)
+        {
+            await QueryChanged.InvokeAsync(string.Empty);
+            await OnClear.InvokeAsync();
+        }
+    }
+}

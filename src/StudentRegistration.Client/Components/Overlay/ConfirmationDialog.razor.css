@@ -1,0 +1,86 @@
+.srs-confirmation-dialog__backdrop {
+    align-items: center;
+    background: var(--srs-color-semantic-surface-muted);
+    display: flex;
+    inset: var(--srs-spacing-primitive-0);
+    justify-content: center;
+    padding: var(--srs-spacing-primitive-4);
+    position: fixed;
+    z-index: var(--srs-zIndex-dialog);
+}
+
+.srs-confirmation-dialog {
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    box-shadow: var(--srs-elevation-dialog);
+    color: var(--srs-color-semantic-text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: var(--srs-spacing-primitive-4);
+    margin: auto;
+    max-inline-size: var(--srs-sizing-dialog-maximum);
+    padding: var(--srs-spacing-primitive-6);
+}
+
+.srs-confirmation-dialog[aria-busy="true"] {
+    border-color: var(--srs-color-semantic-warning-text);
+}
+
+.srs-confirmation-dialog__title,
+.srs-confirmation-dialog__message {
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-confirmation-dialog__busy {
+    background: var(--srs-color-semantic-information-surface);
+    color: var(--srs-color-semantic-information-text);
+    padding: var(--srs-spacing-primitive-2);
+}
+
+.srs-confirmation-dialog__error {
+    background: var(--srs-color-semantic-danger-surface);
+    color: var(--srs-color-semantic-danger-text);
+    padding: var(--srs-spacing-primitive-2);
+}
+
+.srs-confirmation-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-2);
+    justify-content: flex-end;
+}
+
+.srs-confirmation-dialog__actions button {
+    background: var(--srs-color-component-button-secondary-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-small);
+    color: var(--srs-color-component-button-secondary-text);
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-4);
+}
+
+.srs-confirmation-dialog__actions button:hover {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-confirmation-dialog__actions button:active {
+    border-color: var(--srs-color-semantic-focus-ring);
+}
+
+.srs-confirmation-dialog__actions button:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-confirmation-dialog__actions button:disabled {
+    background: var(--srs-color-semantic-disabled-surface);
+    color: var(--srs-color-semantic-disabled-text);
+}
+
+.srs-confirmation-dialog__sentinel {
+    block-size: var(--srs-border-primitive-width);
+    inline-size: var(--srs-border-primitive-width);
+    overflow: hidden;
+    position: fixed;
+}

@@ -1,0 +1,80 @@
+<button type="button"
+        class="srs-group-card"
+        aria-label="@AccessibleName"
+        aria-pressed="@IsSelected.ToString().ToLowerInvariant()"
+        aria-describedby="@DisabledReasonId"
+        aria-busy="@IsLoading.ToString().ToLowerInvariant()"
+        data-state="@StateName"
+        disabled="@IsUnavailable"
+        @onclick="SelectAsync">
+    <span class="srs-group-card__heading">@Heading</span>
+    @ChildContent
+</button>
+
+@if (!string.IsNullOrWhiteSpace(DisabledReason))
+{
+    <p id="@DisabledReasonId" class="srs-group-card__reason">@DisabledReason</p>
+}
+
+@if (IsLoading && !string.IsNullOrWhiteSpace(LoadingText))
+{
+    <p class="srs-group-card__status" role="status">@LoadingText</p>
+}
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <p class="srs-group-card__error" role="alert">@ErrorMessage</p>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string GroupId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string AccessibleName { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSelected { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSelected { get; set; }
+
+    private bool IsUnavailable => IsDisabled || IsLoading;
+
+    private string? DisabledReasonId => string.IsNullOrWhiteSpace(DisabledReason)
+        ? null
+        : $"{GroupId}-disabled-reason";
+
+    private string StateName => IsLoading
+        ? "loading"
+        : !string.IsNullOrWhiteSpace(ErrorMessage)
+            ? "error"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+
+    private Task SelectAsync() => IsUnavailable
+        ? Task.CompletedTask
+        : OnSelected.InvokeAsync(GroupId);
+}

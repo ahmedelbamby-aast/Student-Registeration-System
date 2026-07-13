@@ -1,0 +1,78 @@
+.srs-search-filter {
+    display: grid;
+    gap: var(--srs-spacing-primitive-3);
+    padding: var(--srs-spacing-primitive-4);
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+}
+
+.srs-search-filter__query {
+    display: grid;
+    gap: var(--srs-spacing-primitive-2);
+}
+
+.srs-search-filter label {
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-search-filter input,
+.srs-search-filter button,
+.srs-search-filter select {
+    min-height: var(--srs-sizing-interactive-minimum);
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-semantic-surface-default);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font: var(--srs-typography-semantic-body);
+}
+
+.srs-search-filter input,
+.srs-search-filter button {
+    padding-inline: var(--srs-spacing-primitive-3);
+}
+
+.srs-search-filter__filters,
+.srs-search-filter__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-2);
+}
+
+.srs-search-filter button:hover:not(:disabled) {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-search-filter button:active:not(:disabled) {
+    color: var(--srs-color-component-button-primary-text);
+    background: var(--srs-color-component-button-primary-background);
+}
+
+.srs-search-filter :focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-search-filter.is-disabled {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+}
+
+.srs-search-filter.is-loading {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-search-filter.has-error {
+    color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+    border-color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-search-filter__status,
+.srs-search-filter__error {
+    margin: var(--srs-spacing-primitive-0);
+    font-size: var(--srs-typography-primitive-font-size-small);
+}

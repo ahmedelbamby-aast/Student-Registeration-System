@@ -1,0 +1,39 @@
+.srs-validation-summary {
+    padding: var(--srs-spacing-primitive-4);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+}
+
+.srs-validation-summary:focus-visible,
+.srs-validation-summary a:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-validation-summary a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--srs-sizing-interactive-minimum);
+    color: var(--srs-color-semantic-link);
+}
+
+.srs-validation-summary a:hover {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-validation-summary a:active {
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-validation-summary.is-loading {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+    border-color: var(--srs-color-semantic-information-text);
+}
+
+.srs-validation-summary.has-error {
+    color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+    border-color: var(--srs-color-semantic-danger-text);
+}

@@ -1,6 +1,11 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/StudentRegistration.Client/StudentRegistration.Client.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/StudentRegistration.AcceptanceTests/StudentRegistration.AcceptanceTests.csproj" />
+    <Project Path="tests/StudentRegistration.Client.UnitTests/StudentRegistration.Client.UnitTests.csproj" />
+    <Project Path="tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj" />
     <Project Path="tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj" />
     <Project Path="tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj" />
     <Project Path="tests/StudentRegistration.SpecificationTests/StudentRegistration.SpecificationTests.csproj" />

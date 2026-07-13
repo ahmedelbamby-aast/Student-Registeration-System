@@ -1,0 +1,189 @@
+@if (IsOpen)
+{
+    <div class="srs-confirmation-dialog__backdrop" data-dialog-backdrop="@DialogId">
+        <span class="srs-confirmation-dialog__sentinel"
+              tabindex="0"
+              data-focus-boundary="start"
+              @onfocus="FocusLastAsync"></span>
+
+        <dialog id="@DialogId"
+                @ref="_dialog"
+                class="srs-confirmation-dialog"
+                open
+                tabindex="-1"
+                aria-modal="true"
+                aria-labelledby="@TitleId"
+                aria-describedby="@DescriptionId"
+                aria-busy="@(IsBusy ? "true" : null)"
+                aria-disabled="@(IsDisabled ? "true" : null)"
+                data-state="@StateName"
+                @onkeydown="HandleKeyDown"
+                @onkeydown:stopPropagation="true">
+            <h2 id="@TitleId" class="srs-confirmation-dialog__title">@Title</h2>
+            <p id="@DescriptionId" class="srs-confirmation-dialog__message">@Message</p>
+
+            @if (IsBusy)
+            {
+                <div class="srs-confirmation-dialog__busy" role="status" aria-live="polite">
+                    @BusyLabel
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="srs-confirmation-dialog__error" role="alert">@ErrorMessage</div>
+            }
+
+            <div class="srs-confirmation-dialog__actions">
+                <button @ref="_cancelButton"
+                        type="button"
+                        data-action="cancel"
+                        autofocus
+                        disabled="@IsDisabled"
+                        @onclick="HandleCancelAsync">@CancelLabel</button>
+                <button @ref="_confirmButton"
+                        type="button"
+                        data-action="confirm"
+                        disabled="@ConfirmBlocked"
+                        @onclick="HandleConfirmAsync">@ConfirmLabel</button>
+            </div>
+        </dialog>
+
+        <span class="srs-confirmation-dialog__sentinel"
+              tabindex="0"
+              data-focus-boundary="end"
+              @onfocus="FocusFirstAsync"></span>
+    </div>
+}
+
+@code {
+    private ElementReference _dialog;
+    private ElementReference _cancelButton;
+    private ElementReference _confirmButton;
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter, EditorRequired]
+    public string DialogId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string TitleId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string DescriptionId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ConfirmLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string CancelLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsBusy { get; set; }
+
+    [Parameter]
+    public string? BusyLabel { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public bool IsConfirmDisabled { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback FocusRestoreRequested { get; set; }
+
+    private bool ConfirmBlocked => IsDisabled || IsBusy || IsConfirmDisabled;
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsBusy
+            ? "loading"
+            : IsDisabled || IsConfirmDisabled
+                ? "disabled"
+                : "default";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(DialogId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(TitleId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(DescriptionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Message);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ConfirmLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(CancelLabel);
+
+        if (IsBusy)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(BusyLabel);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key == "Escape")
+        {
+            await HandleCancelAsync();
+        }
+    }
+
+    private async Task HandleConfirmAsync()
+    {
+        if (ConfirmBlocked)
+        {
+            return;
+        }
+
+        await OnConfirm.InvokeAsync();
+        await FocusRestoreRequested.InvokeAsync();
+    }
+
+    private async Task HandleCancelAsync()
+    {
+        if (IsDisabled)
+        {
+            return;
+        }
+
+        await OnCancel.InvokeAsync();
+        await FocusRestoreRequested.InvokeAsync();
+    }
+
+    private async Task FocusFirstAsync()
+    {
+        if (IsDisabled)
+        {
+            await _dialog.FocusAsync();
+            return;
+        }
+
+        await _cancelButton.FocusAsync();
+    }
+
+    private async Task FocusLastAsync()
+    {
+        if (ConfirmBlocked)
+        {
+            await FocusFirstAsync();
+            return;
+        }
+
+        await _confirmButton.FocusAsync();
+    }
+}

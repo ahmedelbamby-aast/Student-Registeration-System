@@ -1,0 +1,89 @@
+.srs-app-shell {
+    min-height: 100%;
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-semantic-surface-default);
+    font: var(--srs-typography-semantic-body);
+}
+
+.srs-skip-link,
+.srs-app-shell a {
+    color: var(--srs-color-semantic-link);
+}
+
+.srs-skip-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-4);
+}
+
+.srs-app-shell a:hover {
+    color: var(--srs-color-semantic-information-text);
+}
+
+.srs-app-shell a:active {
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-skip-link:focus,
+.srs-app-shell a:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-app-shell__header,
+.srs-app-shell__footer,
+.srs-app-shell main {
+    padding: var(--srs-spacing-primitive-4);
+}
+
+.srs-app-shell__header,
+.srs-app-shell__footer {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-app-shell__logo {
+    display: block;
+    max-width: min(100%, var(--srs-sizing-content-readable));
+    height: auto;
+}
+
+.srs-app-shell__identity {
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-app-shell__context {
+    display: grid;
+    gap: var(--srs-spacing-primitive-2);
+    max-width: var(--srs-sizing-content-wide);
+    margin-block: var(--srs-spacing-primitive-4);
+}
+
+.srs-app-shell__context div,
+.srs-app-shell__context dd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-2);
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-app-shell__context dt {
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-app-shell__state {
+    padding: var(--srs-spacing-primitive-4);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    background: var(--srs-color-component-panel-background);
+}
+
+.srs-app-shell__state--loading {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-app-shell__state--error {
+    color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+}

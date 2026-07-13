@@ -1,0 +1,101 @@
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.UX
+
+<section class="@CssClass"
+         aria-labelledby="@HeadingId"
+         role="@LiveRole"
+         aria-live="@LiveMode"
+         aria-busy="@(State == RouteUiState.Loading ? "true" : null)"
+         data-state="@StateName"
+         data-code="@Status!.Code">
+    <h2 id="@HeadingId" class="srs-state-panel__heading">@Status.Heading</h2>
+    <p class="srs-state-panel__message">@Status.Message</p>
+
+    @if (Status.ReferenceId is not null)
+    {
+        <p class="srs-state-panel__reference">
+            <span>@ReferenceLabel</span>
+            <span>@Status.ReferenceId</span>
+        </p>
+    }
+
+    @if (Status.NextActions.Count > 0)
+    {
+        <ul class="srs-state-panel__actions">
+            @foreach (var action in Status.NextActions)
+            {
+                <li>
+                    @if (ActionsDisabled)
+                    {
+                        <span class="srs-state-panel__disabled-action" aria-disabled="true">
+                            @action.Label
+                        </span>
+                    }
+                    else
+                    {
+                        <a class="srs-state-panel__action"
+                           href="@action.Target"
+                           data-action-id="@action.ActionId">@action.Label</a>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    public enum AnnouncementMode
+    {
+        None,
+        Polite,
+        Assertive
+    }
+
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public UiStatus? Status { get; set; }
+
+    [Parameter]
+    public RouteUiState State { get; set; }
+
+    [Parameter]
+    public AnnouncementMode Announcement { get; set; }
+
+    [Parameter]
+    public string? ReferenceLabel { get; set; }
+
+    [Parameter]
+    public bool ActionsDisabled { get; set; }
+
+    private string StateName => State.ToString().ToLowerInvariant();
+
+    private string CssClass =>
+        $"srs-state-panel srs-state-panel--{Status!.Severity.ToString().ToLowerInvariant()}";
+
+    private string? LiveRole =>
+        Status!.Severity == UiStatusSeverity.Error || Announcement == AnnouncementMode.Assertive
+            ? "alert"
+            : Announcement == AnnouncementMode.Polite || State == RouteUiState.Loading
+                ? "status"
+                : null;
+
+    private string? LiveMode =>
+        Status!.Severity == UiStatusSeverity.Error || Announcement == AnnouncementMode.Assertive
+            ? "assertive"
+            : Announcement == AnnouncementMode.Polite || State == RouteUiState.Loading
+                ? "polite"
+                : null;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(HeadingId);
+        ArgumentNullException.ThrowIfNull(Status);
+
+        if (Status.ReferenceId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ReferenceLabel);
+        }
+    }
+}

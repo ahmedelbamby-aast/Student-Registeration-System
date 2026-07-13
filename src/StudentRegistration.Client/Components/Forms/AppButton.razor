@@ -1,0 +1,59 @@
+<button @attributes="AdditionalAttributes"
+        class="@CssClass"
+        type="@Type"
+        disabled="@IsUnavailable"
+        aria-label="@(string.IsNullOrWhiteSpace(AccessibleLabel) ? null : AccessibleLabel)"
+        aria-describedby="@(string.IsNullOrWhiteSpace(DescribedBy) ? null : DescribedBy)"
+        aria-busy="@(IsLoading ? "true" : null)"
+        @onclick="HandleClickAsync">
+    <span class="srs-button__content">@ChildContent</span>
+    @if (IsLoading && !string.IsNullOrWhiteSpace(LoadingAnnouncement))
+    {
+        <span class="srs-button__status" role="status">@LoadingAnnouncement</span>
+    }
+</button>
+
+@code {
+    [Parameter]
+    public string Type { get; set; } = "button";
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public bool HasError { get; set; }
+
+    [Parameter]
+    public string? AccessibleLabel { get; set; }
+
+    [Parameter]
+    public string? DescribedBy { get; set; }
+
+    [Parameter]
+    public string? LoadingAnnouncement { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsUnavailable => Disabled || IsLoading;
+
+    private string CssClass =>
+        $"srs-button{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+
+    private async Task HandleClickAsync(MouseEventArgs args)
+    {
+        if (!IsUnavailable)
+        {
+            await OnClick.InvokeAsync(args);
+        }
+    }
+}

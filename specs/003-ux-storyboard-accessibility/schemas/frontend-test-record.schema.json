@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/frontend-test-record/1.0",
+  "title": "SPEC-003 FrontendTestRecord",
+  "description": "Closed deterministic frontend evidence-plan record for one canonical route.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "testId",
+    "routeId",
+    "requirementIds",
+    "type",
+    "fixture",
+    "fixtureVersion",
+    "expectedOutcome"
+  ],
+  "properties": {
+    "testId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(?:-[A-Z0-9]+)+$"
+    },
+    "routeId": {
+      "type": "string",
+      "pattern": "^(AUTH|STU|ADM|STF|SYS)-[0-9]{2}$"
+    },
+    "requirementIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "type": {
+      "enum": ["component", "contract", "e2e", "accessibility", "visual"]
+    },
+    "fixture": { "type": "string", "minLength": 1 },
+    "fixtureVersion": { "type": "string", "minLength": 1 },
+    "expectedOutcome": { "type": "string", "minLength": 1 }
+  }
+}

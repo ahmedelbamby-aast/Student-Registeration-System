@@ -1,0 +1,132 @@
+<nav class="srs-pagination"
+     aria-label="@AccessibleLabel"
+     aria-busy="@(IsLoading ? "true" : null)"
+     aria-disabled="@(IsDisabled ? "true" : null)"
+     data-state="@StateName">
+    @if (IsLoading)
+    {
+        <div class="srs-pagination__status" role="status" aria-live="polite">@LoadingLabel</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="srs-pagination__error" role="alert">@ErrorMessage</div>
+    }
+
+    <div class="srs-pagination__controls">
+        <button type="button"
+                data-page-action="previous"
+                disabled="@(!CanMoveTo(CurrentPage - 1))"
+                @onclick="() => RequestPageAsync(CurrentPage - 1)">@PreviousLabel</button>
+
+        @foreach (var page in VisiblePages)
+        {
+            <button type="button"
+                    data-page="@(page)"
+                    aria-current="@(page == CurrentPage ? "page" : null)"
+                    aria-label="@CurrentAriaLabel(page)"
+                    disabled="@(!CanMoveTo(page) || page == CurrentPage)"
+                    @onclick="() => RequestPageAsync(page)">@PageText(page)</button>
+        }
+
+        <button type="button"
+                data-page-action="next"
+                disabled="@(!CanMoveTo(CurrentPage + 1))"
+                @onclick="() => RequestPageAsync(CurrentPage + 1)">@NextLabel</button>
+    </div>
+</nav>
+
+@code {
+    [Parameter, EditorRequired]
+    public string AccessibleLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string PreviousLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string NextLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? LoadingLabel { get; set; }
+
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    public int TotalPages { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<int> VisiblePages { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public Func<int, string>? PageLabel { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<int, int, string>? CurrentPageLabel { get; set; }
+
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private bool InteractionBlocked =>
+        IsDisabled || IsLoading || !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(AccessibleLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(PreviousLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(NextLabel);
+        ArgumentNullException.ThrowIfNull(VisiblePages);
+        ArgumentNullException.ThrowIfNull(PageLabel);
+        ArgumentNullException.ThrowIfNull(CurrentPageLabel);
+
+        if (TotalPages < 1 || CurrentPage < 1 || CurrentPage > TotalPages)
+        {
+            throw new ArgumentOutOfRangeException(nameof(CurrentPage));
+        }
+
+        if (VisiblePages.Count == 0
+            || VisiblePages.Any(page => page < 1 || page > TotalPages)
+            || VisiblePages.Distinct().Count() != VisiblePages.Count
+            || !VisiblePages.Contains(CurrentPage))
+        {
+            throw new ArgumentException(
+                "Visible pages must be unique, bounded, and contain the current page.",
+                nameof(VisiblePages));
+        }
+
+        if (IsLoading)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(LoadingLabel);
+        }
+    }
+
+    private bool CanMoveTo(int page) =>
+        !InteractionBlocked && page >= 1 && page <= TotalPages;
+
+    private string PageText(int page) => PageLabel!(page);
+
+    private string? CurrentAriaLabel(int page) => page == CurrentPage
+        ? CurrentPageLabel!(page, TotalPages)
+        : null;
+
+    private Task RequestPageAsync(int page) => CanMoveTo(page) && page != CurrentPage
+        ? PageChanged.InvokeAsync(page)
+        : Task.CompletedTask;
+}

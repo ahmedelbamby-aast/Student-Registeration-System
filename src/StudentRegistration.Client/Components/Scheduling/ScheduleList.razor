@@ -1,0 +1,149 @@
+<section id="@ComponentId"
+         class="srs-schedule-list"
+         role="region"
+         aria-labelledby="@HeadingId"
+         aria-describedby="@EquivalentCalendarId"
+         aria-live="polite"
+         aria-busy="@IsLoading.ToString().ToLowerInvariant()"
+         aria-disabled="@IsDisabled.ToString().ToLowerInvariant()"
+         data-state="@StateName">
+    <h2 id="@HeadingId">@Heading</h2>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <p class="srs-schedule-list__error" role="alert">@ErrorMessage</p>
+    }
+    else if (IsLoading && !string.IsNullOrWhiteSpace(LoadingText))
+    {
+        <p class="srs-schedule-list__status" role="status">@LoadingText</p>
+    }
+    else if (Meetings.Count == 0)
+    {
+        @if (!string.IsNullOrWhiteSpace(EmptyText))
+        {
+            <p class="srs-schedule-list__empty">@EmptyText</p>
+        }
+    }
+    else
+    {
+        @if (IsDisabled && !string.IsNullOrWhiteSpace(DisabledReason))
+        {
+            <p class="srs-schedule-list__disabled" data-disabled-reason>@DisabledReason</p>
+        }
+
+        <ol class="srs-schedule-list__items">
+            @foreach (var meeting in Meetings)
+            {
+                <li data-meeting-id="@meeting.MeetingId">
+                    <h3>
+                        @if (IsDisabled)
+                        {
+                            <span aria-label="@meeting.DetailsAccessibleName" aria-disabled="true">
+                                @meeting.SubjectCode @meeting.SubjectName
+                            </span>
+                        }
+                        else
+                        {
+                            <a href="@meeting.DetailsHref" aria-label="@meeting.DetailsAccessibleName">
+                                @meeting.SubjectCode @meeting.SubjectName
+                            </a>
+                        }
+                    </h3>
+                    <dl>
+                        <div><dt>@GroupLabel</dt><dd>@meeting.GroupCode</dd></div>
+                        <div><dt>@ActivityKindLabel</dt><dd>@meeting.ActivityKind</dd></div>
+                        @if (!string.IsNullOrWhiteSpace(meeting.LecturerName))
+                        {
+                            <div><dt>@LecturerLabel</dt><dd>@meeting.LecturerName</dd></div>
+                        }
+                        @if (meeting.TeachingAssistantNames.Count > 0)
+                        {
+                            <div>
+                                <dt>@TeachingAssistantsLabel</dt>
+                                <dd>@string.Join(", ", meeting.TeachingAssistantNames)</dd>
+                            </div>
+                        }
+                        <div><dt>@LocationLabel</dt><dd>@meeting.Location</dd></div>
+                        <div><dt>@DayLabel</dt><dd>@meeting.Day</dd></div>
+                        <div><dt>@StartLabel</dt><dd><time>@meeting.StartsAt</time></dd></div>
+                        <div><dt>@EndLabel</dt><dd><time>@meeting.EndsAt</time></dd></div>
+                        <div><dt>@TimezoneLabel</dt><dd>@meeting.Timezone</dd></div>
+                        <div><dt>@ConflictLabel</dt><dd>@meeting.ConflictStatusText</dd></div>
+                    </dl>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ComponentId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string EquivalentCalendarId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string GroupLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ActivityKindLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string LecturerLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string TeachingAssistantsLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string LocationLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string DayLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string StartLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string EndLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string TimezoneLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ConflictLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> Meetings { get; set; } = [];
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public string? EmptyText { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private string HeadingId => $"{ComponentId}-heading";
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+}

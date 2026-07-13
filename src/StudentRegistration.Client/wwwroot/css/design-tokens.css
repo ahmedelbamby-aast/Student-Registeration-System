@@ -1,0 +1,103 @@
+:root {
+    color-scheme: light;
+    --srs-color-primitive-white: #FFFFFF;
+    --srs-color-primitive-gray-50: #F8F9FA;
+    --srs-color-primitive-gray-100: #F1F3F5;
+    --srs-color-primitive-gray-300: #CED4DA;
+    --srs-color-primitive-gray-600: #495057;
+    --srs-color-primitive-gray-700: #343A40;
+    --srs-color-primitive-gray-900: #1A1D20;
+    --srs-color-primitive-blue-50: #E7F1FF;
+    --srs-color-primitive-blue-700: #0B5CAD;
+    --srs-color-primitive-blue-900: #0B3D91;
+    --srs-color-primitive-green-50: #D1FADF;
+    --srs-color-primitive-green-800: #0F5132;
+    --srs-color-primitive-amber-50: #FFF4CE;
+    --srs-color-primitive-amber-900: #5F370E;
+    --srs-color-primitive-red-50: #FEE4E2;
+    --srs-color-primitive-red-800: #8A1C13;
+    --srs-color-semantic-surface-default: #FFFFFF;
+    --srs-color-semantic-surface-muted: #F1F3F5;
+    --srs-color-semantic-text-primary: #1A1D20;
+    --srs-color-semantic-text-secondary: #495057;
+    --srs-color-semantic-border: #495057;
+    --srs-color-semantic-link: #0B5CAD;
+    --srs-color-semantic-focus-ring: #0B5CAD;
+    --srs-color-semantic-information-surface: #E7F1FF;
+    --srs-color-semantic-information-text: #0B3D91;
+    --srs-color-semantic-success-surface: #D1FADF;
+    --srs-color-semantic-success-text: #0F5132;
+    --srs-color-semantic-warning-surface: #FFF4CE;
+    --srs-color-semantic-warning-text: #5F370E;
+    --srs-color-semantic-danger-surface: #FEE4E2;
+    --srs-color-semantic-danger-text: #8A1C13;
+    --srs-color-semantic-disabled-surface: #CED4DA;
+    --srs-color-semantic-disabled-text: #343A40;
+    --srs-color-component-button-primary-background: #1A1D20;
+    --srs-color-component-button-primary-text: #FFFFFF;
+    --srs-color-component-button-secondary-background: #FFFFFF;
+    --srs-color-component-button-secondary-text: #1A1D20;
+    --srs-color-component-panel-background: #FFFFFF;
+    --srs-color-component-panel-border: #495057;
+    --srs-typography-primitive-font-family-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --srs-typography-primitive-font-size-small: 0.875rem;
+    --srs-typography-primitive-font-size-body: 1rem;
+    --srs-typography-primitive-font-size-heading: 1.5rem;
+    --srs-typography-primitive-line-height-compact: 1.25;
+    --srs-typography-primitive-line-height-body: 1.5;
+    --srs-typography-semantic-body: 1rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    --srs-typography-component-control-weight: 600;
+    --srs-spacing-primitive-0: 0;
+    --srs-spacing-primitive-1: 0.25rem;
+    --srs-spacing-primitive-2: 0.5rem;
+    --srs-spacing-primitive-3: 0.75rem;
+    --srs-spacing-primitive-4: 1rem;
+    --srs-spacing-primitive-6: 1.5rem;
+    --srs-spacing-primitive-8: 2rem;
+    --srs-sizing-interactive-minimum: 2.75rem;
+    --srs-sizing-content-readable: 70ch;
+    --srs-sizing-content-wide: 90rem;
+    --srs-sizing-dialog-maximum: 40rem;
+    --srs-sizing-progress-thickness: 0.25rem;
+    --srs-border-primitive-width: 0.0625rem;
+    --srs-border-primitive-width-strong: 0.125rem;
+    --srs-border-primitive-radius-small: 0.25rem;
+    --srs-border-primitive-radius-medium: 0.5rem;
+    --srs-focus-outline-width: 0.1875rem;
+    --srs-focus-outline-offset: 0.1875rem;
+    --srs-focus-outline-style: solid;
+    --srs-focus-ring-color: #0B5CAD;
+    --srs-elevation-base: none;
+    --srs-elevation-overlay: 0 0.25rem 1rem rgba(0, 0, 0, 0.18);
+    --srs-elevation-dialog: 0 0.5rem 2rem rgba(0, 0, 0, 0.24);
+    --srs-motion-duration-instant: 0ms;
+    --srs-motion-duration-feedback: 120ms;
+    --srs-motion-duration-overlay: 180ms;
+    --srs-motion-easing-standard: ease-out;
+    --srs-breakpoint-design-320: 320;
+    --srs-breakpoint-design-375: 375;
+    --srs-breakpoint-design-768: 768;
+    --srs-breakpoint-design-1024: 1024;
+    --srs-breakpoint-design-1280: 1280;
+    --srs-breakpoint-design-1920: 1920;
+    --srs-zIndex-base: 0;
+    --srs-zIndex-sticky: 100;
+    --srs-zIndex-overlay: 200;
+    --srs-zIndex-dialog: 300;
+    --srs-zIndex-urgent-feedback: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --srs-motion-duration-feedback: 0ms;
+        --srs-motion-duration-overlay: 0ms;
+    }
+}
+
+@media (forced-colors: active) {
+    :root {
+        --srs-color-semantic-border: CanvasText;
+        --srs-color-semantic-focus-ring: Highlight;
+        --srs-focus-ring-color: Highlight;
+    }
+}

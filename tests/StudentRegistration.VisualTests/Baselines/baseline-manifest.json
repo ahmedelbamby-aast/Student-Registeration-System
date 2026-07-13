@@ -1,0 +1,27 @@
+{
+  "version": "visual-baselines/1.0.0",
+  "status": "not-collected-routes-design-only",
+  "automaticReplacementAllowed": false,
+  "approvalAuthority": "Ahmed ELbamby",
+  "visualViewports": [
+    375,
+    768,
+    1280,
+    1920
+  ],
+  "requiredEvidenceFields": [
+    "routeId",
+    "state",
+    "browserName",
+    "browserBuild",
+    "engine",
+    "osImage",
+    "viewport",
+    "tokenVersion",
+    "fixtureVersion",
+    "artifactSha256",
+    "approvedBy",
+    "approvedOn"
+  ],
+  "baselines": []
+}

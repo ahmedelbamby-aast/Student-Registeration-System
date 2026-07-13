@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/page-design-record/1.0",
+  "title": "SPEC-003 PageDesignRecord",
+  "description": "Closed design, ownership, responsive, state, accessibility and test-readiness record for one canonical route.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "routeId",
+    "routeTemplate",
+    "pageName",
+    "designOwnerSpec",
+    "implementationOwnerSpec",
+    "ownerSpecs",
+    "actors",
+    "purpose",
+    "informationHierarchy",
+    "responsiveWireframes",
+    "components",
+    "dataContracts",
+    "actions",
+    "navigationTransitions",
+    "states",
+    "responsiveWidths",
+    "focusOrder",
+    "testIds",
+    "contributorContractVersions",
+    "readinessState",
+    "approvalVersion"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "routeId": {
+      "type": "string",
+      "pattern": "^(AUTH|STU|ADM|STF|SYS)-[0-9]{2}$"
+    },
+    "routeTemplate": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "pageName": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]*Page\\.razor$"
+    },
+    "designOwnerSpec": { "const": "SPEC-003" },
+    "implementationOwnerSpec": { "$ref": "#/$defs/specId" },
+    "ownerSpecs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/specId" }
+    },
+    "actors": { "$ref": "#/$defs/nonemptyStringArray" },
+    "purpose": { "$ref": "#/$defs/nonemptyString" },
+    "informationHierarchy": { "$ref": "#/$defs/nonemptyStringArray" },
+    "responsiveWireframes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["320", "375", "768", "1024", "1280", "1920"],
+      "properties": {
+        "320": { "$ref": "#/$defs/nonemptyString" },
+        "375": { "$ref": "#/$defs/nonemptyString" },
+        "768": { "$ref": "#/$defs/nonemptyString" },
+        "1024": { "$ref": "#/$defs/nonemptyString" },
+        "1280": { "$ref": "#/$defs/nonemptyString" },
+        "1920": { "$ref": "#/$defs/nonemptyString" }
+      }
+    },
+    "components": { "$ref": "#/$defs/nonemptyStringArray" },
+    "dataContracts": { "$ref": "#/$defs/nonemptyStringArray" },
+    "actions": { "$ref": "#/$defs/nonemptyStringArray" },
+    "navigationTransitions": { "$ref": "#/$defs/nonemptyStringArray" },
+    "states": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": { "$ref": "#/$defs/uiStateCase" }
+    },
+    "responsiveWidths": {
+      "const": [320, 375, 768, 1024, 1280, 1920]
+    },
+    "focusOrder": { "$ref": "#/$defs/nonemptyStringArray" },
+    "testIds": { "$ref": "#/$defs/nonemptyStringArray" },
+    "contributorContractVersions": {
+      "type": "object",
+      "propertyNames": { "pattern": "^SPEC-(00[1-9]|01[0-8])$" },
+      "additionalProperties": { "$ref": "#/$defs/nonemptyString" }
+    },
+    "readinessState": {
+      "enum": ["design-only", "implementation-ready"]
+    },
+    "approvalVersion": { "$ref": "#/$defs/nonemptyString" }
+  },
+  "$defs": {
+    "specId": {
+      "type": "string",
+      "pattern": "^SPEC-(00[1-9]|01[0-8])$"
+    },
+    "nonemptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonemptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonemptyString" }
+    },
+    "uiStateCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "applicability",
+        "fixture",
+        "fixtureVersion",
+        "expectedContent",
+        "expectedFocusTarget",
+        "liveRegion",
+        "nextActions",
+        "testIds"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "loading",
+            "empty",
+            "success",
+            "validation-error",
+            "service-error",
+            "unauthorized",
+            "session-expired",
+            "stale",
+            "offline"
+          ]
+        },
+        "applicability": {
+          "enum": ["required", "not-applicable"]
+        },
+        "reason": { "$ref": "#/$defs/nonemptyString" },
+        "fixture": { "$ref": "#/$defs/nonemptyString" },
+        "fixtureVersion": { "$ref": "#/$defs/nonemptyString" },
+        "expectedContent": { "$ref": "#/$defs/nonemptyStringArray" },
+        "expectedFocusTarget": { "$ref": "#/$defs/nonemptyString" },
+        "liveRegion": { "enum": ["none", "polite", "assertive"] },
+        "nextActions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonemptyString" }
+        },
+        "testIds": { "$ref": "#/$defs/nonemptyStringArray" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "applicability": { "const": "not-applicable" } },
+            "required": ["applicability"]
+          },
+          "then": { "required": ["reason"] }
+        }
+      ]
+    }
+  }
+}

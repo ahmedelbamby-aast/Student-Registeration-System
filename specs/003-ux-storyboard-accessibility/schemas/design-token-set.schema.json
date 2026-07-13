@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/design-token-set/1.0",
+  "title": "SPEC-003 DesignTokenSet",
+  "description": "Immutable approved neutral design-token contract. It contains no values inferred from the AASTMT logo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "version",
+    "scope",
+    "brandValuesDerivedFromLogo",
+    "approval",
+    "tokens"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "scope": { "const": "neutral" },
+    "brandValuesDerivedFromLogo": { "const": false },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "approvedBy", "approvedOn", "approvalVersion"],
+      "properties": {
+        "status": { "const": "approved" },
+        "approvedBy": { "const": "Ahmed ELbamby" },
+        "approvedOn": { "type": "string", "format": "date" },
+        "approvalVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "color",
+        "typography",
+        "spacing",
+        "sizing",
+        "border",
+        "focus",
+        "elevation",
+        "motion",
+        "breakpoint",
+        "zIndex"
+      ],
+      "properties": {
+        "color": { "$ref": "#/$defs/tokenMap" },
+        "typography": { "$ref": "#/$defs/tokenMap" },
+        "spacing": { "$ref": "#/$defs/tokenMap" },
+        "sizing": { "$ref": "#/$defs/tokenMap" },
+        "border": { "$ref": "#/$defs/tokenMap" },
+        "focus": { "$ref": "#/$defs/tokenMap" },
+        "elevation": { "$ref": "#/$defs/tokenMap" },
+        "motion": { "$ref": "#/$defs/tokenMap" },
+        "breakpoint": { "$ref": "#/$defs/tokenMap" },
+        "zIndex": { "$ref": "#/$defs/tokenMap" }
+      }
+    }
+  },
+  "$defs": {
+    "tokenMap": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string", "minLength": 1 },
+          { "type": "number" }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+.srs-state-panel {
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    color: var(--srs-color-semantic-text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: var(--srs-spacing-primitive-3);
+    max-inline-size: var(--srs-sizing-content-readable);
+    padding: var(--srs-spacing-primitive-4);
+}
+
+.srs-state-panel--information {
+    background: var(--srs-color-semantic-information-surface);
+    color: var(--srs-color-semantic-information-text);
+}
+
+.srs-state-panel--success {
+    background: var(--srs-color-semantic-success-surface);
+    color: var(--srs-color-semantic-success-text);
+}
+
+.srs-state-panel--warning {
+    background: var(--srs-color-semantic-warning-surface);
+    color: var(--srs-color-semantic-warning-text);
+}
+
+.srs-state-panel--error {
+    background: var(--srs-color-semantic-danger-surface);
+    color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-state-panel[aria-busy="true"] {
+    border-color: var(--srs-color-semantic-information-text);
+}
+
+.srs-state-panel__heading,
+.srs-state-panel__message,
+.srs-state-panel__reference,
+.srs-state-panel__actions {
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-state-panel__reference,
+.srs-state-panel__actions {
+    display: flex;
+    gap: var(--srs-spacing-primitive-2);
+}
+
+.srs-state-panel__actions {
+    flex-wrap: wrap;
+    list-style: none;
+    padding: var(--srs-spacing-primitive-0);
+}
+
+.srs-state-panel__action {
+    color: var(--srs-color-semantic-link);
+    display: inline-block;
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2);
+}
+
+.srs-state-panel__action:hover {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-state-panel__action:active {
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-state-panel__action:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-state-panel__disabled-action[aria-disabled="true"] {
+    background: var(--srs-color-semantic-disabled-surface);
+    color: var(--srs-color-semantic-disabled-text);
+    display: inline-block;
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2);
+}

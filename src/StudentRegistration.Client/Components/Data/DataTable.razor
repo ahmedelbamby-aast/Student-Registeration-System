@@ -1,0 +1,195 @@
+<div class="srs-data-table__viewport">
+    <table class="srs-data-table"
+           data-table-id="@TableId"
+           data-state="@StateName"
+           aria-busy="@(IsLoading ? "true" : null)"
+           aria-disabled="@(IsDisabled ? "true" : null)">
+        <caption>@Caption</caption>
+        <thead>
+            <tr>
+                @foreach (var column in Columns)
+                {
+                    <th scope="col" aria-sort="@SortAria(column)">
+                        @if (column.Sortable)
+                        {
+                            <button type="button"
+                                    disabled="@InteractionBlocked"
+                                    data-sort-key="@column.Key"
+                                    @onclick="() => RequestSortAsync(column.Key)">@column.Heading</button>
+                        }
+                        else
+                        {
+                            @column.Heading
+                        }
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <tr>
+                    <td colspan="@Columns.Count">
+                        <div role="alert" data-table-state="error">@ErrorMessage</div>
+                    </td>
+                </tr>
+            }
+            else if (IsLoading)
+            {
+                <tr>
+                    <td colspan="@Columns.Count">
+                        <div role="status" aria-live="polite" data-table-state="loading">
+                            @LoadingContent
+                        </div>
+                    </td>
+                </tr>
+            }
+            else if (IsEmpty)
+            {
+                <tr>
+                    <td colspan="@Columns.Count">
+                        <div data-table-state="empty">@EmptyContent</div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @BodyContent
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    public enum SortDirection
+    {
+        Ascending,
+        Descending
+    }
+
+    public sealed class ColumnDefinition
+    {
+        public ColumnDefinition(string key, string heading, bool sortable)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+            ArgumentException.ThrowIfNullOrWhiteSpace(heading);
+
+            Key = key;
+            Heading = heading;
+            Sortable = sortable;
+        }
+
+        public string Key { get; }
+
+        public string Heading { get; }
+
+        public bool Sortable { get; }
+    }
+
+    [Parameter, EditorRequired]
+    public string TableId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Caption { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ColumnDefinition> Columns { get; set; } = [];
+
+    [Parameter]
+    public string? SortedColumnKey { get; set; }
+
+    [Parameter]
+    public SortDirection? Direction { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SortRequested { get; set; }
+
+    [Parameter]
+    public RenderFragment? BodyContent { get; set; }
+
+    [Parameter]
+    public bool IsEmpty { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private bool InteractionBlocked =>
+        IsDisabled || IsLoading || !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsEmpty
+                ? "empty"
+                : IsDisabled
+                    ? "disabled"
+                    : "default";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(TableId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Caption);
+        ArgumentNullException.ThrowIfNull(Columns);
+
+        if (Columns.Count == 0 || Columns.Any(column => column is null))
+        {
+            throw new ArgumentException("At least one non-null column is required.", nameof(Columns));
+        }
+
+        if (Columns.Select(column => column.Key).Distinct(StringComparer.Ordinal).Count() != Columns.Count)
+        {
+            throw new ArgumentException("Column keys must be unique.", nameof(Columns));
+        }
+
+        if (IsLoading)
+        {
+            ArgumentNullException.ThrowIfNull(LoadingContent);
+        }
+        else if (IsEmpty)
+        {
+            ArgumentNullException.ThrowIfNull(EmptyContent);
+        }
+        else if (string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            ArgumentNullException.ThrowIfNull(BodyContent);
+        }
+
+        if (SortedColumnKey is not null
+            && !Columns.Any(column => column.Sortable && column.Key == SortedColumnKey))
+        {
+            throw new ArgumentException("The sorted column must exist and be sortable.", nameof(SortedColumnKey));
+        }
+
+        if (SortedColumnKey is null != Direction is null)
+        {
+            throw new ArgumentException("Sort column and direction must be supplied together.");
+        }
+    }
+
+    private string? SortAria(ColumnDefinition column)
+    {
+        if (column.Key != SortedColumnKey)
+        {
+            return null;
+        }
+
+        return Direction == SortDirection.Ascending ? "ascending" : "descending";
+    }
+
+    private Task RequestSortAsync(string key) => InteractionBlocked
+        ? Task.CompletedTask
+        : SortRequested.InvokeAsync(key);
+}

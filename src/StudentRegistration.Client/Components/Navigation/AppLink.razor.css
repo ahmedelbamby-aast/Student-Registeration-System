@@ -1,0 +1,47 @@
+.srs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--srs-spacing-primitive-2);
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-2);
+    color: var(--srs-color-semantic-link);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-surface-default);
+    border-radius: var(--srs-border-primitive-radius-small);
+}
+
+.srs-link:hover:not([aria-disabled='true']) {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-link:active:not([aria-disabled='true']),
+.srs-link.is-active {
+    color: var(--srs-color-semantic-text-primary);
+    border-color: var(--srs-color-semantic-border);
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-link:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-link[aria-disabled='true'] {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+}
+
+.srs-link.is-loading {
+    color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-link.has-error {
+    color: var(--srs-color-semantic-danger-text);
+    border-color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+}
+
+.srs-link__status {
+    font-size: var(--srs-typography-primitive-font-size-small);
+}

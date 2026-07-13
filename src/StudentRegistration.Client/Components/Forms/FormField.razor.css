@@ -1,0 +1,62 @@
+.srs-form-field {
+    display: grid;
+    gap: var(--srs-spacing-primitive-2);
+    color: var(--srs-color-semantic-text-primary);
+}
+
+.srs-form-field:hover .srs-form-field__input {
+    border-color: var(--srs-color-semantic-information-text);
+}
+
+.srs-form-field:focus-within .srs-form-field__input {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-form-field__label {
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-form-field__input {
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-3);
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-semantic-surface-default);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font: var(--srs-typography-semantic-body);
+}
+
+.srs-form-field.is-disabled .srs-form-field__input {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+}
+
+.srs-form-field.is-loading .srs-form-field__input {
+    border-color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-form-field.has-error .srs-form-field__input {
+    border-color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+}
+
+.srs-form-field__description,
+.srs-form-field__error,
+.srs-form-field__status {
+    margin: var(--srs-spacing-primitive-0);
+    font-size: var(--srs-typography-primitive-font-size-small);
+}
+
+.srs-form-field__description {
+    color: var(--srs-color-semantic-text-secondary);
+}
+
+.srs-form-field__error {
+    color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-form-field__status {
+    color: var(--srs-color-semantic-information-text);
+}

@@ -1,0 +1,65 @@
+<a @attributes="AdditionalAttributes"
+   class="@CssClass"
+   href="@(IsUnavailable ? null : Href)"
+   aria-label="@(string.IsNullOrWhiteSpace(AccessibleLabel) ? null : AccessibleLabel)"
+   aria-current="@(IsActive ? "page" : null)"
+   aria-disabled="@(IsUnavailable ? "true" : null)"
+   aria-busy="@(IsLoading ? "true" : null)"
+   aria-describedby="@(string.IsNullOrWhiteSpace(DescribedBy) ? null : DescribedBy)"
+   tabindex="@(IsUnavailable ? "-1" : null)"
+   @onclick="HandleClickAsync"
+   @onclick:preventDefault="IsUnavailable">
+    <span class="srs-link__content">@ChildContent</span>
+    @if (IsLoading && !string.IsNullOrWhiteSpace(LoadingAnnouncement))
+    {
+        <span class="srs-link__status" role="status">@LoadingAnnouncement</span>
+    }
+</a>
+
+@code {
+    [Parameter]
+    public string Href { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsActive { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public bool HasError { get; set; }
+
+    [Parameter]
+    public string? AccessibleLabel { get; set; }
+
+    [Parameter]
+    public string? DescribedBy { get; set; }
+
+    [Parameter]
+    public string? LoadingAnnouncement { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsUnavailable => IsDisabled || IsLoading;
+
+    private string CssClass =>
+        $"srs-link{(IsActive ? " is-active" : string.Empty)}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+
+    private async Task HandleClickAsync(MouseEventArgs args)
+    {
+        if (!IsUnavailable)
+        {
+            await OnClick.InvokeAsync(args);
+        }
+    }
+}

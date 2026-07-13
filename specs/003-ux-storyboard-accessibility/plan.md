@@ -120,7 +120,7 @@ Infrastructure.SqlServer projects plus `tests/`.
 - NFR-5: Core pages MUST reflow at 400% zoom and from 320 through 1920 CSS
   pixels without two-dimensional scrolling except a documented data table that
   has a non-scrolling semantic alternative.
-- NFR-6: Student discovery, schedule, and review routes SHOULD achieve Largest
+- NFR-6: Student discovery, schedule, and review routes MUST achieve Largest
   Contentful Paint at or below 2.5 seconds at p75 with production compression,
   cold browser cache, a four-core/4-GB client profile, 10-Mbps down/2-Mbps up,
   100-ms round-trip latency, and server APIs meeting their specified p95.

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0",
+  "version": "1.0.0",
+  "scope": "neutral",
+  "brandValuesDerivedFromLogo": false,
+  "approval": {
+    "status": "approved",
+    "approvedBy": "Ahmed ELbamby",
+    "approvedOn": "2026-07-13",
+    "approvalVersion": "design-token-set/1.0.0"
+  },
+  "tokens": {
+    "color": {
+      "primitive-white": "#FFFFFF",
+      "primitive-gray-50": "#F8F9FA",
+      "primitive-gray-100": "#F1F3F5",
+      "primitive-gray-300": "#CED4DA",
+      "primitive-gray-600": "#495057",
+      "primitive-gray-700": "#343A40",
+      "primitive-gray-900": "#1A1D20",
+      "primitive-blue-50": "#E7F1FF",
+      "primitive-blue-700": "#0B5CAD",
+      "primitive-blue-900": "#0B3D91",
+      "primitive-green-50": "#D1FADF",
+      "primitive-green-800": "#0F5132",
+      "primitive-amber-50": "#FFF4CE",
+      "primitive-amber-900": "#5F370E",
+      "primitive-red-50": "#FEE4E2",
+      "primitive-red-800": "#8A1C13",
+      "semantic-surface-default": "#FFFFFF",
+      "semantic-surface-muted": "#F1F3F5",
+      "semantic-text-primary": "#1A1D20",
+      "semantic-text-secondary": "#495057",
+      "semantic-border": "#495057",
+      "semantic-link": "#0B5CAD",
+      "semantic-focus-ring": "#0B5CAD",
+      "semantic-information-surface": "#E7F1FF",
+      "semantic-information-text": "#0B3D91",
+      "semantic-success-surface": "#D1FADF",
+      "semantic-success-text": "#0F5132",
+      "semantic-warning-surface": "#FFF4CE",
+      "semantic-warning-text": "#5F370E",
+      "semantic-danger-surface": "#FEE4E2",
+      "semantic-danger-text": "#8A1C13",
+      "semantic-disabled-surface": "#CED4DA",
+      "semantic-disabled-text": "#343A40",
+      "component-button-primary-background": "#1A1D20",
+      "component-button-primary-text": "#FFFFFF",
+      "component-button-secondary-background": "#FFFFFF",
+      "component-button-secondary-text": "#1A1D20",
+      "component-panel-background": "#FFFFFF",
+      "component-panel-border": "#495057"
+    },
+    "typography": {
+      "primitive-font-family-sans": "system-ui, -apple-system, Segoe UI, sans-serif",
+      "primitive-font-size-small": "0.875rem",
+      "primitive-font-size-body": "1rem",
+      "primitive-font-size-heading": "1.5rem",
+      "primitive-line-height-compact": 1.25,
+      "primitive-line-height-body": 1.5,
+      "semantic-body": "1rem/1.5 system-ui, -apple-system, Segoe UI, sans-serif",
+      "component-control-weight": 600
+    },
+    "spacing": {
+      "primitive-0": "0",
+      "primitive-1": "0.25rem",
+      "primitive-2": "0.5rem",
+      "primitive-3": "0.75rem",
+      "primitive-4": "1rem",
+      "primitive-6": "1.5rem",
+      "primitive-8": "2rem"
+    },
+    "sizing": {
+      "interactive-minimum": "2.75rem",
+      "content-readable": "70ch",
+      "content-wide": "90rem",
+      "dialog-maximum": "40rem",
+      "progress-thickness": "0.25rem"
+    },
+    "border": {
+      "primitive-width": "0.0625rem",
+      "primitive-width-strong": "0.125rem",
+      "primitive-radius-small": "0.25rem",
+      "primitive-radius-medium": "0.5rem"
+    },
+    "focus": {
+      "outline-width": "0.1875rem",
+      "outline-offset": "0.1875rem",
+      "outline-style": "solid",
+      "ring-color": "#0B5CAD"
+    },
+    "elevation": {
+      "base": "none",
+      "overlay": "0 0.25rem 1rem rgba(0, 0, 0, 0.18)",
+      "dialog": "0 0.5rem 2rem rgba(0, 0, 0, 0.24)"
+    },
+    "motion": {
+      "duration-instant": "0ms",
+      "duration-feedback": "120ms",
+      "duration-overlay": "180ms",
+      "easing-standard": "ease-out"
+    },
+    "breakpoint": {
+      "design-320": 320,
+      "design-375": 375,
+      "design-768": 768,
+      "design-1024": 1024,
+      "design-1280": 1280,
+      "design-1920": 1920
+    },
+    "zIndex": {
+      "base": 0,
+      "sticky": 100,
+      "overlay": 200,
+      "dialog": 300,
+      "urgent-feedback": 400
+    }
+  }
+}

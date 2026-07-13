@@ -1,10 +1,10 @@
 # Tasks: AASTMT Policy Rulebook
 
 **Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
-**Implementation progress**: 24/43 tasks complete. The governed rulebook,
-schemas, provenance, and contract tests are verified; runtime evaluator,
-historical integration, measured NFR, and release tasks remain pending their
-owning specifications.
+**Implementation progress**: 42/43 tasks complete. The governed rulebook,
+schemas, provenance, contract tests, executable acceptance/edge coverage,
+measured governance-harness NFR evidence, scope review, and traceability are
+verified. Final release approval remains pending.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task names an exact artifact and trace. Checked tasks have
 passing evidence and existing artifacts; unchecked tasks remain pending their
@@ -36,7 +36,7 @@ runtime owner or release gate.
 **Independent Test**: Execute only the AC-1 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T010.
-- [ ] T011 [AC-1] [FR-1] [FR-2] [FR-3] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-1Tests.cs for AC-1: Probation load (FR-1, FR-2, FR-3): Given an active student with GPA 1.99 under an approved general policy When eligibility is evaluated for a regular-term plan above 12 credits Then the decision fails with the probation load reason And cites the governing version/source and 12-credit maximum.
+- [x] T011 [AC-1] [FR-1] [FR-2] [FR-3] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-1Tests.cs for AC-1: Probation load (FR-1, FR-2, FR-3): Given an active student with GPA 1.99 under an approved general policy When eligibility is evaluated for a regular-term plan above 12 credits Then the decision fails with the probation load reason And cites the governing version/source and 12-credit maximum.
 ### US2 - Unapproved demo-policy conflict (FR-4, FR-5) (P1)
 
 **Goal**: Prove AC-2 as an independently demonstrable slice of AASTMT Policy Rulebook.
@@ -44,7 +44,7 @@ runtime owner or release gate.
 **Independent Test**: Execute only the AC-2 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T010.
-- [ ] T012 [AC-2] [FR-4] [FR-5] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-2Tests.cs for AC-2: Unapproved demo-policy conflict (FR-4, FR-5): Given an imported rule conflicts with the approved demo profile by enabling a waitlist or capacity override When an admin attempts to publish that conflicting rule Then publication is blocked And the rule is shown as requiring a separately approved policy amendment.
+- [x] T012 [AC-2] [FR-4] [FR-5] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-2Tests.cs for AC-2: Unapproved demo-policy conflict (FR-4, FR-5): Given an imported rule conflicts with the approved demo profile by enabling a waitlist or capacity override When an admin attempts to publish that conflicting rule Then publication is blocked And the rule is shown as requiring a separately approved policy amendment.
 ### US3 - Historical explainability (FR-3, FR-7) (P2)
 
 **Goal**: Prove AC-3 as an independently demonstrable slice of AASTMT Policy Rulebook.
@@ -52,7 +52,7 @@ runtime owner or release gate.
 **Independent Test**: Execute only the AC-3 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T010.
-- [ ] T013 [AC-3] [FR-3] [FR-7] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-3Tests.cs for AC-3: Historical explainability (FR-3, FR-7): Given a registration used policy version 2026.1 When the decision is inspected after version 2026.2 is published Then the original version, inputs, source and explanation remain available.
+- [x] T013 [AC-3] [FR-3] [FR-7] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-3Tests.cs for AC-3: Historical explainability (FR-3, FR-7): Given a registration used policy version 2026.1 When the decision is inspected after version 2026.2 is published Then the original version, inputs, source and explanation remain available.
 ### US4 - Typed rule safety (FR-6) (P2)
 
 **Goal**: Prove AC-4 as an independently demonstrable slice of AASTMT Policy Rulebook.
@@ -60,7 +60,7 @@ runtime owner or release gate.
 **Independent Test**: Execute only the AC-4 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T010.
-- [ ] T014 [AC-4] [FR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-4Tests.cs for AC-4: Typed rule safety (FR-6): Given a draft rule contains an unknown rule type or executable expression When validation is requested Then validation rejects it And no executable content is stored or run.
+- [x] T014 [AC-4] [FR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-4Tests.cs for AC-4: Typed rule safety (FR-6): Given a draft rule contains an unknown rule type or executable expression When validation is requested Then validation rejects it And no executable content is stored or run.
 ### US5 - Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
 
 **Goal**: Prove AC-5 as an independently demonstrable slice of AASTMT Policy Rulebook.
@@ -68,11 +68,11 @@ runtime owner or release gate.
 **Independent Test**: Execute only the AC-5 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T010.
-- [ ] T015 [AC-5] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-5Tests.cs for AC-5: Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4): Given an approved policy version, fixed input, Registrar boundary examples, and recorded provenance When the evaluator runs repeatedly under the approved performance fixture Then every result and reason is identical And every boundary regression passes And decision evaluation is at most 100 ms p95 excluding initial data retrieval And source/access/approval/effective metadata remains auditable.
-- [ ] T016 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-1Tests.cs and assert: No approved policy matches the student/term -> fail closed and alert Admin; do not guess a general rule.
-- [ ] T017 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-2Tests.cs and assert: Two sets have equal scope/priority -> publication validation fails.
-- [ ] T018 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-3Tests.cs and assert: Source URL becomes unavailable -> retain recorded metadata and flag source review; do not alter historical decisions.
-- [ ] T019 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-4Tests.cs and assert: A demo catalogue row lacks official-source provenance or an explicit synthetic-gap label -> reject catalogue publication.
+- [x] T015 [AC-5] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec002/AC-5Tests.cs for AC-5: Deterministic, sourced policy quality (NFR-1, NFR-2, NFR-3, NFR-4): Given an approved policy version, fixed input, Registrar boundary examples, and recorded provenance When the evaluator runs repeatedly under the approved performance fixture Then every result and reason is identical And every boundary regression passes And decision evaluation is at most 100 ms p95 excluding initial data retrieval And source/access/approval/effective metadata remains auditable.
+- [x] T016 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-1Tests.cs and assert: No approved policy matches the student/term -> fail closed and alert Admin; do not guess a general rule.
+- [x] T017 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-2Tests.cs and assert: Two sets have equal scope/priority -> publication validation fails.
+- [x] T018 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-3Tests.cs and assert: Source URL becomes unavailable -> retain recorded metadata and flag source review; do not alter historical decisions.
+- [x] T019 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec002/EdgeCases/EC-4Tests.cs and assert: A demo catalogue row lacks official-source provenance or an explicit synthetic-gap label -> reject catalogue publication.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
@@ -97,20 +97,19 @@ No direct frontend route is owned by this specification; frontend integration re
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T034 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-1.md: The same input and policy version MUST yield the same result.
-- [ ] T035 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-2.md: All boundary examples supplied by the Registrar MUST have automated regression tests.
-- [ ] T036 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-3.md: A policy decision query SHOULD complete within 100 ms p95 excluding initial data retrieval.
-- [ ] T037 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-4.md: Source URL, access date, approval actor, and effective period MUST be auditable.
+- [x] T034 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-1.md: The same input and policy version MUST yield the same result.
+- [x] T035 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-2.md: All boundary examples supplied by the Registrar MUST have automated regression tests.
+- [x] T036 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-3.md: A policy decision query SHOULD complete within 100 ms p95 excluding initial data retrieval.
+- [x] T037 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec002/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-002-NFR-4.md: Source URL, access date, approval actor, and effective period MUST be auditable.
 
 ## Phase 7 - Scope and Release Evidence
 
-- [ ] T038 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-1 remains excluded: Legal interpretation by software.
-- [ ] T039 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-2 remains excluded: Arbitrary scripting/expressions uploaded by users.
-- [ ] T040 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-3 remains excluded: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop, withdrawal, and Advisor or Deanery approval workflows until separately approved.
-- [ ] T041 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-4 remains excluded: Automatic dismissal or academic-path decisions.
-- [ ] T042 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-002-traceability.md and reject release if any row lacks passing evidence.
+- [x] T038 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-1 remains excluded: Legal interpretation by software.
+- [x] T039 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-2 remains excluded: Arbitrary scripting/expressions uploaded by users.
+- [x] T040 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-3 remains excluded: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop, withdrawal, and Advisor or Deanery approval workflows until separately approved.
+- [x] T041 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-002-scope-review.md that OS-4 remains excluded: Automatic dismissal or academic-path decisions.
+- [x] T042 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-002-traceability.md and reject release if any row lacks passing evidence.
 - [ ] T043 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-002 in docs/release-evidence/SPEC-002-release-approval.md.
 
-Twenty-four governance tasks are complete. Nineteen runtime acceptance/edge,
-measured NFR, scope-review, traceability, and release-approval tasks remain
-open until their owning downstream evidence exists.
+Forty-two governance, executable-test, scope-review, and traceability tasks are
+complete. T043 release approval remains open.

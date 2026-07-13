@@ -104,7 +104,7 @@ functional tests for each ID are normative in page-matrix.md.
 - NFR-5: Core pages MUST reflow at 400% zoom and from 320 through 1920 CSS
   pixels without two-dimensional scrolling except a documented data table that
   has a non-scrolling semantic alternative.
-- NFR-6: Student discovery, schedule, and review routes SHOULD achieve Largest
+- NFR-6: Student discovery, schedule, and review routes MUST achieve Largest
   Contentful Paint at or below 2.5 seconds at p75 with production compression,
   cold browser cache, a four-core/4-GB client profile, 10-Mbps down/2-Mbps up,
   100-ms round-trip latency, and server APIs meeting their specified p95.
@@ -280,15 +280,21 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
 ```typescript
 interface PageDesignRecord {
+  schemaVersion: string;
   routeId: string;
   routeTemplate: string;
+  pageName: string;
   designOwnerSpec: string;
   implementationOwnerSpec: string;
   ownerSpecs: string[];
   actors: string[];
+  purpose: string;
+  informationHierarchy: string[];
+  responsiveWireframes: Record<string, string>;
   components: string[];
   dataContracts: string[];
   actions: string[];
+  navigationTransitions: string[];
   states: UiStateCase[];
   responsiveWidths: number[];
   focusOrder: string[];
@@ -302,8 +308,13 @@ interface UiStateCase {
     "service-error" | "unauthorized" | "session-expired" | "stale" | "offline";
   applicability: "required" | "not-applicable";
   reason?: string;
-  expectedFocusTarget?: string;
-  liveRegion?: "none" | "polite" | "assertive";
+  fixture: string;
+  fixtureVersion: string;
+  expectedContent: string[];
+  expectedFocusTarget: string;
+  liveRegion: "none" | "polite" | "assertive";
+  nextActions: string[];
+  testIds: string[];
 }
 interface FrontendTestRecord {
   testId: string;
@@ -311,6 +322,7 @@ interface FrontendTestRecord {
   requirementIds: string[];
   type: "component" | "contract" | "e2e" | "accessibility" | "visual";
   fixture: string;
+  fixtureVersion: string;
   expectedOutcome: string;
 }
 ```

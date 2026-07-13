@@ -1,0 +1,82 @@
+<article class="srs-entity-card"
+         aria-labelledby="@HeadingId"
+         aria-disabled="@(IsDisabled ? "true" : null)"
+         aria-busy="@(IsLoading ? "true" : null)"
+         data-state="@StateName">
+    <header class="srs-entity-card__header">
+        <h2 id="@HeadingId" class="srs-entity-card__heading">@Heading</h2>
+        @if (HeaderContent is not null)
+        {
+            <div class="srs-entity-card__header-content">@HeaderContent</div>
+        }
+    </header>
+
+    @if (IsLoading)
+    {
+        <div class="srs-entity-card__loading" role="status" aria-live="polite">
+            @LoadingContent
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="srs-entity-card__error" role="alert">@ErrorMessage</div>
+    }
+
+    <div class="srs-entity-card__content">@ChildContent</div>
+
+    @if (Actions is not null)
+    {
+        <footer class="srs-entity-card__actions">@Actions</footer>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private string StateName => string.Join(
+        '-',
+        new[]
+        {
+            IsLoading ? "loading" : null,
+            string.IsNullOrWhiteSpace(ErrorMessage) ? null : "error",
+            IsDisabled ? "disabled" : null
+        }.Where(value => value is not null).DefaultIfEmpty("default"));
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(HeadingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+        ArgumentNullException.ThrowIfNull(ChildContent);
+
+        if (IsLoading)
+        {
+            ArgumentNullException.ThrowIfNull(LoadingContent);
+        }
+    }
+}

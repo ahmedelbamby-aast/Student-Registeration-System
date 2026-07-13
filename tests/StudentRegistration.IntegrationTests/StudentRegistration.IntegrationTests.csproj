@@ -19,8 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
-             Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../StudentRegistration.TestSupport/**/*.cs" Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\StudentRegistration.Client\StudentRegistration.Client.csproj" />
   </ItemGroup>
 
 </Project>
