@@ -12,7 +12,8 @@
 
 The system needs strong transactional consistency and future feature seams
 without the deployment and failure complexity of an early distributed system.
-docs/ARCHITECTURE.md and ADR-001 define the proposed modular monolith.
+docs/ARCHITECTURE.md and ADR-001 define the approved non-production demo
+modular monolith.
 
 ## Functional Requirements
 
@@ -128,7 +129,8 @@ SPEC-004 owns no endpoint.
 | academics | Academics |
 | scheduling | Scheduling |
 | registration | Registration |
-| audit | StaffAdministration / audit service |
+| audit write foundation | Architecture/Infrastructure.SqlServer (SPEC-004) |
+| audit query/export | StaffAdministration (SPEC-017) |
 
 The append-only audit persistence foundation is owned by SPEC-004 in
 Infrastructure.SqlServer; SPEC-017 owns authorized query/export experiences,

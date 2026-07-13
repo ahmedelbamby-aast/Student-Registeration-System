@@ -1,8 +1,10 @@
 # Implementation Plan: Architecture and Engineering Principles
 
 **Branch**: 004-architecture-engineering-principles | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
-and production release approval remain required.
+**Status**: Gate A requirements approved on 2026-07-13. A post-Gate-A
+consistency correction to the executable task baseline awaits Ahmed ELbamby's
+explicit approval before T006 or any later implementation task may run; Gates
+B-D and production release approval remain required.
 
 ## Summary
 
@@ -77,18 +79,37 @@ forbidden alternative shape.
 
 ## Execution Strategy
 
-1. Validate SPEC-001 and SPEC-003, then reconcile architecture documents,
-   module contracts, and planned paths through consistency analysis.
-2. Verify Ahmed ELbamby's 2026-07-13 approval in the Architect review
-   perspective before implementation; retain later release and production
-   architecture approvals.
-3. Write failing solution-shape, dependency, DTO-isolation, persistence, and
-   atomic-audit boundary tests, including the SQL version/compatibility,
-   provisioner, lifecycle, synthetic-only, Git-ignore, and seven-day-retention
-   guards, before creating the solution, composition, persistence, and audit
-   seams.
-4. Require an approved ADR plus updated tests for every later boundary or
+1. Validate the immutable SPEC-001 and SPEC-003 inputs, then reconcile
+   architecture documents, module contracts, and planned paths through
+   consistency analysis.
+2. Obtain Ahmed ELbamby's explicit approval of the corrected executable task
+   baseline before T006 or any later implementation task; retain later release
+   and production architecture approvals.
+3. Establish the missing ContractTests shell and run T010 red checks; T011
+   creates the ArchitectureTests shell plus only the Contracts and
+   Infrastructure.SqlServer runtime shells and canonical shared types. T023
+   then proves the still-incomplete full module shape fails, and T024 completes
+   the six remaining source projects and composition.
+4. After the single DbContext configuration seam exists, run failing
+   stateless-replica/key-lifecycle checks, then deliver the SQL-backed,
+   certificate-protected key ring, fail-closed production configuration,
+   rotation runbook, and bounded seven-day local cleanup.
+5. Write failing dependency, DTO-isolation, persistence, atomic-audit, SQL
+   provisioner/lifecycle, synthetic-only, and Git-ignore checks before their
+   bounded delivery.
+6. Require an accepted ADR plus updated tests for every later boundary or
    deployment change.
+
+## Post-Gate-A Consistency Correction
+
+The candidate task baseline adds no requirement or architecture decision. It
+restores the already-approved AC-2 and AC-7 traceability, makes audit ownership
+and ADR status literal, moves project creation ahead of tests that need those
+projects, removes a shared-file writer collision, and adds the missing bounded
+NFR-2 delivery task before release evidence. It also completes one truncated
+activation sentence from DEC-01/DEC-08 and corrects SPEC-005's single stale
+AuditEvent owner line. The exact correction remains blocked at T005 until Ahmed
+approves it.
 
 
 

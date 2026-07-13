@@ -1,8 +1,11 @@
 # ADR-001: Modular Monolith
 
-- Status: Proposed
+- Status: Accepted for non-production demo (Gate A)
 - Date: 2026-07-12
-- Decision owners: Technical Lead, Data Lead, DevOps, Security
+- Accepted: 2026-07-13
+- Approval: Ahmed ELbamby (Technical Lead/Architect review perspective)
+- Decision perspectives: Technical Lead, Data Lead, DevOps, Security
+- Production authorization: Not granted
 
 ## Context
 

@@ -188,7 +188,8 @@ And sensitive fields are absent from unsafe logs.
 - **SPEC-012 owned**: RegistrationPlan.
 - **SPEC-014 owned**: StudentTermRegistrationGuard, RegistrationSubmission,
   and Enrollment. `RegistrationSubmission` is the idempotency record.
-- **SPEC-017 owned**: AuditEvent.
+- **SPEC-004 owned**: AuditEvent. SPEC-017 owns authorized audit query/export,
+  not the transaction-aware write model.
 
 SPEC-005 owns the cross-module ERD, relational-invariant catalogue, ownership
 matrix, and data-lifecycle contract—not any of these runtime entities.

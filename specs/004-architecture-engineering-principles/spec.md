@@ -10,7 +10,8 @@
 
 The system needs strong transactional consistency and future feature seams
 without the deployment and failure complexity of an early distributed system.
-docs/ARCHITECTURE.md and ADR-001 define the proposed modular monolith.
+docs/ARCHITECTURE.md and ADR-001 define the approved non-production demo
+modular monolith.
 
 ## User Scenarios and Testing
 
@@ -86,6 +87,21 @@ Then the solution uses the approved .NET/ASP.NET Core/Blazor/EF Core/SQL Server
 stack and exact project-per-business-module shape<br>
 And business-module Domain code references none of ASP.NET, Blazor, EF Core,
 or SQL Server.
+
+### User Story 7 - Upstream atomic audit foundation (FR-9) (P2)
+
+As a Technical Lead, I need one upstream transaction-aware audit foundation so
+that business changes and their audit evidence cannot commit independently.
+
+**Independent Test**: Execute AC-7 in requirements.md without relying on
+SPEC-017 or another story in this feature.
+
+**Acceptance Scenario (AC-7)**
+
+Given an offering publication or registration command writes business state<br>
+When the shared audit writer succeeds or is fault-injected to fail<br>
+Then business state and its append-only AuditEvent commit together or both roll back<br>
+And the owning feature has no dependency on SPEC-017.
 
 ## Edge Cases
 

@@ -14,3 +14,29 @@ guarded reset, synthetic-only records, and Git-ignored credential/log/export
 artifacts retained no more than seven days. It does not approve production SQL
 edition/topology, key-storage, or deployment authorities and does not waive
 Gates B-D or production release approval.
+
+## Post-Gate-A consistency correction
+
+**Status**: PENDING AHMED ELBAMBY APPROVAL
+**Prepared**: 2026-07-13
+**Scope effect**: No new requirement, module, endpoint, route, database, or
+distributed component
+
+The corrected executable baseline:
+
+1. restores the already-approved AC-2 and AC-7 wording/traceability;
+2. makes audit write versus query/export ownership literal;
+3. records ADR-001's existing Gate A acceptance;
+4. creates minimal project shells before dependent tests/files and removes a
+   shared-file writer collision;
+5. adds bounded NFR-2 delivery before its release-evidence task; and
+6. renumbers only the previously unstarted T037-T048 range to T039-T050;
+7. completes the truncated student-activation sentence using already-approved
+   DEC-01/DEC-08 identity-boundary wording; and
+8. corrects the single stale SPEC-005 `AuditEvent` owner line to the existing
+   SPEC-004 write/SPEC-017 query-export ownership recorded by the entity
+   manifest and both features' data models.
+
+The original Gate A approval remains valid for the requirements and architecture
+decision. T006+ implementation remains forbidden until Ahmed explicitly
+approves this exact consistency correction and T005 is checked.

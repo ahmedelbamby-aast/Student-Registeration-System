@@ -12,5 +12,8 @@
 - [x] G10 Pre-Gate-A planning-only boundary
 - [x] G11 Gate A demo implementation approval by Ahmed ELbamby on 2026-07-13
 
-Automated gates and Gate A human approval pass. Demo implementation MAY begin;
-Gates B-D and production release approval remain required.
+Automated gates and the original Gate A human approval pass. The corrected
+executable task-baseline amendment remains pending at T005, so T006 and every
+later implementation task MUST NOT begin. After Ahmed ELbamby explicitly
+approves that exact correction, Gates B-D and production release approval still
+remain required.

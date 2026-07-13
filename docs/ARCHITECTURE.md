@@ -120,7 +120,9 @@ DTOs and never expose EF entities. Reads use projection and AsNoTracking.
 - Shared staff route: /staff/login; no role selector.
 - One identity system with Student, Admin, Lecturer, and TeachingAssistant
   claims/roles.
-- Student activation only claims a pre-imported institutional record after a
+- Student activation only claims a pre-imported institutional record after the
+  generated University ID and PIN/password match; it never creates an open or
+  browser-invented university identity.
 - Development and Testing bootstrap generate synthetic pre-provisioned
   identities, unique University IDs, and PIN/passwords; only ASP.NET Core
   Identity password hashes are stored in SQL.
