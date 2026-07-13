@@ -1,61 +1,143 @@
 # Domain and Application Class Diagram
 
-## Main orchestration
+This system-wide class-level view shows the canonical use-case services,
+transaction collaborators, module seams, and core registration model. Exact
+fields remain in owner-spec contracts and the ERD; these panels are not an
+instruction to create one project per architectural layer.
+
+## Application orchestration
 
 ```mermaid
 classDiagram
   class RegistrationEndpoint
-  class RegistrationService
-  class AcademicTermResolver
-  class EligibilityEvaluator
-  class IEligibilityRule
-  class TimetableOptimizer
-  class IRegistrationCommitter
-  class SqlRegistrationCommitter
-  class RegistrationDbContext
+  class RegistrationCommandFactory
+  class RegistrationTransactionCoordinator
+  class SqlSeatAllocator
+  class RegistrationSubmissionStore
+  class StudentRegistrationDbContext
   class IStudentAcademicReader
   class ISchedulingReader
-  class TimeProvider
+  class IEligibilityEvaluator
+  class IRegistrationPlanReader
   class CurrentUser
+  class TimeProvider
 
-  RegistrationEndpoint --> RegistrationService
-  RegistrationService --> AcademicTermResolver
-  RegistrationService --> EligibilityEvaluator
-  RegistrationService --> TimetableOptimizer
-  RegistrationService --> IRegistrationCommitter
-  RegistrationService --> CurrentUser
-  AcademicTermResolver --> TimeProvider
-  EligibilityEvaluator --> IEligibilityRule
-  EligibilityEvaluator --> IStudentAcademicReader
-  EligibilityEvaluator --> ISchedulingReader
-  TimetableOptimizer --> ISchedulingReader
-  IRegistrationCommitter <|.. SqlRegistrationCommitter
-  SqlRegistrationCommitter --> RegistrationDbContext
+  RegistrationEndpoint --> RegistrationCommandFactory
+  RegistrationCommandFactory --> CurrentUser
+  RegistrationCommandFactory --> TimeProvider
+  RegistrationCommandFactory --> IStudentAcademicReader
+  RegistrationCommandFactory --> ISchedulingReader
+  RegistrationCommandFactory --> IEligibilityEvaluator
+  RegistrationCommandFactory --> IRegistrationPlanReader
+  RegistrationCommandFactory --> RegistrationTransactionCoordinator
+  RegistrationTransactionCoordinator --> SqlSeatAllocator
+  RegistrationTransactionCoordinator --> RegistrationSubmissionStore
+  RegistrationTransactionCoordinator --> StudentRegistrationDbContext
 ```
 
-## Domain model
+```mermaid
+classDiagram
+  class ScheduleRecommendationEndpoint
+  class OptimizationCoordinator
+  class ScheduleOptimizer
+  class ScheduleScorer
+  class ISchedulingReader
+  class RecommendationApplicationService
+  class AppContextEndpoint
+  class AcademicContextResolver
+  class ISessionContextReader
+  class IAcademicContextReader
+
+  ScheduleRecommendationEndpoint --> OptimizationCoordinator
+  OptimizationCoordinator --> ScheduleOptimizer
+  ScheduleOptimizer --> ScheduleScorer
+  ScheduleOptimizer --> ISchedulingReader
+  ScheduleRecommendationEndpoint --> RecommendationApplicationService
+  AppContextEndpoint --> AcademicContextResolver
+  AcademicContextResolver --> ISessionContextReader
+  AcademicContextResolver --> IAcademicContextReader
+```
+
+## System module services
+
+```mermaid
+classDiagram
+  class StudentAuthenticationService
+  class StudentActivationService
+  class AdminUserLifecycleService
+  class IAdminUserLifecycleCommands
+  class AcademicContextResolver
+  class RegistrationWindowService
+  class CataloguePublicationService
+  class PolicyAdministrationService
+  class IPolicyEvaluator
+  class OfferingPublicationService
+  class ResourceAvailabilityService
+  class ISchedulingReader
+  class EligibilityService
+  class RegistrationPlanService
+  class ScheduleOptimizer
+  class RegistrationTransactionCoordinator
+  class RegistrationReceiptService
+  class StaffWorkspaceQueries
+  class AuditTransactionWriter
+  class IAuditEventWriter
+  class IAuditEventReader
+  class IRegistrationSubmissionReader
+  class IOperationalMetricsReader
+  class AuditEventQueries
+  class AuditExportService
+  class AdminMetricsQuery
+  class ObservabilityExtensions
+
+  AdminUserLifecycleService ..|> IAdminUserLifecycleCommands
+  AcademicContextResolver --> RegistrationWindowService
+  EligibilityService --> IPolicyEvaluator
+  EligibilityService --> ISchedulingReader
+  RegistrationPlanService --> EligibilityService
+  ScheduleOptimizer --> ISchedulingReader
+  AuditTransactionWriter ..|> IAuditEventWriter
+  RegistrationTransactionCoordinator --> IAuditEventWriter
+  OfferingPublicationService --> IAuditEventWriter
+  RegistrationReceiptService --> IRegistrationSubmissionReader
+  StaffWorkspaceQueries --> ISchedulingReader
+  AuditEventQueries --> IAuditEventReader
+  AuditExportService --> AuditEventQueries
+  AdminMetricsQuery --> IOperationalMetricsReader
+```
+
+## Core domain model
 
 ```mermaid
 classDiagram
   class Student {
     +StudentId Id
-    +UniversityId UniversityId
+    +ApplicationUserId ApplicationUserId
+    +string ProgramCode
     +Gpa CurrentGpa
     +Credits EarnedCredits
     +AcademicStanding Standing
+    +RowVersion Version
   }
   class AcademicTerm {
     +AcademicTermId Id
     +TermCode Code
     +TimeZoneId TimeZone
     +TermState State
-    +IsRegistrationOpen(Instant now) bool
+  }
+  class RegistrationWindow {
+    +RegistrationWindowId Id
+    +WindowState State
+    +Instant OpensAtUtc
+    +Instant ClosesAtUtc
+    +RowVersion Version
+    +Allows(Instant now, Student student) bool
   }
   class CourseOffering {
     +CourseOfferingId Id
-    +Course Course
+    +CourseId CourseId
     +OfferingState State
-    +IReadOnlyList~SectionGroup~ Groups
+    +RowVersion Version
   }
   class SectionGroup {
     +SectionGroupId Id
@@ -63,14 +145,29 @@ classDiagram
     +int Capacity
     +int EnrolledCount
     +GroupState State
-    +HasSeat() bool
+    +bool RegistrationPaused
+    +RowVersion Version
   }
   class MeetingSlot {
     +DayOfWeek Day
     +TimeOnly Start
     +TimeOnly End
-    +Room Room
+    +RoomId RoomId
     +Overlaps(MeetingSlot other) bool
+  }
+  class StaffTermAvailability {
+    +StaffTermAvailabilityId Id
+    +StaffId StaffId
+    +AcademicTermId TermId
+    +Instant DeadlineUtc
+    +RowVersion Version
+    +ReplaceRanges()
+  }
+  class StaffAvailability {
+    +DayOfWeek Day
+    +TimeOnly Start
+    +TimeOnly End
+    +AvailabilityType Type
   }
   class RegistrationPlan {
     +RegistrationPlanId Id
@@ -78,8 +175,20 @@ classDiagram
     +AcademicTermId TermId
     +PlanState State
     +RowVersion Version
-    +SelectGroup()
-    +RemoveOffering()
+  }
+  class RegistrationSubmission {
+    +RegistrationSubmissionId Id
+    +Guid ClientRequestId
+    +string PayloadHash
+    +SubmissionState State
+    +string ResultCode
+  }
+  class RegistrationReceipt {
+    <<read projection>>
+    +RegistrationSubmissionId SubmissionId
+    +string Reference
+    +string SnapshotJson
+    +Instant IssuedAtUtc
   }
   class Enrollment {
     +EnrollmentId Id
@@ -90,24 +199,28 @@ classDiagram
   }
   class EligibilityDecision {
     +bool IsEligible
-    +IReadOnlyList~RuleResult~ Results
     +PolicyVersion PolicyVersion
+    +InputSummary Inputs
   }
   class RuleResult {
     +string ReasonCode
     +bool Passed
     +string Explanation
+    +string RequiredValue
+    +string CurrentValue
     +string Source
     +bool OverridePossible
   }
 
-  Student "1" --> "*" RegistrationPlan
-  Student "1" --> "*" Enrollment
+  AcademicTerm "1" --> "*" RegistrationWindow
   AcademicTerm "1" --> "*" CourseOffering
-  CourseOffering "1" --> "*" SectionGroup
-  SectionGroup "1" --> "*" MeetingSlot
-  RegistrationPlan --> CourseOffering
-  RegistrationPlan --> SectionGroup
+  CourseOffering "1" *-- "*" SectionGroup
+  SectionGroup "1" *-- "*" MeetingSlot
+  StaffTermAvailability "1" *-- "*" StaffAvailability
+  Student "1" --> "*" RegistrationPlan
+  Student "1" --> "*" RegistrationSubmission
+  RegistrationSubmission "1" --> "0..1" RegistrationReceipt : projects
+  RegistrationSubmission "1" --> "*" Enrollment
   EligibilityDecision "1" *-- "*" RuleResult
 ```
 
@@ -123,28 +236,25 @@ public interface IEligibilityEvaluator
         CancellationToken cancellationToken);
 }
 
-public interface ITimetableOptimizer
+public interface IRegistrationTransactionCoordinator
 {
-    ScheduleOptimizationResult Optimize(
-        IReadOnlyList<CourseChoice> courses,
-        SchedulePreferences preferences,
-        TimeSpan timeBudget);
-}
-
-public interface IRegistrationCommitter
-{
-    Task<CommitResult> TryCommitAsync(
-        RegistrationCommitRequest request,
+    Task<RegistrationSubmissionResult> TrySubmitAsync(
+        RegistrationSubmissionCommand command,
         CancellationToken cancellationToken);
 }
+
+// ScheduleOptimizer and AcademicContextResolver are concrete module-owned
+// services with the CancellationToken-bearing methods specified by SPEC-013
+// and SPEC-008; no speculative duplicate interface is introduced here.
 ```
 
-These are design contracts, not implementation code. Names and signatures
-remain subject to SPEC-006 approval.
+These are design contracts, not public implementation types. Exact DTO fields
+and HTTP outcomes are governed by SPEC-006 and the owning feature contract.
 
 ## Dependency rule
 
-Endpoints depend on application services. Application services depend on
-domain types and narrow ports. Infrastructure implements ports. Domain code
-does not reference ASP.NET Core, EF Core, SQL Server, Blazor, or infrastructure
-projects.
+Endpoints depend on application use cases inside their business module.
+Application code depends on domain types and narrow ports. The SQL Server
+infrastructure project implements persistence ports and owns
+`StudentRegistrationDbContext` and migrations. Domain folders do not reference
+ASP.NET Core, EF Core, SQL Server, Blazor, or the infrastructure project.

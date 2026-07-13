@@ -35,7 +35,7 @@ As a Student or staff user, I need the Student activation safety (FR-2) behavior
 
 **Acceptance Scenario (AC-2)**
 
-Given no pre-imported student record matches an entered University ID<br>
+Given no pre-imported Identity-owned institutional student identity matches an entered University ID<br>
 When activation is submitted<br>
 Then no account is created or linked<br>
 And a generic safe response is returned.
@@ -129,6 +129,22 @@ And credential configuration passes the current approved ASP.NET Core security
 baseline<br>
 And every protected endpoint permits and denies exactly the documented roles.
 
+### User Story 10 - Governed Admin user lifecycle (FR-3, FR-4, FR-12, FR-14) (P2)
+
+As an authorized identity Admin, I need user import/list/status/role commands
+so that ADM-03 is functional and concurrent role changes cannot remove the
+final enabled Admin.
+
+**Independent Test**: Execute AC-10 with an import fixture, two enabled Admins,
+two concurrent role-removal commands, and audit/idempotency doubles.
+
+**Acceptance Scenario (AC-10)**
+
+Given current versions, reason, permission, and pre-provisioned identities<br>
+When Admin user commands execute<br>
+Then valid changes are idempotent/audited/replica-visible and invalid, stale,
+or final-enabled-Admin removal attempts change nothing.
+
 ## Edge Cases
 
 - EC-1: University ID already activated -> direct to login/recovery, no second
@@ -146,27 +162,35 @@ And every protected endpoint permits and denies exactly the documented roles.
 ### Functional Requirements
 
 - FR-1: Student login MUST accept normalized University ID and password.
-- FR-2: Student activation MUST only claim a pre-imported student record after
-  verification through an approved institutional factor.
+- FR-2: Student activation MUST only claim a pre-imported Identity-owned
+  ApplicationUser institutional identity with normalized unique University ID after
+  verification through the institutional factor approved under DEC-01. Until
+  it is approved, production activation fails closed.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
-- FR-5: The system MUST support secure recovery, lockout, logout, and
-  invalidate-all-sessions.
-- FR-6: Staff MUST use MFA before production.
+- FR-5: The system MUST support generic request-and-complete recovery,
+  password change, logout, and revoke-all-sessions with security-stamp
+  rotation across replicas.
+- FR-6: Staff MUST use the approved institutional MFA provider before a staff
+  session is issued; production staff login fails closed while DEC-02 is open.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
   plus antiforgery for mutations.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
-- FR-10: Activation and recovery tokens MUST be single-use through an atomic
-  database transition; concurrent uses of one token MUST change at most one
-  account state.
+- FR-10: Activation, recovery, and MFA challenges MUST be time/attempt bounded
+  and atomically single-use.
 - FR-11: Claiming an institutional University ID MUST be protected by a unique
   database constraint so parallel activation requests cannot link it twice.
-- FR-12: Lockout counters, rate-limit state, security stamps, and session
-  invalidation MUST be shared across all application replicas.
+- FR-12: Lockout/rate-limit state, challenges, security stamps, role state,
+  session invalidation, and cookie-key access MUST be replica-independent and
+  shared; sticky sessions are not a correctness mechanism.
 - FR-13: AUTH-02 through AUTH-05 and STU-08 MUST consume the SPEC-003 page,
   state, accessibility, and functional-test contracts.
+- FR-14: Explicitly authorized Admins MUST have idempotent pre-provisioned-user
+  import/status, bounded user/import reads, versioned account status and role
+  commands, audit, and an Identity-owned AdminSecurityGuard that makes
+  IdentityAccess the sole concurrency-safe final-enabled-Admin mutation owner.
 
 ### Non-Functional Requirements
 
@@ -178,13 +202,16 @@ And every protected endpoint permits and denies exactly the documented roles.
 - NFR-4: Every protected endpoint MUST have positive/negative authorization
   tests.
 
-### Key Entities
+### Key Entities and References
 
-- **ApplicationUser**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Staff**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **StudentActivation**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RoleAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **SecurityAudit**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **ApplicationUser**, **Staff**, **StudentActivation**,
+  **AccountRecoveryChallenge**, **StaffMfaChallenge**, **RoleAssignment**, and
+  **AuthenticationAbuseState**, **IdentityImportBatch**, **SecurityEvent**, and
+  **AdminSecurityGuard** are owned by SPEC-007.
+- SPEC-017 may consume/query append-only SecurityEvent records because it
+  depends on SPEC-007; Identity does not depend on downstream SPEC-017.
+- The shared Data Protection key ring is operational infrastructure governed
+  by SPEC-018, not an Identity domain entity.
 
 ## Success Criteria
 
@@ -224,3 +251,10 @@ And every protected endpoint permits and denies exactly the documented roles.
 - OS-2: Student-created identity without institutional pre-provisioning.
 - OS-3: Authorization based only on Blazor route/component visibility.
 - OS-4: Final identity-provider integration until AASTMT confirms provider.
+
+## Approval Blockers
+
+DEC-01, DEC-02, and DEC-13 remain institutional decisions. Production
+activation, staff authentication/MFA, and shared-key protection respectively
+fail closed until their accountable owners approve named providers and
+configuration. This specification therefore remains In Review.

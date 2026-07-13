@@ -1,7 +1,7 @@
 # Implementation Plan: Eligibility and Subject Discovery
 
 **Branch**: 011-eligibility-subject-discovery | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Design complete; Policy SME and human approval remain pending. Implementation is not authorized.
 
 ## Summary
 
@@ -31,6 +31,7 @@ Deliver Eligibility and Subject Discovery inside the modular monolith while keep
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
+- [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)
@@ -38,7 +39,30 @@ Deliver Eligibility and Subject Discovery inside the modular monolith while keep
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Eligibility orchestration, projections, and owner endpoints belong in
+`src/StudentRegistration.Registration/{Domain,Application,Endpoints}`. Pages
+remain in `StudentRegistration.Client`; upstream Academics/Scheduling data is
+consumed through public module interfaces, and SQL query implementations live
+in `StudentRegistration.Infrastructure.SqlServer`. No upstream entity is
+redefined in Registration.
+
+## Feature Design
+
+1. Resolve one versioned academic, policy, catalogue, offering, and group input
+   set for the authenticated student and authorized term.
+2. Evaluate all relevant approved rules and create complete per-rule reasons;
+   missing required input fails closed.
+3. Project group activity/staff/room/time/capacity/version details from
+   Scheduling without treating advisory capacity as a reservation.
+4. Apply bounded server search/filter/sort/page only after eligibility
+   evaluation and expose a dedicated complete detail endpoint.
+5. STU-02/STU-03 render stable reasons and non-color states from SPEC-003.
+
+## Execution and Gate Order
+
+Dependency and policy baselines plus consistency analysis precede Ahmed
+ELbamby's final approval. Failing projection/contract, acceptance, search,
+quality, and frontend tests precede application, handler, and page delivery.
 
 ## Design Artifacts
 

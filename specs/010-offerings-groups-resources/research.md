@@ -34,19 +34,44 @@ interface GroupDto {
 interface OfferingMutationRequest {
   expectedOfferingRowVersion: string;
   expectedGroupRowVersions: Record<string, string>;
-  previewToken?: string;
+  expectedRoomRowVersions: Record<string, string>;
+  expectedStaffTermAvailabilityRowVersions: Record<string, string>;
+  previewToken: string;
   clientRequestId: string;
 }
 ```
 
-Endpoints: GET /api/offerings/{id}, GET /api/groups/{id}, POST
-/api/admin/offerings, PUT /api/admin/groups/{id}, POST
-/api/admin/offerings/{id}/validate, and POST
-/api/admin/offerings/{id}/publish.
+Endpoints include offering/group reads, bounded Admin offering/room/resource
+lists, create/update, validate/publish, and the separately authorized Admin
+staff-availability correction contract documented in contracts/api.md.
 Every group-state, capacity, meeting, room, and staff-assignment mutation
 requires the owning group rowversion. Retryable create/publish uses
 clientRequestId; stale resources return 409 GROUP_CHANGED,
 RESOURCE_CONFLICT, or IDEMPOTENCY_KEY_REUSED without partial publication.
+
+### Availability ownership
+**Decision**: Scheduling/SPEC-010 owns `StaffTermAvailability` and its complete
+child range set. SPEC-016 supplies staff-facing commands through a Scheduling
+port; it does not own or redefine the aggregate.
+**Rationale**: Offering publication and staff edits share one upstream
+version/lock boundary without a dependency cycle.
+**Alternatives rejected**: Downstream SPEC-016 ownership and independent range
+rowversions.
+
+### Staffing and Admin correction
+**Decision**: Apply DEC-11 by activity type and DEC-12 by staff ownership plus
+a separately authorized, previewed, reasoned, versioned, audited Admin
+correction with notification.
+**Rationale**: These defaults are least-privilege and fail safely while keeping
+institutional exceptions explicit.
+**Alternatives rejected**: Requiring both roles for every activity, silent
+Admin overwrites, and unpublished role exceptions.
+
+### Resource dependency versions
+**Decision**: Validation/publish bind offering, group, room, and
+StaffTermAvailability versions and lock them in stable type/ID order.
+**Rationale**: This prevents room/staff write skew across replicas.
+**Alternatives rejected**: Check-then-publish and offering-only rowversion.
 
 
 

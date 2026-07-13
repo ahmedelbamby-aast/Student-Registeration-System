@@ -5,68 +5,77 @@
 
 ## Summary
 
-Deliver Quality, Security, Scalability, and Operations inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Create the cross-cutting release gates and production evidence for a
+single-deployable modular monolith: CI, threat model, accessibility, safe
+telemetry, two-replica session protection, exact load profiles, recovery, and
+release blocking. Initial population/load values remain planning baselines and
+must be rebaselined only by approved spec change.
 
 ## Technical Context
 
-**Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
-**Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
-**Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
-**Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
-**Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
+- **Runtime**: .NET 10, ASP.NET Core/Blazor WebAssembly, EF Core, SQL Server.
+- **Composition**: health/security/telemetry wiring in
+  `StudentRegistration.Api/Operations`; feature modules emit only defined
+  signals.
+- **Replica keys**: shared SQL Server Data Protection repository, encrypted at
+  rest with a certificate/key obtained from the approved production secret
+  store; production startup fails closed if unavailable.
+- **Testing**: xUnit, real-SQL integration, Playwright/E2E, accessibility tools
+  plus manual screen-reader evidence, authorization/security analysis, load,
+  fault injection, and restore rehearsal.
+- **Evidence**: immutable/versioned reports under `docs/release-evidence`;
+  application operational records are not domain entities unless explicitly
+  stated.
 
-## Constitution Check
+## Workstreams and Order
 
-- PASS: Git ownership is reserved for Ahmed ELbamby.
-- PASS: Requirements, acceptance scenarios, and tasks use stable traceability identifiers.
-- PASS: The design remains a simple modular monolith.
-- PASS: Security, policy, schedule, capacity, and term decisions remain server-authoritative.
-- PASS: Accessibility, scalability, concurrency, and observability requirements are retained.
-- PASS: No application source code or migration is created by this planning phase.
+1. Baseline SPEC-001/003/004/005/006 and complete cross-spec consistency.
+2. Freeze the threat model, CI gate order, telemetry schema, exact load
+   profiles, Data Protection/secret design, accessibility protocol, and
+   recovery evidence; obtain human approval last.
+3. Write failing schemas, contracts, acceptance, failure, authorization,
+   cross-replica key, accessibility, and load-harness tests.
+4. Implement CI/security and shared-key configuration.
+5. Implement health, logging, metrics, tracing, and degraded behavior.
+6. Rehearse recovery/rollback and execute target, 2x, five-times spike, and
+   registration-window soak tests.
+7. Record signed manual keyboard/screen-reader evidence and threat-model review.
+8. Block release unless every correctness, security, accessibility, recovery,
+   and evidence gate passes.
 
-## Dependency Check
+## Design Decisions
 
-- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
-- [SPEC-001](../001-product-charter-rbac/spec.md)
-- [SPEC-004](../004-architecture-engineering-principles/spec.md)
-- [SPEC-005](../005-erd-data-lifecycle/spec.md)
-- [SPEC-006](../006-domain-class-api-contracts/spec.md)
+### Exact Load Profiles
 
-## Project Structure
+- **Target**: 10 minutes at 75 submissions/s plus 300 reads/s.
+- **2x target**: 10 minutes at 150 submissions/s plus 600 reads/s.
+- **Existing burst**: 60 seconds at 200 submissions/s plus 300 reads/s.
+- **5x spike**: 60 seconds at 375 submissions/s plus 1,500 reads/s.
+- **Read mix**: 50% offering discovery, 25% eligibility detail, 15% current
+  plan/timetable, 10% registration-record reads.
+- **Submission mix**: 70% valid unique requests, 20% expected full/policy/
+  conflict rejections, 10% idempotent retries/lost-response recovery.
+- **Soak/SLO window**: 120 minutes at target mix across at least two replicas.
+  Availability >= 99.9% and unexpected failures < 0.1% are measured over this
+  window. Target latency SLOs apply at target; 2x/5x must preserve correctness,
+  bounded queues/timeouts, safe degradation, and recovery evidence.
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+## Constitution and Approval Gate
 
-## Design Artifacts
+No deployment, workflow, test, or source is created by planning. Implementation
+is forbidden until dependencies, threat model, policy provenance, consistency
+analysis, and Ahmed ELbamby's final approval pass.
 
+## Artifacts
+
+- [Requirements](requirements.md)
 - [Research](research.md)
-- [Data model](data-model.md)
+- [Data/evidence model](data-model.md)
 - [API contract](contracts/api.md)
-- [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
-
-
-
-## Non-Functional Requirements
-
-- NFR-1: The production-like validation environment MUST support a planning
-  baseline of 25,000 accounts and 5,000 concurrent authenticated sessions,
-  pending S0 rebaseline.
-- NFR-2: The system MUST support 75 submissions/s for 10 min, 200/s for 60 s,
-  and 300 read/s.
-- NFR-3: Catalogue p95 MUST be <= 300 ms, commit p95 MUST be <= 2 s, and
-  optimizer p95 MUST be <= 500 ms for the approved workload.
-- NFR-4: Tests MUST demonstrate zero overbooking, duplicate active offering
-  enrollment, and partial atomic submission.
-- NFR-5: Availability MUST be 99.9% during announced registration windows.
-- NFR-6: Unexpected server failure rate MUST be < 0.1% at target load.
-- NFR-7: RPO MUST be <= 5 minutes and RTO <= 1 hour.
-- NFR-8: Critical flows MUST meet WCAG 2.2 AA.
-- NFR-9: Eligibility/conflict/capacity code SHOULD reach >= 90% branch
-  coverage; coverage never replaces behavior tests.
 
 ## Complexity Tracking
 
-No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.
+The plan reuses SQL Server for shared keys and durable state. Kubernetes,
+message brokers, service decomposition, and vendor-specific hosting remain out
+of scope.

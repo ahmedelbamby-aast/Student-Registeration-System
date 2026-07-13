@@ -91,7 +91,7 @@ or presents a cached success.
 | STU-05 /student/review | Student reviews groups, credits, policy checks, terms, and final blocking reasons. | Submit is enabled only for a conflict-free, currently eligible plan; a disabled action always states why. |
 | STU-06 /student/registration/result/{id} | Atomic result gives reference, term, groups, staff, rooms, timetable, and decision snapshot. | Success or rejection explicitly states that no partial registration occurred. |
 | STU-07 /student/registrations | Student sees current timetable and historical terms in calendar and table/list formats. | Empty/current/history/unavailable; printable semantic table. |
-| STU-08 /student/account | Read-only institutional identity plus permitted security/session actions. | Saved/validation/stale/password failure; sign-out-all requires confirmation. |
+| STU-08 /student/account | Read-only institutional identity plus password recovery, current-session sign-out, and sign-out-all actions. | Generic recovery confirmation, expired/used factor, stale session and password failure; sign-out-all requires confirmation and invalidates every replica-visible session. |
 
 ## Admin screens
 
@@ -99,13 +99,13 @@ or presents a cached success.
 |---|---|---|
 | ADM-01 /admin | Dashboard shows active term, countdown, traffic, fill rates, failures, and data-quality warnings. | Metrics show timestamp and text equivalents; auto-refresh can pause. |
 | ADM-02 /admin/terms | Admin creates terms, timezone, lifecycle, and one or more registration windows. | Prevent invalid dates, overlapping windows, or multiple active contexts. |
-| ADM-03 /admin/users | Admin imports/provisions students and staff and assigns/revokes staff roles. | Preview, duplicates, row errors, disabled user; error export references source row. |
+| ADM-03 /admin/users | Admin imports/provisions students and staff, enables/disables accounts, and assigns/revokes staff roles through governed IdentityAccess commands. | Preview, duplicates, row errors, stale user, final-Admin safeguard, disabled user; error export references source row. |
 | ADM-04 /admin/students | Authorized admin inspects GPA, transcript, holds, and provenance and performs reasoned corrections. | Read-only source/stale version/invalid correction/required reason. |
 | ADM-05 /admin/catalogue | Admin manages programs, curricula, courses, prerequisites, and effective-dated typed policy values. | Draft/published/superseded, prerequisite cycle, invalid range, policy simulation. |
 | ADM-06 /admin/offerings | Admin creates offerings/groups, capacity, Lecturer/TA assignments, rooms and meeting slots, then validates/publishes. | Missing resource, staff/room overlap, capacity mismatch, stale edit; validation links to the field. |
-| ADM-07 /admin/resources | Admin manages rooms, room capacity, meeting templates, and staff availability. | Imported/empty/unavailable/overlap; table/list editor is an alternative to timetable grid. |
-| ADM-08 /admin/registrations | Admin monitors submissions/fill/failures and makes only approved, reasoned corrections. | Live/stale/degraded/collision/correction blocked. Normal workflow cannot exceed capacity or create conflict. |
-| ADM-09 /admin/audit | Admin searches immutable audit events and produces authorized operational exports. | Empty/large result/export queued/ready/failed/restricted event. |
+| ADM-07 /admin/resources | Admin manages versioned rooms and views staff-owned availability plus published-schedule impact alerts. A separately permitted availability correction requires reason, preview, version check, audit, and staff notification. | Imported/empty/unavailable/overlap/stale resource; table/list editor is an alternative to timetable grid. |
+| ADM-08 /admin/registrations | Admin monitors and inspects submissions, receipts, fill, failures, and reconciliation alerts. Registration correction, drop, withdrawal, and reconciliation repair commands are absent from the Admin UI in MVP. | Live/stale/degraded/collision/restricted record; paused-group alerts provide a support reference while repair remains an operations-service runbook action. |
+| ADM-09 /admin/audit | Admin searches immutable audit events and requests scoped operational exports. | Empty/large result/export queued/running/ready/expired/failed/restricted event; status and authorized download are separate states. |
 
 ## Shared Lecturer and Teaching Assistant screens
 
@@ -117,7 +117,7 @@ scope and available actions, not a client-selected role.
 | STF-01 /staff | Staff dashboard shows own role context, assignments, deadlines, and warnings. | Lecturer sees assigned lecture groups; TA sees assigned tutorial/lab groups. |
 | STF-02 /staff/timetable | Staff sees assigned subject/group, colleagues, rooms, days, times, and history. | Direct URLs to unassigned data return 403. Calendar has table/list equivalent. |
 | STF-03 /staff/groups/{groupId}/roster | Staff sees the minimum authorized roster and counts for an assigned group. | No unrelated students or groups; semantic table and accessible paging. |
-| STF-04 /staff/availability | Staff records available/unavailable time ranges before the configured deadline. | Draft/saved/overlap/deadline passed/admin changed schedule/stale edit. Keyboard and text-range entry are supported. |
+| STF-04 /staff/availability | Staff records available/unavailable time ranges before the configured deadline through the Scheduling-owned availability aggregate. | Draft/saved/overlap/deadline passed/audited admin override/stale edit/published-group impact warning. Availability changes never silently move a class; keyboard and text-range entry are supported. |
 
 ## System screen
 

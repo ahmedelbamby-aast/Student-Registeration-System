@@ -28,8 +28,10 @@ interface PolicyDecisionDto {
 }
 ```
 
-Endpoints: POST /api/admin/policies/{id}/simulate and GET
-/api/student/offerings/{id}/eligibility.
+Endpoint ownership is intentionally downstream: SPEC-009 owns
+`POST /api/admin/policies/{policySetId}/simulate`, and SPEC-011 owns
+`GET /api/student/offerings/{offeringId}/eligibility`. This rulebook supplies
+the decision/provenance shape but no handler.
 
 
 

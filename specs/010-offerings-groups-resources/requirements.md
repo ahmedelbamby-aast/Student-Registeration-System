@@ -18,26 +18,37 @@ for registration.
 
 - FR-1: Admin MUST create term course offerings and one or more section groups.
 - FR-2: Each group MUST have code, capacity, state, meeting slots, room(s), and
-  required Lecturer/TA assignments before publish.
+  required staff assignments before publish. Under DEC-11's safe rule, every
+  Lecture activity requires at least one Lecturer and every Tutorial or
+  Laboratory activity requires at least one Teaching Assistant; a group that
+  contains both activity types requires both and displays all assigned staff.
+  Any institution-specific exception remains unpublished until approved.
 - FR-3: Publish validation MUST reject staff overlap/unavailability, room
   overlap/unavailability, room capacity below group capacity, invalid slots,
   missing roles, and duplicate offering/group codes.
 - FR-4: Students MUST NOT select full, unpublished, cancelled, or closed
   groups.
 - FR-5: Capacity MUST NOT be set below active EnrolledCount.
-- FR-6: Staff assignments/availability and resource changes MUST be
-  optimistic-concurrency protected and audited.
+- FR-6: SPEC-010 MUST own the `StaffTermAvailability` aggregate and child
+  `StaffAvailability` ranges. Staff edit their own declarations through the
+  SPEC-016 workspace contract. An Admin correction is allowed only with the
+  separate permission, reason, signed preview, expected aggregate version,
+  audit, and staff-notification contract in DEC-12. All staff assignment,
+  availability, room, and resource changes are concurrency protected.
 - FR-7: Publication MUST be transactional.
 - FR-8: Publication MUST lock every touched offering, room, and staff resource
-  in stable identifier order and revalidate overlaps/availability inside the
-  same transaction to prevent concurrent write skew.
+  in stable order: CourseOffering, SectionGroup IDs, Room IDs, then
+  StaffTermAvailability IDs. It MUST revalidate overlaps, availability,
+  staffing rules, room capacity, and every expected dependency version inside
+  the same transaction to prevent concurrent write skew.
 - FR-9: Capacity edits and registration seat allocation MUST serialize on the
   same SectionGroup database row/version and preserve
   0 <= EnrolledCount <= Capacity for every outcome.
 - FR-10: Every group-state, meeting-slot, room-assignment, and staff-assignment
   mutation MUST lock and advance the owning SectionGroup rowversion. Staff
   availability mutation and group publication MUST also share the versioned
-  staff-term availability boundary defined by SPEC-016.
+  staff-term availability boundary defined and owned by SPEC-010; SPEC-016
+  consumes that aggregate through the Scheduling application contract.
 
 ## Non-Functional Requirements
 
@@ -50,8 +61,9 @@ for registration.
 ## Acceptance Criteria
 
 ### AC-1: Valid group publish (FR-1, FR-2, FR-3)
-Given a group has capacity 30, room capacity 35, valid times, and available
-Lecturer/TA<br>
+Given a group has Lecture and Laboratory activities, capacity 30, room
+capacity 35, valid times, an available Lecturer for Lecture, and an available
+TA for Laboratory<br>
 When Admin validates and publishes<br>
 Then the group becomes visible to eligible students with all details.
 
@@ -103,6 +115,16 @@ Then the registration re-read detects GROUP_CHANGED and cannot enroll against
 rowversion 8<br>
 And concurrent availability/publication uses one valid staff-term serial order.
 
+### AC-9: Audited Admin availability correction (FR-6, FR-8, FR-10)
+Given staff owns a current term availability declaration and an authorized
+Admin has separate correction permission, reason, signed preview, and current
+StaffTermAvailability rowversion<br>
+When the Admin submits a correction that affects a published group<br>
+Then the complete range set is atomically replaced, the aggregate version
+advances, an audit fact and staff notification are recorded, and a durable
+ScheduleImpactAlert requires Admin revalidation<br>
+And a stale, unauthorized, or unpreviewed correction changes nothing.
+
 ## Edge Cases
 
 - EC-1: Multi-slot group has one invalid slot -> entire group cannot publish.
@@ -138,15 +160,51 @@ interface GroupDto {
 interface OfferingMutationRequest {
   expectedOfferingRowVersion: string;
   expectedGroupRowVersions: Record<string, string>;
-  previewToken?: string;
+  expectedRoomRowVersions: Record<string, string>;
+  expectedStaffTermAvailabilityRowVersions: Record<string, string>;
+  previewToken: string;
   clientRequestId: string;
+}
+interface OfferingValidationResult {
+  valid: boolean;
+  reasons: Array<{ code: string; message: string; resourceIds: string[]; overlapStartLocal?: string; overlapEndLocal?: string }>;
+  previewToken?: string;
+  dependencyVersions: { offering: string; groups: Record<string, string>; rooms: Record<string, string>; staffTermAvailability: Record<string, string> };
+}
+interface StaffTermAvailabilityDto {
+  staffId: string;
+  termId: string;
+  deadlineUtc: string;
+  rowVersion: string;
+  ranges: Array<{ dayOfWeek: number; startLocal: string; endLocal: string; kind: "available" | "unavailable" }>;
+}
+interface AdminAvailabilityCorrectionRequest {
+  expectedStaffTermRowVersion: string;
+  previewToken: string;
+  clientRequestId: string;
+  reason: string;
+  ranges: StaffTermAvailabilityDto["ranges"];
+}
+interface ScheduleImpactAlertDto {
+  id: string;
+  groupId: string;
+  staffTermAvailabilityId?: string;
+  reasonCode: string;
+  state: "open" | "revalidated" | "resolved";
+  rowVersion: string;
 }
 ```
 
-Endpoints: GET /api/offerings/{id}, GET /api/groups/{id}, POST
-/api/admin/offerings, PUT /api/admin/groups/{id}, POST
-/api/admin/offerings/{id}/validate, and POST
-/api/admin/offerings/{id}/publish.
+Endpoints: GET /api/offerings/{offeringId}, GET /api/groups/{groupId}, GET
+/api/admin/offerings, POST /api/admin/offerings, PUT
+/api/admin/groups/{groupId}, POST /api/admin/offerings/{offeringId}/validate, POST
+/api/admin/offerings/{offeringId}/publish, GET /api/admin/rooms, POST
+/api/admin/rooms, PUT /api/admin/rooms/{roomId}, GET
+/api/admin/staff-availability, and PUT
+/api/admin/staff/{staffId}/terms/{termId}/availability; plus GET
+/api/admin/schedule-impact-alerts, POST
+/api/admin/schedule-impact-alerts/{alertId}/revalidate, and POST
+/api/admin/schedule-impact-alerts/{alertId}/resolve.
 Every group-state, capacity, meeting, room, and staff-assignment mutation
 requires the owning group rowversion. Retryable create/publish uses
 clientRequestId; stale resources return 409 GROUP_CHANGED,
@@ -160,7 +218,9 @@ RESOURCE_CONFLICT, or IDEMPOTENCY_KEY_REUSED without partial publication.
 | SectionGroup.Capacity | integer | >= EnrolledCount; nonnegative |
 | MeetingSlot | value/entity | EndLocal > StartLocal |
 | GroupStaffAssignment | bridge | unique group + staff + teaching role |
-| StaffAvailability | range | valid term/day/start/end; rowversion |
+| StaffTermAvailability | aggregate root | unique staff + term; deadline; complete range-set rowversion |
+| StaffAvailability | child range | parent aggregate; valid day/start/end/type; no independent rowversion |
+| ScheduleImpactAlert | durable child/entity | affected group/resource/version, reason, detected time, revalidation state |
 
 ## Out of Scope
 

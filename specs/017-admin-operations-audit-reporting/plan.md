@@ -5,65 +5,84 @@
 
 ## Summary
 
-Deliver Admin Operations, Audit, and Reporting inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Implement least-privilege Admin orchestration, append-only audit, operational
+metrics, and durable asynchronous exports in
+`StudentRegistration.StaffAdministration`. Enrollment correction, drop, and
+withdrawal are excluded from MVP; Admin registration views are inspection and
+monitoring only.
 
 ## Technical Context
 
-**Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
-**Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
-**Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
-**Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
-**Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
+- **Runtime**: C#/.NET 10, ASP.NET Core, Blazor WebAssembly, EF Core/LINQ.
+- **Module**: `src/StudentRegistration.StaffAdministration/`; SQL audit/export
+  adapters in `StudentRegistration.Infrastructure.SqlServer`.
+- **Storage**: SQL Server Code First with rowversion, append-only permissions,
+  idempotency claims, and durable export leases.
+- **EF mapping contribution**:
+  `AdministrationAuditModelConfiguration.cs` maps ExportJob only. AuditEvent
+  mapping/writing is upstream SPEC-004; AdminSecurityGuard and SecurityEvent
+  mapping/writing are SPEC-007. This slice contributes its incremental S7
+  migration only after upstream slice migrations and its mapping pass.
+- **Scale**: multiple stateless replicas; export workers compete through
+  conditional SQL claims, not process memory.
+- **Security**: reasoned actions, permission scope, anti-forgery, PII
+  minimization, immutable before/after summaries and correlation IDs.
 
-## Constitution Check
+## Workstreams and Order
 
-- PASS: Git ownership is reserved for Ahmed ELbamby.
-- PASS: Requirements, acceptance scenarios, and tasks use stable traceability identifiers.
-- PASS: The design remains a simple modular monolith.
-- PASS: Security, policy, schedule, capacity, and term decisions remain server-authoritative.
-- PASS: Accessibility, scalability, concurrency, and observability requirements are retained.
-- PASS: No application source code or migration is created by this planning phase.
+1. Baseline every contributing feature spec; complete consistency and ownership
+   analysis.
+2. Freeze Admin delegation, audit aggregation, preview/idempotency,
+   Identity-owned final-Admin behavior, metric semantics, export lifecycle,
+   and APIs; obtain approval last.
+3. Write failing model/contract, authorization, acceptance, atomic-audit,
+   preview, two-replica export-worker, final-Admin write-skew, and E2E tests.
+4. Implement audit/security-event aggregation; verify Admin pages call
+   canonical owner endpoints directly and add no generic command facade.
+5. Implement metrics and bounded audit queries.
+6. Implement export request/status/download, durable lease/recovery, secure
+   artifact expiry, and audit of request/download.
+7. Verify page delegation to the serialized Identity final-Admin command, add the
+   ExportJob mapping and S7 incremental migration, then map
+   endpoint handlers and canonical pages after behavior tests fail.
+8. Produce performance, security, scope, and trace evidence.
 
-## Dependency Check
+## Concurrency Boundaries
 
-- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
-- [SPEC-007](../007-identity-account-lifecycle/spec.md)
-- [SPEC-008](../008-academic-term-student-profile/spec.md)
-- [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
-- [SPEC-010](../010-offerings-groups-resources/spec.md)
-- [SPEC-014](../014-registration-capacity-concurrency/spec.md)
-- [SPEC-015](../015-student-registration-records/spec.md)
-- [SPEC-016](../016-lecturer-ta-workspace/spec.md)
-- [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+- Sensitive mutations use the SPEC-004 writer so their AuditEvent commits in
+  the same local SQL transaction; SPEC-017 queries but does not write it.
+- Final-Admin role changes delegate to SPEC-007, which locks its shared
+  `AdminSecurityGuard` before recount/revocation.
+- An export worker claims Pending or expired-Lease work using one conditional
+  update. Only the current lease owner may publish completion; attempts are
+  idempotent and two replicas cannot publish two artifacts.
 
-## Project Structure
+## Design Decisions
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+### Ownership
 
-## Design Artifacts
+SPEC-017 owns `ExportJob` plus Admin query/export projections and conformance
+records. It consumes
+SPEC-004 AuditEvent, SPEC-007 SecurityEvent/AdminSecurityGuard outcomes,
+feature-owned master data, `ImportBatch`, registration records, schedule
+impact alerts, and SPEC-018 operational metric contracts. It does not own role
+mutation, audit transaction writing, a generic Admin command/confirmation
+facade, or enrollment correction behavior.
 
-- [Research](research.md)
+## Constitution and Approval Gate
+
+Every operation is server-authorized and audited, and implementation is
+forbidden until all dependency baselines and consistency analysis pass and
+Ahmed ELbamby's approval is recorded last.
+
+## Artifacts
+
+- [Requirements](requirements.md)
 - [Data model](data-model.md)
 - [API contract](contracts/api.md)
-- [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
-
-
-
-## Non-Functional Requirements
-
-- NFR-1: Operational metrics SHOULD be no more than 60 seconds stale and show
-  observation timestamp.
-- NFR-2: Audit search SHOULD return first page within 1 second p95 at approved
-  retention volume.
-- NFR-3: Export generation MUST be asynchronous/bounded for large data and
-  expire securely.
-- NFR-4: Admin actions MUST have authorization, audit, concurrency, and
-  validation tests.
 
 ## Complexity Tracking
 
-No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.
+One SQL-backed export lease and the consumed Identity guard solve the identified cross-replica races;
+no broker, distributed scheduler, super-admin, or reporting replica is added.

@@ -18,16 +18,29 @@ submission until the plan is valid.
 
 - FR-1: The student MUST add at most one group per course offering to a plan.
 - FR-2: The server MUST detect overlap for every meeting slot using strict
-  interval logic.
+  half-open interval logic (`startA < endB && startB < endA`). Adjacent
+  meetings do not conflict. The DEC-06 travel-buffer rule is disabled and MUST
+  NOT create a hard conflict until an approved typed room/campus matrix and
+  duration are published.
 - FR-3: Each conflict MUST identify both groups, subjects, day, times, and
-  resolution links.
+  exact overlap interval. It MUST include accessible resolution actions to
+  change either group or remove either selection; actions are identifiers and
+  authorized route targets, not untrusted HTML.
 - FR-4: The UI MUST render a red X plus text/icon-accessible conflict state.
 - FR-5: Review/submission MUST be blocked while any hard conflict exists.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
-  credits/conflicts.
-- FR-7: Plans MUST persist server-side and use rowversion.
+  credits/conflicts through an explicit GET, versioned PUT, and non-mutating
+  validate contract.
+- FR-7: One active RegistrationPlan per authenticated student and term MUST
+  persist server-side and use rowversion. Owner routes use the authorized
+  term, not an arbitrary client-owned plan identifier; direct-object access to
+  another student's plan returns no data.
 - FR-8: The client MUST treat capacity displayed in a plan as advisory until
-  final submission revalidates it.
+  final submission revalidates it. Every plan response MUST include a
+  timestamped ValidationSnapshot with the academic context, policy,
+  catalogue, offering, and selected SectionGroup versions used; any changed,
+  full, closed, cancelled, or unpublished group is returned as stale/invalid
+  with change/remove actions and blocks review.
 
 ## Non-Functional Requirements
 
@@ -48,7 +61,8 @@ subjects, and 11:00-11:30 overlap.
 ### AC-2: Adjacent meetings (FR-2)
 Given Group A ends Monday 11:00 and Group B starts Monday 11:00<br>
 When both are selected<br>
-Then no overlap exists unless an approved travel-buffer rule applies.
+Then no overlap exists<br>
+And DEC-06's disabled travel-buffer rule adds no conflict.
 
 ### AC-3: Submission blocked (FR-5)
 Given an unresolved hard conflict<br>
@@ -86,12 +100,21 @@ And one stale editor receives 409 without a lost update.
 ```typescript
 interface ScheduleConflictDto {
   code: "MEETING_OVERLAP" | "TRAVEL_BUFFER";
-  firstGroupId: string;
-  secondGroupId: string;
+  first: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
+  second: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
   dayOfWeek: number;
   overlapStartLocal: string;
   overlapEndLocal: string;
   message: string;
+  actions: Array<{ action: "change-group" | "remove-group"; targetGroupId: string; label: string; route: string }>;
+}
+interface ValidationSnapshotDto {
+  evaluatedAtUtc: string;
+  academicContextVersion: string;
+  policyVersion: string;
+  catalogueVersion: string;
+  offeringVersions: Record<string, string>;
+  groupVersions: Record<string, string>;
 }
 interface RegistrationPlanDto {
   id: string;
@@ -100,10 +123,18 @@ interface RegistrationPlanDto {
   selectedGroups: GroupDto[];
   totalCredits: number;
   conflicts: ScheduleConflictDto[];
+  validation: ValidationSnapshotDto;
+  reviewBlocked: boolean;
 }
+interface RegistrationPlanMutationRequest { expectedPlanRowVersion: string; selectedGroupIds: string[]; }
 ```
 
-Endpoints: GET/PUT /api/student/registration-plans/{id}; POST validate.
+Endpoints: GET and PUT /api/student/terms/{termId}/registration-plan, and POST
+/api/student/terms/{termId}/registration-plan/validate. PUT atomically replaces
+the selected group set, recalculates credits/conflicts/validation, and returns
+the new plan. A stale version returns 409 STALE_VERSION with the current plan
+only to its authorized owner. Validate never reserves a seat or mutates the
+plan.
 
 ## Data Models
 

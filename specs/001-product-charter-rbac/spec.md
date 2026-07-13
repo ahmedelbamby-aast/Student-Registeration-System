@@ -115,9 +115,12 @@ And the modular monolith meets SPEC-018 targets without distributed services.
 
 ### Key Entities
 
-- **Role**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Permission**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RoleAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **RoleDefinition**: Governed vocabulary artifact owned by SPEC-001; SPEC-007 owns runtime identity representation.
+- **PermissionDefinition**: Governed capability/data-scope artifact owned by SPEC-001; SPEC-007 owns executable authorization policies.
+- **RbacMatrix**: Governed role-to-permission matrix artifact owned by SPEC-001.
+
+Runtime `RoleAssignment` is referenced from, and owned only by, SPEC-007; it is
+not a SPEC-001 entity.
 
 ## Success Criteria
 

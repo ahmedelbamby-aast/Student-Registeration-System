@@ -28,26 +28,48 @@ until AASTMT provides enrollment/traffic forecasts.
   capacity conflicts, and counter reconciliation.
 - FR-5: Backup/restore, migration rollback, and application rollback MUST be
   rehearsed before release.
-- FR-6: Production secrets MUST use an approved secret store and MUST NOT
-  appear in Git/config/logs.
-- FR-7: Application replicas MUST share Data Protection keys and remain
-  stateless.
-- FR-8: Critical flows MUST pass automated and manual accessibility tests.
-- FR-9: Release MUST be blocked by unresolved critical/high security issues,
-  invariant failures, or critical/major core usability defects.
+- FR-6: Production secrets and the Data Protection at-rest protection
+  certificate/key MUST come from the approved secret-store interface and MUST
+  NOT appear in Git, checked-in configuration, or logs. Production startup
+  MUST fail closed when required secret/key material is unavailable.
+- FR-7: Application replicas MUST remain stateless and use one shared SQL
+  Server Data Protection key repository, encrypted at rest by certificate/key
+  material obtained through FR-6. Cross-replica authentication and protected
+  option-token tests MUST pass with no sticky session.
+- FR-8: Critical flows MUST pass automated accessibility checks plus manual
+  keyboard and representative NVDA/Windows screen-reader journeys. A dated
+  evidence record MUST identify tester, assistive technology/version, route,
+  scenario, result, defect links, and UX/QA sign-off; automation alone cannot
+  satisfy this requirement.
+- FR-9: A versioned STRIDE threat model MUST cover trust boundaries, assets,
+  identity/session, authorization/data scope, protected option tokens,
+  registration races, Admin/audit/export, SQL, telemetry, secrets, and
+  deployment. Security review MUST record mitigations, residual risk, and
+  owner. Release MUST be blocked by an unreviewed/stale threat model,
+  unresolved critical/high security issue, invariant failure, or
+  critical/major core usability defect.
 
 ## Non-Functional Requirements
 
 - NFR-1: The production-like validation environment MUST support a planning
   baseline of 25,000 accounts and 5,000 concurrent authenticated sessions,
   pending S0 rebaseline.
-- NFR-2: The system MUST support 75 submissions/s for 10 min, 200/s for 60 s,
-  and 300 read/s.
+- NFR-2: The load suite MUST run: target for 10 minutes at 75 submissions/s
+  plus 300 reads/s; 2x target for 10 minutes at 150 submissions/s plus 600
+  reads/s; the existing 60-second burst at 200 submissions/s plus 300 reads/s;
+  and a 60-second 5x spike at 375 submissions/s plus 1,500 reads/s. Read mix is
+  50% offering discovery, 25% eligibility detail, 15% plan/timetable, and 10%
+  registration records; submission mix is 70% valid unique, 20% expected
+  business rejection, and 10% idempotent retry/lost-response recovery.
 - NFR-3: Catalogue p95 MUST be <= 300 ms, commit p95 MUST be <= 2 s, and
   optimizer p95 MUST be <= 500 ms for the approved workload.
-- NFR-4: Tests MUST demonstrate zero overbooking, duplicate active offering
-  enrollment, and partial atomic submission.
-- NFR-5: Availability MUST be 99.9% during announced registration windows.
+- NFR-4: Tests MUST demonstrate zero overbooking, zero duplicate active
+  offering enrollment, and zero partial atomic submissions at target, 2x,
+  burst, 5x spike, failover, and soak load.
+- NFR-5: A 120-minute target-mix soak across at least two replicas MUST measure
+  availability >= 99.9% over that exact window. Target latency SLOs apply at
+  target load; 2x and 5x runs must preserve correctness, bounded
+  queues/timeouts, safe degradation, and recovery evidence.
 - NFR-6: Unexpected server failure rate MUST be < 0.1% at target load.
 - NFR-7: RPO MUST be <= 5 minutes and RTO <= 1 hour.
 - NFR-8: Critical flows MUST meet WCAG 2.2 AA.
@@ -57,14 +79,15 @@ until AASTMT provides enrollment/traffic forecasts.
 ## Acceptance Criteria
 
 ### AC-1: Target load (FR-4, NFR-2, NFR-3, NFR-4)
-Given a production-like database and target traffic mix<br>
-When target load runs for the specified duration<br>
+Given a production-like database and the exact NFR-2 target traffic mix<br>
+When 75 submissions/s plus 300 reads/s run for 10 minutes<br>
 Then p95 budgets and unexpected error rate pass<br>
 And no capacity/duplicate/partial invariant fails.
 
 ### AC-2: Double and spike load (NFR-2, NFR-4)
 Given target correctness already passes<br>
-When 2x target and a short 5x spike run<br>
+When 150 submissions/s plus 600 reads/s run for 10 minutes and then 375
+submissions/s plus 1,500 reads/s run for 60 seconds with the NFR-2 mixes<br>
 Then invariant correctness remains zero-defect<br>
 And any graceful degradation is documented against approved thresholds.
 
@@ -77,13 +100,16 @@ And integrity/reconciliation checks pass.
 
 ### AC-4: Accessibility gate (FR-8, NFR-8)
 Given critical student/staff routes in staging<br>
-When automated, keyboard, and representative screen-reader tests run<br>
-Then no serious automated issue or critical/major manual barrier remains.
+When automated checks and the recorded manual keyboard and NVDA journeys run<br>
+Then no serious automated issue or critical/major manual barrier remains<br>
+And the dated tester/tool/route/result/defect/sign-off evidence is complete.
 
 ### AC-5: Security release gate (FR-6, FR-9)
-Given dependency, secret, static/dynamic and authorization reviews complete<br>
+Given the versioned STRIDE model plus dependency, secret, static/dynamic and
+authorization reviews are complete<br>
 When release readiness is evaluated<br>
-Then no unresolved critical/high finding remains<br>
+Then the threat model has owners/mitigations/residual-risk approval and no
+unresolved critical/high finding remains<br>
 And protected resources pass negative ownership/role tests.
 
 ### AC-6: CI quality sequence (FR-1)
@@ -97,7 +123,8 @@ And any required gate failure blocks merge.
 Given the 25,000-account/5,000-session production-like fixture, two stateless
 replicas with shared Data Protection keys, observability collectors, and the
 critical eligibility/conflict/capacity suites<br>
-When the release evidence pipeline and registration-window soak execute<br>
+When the release evidence pipeline and 120-minute target-mix
+registration-window soak execute<br>
 Then every boundary/concurrency test passes<br>
 And safe health/log/metric/trace signals are available<br>
 And availability is at least 99.9% during the test window<br>

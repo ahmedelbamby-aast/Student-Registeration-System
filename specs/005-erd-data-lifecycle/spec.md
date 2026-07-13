@@ -98,8 +98,9 @@ As a Data Lead, I need the Data operational quality gate (NFR-1, NFR-2, NFR-3, N
 Given a production-like database, reviewed migration bundle, backup, critical
 query plans, and privacy-safe logging fixture<br>
 When the data release gate executes<br>
-Then critical tables above 10,000 rows have reviewed indexed plans<br>
-And migration rehearsal completes inside the approved deployment window<br>
+Then every inventoried critical query touching a forecast table above 10,000
+rows has a reviewed actual plan and no unapproved unbounded scan<br>
+And migration rehearsal completes inside 80% of the approved numeric window<br>
 And restore meets SPEC-018 RPO/RTO<br>
 And sensitive fields are absent from unsafe logs.
 
@@ -128,35 +129,40 @@ And sensitive fields are absent from unsafe logs.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
   startup migrations.
 - FR-8: Data provenance MUST be recorded for imported academic/catalogue data.
-- FR-9: The ERD MUST model a unique student-term registration guard and an
-  idempotency record containing owner/scope, canonical payload hash, processing
-  state, immutable deterministic result, created/updated/completed timestamps,
-  and uniqueness on owner/scope/key.
+- FR-9: The ERD MUST model a unique student-term registration guard and MUST
+  use `RegistrationSubmission` as the single idempotency record containing
+  owner/scope/key, canonical payload hash, processing state, immutable
+  deterministic result, created/updated/completed timestamps, and uniqueness
+  on owner/scope/key. A second `IdempotencyRecord` entity MUST NOT be created.
 
 ### Non-Functional Requirements
 
-- NFR-1: No query on a table expected above 10,000 rows MAY rely on an
-  unreviewed full scan in a critical path.
-- NFR-2: A production-like migration rehearsal MUST complete inside the
-  approved deployment window with rollback instructions.
+- NFR-1: Every query in the approved critical-query inventory (student
+  discovery/detail, plan read/write/validation, submission/replay, roster,
+  audit, and operational metrics) that touches a table forecast above 10,000
+  rows MUST have a reviewed actual SQL Server plan on the production-like data
+  fixture. An unbounded full scan MUST fail the gate unless a time-bounded Data
+  Lead exception records the plan, measured p95, reason, owner, and expiry.
+- NFR-2: A production-like migration rehearsal MUST complete inside 80% of the
+  numeric deployment window approved by AASTMT Operations and include tested
+  rollback instructions. Until that institutional window is recorded, this
+  requirement and implementation readiness remain In Review/fail closed.
 - NFR-3: Backup/restore MUST meet SPEC-018 RPO/RTO.
 - NFR-4: Sensitive fields MUST be minimized and excluded from unsafe logs.
 
 ### Key Entities
 
-- **ApplicationUser**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Student**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Staff**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Program**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Course**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **AcademicTerm**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **CourseOffering**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **SectionGroup**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RegistrationPlan**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RegistrationSubmission**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Enrollment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **AuditEvent**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **SPEC-007 owned**: ApplicationUser, Staff.
+- **SPEC-008 owned**: Student, AcademicTerm.
+- **SPEC-009 owned**: Program, Course, PolicySet.
+- **SPEC-010 owned**: CourseOffering, SectionGroup.
+- **SPEC-012 owned**: RegistrationPlan.
+- **SPEC-014 owned**: StudentTermRegistrationGuard, RegistrationSubmission,
+  and Enrollment. `RegistrationSubmission` is the idempotency record.
+- **SPEC-017 owned**: AuditEvent.
+
+SPEC-005 owns the cross-module ERD, relational-invariant catalogue, ownership
+matrix, and data-lifecycle contract—not any of these runtime entities.
 
 ## Success Criteria
 

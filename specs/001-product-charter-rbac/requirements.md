@@ -85,15 +85,21 @@ And the modular monolith meets SPEC-018 targets without distributed services.
 ## API Contracts
 
 Detailed contracts belong to SPEC-006 and feature specs. The charter's
-role/context boundary is observed through GET /api/context.
+role/context boundary is observed through `GET /api/context`, whose canonical
+handler owner is SPEC-008; SPEC-001 owns no endpoint.
 
 ## Data Models
 
-| Concept | Required values |
-|---|---|
-| Role | Student, Admin, Lecturer, TeachingAssistant |
-| Permission | Stable server policy name and allowed operations |
-| RoleAssignment | User, role, effective dates, assigning actor |
+| Concept | Role in SPEC-001 | Canonical runtime owner | Required values |
+|---|---|---|---|
+| RoleDefinition | Governed vocabulary artifact | SPEC-001; consumed by SPEC-007 | Student, Admin, Lecturer, TeachingAssistant |
+| PermissionDefinition | Governed capability/data-scope artifact | SPEC-001; consumed by SPEC-007 | Stable server policy name and allowed operations |
+| RbacMatrix | Governed mapping artifact | SPEC-001; consumed by SPEC-007 | Role, permission, data-scope rule, denied operations |
+
+SPEC-001 owns the product/RBAC contract and conformance evidence. It does not
+own identity persistence or `RolePolicies.cs`; those are delivered only by
+approved SPEC-007 tasks. Runtime `RoleAssignment` is only a referenced
+SPEC-007 entity.
 
 ## Out of Scope
 

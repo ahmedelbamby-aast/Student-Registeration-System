@@ -36,12 +36,25 @@ interface PublishVersionRequest {
 }
 ```
 
-Endpoints: GET /api/admin/programs, POST /api/admin/courses, PUT
-/api/admin/curricula/{id}, POST /api/admin/policies/{id}/validate, POST
-/api/admin/policies/{id}/simulate, and POST /api/admin/policies/{id}/publish.
-Every update/publish request uses expected version; retryable create/publish
-uses clientRequestId. Stale preview/version and idempotency payload mismatch
-return 409 STALE_PREVIEW, STALE_VERSION, or IDEMPOTENCY_KEY_REUSED.
+The Admin contract exposes explicit catalogue version, draft, import lifecycle,
+and policy endpoints. Manual edits target a draft; imports target a draft and
+retain status/errors; only validated, current previews can publish an
+immutable version.
+
+### Catalogue versioning
+**Decision**: Separate editable `CatalogueDraft`, immutable
+`CatalogueVersion`, and versioned `ImportBatch` aggregates.
+**Rationale**: The model makes preview invalidation, import errors, provenance,
+and historical meaning explicit without event sourcing or a generic workflow
+engine.
+**Alternatives rejected**: Editing published rows and one overloaded table
+with implicit states.
+
+### Admin API ownership
+**Decision**: Academics owns catalogue/policy reads and mutations; SPEC-017
+consumes bounded audit/report facts instead of duplicating owner handlers.
+**Rationale**: One writer per aggregate prevents divergent validation.
+**Alternatives rejected**: Parallel Admin handlers in an operations module.
 
 
 

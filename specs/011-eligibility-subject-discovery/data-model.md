@@ -1,24 +1,28 @@
 # Data Model: Eligibility and Subject Discovery
 
-## Owned Entities
+## Ownership and References
 
-- **OfferingEligibility**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **EligibilityReason**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **GroupSummary**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyVersion**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+SPEC-011 owns the immutable `OfferingEligibility`, `EligibilityReason`, and
+`GroupSummary` evaluation projections. It consumes SPEC-008 academic context,
+SPEC-009 `PolicySet` IDs/versions, and SPEC-010 offering/group versions; those
+aggregates are not redefined or persisted as SPEC-011-owned entities.
 
 ## Detailed Model
 
 | Field/example | Type | Constraints |
 |---|---|---|
 | OfferingEligibility.Course | projection | code, title, credits |
-| OfferingEligibility.Reasons | array | stable code/message per evaluated rule |
-| OfferingEligibility.Groups | array | published selectable detail only |
-| OfferingEligibility.PolicyVersion | string | required |
+| OfferingEligibility.Reasons | array | code, pass/block flags, safe required/current values, message, PolicySet/version/source/effective/support metadata per evaluated rule |
+| OfferingEligibility.Groups | array | published and unavailable group summaries with state, selectable flag, capacity/count/seats, staff, activity/room/time, SectionGroup rowversion |
+| OfferingEligibility.Context | value | evaluated time plus StudentTermAcademicState/policy/catalogue dependency versions |
 
-## Integrity Rules
+## Projection Rules
 
-- Foreign keys and unique constraints enforce durable identity and relationship rules.
-- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Audit timestamps use server time; academic activity references an explicit academic term.
-- Deletion and retention behavior follow the project data-lifecycle specification.
+- Evaluation is stateless and deterministic for the same complete versioned
+  input; no eligibility projection is a source of truth for submission.
+- Any missing required input produces `DECISION_DATA_UNAVAILABLE` and an
+  ineligible result.
+- Group summaries preserve SPEC-010 IDs/versions; details and final submission
+  re-resolve them.
+- Pages are evaluated and filtered server-side, default to 20, reject more
+  than 100, and use offering ID as the stable final sort key.

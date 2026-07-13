@@ -28,17 +28,24 @@ proposed model is in docs/diagrams/ERD.md.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
   startup migrations.
 - FR-8: Data provenance MUST be recorded for imported academic/catalogue data.
-- FR-9: The ERD MUST model a unique student-term registration guard and an
-  idempotency record containing owner/scope, canonical payload hash, processing
-  state, immutable deterministic result, created/updated/completed timestamps,
-  and uniqueness on owner/scope/key.
+- FR-9: The ERD MUST model a unique student-term registration guard and MUST
+  use `RegistrationSubmission` as the single idempotency record containing
+  owner/scope/key, canonical payload hash, processing state, immutable
+  deterministic result, created/updated/completed timestamps, and uniqueness
+  on owner/scope/key. A second `IdempotencyRecord` entity MUST NOT be created.
 
 ## Non-Functional Requirements
 
-- NFR-1: No query on a table expected above 10,000 rows MAY rely on an
-  unreviewed full scan in a critical path.
-- NFR-2: A production-like migration rehearsal MUST complete inside the
-  approved deployment window with rollback instructions.
+- NFR-1: Every query in the approved critical-query inventory (student
+  discovery/detail, plan read/write/validation, submission/replay, roster,
+  audit, and operational metrics) that touches a table forecast above 10,000
+  rows MUST have a reviewed actual SQL Server plan on the production-like data
+  fixture. An unbounded full scan MUST fail the gate unless a time-bounded Data
+  Lead exception records the plan, measured p95, reason, owner, and expiry.
+- NFR-2: A production-like migration rehearsal MUST complete inside 80% of the
+  numeric deployment window approved by AASTMT Operations and include tested
+  rollback instructions. Until that institutional window is recorded, this
+  requirement and implementation readiness remain In Review/fail closed.
 - NFR-3: Backup/restore MUST meet SPEC-018 RPO/RTO.
 - NFR-4: Sensitive fields MUST be minimized and excluded from unsafe logs.
 
@@ -85,8 +92,9 @@ And the stored deterministic result survives application-process restart.
 Given a production-like database, reviewed migration bundle, backup, critical
 query plans, and privacy-safe logging fixture<br>
 When the data release gate executes<br>
-Then critical tables above 10,000 rows have reviewed indexed plans<br>
-And migration rehearsal completes inside the approved deployment window<br>
+Then every inventoried critical query touching a forecast table above 10,000
+rows has a reviewed actual plan and no unapproved unbounded scan<br>
+And migration rehearsal completes inside 80% of the approved numeric window<br>
 And restore meets SPEC-018 RPO/RTO<br>
 And sensitive fields are absent from unsafe logs.
 
@@ -101,23 +109,44 @@ And sensitive fields are absent from unsafe logs.
 
 ## API Contracts
 
-Database design is exposed only through approved feature endpoints, for
-example GET /api/student/registrations; feature DTOs are defined in SPEC-006
-onward.
+Database design is exposed only through approved feature endpoints. The
+student registration-record resource is owned by SPEC-015; shared DTO rules are
+owned by SPEC-006. SPEC-005 owns no API endpoint.
+
+`GET /api/student/registrations` is the canonical SPEC-015 read resource used
+to observe the approved registration projection; it never exposes EF entities.
+
+```typescript
+interface PersistenceConformanceDescriptor {
+  entityName: string;
+  canonicalOwnerSpec: string;
+  invariantIds: string[];
+  erdVersion: string;
+}
+```
+
+`PersistenceConformanceDescriptor` is repository verification metadata, not an
+HTTP response DTO and not a persisted runtime entity.
 
 ## Data Models
 
 The entities, fields, relationships, keys, checks, indexes, schemas, and
 lifecycle are normative in docs/diagrams/ERD.md after approval.
 
-| Field/example | Type | Constraints |
-|---|---|---|
-| Student.UniversityId | string | normalized, unique, not null |
-| SectionGroup.Version | rowversion | concurrency token |
-| Enrollment offering/group | composite FK | group must belong to offering |
-| ImportedRecord.Source | string | required provenance |
-| StudentTermRegistrationGuard | entity | unique student + term; rowversion/serialization boundary |
-| IdempotencyRecord | entity | unique owner + scope + key; payload hash, state, result, timestamps |
+| Field/example | Canonical owner | Type | Constraints |
+|---|---|---|---|
+| ApplicationUser.UniversityId | SPEC-007 | string | normalized, filtered unique for pre-provisioned student identities |
+| Student.ApplicationUserId | SPEC-008 | uniqueidentifier | unique FK to Identity-owned ApplicationUser |
+| SectionGroup.Version | SPEC-010 | rowversion | concurrency token |
+| Enrollment offering/group | SPEC-014 | composite FK | group must belong to offering |
+| ImportedRecord.Source | owning import feature | string | required provenance |
+| StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
+| RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, timestamps |
+
+Each canonical owner implements its entity and EF configuration in its module.
+`StudentRegistration.Infrastructure.SqlServer` composes those configurations
+into the one DbContext and owns migrations. SPEC-005 supplies conformance rules
+and does not require downstream source during its own approval.
 
 ## Out of Scope
 

@@ -5,58 +5,65 @@
 
 ## Summary
 
-Deliver Lecturer and Teaching Assistant Workspace inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Deliver shared Lecturer/TA pages and assignment-scoped queries in
+`StudentRegistration.StaffAdministration`. Availability is edited through a
+Scheduling-module application port: SPEC-010 remains canonical owner of
+`StaffTermAvailability` and `StaffAvailability`. A conflicting published
+assignment creates a durable, auditable impact alert and revalidation state; it
+never moves a class automatically.
 
 ## Technical Context
 
-**Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
-**Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
-**Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
-**Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
-**Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
+- **Runtime**: C#/.NET 10, Blazor WebAssembly, ASP.NET Core, EF Core/LINQ.
+- **Modules**: `StudentRegistration.StaffAdministration` for workspace
+  queries/pages contracts; `StudentRegistration.Scheduling` owns availability
+  aggregate and mutation port.
+- **Storage**: SQL Server; aggregate rowversion protects complete-range
+  replacement; impact alerts are durable.
+- **Roster**: bounded `Page<RosterRowDto>`, default 20/max 100, stable
+  display-name then University-ID order, assignment authorization before query.
+- **Performance**: dashboard/assignment p95 <= 300 ms.
 
-## Constitution Check
+## Workstreams and Order
 
-- PASS: Git ownership is reserved for Ahmed ELbamby.
-- PASS: Requirements, acceptance scenarios, and tasks use stable traceability identifiers.
-- PASS: The design remains a simple modular monolith.
-- PASS: Security, policy, schedule, capacity, and term decisions remain server-authoritative.
-- PASS: Accessibility, scalability, concurrency, and observability requirements are retained.
-- PASS: No application source code or migration is created by this planning phase.
+1. Baseline IdentityAccess, Scheduling, Records, UX, and Quality dependencies;
+   complete ownership and consistency analysis.
+2. Freeze exact roster fields, audit metadata, availability port, deadline,
+   impact alert lifecycle, routes, and API errors; obtain human approval last.
+3. Write failing DTO/schema, endpoint, authorization, acceptance, aggregate
+   race, publication race, accessibility, and performance tests.
+4. Implement scoped reads and roster audit.
+5. Implement availability orchestration through the Scheduling port and
+   durable impact-alert creation/revalidation.
+6. Map handlers and implement STF-01..STF-04 only after their behavior/E2E tests
+   fail; produce release evidence.
 
-## Dependency Check
+## Design Decisions
 
-- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
-- [SPEC-007](../007-identity-account-lifecycle/spec.md)
-- [SPEC-010](../010-offerings-groups-resources/spec.md)
-- [SPEC-015](../015-student-registration-records/spec.md)
-- [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+### Ownership and Privacy
 
-## Project Structure
+SPEC-010 owns `GroupStaffAssignment`, `StaffTermAvailability`, and
+`StaffAvailability`. SPEC-016 consumes them and owns workspace projections,
+`RosterRowDto`, and query services. `ScheduleImpactAlert` is also consumed
+from SPEC-010/Scheduling. A roster exposes
+only University ID, display name, and enrollment state; GPA, holds, contact
+details, grades, and transcript data are forbidden.
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+## Constitution and Approval Gate
 
-## Design Artifacts
+Server-side assignment scope is required for every object request. No source,
+test, migration, or page work may begin until dependencies and this package are
+Approved and the final human approval gate is recorded.
 
-- [Research](research.md)
+## Artifacts
+
+- [Requirements](requirements.md)
 - [Data model](data-model.md)
 - [API contract](contracts/api.md)
-- [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
-
-
-
-## Non-Functional Requirements
-
-- NFR-1: Staff dashboard/assignment reads SHOULD respond within 300 ms p95.
-- NFR-2: Every direct-object access MUST have assignment-scope authorization
-  tests.
-- NFR-3: Roster output MUST minimize PII and be safely audited.
-- NFR-4: Timetable/availability MUST have keyboard and list/table operation.
 
 ## Complexity Tracking
 
-No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.
+The feature shares page templates and a narrow Scheduling application port. It
+does not duplicate the availability aggregate or introduce automatic
+rescheduling.

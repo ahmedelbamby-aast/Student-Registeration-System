@@ -34,7 +34,13 @@ Deliver ERD and Data Lifecycle inside the modular monolith while keeping server-
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Future implementation follows the project-per-business-module modular monolith
+in `docs/ARCHITECTURE.md`. Each canonical feature owner defines its runtime
+aggregate and EF configuration contribution inside its business-module project;
+`StudentRegistration.Infrastructure.SqlServer` alone composes the single
+`StudentRegistrationDbContext` and owns migrations. SPEC-005 owns the ERD,
+entity-ownership matrix, relational invariant catalogue, lifecycle rules, and
+schema conformance—not downstream runtime classes or mappings.
 
 ## Design Artifacts
 
@@ -44,14 +50,42 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+## Feature Design
 
+- Assign every ERD entity to exactly one canonical feature owner and identify
+  SPEC-005 as schema-governance owner only.
+- Define keys, checks, rowversion boundaries, immutable-history rules,
+  provenance, indexing, migration, backup, and rollback requirements as a
+  contract consumed by owner specs.
+- Maintain an explicit critical-query inventory and production-like row-count
+  fixture; require actual-plan evidence and expiring Data Lead exceptions.
+- Keep the AASTMT Operations deployment-window duration In Review and block
+  readiness until a numeric window is approved; rehearsal target is 80% of it.
+- Use `RegistrationSubmission` as the single durable idempotency record owned
+  by SPEC-014; do not introduce a second `IdempotencyRecord` entity.
+
+## Execution Strategy
+
+1. Validate SPEC-002/SPEC-004, reconcile ERD ownership, and complete
+   consistency analysis without depending on downstream runtime source.
+2. Record Data Lead and Ahmed ELbamby approval as the final planning gate.
+3. Test the ownership/invariant/lifecycle schemas before publishing them.
+4. Each later canonical owner implements and tests its own EF mapping; deferred
+   cross-module schema conformance runs only after those owner specs are
+   approved and implemented.
+5. The dependency-ordered slice owners in `.specify/persistence-manifest.json`
+   generate one S1 initial migration and reviewed S2/S4/S6/S7 incrementals.
+   Every slice proves fresh apply, prior-version upgrade, rollback/script
+   safety, shared snapshot parity, and ERD conformance before its end-to-end
+   sprint exit; Gate D repeats the full chain.
 
 ## Non-Functional Requirements
 
-- NFR-1: No query on a table expected above 10,000 rows MAY rely on an
-  unreviewed full scan in a critical path.
-- NFR-2: A production-like migration rehearsal MUST complete inside the
-  approved deployment window with rollback instructions.
+- NFR-1: Every approved critical query touching a forecast table above 10,000
+  rows MUST have a reviewed actual plan; unbounded scans require an expiring
+  Data Lead exception with measured evidence.
+- NFR-2: Rehearsal MUST complete inside 80% of the numeric AASTMT Operations
+  deployment window; readiness remains fail closed until that window is approved.
 - NFR-3: Backup/restore MUST meet SPEC-018 RPO/RTO.
 - NFR-4: Sensitive fields MUST be minimized and excluded from unsafe logs.
 

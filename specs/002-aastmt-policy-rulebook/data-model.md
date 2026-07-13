@@ -1,22 +1,29 @@
 # Data Model: AASTMT Policy Rulebook
 
-## Owned Entities
+## Owned Governance Artifacts
 
-- **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyDecisionSnapshot**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **PolicyRulebook**: Versioned, scoped, approval-aware rulebook artifact.
+- **PolicyRuleDefinition**: Typed, non-executable rule-definition artifact.
+- **PolicyBoundaryExample**: Registrar-supplied, approved boundary fixture.
+- **PolicySourceRecord**: Provenance, authority, access, conflict, and approval record.
+
+Runtime `PolicySet`/`PolicyRule` belong to SPEC-009 and durable decision
+snapshots to SPEC-015.
 
 ## Detailed Model
 
-| Entity | Required data |
-|---|---|
-| PolicySet | version, scope, priority, effective dates, approval state/actor |
-| PolicyRule | typed rule, reason code, validated config, source URL/access date |
-| PolicyDecisionSnapshot | version, input summary, result list, evaluated time |
+| Concept | Artifact role | Runtime owner | Required data |
+|---|---|---|---|
+| PolicyRulebook | Governed artifact | SPEC-002; consumed by SPEC-009 | version, scope, priority, effective dates, rule categories, approval state/actor |
+| PolicyRuleDefinition | Governed typed-rule artifact | SPEC-002; consumed by SPEC-009 | type key, validated configuration schema, reason code, source reference |
+| PolicyBoundaryExample | Governed boundary fixture | SPEC-002; consumed by SPEC-009 | input, expected reason/result, boundary label, approval |
+| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source reference, access date, authority, affected rules, approval state |
 
-## Integrity Rules
+## Governance Rules
 
-- Foreign keys and unique constraints enforce durable identity and relationship rules.
-- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Audit timestamps use server time; academic activity references an explicit academic term.
-- Deletion and retention behavior follow the project data-lifecycle specification.
+- Every numeric or categorical policy value records source, access date,
+  scope, effective period, approval state, and approving actor.
+- Unapproved or conflicting values fail closed and cannot govern submission.
+- Published versions are immutable and are superseded by new versions.
+- Runtime keys, persistence mappings, and transactions are defined by their
+  canonical owner specs and SPEC-005 rather than duplicated here.

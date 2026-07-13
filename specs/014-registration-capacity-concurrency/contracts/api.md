@@ -3,21 +3,39 @@
 ## Feature Contract
 
 ```typescript
+interface RegistrationGroupSnapshotDto {
+  offeringId: string;
+  courseCode: string;
+  subjectTitle: string;
+  groupId: string;
+  groupCode: string;
+  credits: number;
+  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; displayName: string }>;
+  meetings: Array<{ dayOfWeek: number; startLocal: string; endLocal: string; roomCode: string; location: string }>;
+}
+interface RegistrationReceiptSnapshotDto {
+  term: TermSummaryDto;
+  groups: RegistrationGroupSnapshotDto[];
+  totalCredits: number;
+  policyVersion: string;
+  submittedAtUtc: string;
+}
 interface SubmitRegistrationRequest {
   planId: string;
   expectedPlanRowVersion: string;
-  termId: string;
   clientRequestId: string;
 }
 interface RegistrationFinalResult {
   submissionId: string;
   status: "accepted" | "rejected";
   resultCode: string;
-  registeredGroups: GroupDto[];
+  registeredGroups: RegistrationGroupSnapshotDto[];
   receivedAtUtc: string;
-  completedAtUtc?: string;
+  completedAtUtc: string;
   policyVersion: string;
   planRowVersion: string;
+  reference?: string;
+  receiptSnapshot?: RegistrationReceiptSnapshotDto;
 }
 interface RegistrationInProgressResponse {
   clientRequestId: string;
@@ -27,20 +45,45 @@ interface RegistrationInProgressResponse {
 }
 ```
 
-Endpoint: POST /api/student/registrations. New final result is 201; idempotent
-final replay is 200; bounded lock-wait expiry is 202 with
-RegistrationInProgressResponse and no submissionId; business/version/
-idempotency conflicts are 409; validation is 400; authentication/authorization
-are 401/403. GET /api/student/registrations/by-request/{clientRequestId}
-returns the authenticated student's committed final result, the same bounded
-202 while the first transaction still holds the key, or 404 REQUEST_NOT_FOUND
-after a rolled-back/nonexistent claim. A 202 is transport-level retry guidance,
-not evidence of a separately committed Processing row.
+## Endpoints and Scope
+
+### POST /api/student/terms/{termId}/registrations
+
+Student identity comes only from authentication; `termId` comes from the
+route and is checked against the student's server-resolved context. The body
+does not contain studentId or termId.
+
+- 201: newly committed final result.
+- 200: same-scope, same-payload final replay.
+- 202: first same-scope claim is still uncommitted after at most 500 ms;
+  contains no submissionId and names the term-scoped lookup URL.
+- 400: malformed input.
+- 401/403: authentication/authorization.
+- 409: business/version conflict or same-scope key reused with different
+  canonical payload.
+
+### GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId}
+
+Returns only the authenticated student's result in that route term: 200 final,
+the same bounded non-durable 202 while the first transaction owns the scoped
+key, or 404 `REQUEST_NOT_FOUND` after rollback/nonexistence. A key owned by
+another student is indistinguishable from not found.
+
+## Idempotency Semantics
+
+The scope is exactly `(authenticated StudentId, route TermId,
+ClientRequestId)`. The same UUID in a different term is allowed and
+independent. `RegistrationSubmission` is both claim and stored result; no
+second IdempotencyRecord exists. A 202 is retry guidance, not proof of a
+committed Processing row.
+
+An accepted first execution creates one globally unique human-safe Reference
+and one immutable ReceiptSnapshot in the same SQL transaction as seats,
+enrollments, decision snapshot, audit, and final result. Every replay returns
+the same reference/snapshot.
 
 ## Shared Rules
 
-- All protected operations require server-validated authentication and role/data-scope authorization.
-- Validation errors use stable codes and actionable, privacy-safe messages.
-- Mutation requests support idempotency or concurrency tokens where retries can duplicate or contest a write.
-- Dates use ISO 8601 and the server-configured academic term.
-- Lists are bounded and paginated; filtering and sorting are server-side.
+All protected operations use server authorization, privacy-safe errors,
+ISO-8601 server time, stable correlation IDs, and no remote call inside the
+registration transaction.

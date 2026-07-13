@@ -1,7 +1,7 @@
 # Implementation Plan: Academic Term and Student Profile
 
 **Branch**: 008-academic-term-student-profile | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Design complete; human approval and institutional data-source approval remain pending. Implementation is not authorized.
 
 ## Summary
 
@@ -32,12 +32,39 @@ Deliver Academic Term and Student Profile inside the modular monolith while keep
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
+- [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Academics domain, application, and owner endpoints belong in
+`src/StudentRegistration.Academics/{Domain,Application,Endpoints}`. The API
+composition root is `src/StudentRegistration.Api`, cross-module DTO conventions
+are in `src/StudentRegistration.Contracts`, pages are in
+`src/StudentRegistration.Client`, and mappings are in
+`src/StudentRegistration.Infrastructure.SqlServer`. No generic Server/Domain
+business project is introduced.
+
+## Feature Design
+
+1. Resolve server time, teaching term, registration term, and the single
+   matching published window in one Academics query boundary.
+2. Compose that academic portion with SPEC-007 session data for `/api/context`.
+3. Persist explicit term/window lifecycle plus rowversions; compute
+   upcoming/open/closed at read time.
+4. Use the SPEC-008-owned `StudentTermAcademicState` for hold/profile versus
+   registration serialization.
+5. Keep term and student Admin list/mutation handlers in Academics; publish
+   bounded audit facts for SPEC-017 rather than duplicating writes.
+
+## Execution and Gate Order
+
+Dependency baselines and consistency analysis precede Ahmed ELbamby's final
+planning approval. After approval: create failing model/contract, acceptance,
+race, and workstream tests; deliver domain/application behavior; add handlers;
+then add route E2E/pages and release evidence. Every handler and page is
+preceded by its contract and behavior tests.
 
 ## Design Artifacts
 

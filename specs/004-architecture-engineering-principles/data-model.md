@@ -1,10 +1,17 @@
 # Data Model: Architecture and Engineering Principles
 
-## Owned Entities
+## Owned Architecture Artifacts
 
-- **ModuleBoundary**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ArchitectureDecision**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **DependencyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **ModuleBoundary**: Versioned project/module dependency declaration.
+- **ArchitectureDecision**: Versioned, approved ADR record.
+- **DependencyRule**: Executable architecture-conformance rule.
+- **AuditEvent**: Append-only shared SQL audit record used by every business
+  module without a downstream module dependency.
+- **AuditWritePort**: Narrow transaction-aware contract implemented by
+  Infrastructure.SqlServer as `IAuditEventWriter`.
+
+The first three are repository governance artifacts. AuditEvent is a persisted
+cross-cutting record; AuditWritePort is a contract, not a table.
 
 ## Detailed Model
 
@@ -14,11 +21,14 @@
 | academics | Academics |
 | scheduling | Scheduling |
 | registration | Registration |
-| audit | StaffAdministration / audit service |
+| audit write foundation | Architecture/Infrastructure.SqlServer |
+| audit query/export | StaffAdministration |
 
-## Integrity Rules
+## Governance Rules
 
-- Foreign keys and unique constraints enforce durable identity and relationship rules.
-- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Audit timestamps use server time; academic activity references an explicit academic term.
-- Deletion and retention behavior follow the project data-lifecycle specification.
+- Every business module has one canonical project and may expose only approved contracts.
+- The project-reference graph must be acyclic and architecture tests reject forbidden references.
+- Every boundary/deployment change requires an approved ADR and corresponding test update.
+- Artifact versions and approvals are preserved in Git; SQL lifecycle rules do not apply.
+- AuditEvent requires actor/subject references, action, reason, redacted
+  before/after JSON, correlation ID, server timestamp, and append-only access.

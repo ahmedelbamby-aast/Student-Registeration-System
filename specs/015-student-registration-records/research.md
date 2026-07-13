@@ -2,35 +2,39 @@
 
 ## Decisions
 
-### Modular boundary
-**Decision**: Own this capability in the Registration module of the modular monolith.
-**Rationale**: It provides a clear extension seam without premature distributed-system cost.
-**Alternatives rejected**: A microservice per feature and direct client-to-database access.
+### Receipt persistence
 
-### Authority and consistency
-**Decision**: Validate permissions, term state, policy, conflicts, and durable changes on the server, with database enforcement for contested writes.
-**Rationale**: Browser state is stale and untrusted during registration peaks.
-**Alternatives rejected**: Client-only validation and check-then-write capacity logic.
+**Decision**: Do not create a separate RegistrationReceipt table.
+SPEC-014's accepted RegistrationSubmission atomically stores the unique
+Reference and immutable ReceiptSnapshot with enrollments, decision snapshot,
+audit, and final result. SPEC-015 owns read projections only.
 
-### Feature contract
-```typescript
-interface RegistrationReceiptDto {
-  submissionId: string;
-  reference: string;
-  term: TermSummaryDto;
-  submittedAtUtc: string;
-  policyVersion: string;
-  groups: GroupDto[];
-  totalCredits: number;
-}
-```
+**Rationale**: This removes a transaction/dependency cycle and guarantees lost
+responses/idempotent replays return the same receipt without duplicate writes.
 
-Endpoints: GET /api/student/registrations, GET
-/api/student/registrations/{submissionId}, GET
-/api/student/registrations/current/timetable.
+### Read scope
 
+**Decision**: Student routes are authenticated-self; history spans terms and accepts an optional TermId filter, while current timetable resolves the server's active term. Admin
+inspection uses explicit student+term list/detail endpoints guarded by
+`RegistrationRecords.Read` and audited. Lecturer/TA remain limited to the
+minimal roster projection in SPEC-016.
 
+**Rationale**: Explicit resource scope is easier to authorize and test than a
+generic “staff may inspect” rule.
+
+### Pagination and history
+
+**Decision**: Page number defaults to 1, page size to 20/max 100, with stable
+SubmittedAtUtc-desc/SubmissionId ordering. Snapshots are immutable and remain
+readable for the SPEC-005 retention period.
+
+### UI and excluded actions
+
+**Decision**: STU-06 and STU-07 render equivalent calendar/list or print
+representations. Drop, withdrawal, and correction controls/endpoints are
+absent until a separate approved policy/workflow spec exists.
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+Institutional retention values remain governed by SPEC-005 and must fail closed
+if not approved; no value is invented here.

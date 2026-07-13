@@ -17,13 +17,18 @@ interface PolicyDecisionDto {
 }
 ```
 
-Endpoints: POST /api/admin/policies/{id}/simulate and GET
-/api/student/offerings/{id}/eligibility.
+Endpoint ownership:
+
+- `POST /api/admin/policies/{policySetId}/simulate` — canonical owner SPEC-009.
+- `GET /api/student/offerings/{offeringId}/eligibility` — canonical owner SPEC-011.
+
+SPEC-002 contributes `PolicyDecisionDto`, provenance rules, and fail-closed
+semantics. It owns no API handler.
 
 ## Shared Rules
 
 - All protected operations require server-validated authentication and role/data-scope authorization.
 - Validation errors use stable codes and actionable, privacy-safe messages.
-- Mutation requests support idempotency or concurrency tokens where retries can duplicate or contest a write.
+- Versioned updates/deletes follow SPEC-006 request-body `expectedRowVersion` and 409 `STALE_VERSION`; retryable commands follow their owner-spec idempotency contract.
 - Dates use ISO 8601 and the server-configured academic term.
-- Lists are bounded and paginated; filtering and sorting are server-side.
+- Lists follow the exact SPEC-006 default-20/maximum-100 pagination and deterministic unique-ID tie-break sorting protocol.

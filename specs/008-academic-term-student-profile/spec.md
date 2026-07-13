@@ -106,6 +106,37 @@ And instants use UTC datetime2 while recurring meetings use local day/time plus
 IANA timezone<br>
 And academic data is visible only to self or approved staff scope.
 
+### User Story 8 - Composed authenticated context (FR-1, FR-2, FR-4, FR-10) (P2)
+
+As an authenticated user, I need one coherent session and academic context so
+that the header, dashboard, and registration state agree on the server time,
+role, term, and window.
+
+**Independent Test**: Execute AC-8 with a SPEC-007 session double and
+SPEC-008 academic fixtures.
+
+**Acceptance Scenario (AC-8)**
+
+Given an authenticated student and one matching published window<br>
+When GET /api/context is requested<br>
+Then identity and academic portions are composed with the same authoritative
+server context and include the window ID/version.
+
+### User Story 9 - Complete Admin term and profile journeys (FR-3, FR-7, FR-9, FR-11) (P2)
+
+As an authorized Admin, I need searchable term/student data and governed owner
+commands so that ADM-02 and ADM-04 are functional rather than presentation-only pages.
+
+**Independent Test**: Execute AC-9 using only SPEC-008 APIs plus audit and
+authorization test doubles.
+
+**Acceptance Scenario (AC-9)**
+
+Given current rowversions, reason, source, and permission<br>
+When an Admin pages data or submits a valid term/window/profile command<br>
+Then bounded data or one audited mutation is returned and stale/invalid writes
+change nothing.
+
 ## Edge Cases
 
 - EC-1: Overlapping active windows for same scope -> publication fails.
@@ -128,17 +159,23 @@ And academic data is visible only to self or approved staff scope.
 - FR-4: At most one permitted registration context MAY match a student at an
   instant.
 - FR-5: Student profile MUST include University ID, program/cohort, GPA,
-  earned credits, standing, transcript summary, active holds, and provenance.
+  earned credits, standing, transcript summary/attempts, all active holds with
+  blocking flags, provenance, data version, and as-of time.
 - FR-6: Registration commands MUST re-resolve time, term, window, student
   state, and holds.
 - FR-7: Admin profile corrections MUST require authorization, reason, source,
   optimistic concurrency, and audit.
 - FR-8: A hold/profile mutation and a registration submission for the same
-  student/term MUST participate in one database-backed student-term
-  serialization boundary and advance its aggregate version.
+  student/term MUST participate in the SPEC-008-owned
+  `StudentTermAcademicState` boundary and advance its version.
 - FR-9: Registration-window publication MUST lock the affected term/scope in a
   stable order, recheck overlap inside the transaction, and reject a stale
   expected version.
+- FR-10: The authenticated AppContext MUST compose the SPEC-007 session
+  portion with SPEC-008 server time, timezone, terms, window ID/state/version,
+  service state, and `supportReferencePath` without trusting browser time or term input.
+- FR-11: ADM-02 and ADM-04 MUST have bounded owner APIs for reads and governed,
+  versioned, reasoned, sourced, audited term/window/profile mutations.
 
 ### Non-Functional Requirements
 
@@ -157,6 +194,7 @@ And academic data is visible only to self or approved staff scope.
 - **Student**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **TranscriptAttempt**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StudentHold**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **StudentTermAcademicState**: SPEC-008-owned per-student/per-term version and serialization boundary consumed by registration features.
 
 ## Success Criteria
 
@@ -175,6 +213,7 @@ And academic data is visible only to self or approved staff scope.
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
 - [SPEC-005](../005-erd-data-lifecycle/spec.md)
+- [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
 

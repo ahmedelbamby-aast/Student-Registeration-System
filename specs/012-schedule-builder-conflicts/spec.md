@@ -93,16 +93,19 @@ And one stale editor receives 409 without a lost update.
 
 - FR-1: The student MUST add at most one group per course offering to a plan.
 - FR-2: The server MUST detect overlap for every meeting slot using strict
-  interval logic.
+  half-open interval logic; adjacent meetings do not overlap and DEC-06 travel
+  buffers remain disabled until approved.
 - FR-3: Each conflict MUST identify both groups, subjects, day, times, and
-  resolution links.
+  exact overlap interval plus accessible change/remove actions.
 - FR-4: The UI MUST render a red X plus text/icon-accessible conflict state.
 - FR-5: Review/submission MUST be blocked while any hard conflict exists.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
   credits/conflicts.
-- FR-7: Plans MUST persist server-side and use rowversion.
+- FR-7: One plan per authenticated student/term MUST persist server-side with
+  rowversion and owner/term routes; direct-object access returns no data.
 - FR-8: The client MUST treat capacity displayed in a plan as advisory until
-  final submission revalidates it.
+  final submission revalidates it; a timestamped dependency-version snapshot
+  identifies stale/full/closed/cancelled/unpublished selections and blocks review.
 
 ### Non-Functional Requirements
 

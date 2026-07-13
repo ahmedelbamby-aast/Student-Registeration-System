@@ -63,6 +63,10 @@ is presented, operated, and verified in the Blazor WebAssembly client.
   of component tests for all interactive states, API-contract integration
   tests, Playwright end-to-end tests for primary and failure journeys,
   automated accessibility checks, and approved-baseline visual regression.
+  Page source, contract tests, and E2E execution MUST remain deferred until the
+  route's implementation-owner specification and every contributing API/reason
+  contract are approved and version-pinned; a design-only record MUST NOT be
+  treated as implementation authorization.
 - FR-13: The frontend traceability matrix MUST map each route and component to
   its owning SPEC/FR, Page Design Record, implementation task, and functional,
   accessibility, and visual test IDs.
@@ -277,6 +281,8 @@ interface PageDesignRecord {
   responsiveWidths: number[];
   focusOrder: string[];
   testIds: string[];
+  contributorContractVersions: Record<string, string>;
+  readinessState: "design-only" | "implementation-ready";
   approvalVersion: string;
 }
 interface UiStateCase {
@@ -308,7 +314,7 @@ unknown-code fallback behavior. SPEC-003 owns no server endpoint.
 
 | View/design model | Required data |
 |---|---|
-| FrontendAppContextView | Server time/timezone, teaching term, registration term/window, user/role, session state |
+| FrontendAppContextView | Server time/timezone, teaching term, registration term/window, display name, authorized roles, nullable active role only during role-selection-required, session state/expiry, service state, supportReferencePath |
 | UiStatus | Stable code, heading, message, severity, next actions, reference ID |
 | ConflictView | Subjects/groups, every overlap slot, alternatives, resolution links |
 | PageDesignRecord | Route, design owner, single implementation owner, contributors, layout/component/state/interaction/responsive/accessibility/test contract and approval version |

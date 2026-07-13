@@ -1,14 +1,10 @@
 # Data Model: Catalogue, Prerequisites, and Policy Administration
 
-## Owned Entities
+## Canonical Ownership and Consumption
 
-- **Program**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Course**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **CurriculumCourse**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **CoursePrerequisite**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ImportBatch**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **Program**, **Course**, **CurriculumCourse**, **CoursePrerequisite**, **PolicySet**, **PolicyRule**, **ImportBatch**, **CatalogueDraft**, and **CatalogueVersion** are canonical entities owned by SPEC-009.
+- Eligibility and registration features consume immutable published catalogue/policy versions and MUST NOT redefine them.
+- SPEC-002 supplies approved policy-rulebook evidence; SPEC-009 owns the runtime policy aggregates and publication lifecycle.
 
 ## Detailed Model
 
@@ -19,6 +15,10 @@
 | CoursePrerequisite | composite key | course != required course; acyclic graph |
 | PolicySet.Version | string | unique in scope; published immutable |
 | ImportRowError.SourceRow | integer | required when input row is known |
+| CatalogueDraft | aggregate | scope, based-on version, Editing/Validated/Published/Abandoned state, canonical content hash, rowversion |
+| CatalogueVersion | immutable aggregate | scope, version label, Published/Superseded state, source, publisher, published time |
+| ImportBatch | aggregate | target draft, source/access time, content hash, Uploaded/Validating/Invalid/Validated/Publishing/Published/Failed state, rowversion, result version |
+| ImportRowError | child | import, source row/field, stable code, safe message; immutable after validation result |
 
 ## Integrity Rules
 
@@ -26,3 +26,10 @@
 - Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
 - Audit timestamps use server time; academic activity references an explicit academic term.
 - Deletion and retention behavior follow the project data-lifecycle specification.
+- Programs, courses, curricula, and prerequisite edges belong to one draft or
+  immutable catalogue version; published children cannot be updated in place.
+- Editing a draft or import advances its rowversion/content hash and invalidates
+  all earlier preview tokens.
+- Publication locks the normalized catalogue or policy scope, revalidates the
+  complete graph in-transaction, writes the immutable version plus audit fact,
+  and changes activation state atomically.

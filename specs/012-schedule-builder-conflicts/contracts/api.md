@@ -5,12 +5,21 @@
 ```typescript
 interface ScheduleConflictDto {
   code: "MEETING_OVERLAP" | "TRAVEL_BUFFER";
-  firstGroupId: string;
-  secondGroupId: string;
+  first: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
+  second: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
   dayOfWeek: number;
   overlapStartLocal: string;
   overlapEndLocal: string;
   message: string;
+  actions: Array<{ action: "change-group" | "remove-group"; targetGroupId: string; label: string; route: string }>;
+}
+interface ValidationSnapshotDto {
+  evaluatedAtUtc: string;
+  academicContextVersion: string;
+  policyVersion: string;
+  catalogueVersion: string;
+  offeringVersions: Record<string, string>;
+  groupVersions: Record<string, string>;
 }
 interface RegistrationPlanDto {
   id: string;
@@ -19,10 +28,23 @@ interface RegistrationPlanDto {
   selectedGroups: GroupDto[];
   totalCredits: number;
   conflicts: ScheduleConflictDto[];
+  validation: ValidationSnapshotDto;
+  reviewBlocked: boolean;
 }
+interface RegistrationPlanMutationRequest { expectedPlanRowVersion: string; selectedGroupIds: string[]; }
 ```
 
-Endpoints: GET/PUT /api/student/registration-plans/{id}; POST validate.
+Endpoints: GET and PUT /api/student/terms/{termId}/registration-plan, and POST
+/api/student/terms/{termId}/registration-plan/validate.
+
+The server derives the student from authentication and validates term access.
+PUT replaces the complete selection atomically and requires
+`expectedPlanRowVersion`; stale updates return `409 STALE_VERSION` plus the
+current authorized plan. Validation is non-mutating. Selection validation
+returns `DUPLICATE_OFFERING_SELECTION`, `GROUP_CHANGED`, `GROUP_FULL`,
+`GROUP_UNAVAILABLE`, or complete conflict data and actions. Conflict detection
+uses half-open intervals. `TRAVEL_BUFFER` is not emitted while DEC-06 is open.
+Neither read, PUT, nor validate reserves a seat.
 
 ## Shared Rules
 

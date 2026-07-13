@@ -102,10 +102,16 @@ And every status has text/icon meaning independent of color.
 - FR-4: Students MUST be able to inspect unavailable offerings and every
   blocking reason.
 - FR-5: Results MUST show course code/title/credits and group capacity, staff,
-  location, day and time.
-- FR-6: Each decision MUST include policy version and stable reasons.
+  location, activity, day/time, state, seats remaining, and advisory version.
+- FR-6: Each decision MUST include complete stable per-rule explanations,
+  approved PolicySet/source metadata, safe required/current values, and a
+  fail-closed reason/support path when decision data is unavailable.
 - FR-7: Client filtering MUST NOT substitute for server eligibility.
-- FR-8: Stable sorting and bounded pagination MUST be supported.
+- FR-8: Sorting/pagination MUST use page >= 1, default 20, maximum 100,
+  400 PAGE_SIZE_INVALID for invalid values, and immutable offering ID as the
+  final tie-break; the response consumes canonical SPEC-006
+  `Page<OfferingEligibilityDto>` and echoes its applied sort; search text is
+  limited to 100 characters.
 
 ### Non-Functional Requirements
 
@@ -114,12 +120,14 @@ And every status has text/icon meaning independent of color.
 - NFR-3: Eligibility MUST be deterministic for a fixed input/version.
 - NFR-4: Eligibility/status MUST not rely on color alone.
 
-### Key Entities
+### Key Projections and References
 
-- **OfferingEligibility**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **EligibilityReason**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **GroupSummary**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyVersion**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **OfferingEligibility**, **EligibilityReason**, and **GroupSummary** are
+  SPEC-011-owned immutable response/domain projections.
+- Catalogue `CourseOffering`/`SectionGroup` data is consumed from SPEC-010,
+  student/context data from SPEC-008, and approved `PolicySet` versions and
+  provenance from SPEC-009/SPEC-002. SPEC-011 does not own or redefine a
+  separate PolicyVersion entity.
 
 ## Success Criteria
 
@@ -137,6 +145,7 @@ And every status has text/icon meaning independent of color.
 
 - [SPEC-002](../002-aastmt-policy-rulebook/spec.md)
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
+- [SPEC-006](../006-domain-class-api-contracts/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
 - [SPEC-010](../010-offerings-groups-resources/spec.md)

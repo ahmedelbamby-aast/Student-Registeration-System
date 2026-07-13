@@ -1,0 +1,112 @@
+{
+  "version": "2.0.0",
+  "dbContext": {
+    "owner": "004",
+    "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
+    "testPath": "tests/StudentRegistration.ArchitectureTests/PersistenceBoundaryTests.cs"
+  },
+  "contributions": {
+    "004": {
+      "mode": "append-only-cross-module",
+      "entities": ["AuditEvent"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AuditEventModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/AuditEventPersistenceTests.cs"
+    },
+    "007": {
+      "mode": "writable",
+      "entities": ["ApplicationUser", "Staff", "StudentActivation", "AccountRecoveryChallenge", "StaffMfaChallenge", "AuthenticationAbuseState", "IdentityImportBatch", "RoleAssignment", "SecurityEvent", "AdminSecurityGuard"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/IdentityAccessModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec007/IdentityAccessModelConfigurationTests.cs"
+    },
+    "008": {
+      "mode": "writable",
+      "entities": ["AcademicTerm", "RegistrationWindow", "Student", "StudentTermAcademicState", "TranscriptAttempt", "StudentHold"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AcademicContextModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec008/AcademicContextModelConfigurationTests.cs"
+    },
+    "009": {
+      "mode": "writable",
+      "entities": ["Program", "Course", "CurriculumCourse", "CoursePrerequisite", "PolicySet", "PolicyRule", "CatalogueDraft", "CatalogueVersion", "ImportBatch"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/CatalogueModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueModelConfigurationTests.cs"
+    },
+    "010": {
+      "mode": "writable",
+      "entities": ["CourseOffering", "SectionGroup", "MeetingSlot", "Room", "GroupStaffAssignment", "StaffTermAvailability", "StaffAvailability", "ScheduleImpactAlert"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/SchedulingModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec010/SchedulingModelConfigurationTests.cs"
+    },
+    "011": {
+      "mode": "keyless-read-only",
+      "entities": ["OfferingEligibility", "EligibilityReason", "GroupSummary"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationDiscoveryModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec011/RegistrationDiscoveryModelConfigurationTests.cs"
+    },
+    "012": {
+      "mode": "writable",
+      "entities": ["RegistrationPlan", "RegistrationPlanItem", "ScheduleConflict", "ValidationSnapshot"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationPlanModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec012/RegistrationPlanModelConfigurationTests.cs"
+    },
+    "014": {
+      "mode": "writable-transactional",
+      "entities": ["RegistrationSubmission", "Enrollment", "DecisionSnapshot", "StudentTermRegistrationGuard"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/RegistrationModelConfigurationTests.cs"
+    },
+    "015": {
+      "mode": "projection-on-014",
+      "entities": ["RegistrationReceipt"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationReceiptModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/RegistrationReceiptModelConfigurationTests.cs"
+    },
+    "017": {
+      "mode": "writable-reporting",
+      "entities": ["ExportJob"],
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AdministrationAuditModelConfiguration.cs",
+      "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/AdministrationAuditModelConfigurationTests.cs"
+    }
+  },
+  "migrations": [
+    {
+      "id": "S1IdentityAcademicFoundation",
+      "kind": "initial",
+      "owner": "008",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713010000_IdentityAcademicFoundation.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["004", "007", "008"]
+    },
+    {
+      "id": "S2CatalogueScheduling",
+      "kind": "incremental",
+      "owner": "010",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713020000_CatalogueScheduling.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["009", "010"]
+    },
+    {
+      "id": "S4DiscoveryPlanning",
+      "kind": "incremental",
+      "owner": "012",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713040000_DiscoveryPlanning.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["011", "012"]
+    },
+    {
+      "id": "S6Registration",
+      "kind": "incremental",
+      "owner": "015",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["014", "015"]
+    },
+    {
+      "id": "S7StaffAdminOperations",
+      "kind": "incremental",
+      "owner": "017",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["017"]
+    }
+  ]
+}

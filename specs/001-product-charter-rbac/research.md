@@ -14,7 +14,8 @@
 
 ### Feature contract
 Detailed contracts belong to SPEC-006 and feature specs. The charter's
-role/context boundary is observed through GET /api/context.
+role/context boundary is observed through `GET /api/context`, whose canonical
+handler owner is SPEC-008; SPEC-001 owns no endpoint.
 
 
 

@@ -27,6 +27,16 @@ interface Page<T> {
   page: number;
   pageSize: number;
   totalCount: number;
+  sort: string;
+}
+
+interface TermSummaryDto {
+  id: string;
+  code: string;
+  label: string;
+  state: "draft" | "registrationOpen" | "registrationClosed" |
+    "teaching" | "completed" | "archived";
+  rowVersion: string;
 }
 
 interface AppContextDto {
@@ -35,7 +45,13 @@ interface AppContextDto {
   teachingTerm?: TermSummaryDto;
   registrationTerm?: TermSummaryDto;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
-  roles: string[];
+  serviceState: "available" | "maintenance" | "unavailable";
+  displayName: string;
+  authorizedRoles: string[];
+  activeRole: string | null;
+  sessionState: "active" | "expiring" | "role-selection-required";
+  expiresAtUtc: string;
+  supportReferencePath: string;
 }
 
 interface PublicContextDto {
@@ -48,11 +64,28 @@ interface PublicContextDto {
 }
 ```
 
-Feature endpoints are defined in SPEC-007 through SPEC-017.
+Feature endpoints are defined in SPEC-007 through SPEC-017. SPEC-008 owns the
+two context handlers; SPEC-006 owns their shared schemas only. Generic example
+resource and command paths were rejected because every literal method/path must
+have one feature owner and canonical contract.
 
-Examples: GET /api/public/context, GET /api/context, GET
-/api/resources?page=1&pageSize=20, and POST /api/commands with the
-feature-specific DTO.
+### Pagination and concurrency protocol
+**Decision**: Page-number pagination uses default 20, maximum 100, invalid-value
+400 responses, and a feature-declared stable sort with a unique-ID tie-breaker.
+Versioned update/delete DTOs use request-body `expectedRowVersion` and return
+409 `STALE_VERSION`; MVP does not also support If-Match/412.
+**Rationale**: One explicit protocol is simpler to implement and test than two
+equivalent concurrency mechanisms or cap-versus-reject ambiguity.
+**Alternatives rejected**: Silent page-size caps, unspecified ordering,
+If-Match plus body tokens, and generic pseudo endpoints.
+
+### OpenAPI drift gate
+**Decision**: Generate deterministic OpenAPI and compare an approved baseline
+semantically in CI.
+**Rationale**: A semantic gate detects real endpoint/schema/security drift while
+ignoring formatting and ordering noise.
+**Alternatives rejected**: Documentation-only review and byte-for-byte output
+comparison.
 
 
 

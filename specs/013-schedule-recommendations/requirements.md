@@ -6,7 +6,7 @@
 **Owner:** Technical Lead<br>
 **Reviewers:** Product Owner, UX, QA, Performance owner<br>
 **Target:** Sprint 5<br>
-**Dependencies:** SPEC-003, SPEC-012, SPEC-018<br>
+**Dependencies:** SPEC-003, SPEC-010, SPEC-011, SPEC-012, SPEC-018<br>
 
 ## Context
 
@@ -24,19 +24,36 @@ bounded, deterministic, explainable, and honest when no solution exists.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.
-- FR-5: It MUST score results with approved soft preferences and explain score
-  components.
+- FR-5: It MUST rank feasible results lexicographically using the versioned
+  MVP factor order: fewer explicit student day/time preference violations,
+  fewer total idle minutes, fewer teaching days, then the stable sorted group
+  ID tuple. Missing preferences contribute zero violations. Preference inputs
+  are limited to avoided weekdays plus optional earliest/latest local times;
+  no hidden weight or institutional assumption is permitted. The Technical
+  Lead and Product Owner MUST approve every factor/version change, and every
+  response MUST name the configuration version and explain each component.
 - FR-6: It MUST support cancellation and a configured computation time budget.
-- FR-7: If no feasible result exists, it MUST return at least one minimal
-  blocking set of selected courses/groups, each hard reason code and involved
-  meeting interval, and direct change/remove actions for every member.
+- FR-7: If no feasible result exists, it MUST return at least one
+  **inclusion-minimal** blocking set: removing any member makes that reported
+  hard conflict no longer hold. Every diagnostic MUST include the affected
+  course/group IDs, stable hard-reason code, both involved meeting intervals
+  where applicable, and a direct change-group or remove-course action for
+  every member. Diagnostics MUST be ordered deterministically by set size and
+  then stable course/group identifiers.
 - FR-8: Final submission MUST revalidate all results; a recommendation does not
   reserve seats.
 - FR-9: A recommendation request MUST include the expected plan rowversion and
   request correlation ID; each result MUST identify the captured plan,
-  catalogue/group, policy, and optimizer-configuration versions.
-- FR-10: Applying an option MUST be one atomic versioned plan mutation and MUST
-  reject an option computed from a stale plan or dependency version.
+  catalogue/group, policy, and optimizer-configuration versions. Every option
+  MUST carry an authenticated, encrypted, expiring option token binding the
+  authenticated student, plan, complete group selection, captured versions,
+  correlation ID, issued time, and expiry so any stateless replica can
+  validate it without server memory or a durable option table.
+- FR-10: Applying an option MUST submit that option token and the current
+  expected plan rowversion, validate signature/expiry/owner/plan/payload and
+  dependency versions, and perform one atomic versioned plan mutation. A
+  tampered, cross-owner, expired, stale-plan, or stale-dependency token MUST
+  fail without mutation using a stable safe code.
 
 ## Non-Functional Requirements
 
@@ -55,7 +72,8 @@ Then at least one complete conflict-free schedule is returned<br>
 And no subject is omitted or duplicated.
 
 ### AC-2: Best score explanation (FR-5)
-Given two feasible schedules and one has fewer gaps under approved preferences<br>
+Given two feasible schedules and one has fewer explicit preference violations,
+or ties with fewer idle minutes under the approved factor version<br>
 When results are ranked<br>
 Then that schedule ranks first<br>
 And the gap and other score components are shown.
@@ -108,7 +126,8 @@ And optimizer branch coverage is at least 90%.
   final commit remains authority.
 - EC-2: One selected course has zero viable groups -> immediate no-solution.
 - EC-3: Equal scores -> stable tie-break by course/group identifiers.
-- EC-4: Invalid preference weight -> reject configuration, use last approved.
+- EC-4: Invalid preference bound, factor order, or configuration version ->
+  reject it and retain the last Product Owner/Technical Lead-approved version.
 - EC-5: Catalogue/group/policy changes during search -> the result uses one
   coherent captured version set or returns STALE_INPUT; mixed-version options
   MUST NOT be returned.
@@ -116,22 +135,49 @@ And optimizer branch coverage is at least 90%.
 ## API Contracts
 
 ```typescript
+interface MeetingIntervalDto {
+  dayOfWeek: number;
+  startLocal: string;
+  endLocal: string;
+}
+interface SchedulePreferencesDto {
+  avoidedWeekdays: number[];
+  earliestPreferredStartLocal?: string;
+  latestPreferredEndLocal?: string;
+}
 interface ScheduleOptionDto {
-  optionId: string;
+  optionToken: string;
   rank: number;
   groups: GroupDto[];
   score: number;
-  scoreExplanation: Array<{ factor: string; value: number; message: string }>;
+  scoreExplanation: Array<{
+    factor: "preference-violations" | "idle-minutes" | "teaching-days" | "stable-group-tuple";
+    value: number | string;
+    message: string;
+  }>;
+}
+interface OptimizationDiagnosticDto {
+  diagnosticId: string;
+  reasonCode: string;
+  members: Array<{
+    courseId: string;
+    groupId?: string;
+    interval?: MeetingIntervalDto;
+    action: "change-group" | "remove-course";
+  }>;
+  conflictingInterval?: MeetingIntervalDto;
+  minimality: "inclusion-minimal";
 }
 interface OptimizationResultDto {
   requestCorrelationId: string;
   planRowVersion: string;
   catalogueVersion: string;
+  groupVersionSetHash: string;
   policyVersion: string;
   optimizerConfigurationVersion: string;
   status: "complete" | "no-solution" | "time-budget";
   options: ScheduleOptionDto[];
-  conflicts: ScheduleConflictDto[];
+  diagnostics: OptimizationDiagnosticDto[];
   evaluatedAtUtc: string;
 }
 interface RecommendScheduleRequest {
@@ -140,28 +186,27 @@ interface RecommendScheduleRequest {
   preferences: SchedulePreferencesDto;
 }
 interface ApplyScheduleOptionRequest {
-  optionId: string;
+  optionToken: string;
   expectedPlanRowVersion: string;
   requestCorrelationId: string;
-  catalogueVersion: string;
-  policyVersion: string;
-  optimizerConfigurationVersion: string;
 }
 ```
 
-Endpoints: POST /api/student/registration-plans/{id}/recommendations and PUT
-/api/student/registration-plans/{id}/recommended-option. Applying an option is
-an atomic versioned plan update; stale input returns 409 PLAN_CHANGED or
-STALE_INPUT.
+Endpoints: POST /api/student/terms/{termId}/registration-plan/recommendations and PUT
+/api/student/terms/{termId}/registration-plan/recommended-option. Applying an option is
+an atomic versioned plan update. The server derives the student and the one
+student/term plan; no plan/student identifier is accepted from the client.
+Stale input returns 409 PLAN_CHANGED or STALE_INPUT.
 
 ## Data Models
 
 | Field/example | Type | Constraints |
 |---|---|---|
-| SchedulePreferences | value object | approved bounded weights/ranges |
-| ScheduleOption | transient result | complete one-group-per-course solution |
+| SchedulePreferences | value object | unique avoided weekdays; optional earliest/latest local times within the term timetable; empty defaults |
+| ScheduleOption | transient result | complete solution protected in a replica-safe signed token; never persisted as an option row |
 | ScoreComponent | value | factor, numeric contribution, explanation |
-| OptimizationDiagnostic | transient | bounded/no-solution reason; no seat claim |
+| OptimizerConfiguration | immutable value | semantic version, fixed factor order, Product Owner/Technical Lead approval reference |
+| OptimizationDiagnostic | transient | deterministic inclusion-minimal set, hard reason, intervals and per-member actions; no seat claim |
 
 ## Out of Scope
 

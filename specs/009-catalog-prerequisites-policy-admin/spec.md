@@ -119,7 +119,8 @@ And each published change records actor, reason, source, and timestamp.
 ### Functional Requirements
 
 - FR-1: Admin MUST manage programs, curricula, courses, credit values, status,
-  prerequisites, minimum grades/GPA/earned credits, and cohort scope.
+  prerequisites, minimum grades/GPA/earned credits, and cohort scope in a
+  versioned CatalogueDraft rather than editing published records.
 - FR-2: Imports MUST provide preview, row-level validation, provenance, and
   all-or-nothing publication.
 - FR-3: The system MUST detect missing references, duplicate codes, invalid
@@ -127,7 +128,8 @@ And each published change records actor, reason, source, and timestamp.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
   before publication.
-- FR-6: Published catalogue/policy versions MUST be immutable and superseded.
+- FR-6: Draft/import/publication lifecycles MUST be explicit and versioned;
+  published catalogue/policy versions MUST be immutable and superseded.
 - FR-7: Only approved Admin/Registrar permissions MAY publish.
 - FR-8: Every update/publish confirmation MUST include the expected draft
   version and a preview token bound to actor, scope, canonical draft content,
@@ -156,6 +158,8 @@ And each published change records actor, reason, source, and timestamp.
 - **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **PolicyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **ImportBatch**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **CatalogueDraft**: SPEC-009-owned editable aggregate with scope, base version, canonical content hash, lifecycle, and rowversion.
+- **CatalogueVersion**: SPEC-009-owned immutable published/superseded snapshot.
 
 ## Success Criteria
 

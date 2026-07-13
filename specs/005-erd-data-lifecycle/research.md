@@ -13,9 +13,9 @@
 **Alternatives rejected**: Client-only validation and check-then-write capacity logic.
 
 ### Feature contract
-Database design is exposed only through approved feature endpoints, for
-example GET /api/student/registrations; feature DTOs are defined in SPEC-006
-onward.
+Database design is exposed only through approved feature endpoints. SPEC-015
+owns `GET /api/student/registrations`; shared DTO rules are defined by SPEC-006.
+SPEC-005 owns no endpoint.
 
 
 

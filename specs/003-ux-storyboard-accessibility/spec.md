@@ -312,6 +312,10 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
   of component tests for all interactive states, API-contract integration
   tests, Playwright end-to-end tests for primary and failure journeys,
   automated accessibility checks, and approved-baseline visual regression.
+  Page source, contract tests, and E2E execution MUST remain deferred until the
+  route's implementation-owner specification and every contributing API/reason
+  contract are approved and version-pinned; a design-only record MUST NOT be
+  treated as implementation authorization.
 - FR-13: The frontend traceability matrix MUST map each route and component to
   its owning SPEC/FR, Page Design Record, implementation task, and functional,
   accessibility, and visual test IDs.
@@ -352,12 +356,10 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
 ### Key Entities
 
-- **FrontendAppContextView**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **UiStatus**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ConflictView**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PageDesignRecord**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **DesignTokenSet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **FrontendTestRecord**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **FrontendAppContextView**: Client projection owned by SPEC-003 and populated only from the composed SPEC-006 contract with SPEC-007/SPEC-008 contributions.
+- **UiStatus**: Client presentation model owned by SPEC-003.
+- **ConflictView**: Client presentation model owned by SPEC-003; conflict truth remains owned by SPEC-012.
+- **PageDesignRecord**, **DesignTokenSet**, and **FrontendTestRecord**: Governed design/test artifacts owned by SPEC-003; they are not SQL entities.
 
 ## Success Criteria
 

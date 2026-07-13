@@ -2,46 +2,55 @@
 
 ## Decisions
 
-### Modular boundary
-**Decision**: Own this capability in the StaffAdministration module of the modular monolith.
-**Rationale**: It provides a clear extension seam without premature distributed-system cost.
-**Alternatives rejected**: A microservice per feature and direct client-to-database access.
+### No enrollment correction in MVP
 
-### Authority and consistency
-**Decision**: Validate permissions, term state, policy, conflicts, and durable changes on the server, with database enforcement for contested writes.
-**Rationale**: Browser state is stale and untrusted during registration peaks.
-**Alternatives rejected**: Client-only validation and check-then-write capacity logic.
+**Decision**: Registration Administration provides inspection, monitoring,
+reconciliation visibility, and links to owner-spec master-data commands only.
+No enrollment correction, drop, withdrawal, or seat-decrement command exists.
 
-### Feature contract
-```typescript
-interface AdminCommandMetadata {
-  reason: string;
-  expectedRowVersion: string;
-  clientRequestId: string;
-  previewToken?: string;
-}
-interface AuditEventDto {
-  id: string;
-  occurredAtUtc: string;
-  actorDisplay: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  reason: string;
-  correlationId: string;
-}
-```
+**Rationale**: SPEC-014/015 explicitly exclude these policy-sensitive
+workflows. A future workflow needs its own approved policy, authorization,
+capacity, finance, audit, and student-notification design.
 
-Endpoints include GET /api/admin/operations/metrics, GET /api/admin/audit,
-POST /api/admin/exports, and approved feature commands under /api/admin.
-Update/delete commands require expectedRowVersion. Retryable create, export,
-import, correction, and confirmation commands require clientRequestId.
-Confirmation requires a previewToken bound to actor/scope/payload/dependency
-versions/expiry; conflicts return 409 STALE_PREVIEW, STALE_VERSION,
-FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
+### Atomic audit
 
+**Decision**: Consume the SPEC-004 AuditEvent/write foundation and SPEC-007
+SecurityEvent read stream. SPEC-017 merges them for scoped query/export and
+verifies that feature mutations use the upstream same-transaction writer.
 
+**Rationale**: Best-effort logging can report success without evidence.
+Redacted summaries preserve accountability while minimizing PII.
+
+### Durable export lifecycle
+
+**Decision**: POST creates an idempotent durable ExportJob; GET exposes status;
+GET /download authorizes and audits access. Workers use a 60-second renewable
+conditional SQL lease and at most three attempts. Only the lease owner can
+publish one artifact.
+
+**Rationale**: A database lease is sufficient for two or more replicas, process
+failure, and retry without a broker. It prevents duplicate output and avoids
+in-memory ownership.
+
+### Final-Admin serialization
+
+**Decision**: Delegate role changes to SPEC-007, which locks its singleton
+AdminSecurityGuard before active-Admin recount, role mutation, and audit.
+
+**Rationale**: Rowversion on separate RoleAssignment rows does not prevent two
+concurrent transactions from each seeing two Admins and revoking different
+ones. One shared database guard prevents write skew.
+
+### Feature delegation
+
+**Decision**: Admin pages call canonical owner endpoints directly. SPEC-017
+owns cross-feature conformance checks, audit query/export, and metrics, but no
+generic command or confirmation facade; term,
+identity, academics, policy, and scheduling mutations to their public module
+ports and preserves their preview/version invariants.
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+Export retention and institutional audit retention remain approved
+configuration owned by the appropriate authority. Unknown values fail closed;
+no institutional number is invented here.

@@ -14,8 +14,9 @@
 
 ### Feature contract
 This spec establishes dependency/deployment constraints. Its minimal
-composition boundary includes GET /api/health; public feature shapes belong to
-SPEC-006 onward.
+composition boundary references `GET /api/health`, whose canonical behavior and
+handler are owned by SPEC-018; public feature shapes belong to SPEC-006 onward.
+SPEC-004 owns no endpoint.
 
 
 

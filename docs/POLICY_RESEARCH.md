@@ -21,7 +21,7 @@ The public College pages show no clear publication/version date and must be
 stored with an access date. The 2018 amendment linked on the general page
 concerns Maritime credit transfers and is not used as a College-of-AI rule.
 
-## Simplified, verified rules
+## Simplified research baseline (approval status shown per rule)
 
 | Code | Engine rule | Source status |
 |---|---|---|

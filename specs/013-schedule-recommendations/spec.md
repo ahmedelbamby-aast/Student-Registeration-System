@@ -123,7 +123,8 @@ And optimizer branch coverage is at least 90%.
   final commit remains authority.
 - EC-2: One selected course has zero viable groups -> immediate no-solution.
 - EC-3: Equal scores -> stable tie-break by course/group identifiers.
-- EC-4: Invalid preference weight -> reject configuration, use last approved.
+- EC-4: Invalid preference bound, factor order, or configuration version ->
+  reject it and retain the last approved version.
 - EC-5: Catalogue/group/policy changes during search -> the result uses one
   coherent captured version set or returns STALE_INPUT; mixed-version options
   MUST NOT be returned.
@@ -140,19 +141,32 @@ And optimizer branch coverage is at least 90%.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.
-- FR-5: It MUST score results with approved soft preferences and explain score
-  components.
+- FR-5: It MUST use the approved versioned lexicographic factor order
+  (preference violations, idle minutes, teaching days, stable group tuple),
+  disclose the configuration version, and explain every component; factors
+  MUST NOT be silently reweighted.
 - FR-6: It MUST support cancellation and a configured computation time budget.
-- FR-7: If no feasible result exists, it MUST return at least one minimal
-  blocking set of selected courses/groups, each hard reason code and involved
-  meeting interval, and direct change/remove actions for every member.
+- FR-7: If no feasible result exists, it MUST return at least one
+  **inclusion-minimal** blocking set: removing any member makes that reported
+  hard conflict no longer hold. Every diagnostic MUST include the affected
+  course/group IDs, stable hard-reason code, both involved meeting intervals
+  where applicable, and a direct change-group or remove-course action for
+  every member. Diagnostics MUST be ordered deterministically by set size and
+  then stable course/group identifiers.
 - FR-8: Final submission MUST revalidate all results; a recommendation does not
   reserve seats.
 - FR-9: A recommendation request MUST include the expected plan rowversion and
   request correlation ID; each result MUST identify the captured plan,
-  catalogue/group, policy, and optimizer-configuration versions.
-- FR-10: Applying an option MUST be one atomic versioned plan mutation and MUST
-  reject an option computed from a stale plan or dependency version.
+  catalogue/group, policy, and optimizer-configuration versions. Every option
+  MUST carry an authenticated, encrypted, expiring option token binding the
+  authenticated student, plan, complete group selection, captured versions,
+  correlation ID, issued time, and expiry so any stateless replica can
+  validate it without server memory or a durable option table.
+- FR-10: Applying an option MUST submit that option token and the current
+  expected plan rowversion, validate signature/expiry/owner/plan/payload and
+  dependency versions, and perform one atomic versioned plan mutation. A
+  tampered, cross-owner, expired, stale-plan, or stale-dependency token MUST
+  fail without mutation using a stable safe code.
 
 ### Non-Functional Requirements
 
@@ -164,10 +178,11 @@ And optimizer branch coverage is at least 90%.
 
 ### Key Entities
 
-- **SchedulePreferences**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ScheduleOption**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ScoreComponent**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **OptimizationDiagnostic**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **SchedulePreferences**: Registration-module owned transient value object.
+- **ScheduleOption**: Registration-module transient value; it is not a durable entity and is transported through a protected option token.
+- **ScoreComponent**: Registration-module owned transient scoring value.
+- **OptimizerConfiguration**: Registration-module owned immutable factor-order/version value.
+- **OptimizationDiagnostic**: Registration-module transient value containing a deterministic inclusion-minimal blocking set, reasons, intervals, and actions.
 
 ## Success Criteria
 
@@ -184,6 +199,8 @@ And optimizer branch coverage is at least 90%.
 ## Dependencies
 
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
+- [SPEC-010](../010-offerings-groups-resources/spec.md)
+- [SPEC-011](../011-eligibility-subject-discovery/spec.md)
 - [SPEC-012](../012-schedule-builder-conflicts/spec.md)
 - [SPEC-018](../018-quality-security-scalability-operations/spec.md)
 

@@ -7,7 +7,7 @@ Use a modular monolith on .NET 10 LTS:
 - Blazor WebAssembly client.
 - Same-origin ASP.NET Core REST API/host.
 - ASP.NET Core Identity and server-side authorization.
-- EF Core 10 and LINQ with a single RegistrationDbContext.
+- EF Core 10 and LINQ with a single `StudentRegistrationDbContext`.
 - SQL Server using Code First migrations.
 - One deployable application plus one relational database initially.
 
@@ -40,11 +40,15 @@ flowchart LR
 
 | Module | Owns |
 |---|---|
-| IdentityAccess | Accounts, activation, credentials, roles, sessions, authorization policies |
-| Academics | Students, programs, curricula, catalogue, transcript, GPA, standing, holds, policy evaluation |
-| Scheduling | Terms, windows, offerings, groups, rooms, staff assignment/availability, meeting slots |
+| IdentityAccess | Accounts, activation, credentials, roles, sessions, authorization policies, final-Admin guard |
+| Academics | Terms/windows, students, programs, curricula, catalogue, transcript, GPA, standing, holds, policy evaluation |
+| Scheduling | Offerings, groups, rooms, staff assignment/availability, meeting slots |
 | Registration | Plans, eligibility orchestration, optimizer, submissions, enrollments, capacity allocation |
-| StaffAdministration | Role-scoped staff queries, admin commands, imports, audit and operational reports |
+| StaffAdministration | Role-scoped staff queries, delegated admin commands, audit query/export, operational reports |
+
+The cross-module `IAuditEventWriter`, append-only AuditEvent mapping, and SQL
+writer are foundational SPEC-004 infrastructure. StaffAdministration owns the
+authorized read/export experience, not business audit writes.
 
 SQL schemas make ownership visible: auth, academics, scheduling, registration,
 and audit. Registration may use public Academics and Scheduling interfaces,
@@ -61,6 +65,7 @@ src/
   StudentRegistration.Academics/
   StudentRegistration.Scheduling/
   StudentRegistration.Registration/
+  StudentRegistration.StaffAdministration/
   StudentRegistration.Infrastructure.SqlServer/
 tests/
   StudentRegistration.UnitTests/
@@ -77,6 +82,15 @@ Use a project per meaningful business module, not a project per entity or
 architectural layer. Within a module, Domain, Application, and Endpoints may be
 folders. Infrastructure implements narrow ports and owns the single DbContext
 and migrations.
+
+Canonical source paths therefore use the owning project, for example
+`StudentRegistration.IdentityAccess/Application`,
+`StudentRegistration.Scheduling/Domain`, and
+`StudentRegistration.Registration/Endpoints`. The API project is the
+composition root only; business handlers do not live in a generic `Server` or
+`Domain` project. `StudentRegistration.Contracts` contains only stable public
+DTO conventions and cross-module identifiers, not every feature's internal
+model.
 
 ## Engineering principles
 
@@ -115,6 +129,10 @@ DTOs and never expose EF entities. Reads use projection and AsNoTracking.
 - API authorization and ownership checks are mandatory because client-side
   Blazor checks can be modified.
 - Replicas share ASP.NET Core Data Protection keys.
+- Production replicas persist Data Protection keys in the primary SQL Server
+  through the infrastructure project and protect keys at rest with a
+  deployment certificate/private key obtained from the approved secret
+  provider. Sticky sessions are not a correctness mechanism.
 - Rate-limit login, optimizer, and registration endpoints using measured
   production thresholds.
 
@@ -154,6 +172,10 @@ authored scripts.
 
 Publishing a group validates Lecturer/TA availability, staff overlap, room
 overlap, room capacity, term/campus slots, and required teaching roles.
+Until DEC-11 is institutionally replaced, the safe typed default is: Lecture
+requires at least one Lecturer; Tutorial/Laboratory requires at least one
+Teaching Assistant. Composite registration choices display every assigned
+Lecturer and Teaching Assistant.
 
 The student optimizer chooses among published groups only. It does not move
 official classes, rooms, Lecturers, or TAs.
@@ -176,6 +198,14 @@ Algorithm:
 5. Return the best three plus score explanations.
 6. Stop at a configured time budget and return a clear partial/no-solution
    diagnostic.
+
+Returned options carry a protected, purpose-isolated token bound to student,
+term, plan/version, exact group selection, dependency/configuration versions,
+correlation ID, issue time, and a ten-minute expiry. Any stateless replica can
+validate it through the shared Data Protection key ring; applying it still
+rechecks current versions and never reserves seats. A no-solution diagnostic
+returns deterministic inclusion-minimal blocking sets, every involved
+interval, and stable change/remove actions for each member.
 
 This is deterministic, small, and testable for a typical 6-8 course plan.
 Adopt OR-Tools or extract a compute service only when benchmarks prove the
@@ -241,8 +271,10 @@ Submission steps:
    result/rejection audit, and commit the replayable claim/result. If the
    transaction is aborted or a transient infrastructure failure occurs, roll
    back the entire transaction and claim.
-8. On success, write enrollments, decision snapshot, accepted result, audit
-   event, and idempotency result in the same transaction.
+8. On success, write enrollments, decision snapshot, accepted result,
+   immutable unique receipt reference/snapshot on the submission, audit event,
+   and idempotency result in the same transaction. `RegistrationReceipt` is a
+   read projection of those fields, not a second write/table.
 9. Commit and return or replay the stored final timetable/result.
 
 The idempotency claim is never committed separately from the registration
@@ -259,8 +291,18 @@ guard. Student drop/withdrawal/correction is outside MVP until a separate
 approved workflow spec exists. Capacity may not be reduced below
 EnrolledCount.
 
-A reconciliation metric compares EnrolledCount with active Enrollment rows.
-Any mismatch is a high-priority operational alert.
+A scheduled reconciler compares EnrolledCount with active Enrollment under the
+SectionGroup lock. A mismatch atomically pauses the group and emits a
+high-priority operational alert. Only the approved operations service identity
+with `Registration.Reconcile` may execute the GroupId/observed-version/
+evidence-hash idempotent repair; Admin UI remains observation-only.
+
+Other contested administrative writes use the same database-as-ordering-point
+rule: the SPEC-007 Identity command locks `AdminSecurityGuard` and rechecks the
+enabled-Admin count; export workers claim `ExportJob` through rowversion and an
+expiring lease; schedule-impact revalidation locks the alert and every
+referenced resource version. Two-replica real-SQL tests prove each winner,
+loser, recovery, and audit outcome.
 
 ## Scaling without premature distribution
 

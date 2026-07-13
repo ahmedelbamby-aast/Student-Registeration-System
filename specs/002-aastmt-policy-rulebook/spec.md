@@ -119,9 +119,13 @@ And source/access/approval/effective metadata remains auditable.
 
 ### Key Entities
 
-- **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **PolicyDecisionSnapshot**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **PolicyRulebook**: Versioned, scoped, approval-aware rulebook artifact owned by SPEC-002.
+- **PolicyRuleDefinition**: Typed, non-executable rule-definition artifact owned by SPEC-002.
+- **PolicyBoundaryExample**: Registrar-supplied boundary example artifact owned by SPEC-002.
+- **PolicySourceRecord**: Provenance and institutional approval artifact owned by SPEC-002.
+
+Runtime `PolicySet` and `PolicyRule` are owned by SPEC-009, while the durable
+decision snapshot is owned by SPEC-015; none is a SPEC-002 runtime entity.
 
 ## Success Criteria
 

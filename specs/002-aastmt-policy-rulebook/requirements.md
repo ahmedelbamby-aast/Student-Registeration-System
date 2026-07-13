@@ -103,16 +103,22 @@ interface PolicyDecisionDto {
 }
 ```
 
-Endpoints: POST /api/admin/policies/{id}/simulate and GET
-/api/student/offerings/{id}/eligibility.
+`POST /api/admin/policies/{policySetId}/simulate` is owned and delivered by
+SPEC-009. `GET /api/student/offerings/{offeringId}/eligibility` is owned and
+delivered by SPEC-011. SPEC-002 contributes the decision/provenance contract to
+both endpoints and does not implement either handler.
 
 ## Data Models
 
-| Entity | Required data |
-|---|---|
-| PolicySet | version, scope, priority, effective dates, approval state/actor |
-| PolicyRule | typed rule, reason code, validated config, source URL/access date |
-| PolicyDecisionSnapshot | version, input summary, result list, evaluated time |
+| Concept | Role in SPEC-002 | Canonical runtime owner | Required data |
+|---|---|---|---|
+| PolicyRulebook | Governed artifact | SPEC-002; consumed by SPEC-009 | version, scope, priority, effective dates, rule categories, approval state/actor |
+| PolicyRuleDefinition | Governed typed-rule artifact | SPEC-002; consumed by SPEC-009 | type key, validated configuration schema, reason code, source reference |
+| PolicyBoundaryExample | Governed boundary fixture | SPEC-002; consumed by SPEC-009 | input, expected reason/result, boundary label, approval |
+| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source URL/reference, access date, authority, affected rules, approval state |
+
+Runtime `PolicySet`/`PolicyRule` are owned by SPEC-009 and durable decision
+snapshots by SPEC-015.
 
 ## Out of Scope
 

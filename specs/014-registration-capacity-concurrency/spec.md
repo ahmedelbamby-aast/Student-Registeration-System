@@ -237,9 +237,11 @@ And a fault after commit replays the stored final result.
 
 - FR-1: Submission MUST resolve the student from authenticated server identity
   and MUST NOT accept a client-supplied student identifier.
-- FR-2: Submission MUST accept PlanId, expected plan rowversion, term ID, and a
-  client-generated idempotency key and MUST reject a term outside the student's
-  resolved registration context.
+- FR-2: The route MUST identify TermId and the request MUST contain PlanId,
+  expected plan rowversion, and a client-generated ClientRequestId. The server
+  MUST reject a route term outside the authenticated student's resolved
+  registration context; TermId and student ID MUST NOT be duplicated as
+  client-authoritative body fields.
 - FR-3: The server MUST revalidate window, student profile/holds, policy and
   catalogue versions, eligibility, credit load, duplicate courses, group
   state/meeting versions, and timetable inside the commit transaction.
@@ -257,15 +259,17 @@ And a fault after commit replays the stored final result.
   transient or transaction-aborting infrastructure failure MUST roll back the
   entire transaction and its claim. No failure path MAY create an active
   partial enrollment, counter, receipt, or success audit state.
-- FR-7: A concurrent request using the same student/term/idempotency key MUST
-  NOT execute allocation again. If the final claim/result is committed, the
-  same canonical payload MUST replay it. While the first claim remains
-  uncommitted, the server MUST wait at most 500 ms for that key; if no final
-  row becomes visible, it MUST return the non-durable bounded 202
-  RegistrationInProgressResponse containing clientRequestId, retryAfterSeconds,
-  and resultUrl only. The 202 MUST NOT expose or imply a visible submissionId
-  or committed Processing row; payload/owner mismatch is checked once the
-  winning claim becomes visible.
+- FR-7: A concurrent request using the same authenticated-student/route-term/
+  ClientRequestId scope MUST NOT execute allocation again. If the final
+  claim/result is committed, the same canonical payload MUST replay it. While
+  the first claim remains uncommitted, the server MUST wait at most 500 ms for
+  that scoped key; if no final row becomes visible, it MUST return the
+  non-durable bounded 202 RegistrationInProgressResponse containing
+  clientRequestId, retryAfterSeconds, and the term-scoped resultUrl only. The
+  202 MUST NOT expose or imply a visible submissionId or committed Processing
+  row; payload mismatch is checked once the winning claim becomes visible.
+  Reusing the same opaque ClientRequestId in another term is independent and
+  MUST NOT conflict; another student cannot discover the first student's key.
 - FR-8: Unique, foreign-key, and check constraints MUST be final guards for
   student/offering duplicates, idempotency ownership, group ownership, and
   0 <= EnrolledCount <= Capacity.
@@ -274,19 +278,26 @@ And a fault after commit replays the stored final result.
   policy/workflow specification.
 - FR-10: Expected business conflicts MUST return 409 with a stable reason code,
   current version where relevant, and no mutation.
-- FR-11: The system MUST reconcile EnrolledCount to active Enrollment, alert on
-  mismatch, and pause affected-group registration before a controlled repair.
+- FR-11: A scheduled worker MUST reconcile under the SectionGroup lock, pause
+  and alert on mismatch, and permit repair only to the Registration.Reconcile
+  operations identity using a GroupId/rowversion/evidence-hash idempotency
+  scope. Repair MUST recompute from active Enrollment, audit atomically, and
+  verify before resume; no Admin/public repair endpoint exists in MVP.
 - FR-12: Every registration mutation for one student and term MUST serialize
   through a database-backed StudentTermRegistrationGuard; in-memory locks are
   prohibited because multiple application replicas are supported.
-- FR-13: Idempotency claim MUST be atomic and store owner/scope, canonical
-  payload hash, processing state, deterministic result, and timestamps. Reuse
-  with a different payload MUST return 409 IDEMPOTENCY_KEY_REUSED.
+- FR-13: RegistrationSubmission is the sole idempotency claim/final-result
+  record. Its database uniqueness scope MUST be (StudentId, TermId,
+  ClientRequestId), and it MUST atomically store that owner/scope, canonical
+  payload hash, internal processing state, deterministic result, timestamps,
+  and—when accepted—a unique human-safe Reference plus immutable
+  ReceiptSnapshot. Reuse in the same scope with a different payload MUST
+  return 409 IDEMPOTENCY_KEY_REUSED; reuse in another term is independent.
 - FR-14: After acquiring the required database boundaries, the server MUST
   re-read and validate every mutable input and commit guard/version changes,
-  seat counters, enrollments, submission result, decision snapshot, audit
-  event, and idempotency result in one short local SQL transaction with no
-  remote calls.
+  seat counters, enrollments, submission result, unique reference, immutable
+  receipt and decision snapshots, audit event, and idempotency final result in
+  one short local SQL transaction with no remote calls.
 - FR-15: The server MUST capture ReceivedAtUtc once at authenticated command
   ingress. Scheduled opening/closing boundaries use that instant; an emergency
   administrative closure or registration-context version change before commit
@@ -323,11 +334,11 @@ And a fault after commit replays the stored final result.
 
 ### Key Entities
 
-- **RegistrationSubmission**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Enrollment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **SectionGroup**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **DecisionSnapshot**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **StudentTermRegistrationGuard**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **RegistrationSubmission**: SPEC-014/Registration-owned aggregate and sole scoped idempotency/final-result record.
+- **Enrollment**: SPEC-014/Registration-owned active enrollment entity.
+- **SectionGroup**: Consumed Scheduling aggregate owned by SPEC-010; SPEC-014 may only allocate through its published concurrency contract.
+- **DecisionSnapshot**: SPEC-014/Registration-owned immutable decision evidence.
+- **StudentTermRegistrationGuard**: SPEC-014/Registration-owned database serialization row.
 
 ## Success Criteria
 

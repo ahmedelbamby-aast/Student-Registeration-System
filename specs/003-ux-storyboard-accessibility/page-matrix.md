@@ -25,8 +25,8 @@ families; executable tests are not created in this phase.
 | ADM-04 | /admin/students | SPEC-008/017 | Sourced profile/transcript/hold view and correction dialog | read, invalid correction, stale, reason required, restricted |
 | ADM-05 | /admin/catalogue | SPEC-009/017 | Version list, typed policy/catalogue editor, simulation | draft, invalid, cycle, simulate, publish, stale publish |
 | ADM-06 | /admin/offerings | SPEC-010/017 | Offering/group editor and publication validation | missing resource, overlap, capacity mismatch, stale edit, publish |
-| ADM-07 | /admin/resources | SPEC-010/017 | Room/slot/availability table and grid alternative | imported, empty, unavailable, overlap, keyboard text entry |
-| ADM-08 | /admin/registrations | SPEC-014/017 | Submission/fill monitor and correction workflow | live, stale, degraded, collision, correction blocked, no capacity bypass |
+| ADM-07 | /admin/resources | SPEC-010/017 | Room/availability/impact-alert table and grid alternative | imported, empty, unavailable, overlap, stale, keyboard text entry |
+| ADM-08 | /admin/registrations | SPEC-014/017 | Read-only submission/fill/reconciliation monitor | live, stale, degraded, collision, paused-group support reference, no repair/correction action |
 | ADM-09 | /admin/audit | SPEC-017 | Scoped search, immutable-event detail, export job | empty, pagination, queued, ready, failed, expired, restricted |
 | STF-01 | /staff | SPEC-016 | Staff shell, role context, assignments, warnings | Lecturer, TA, dual role, no assignment, stale assignment |
 | STF-02 | /staff/timetable | SPEC-016 | Calendar/list switcher and assignment details | current, history, unassigned 403, stale, equivalent views |

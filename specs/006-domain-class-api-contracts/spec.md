@@ -58,7 +58,8 @@ As a API consumer, I need the Mutation time and concurrency contract (FR-4, FR-7
 
 Given a time-dependent mutation with an idempotency/concurrency token<br>
 When the request is canceled or retried<br>
-Then the application service uses TimeProvider and the declared token behavior<br>
+Then the application service uses TimeProvider, the request-body
+expectedRowVersion contract, and the declared idempotency behavior<br>
 And produces no duplicate committed effect.
 ### User Story 5 - Bounded compatible listing (FR-5, FR-6) (P3)
 
@@ -70,7 +71,7 @@ As a API consumer, I need the Bounded compatible listing (FR-5, FR-6) behavior s
 
 Given a client requests an oversized page from an existing API version<br>
 When the list endpoint validates the request<br>
-Then it caps/rejects the size according to contract<br>
+Then it returns 400 PAGE_SIZE_INVALID rather than silently capping the request<br>
 And a breaking shape change requires the approved versioning process.
 ### User Story 6 - Complete idempotency contract (FR-4, FR-8) (P3)
 
@@ -113,6 +114,26 @@ Then endpoints delegate business decisions to focused application services<br>
 And field naming, UTC dates, timezone identifiers, and invariant decimal
 formats are identical across responses.
 
+### User Story 9 - Complete authenticated context (FR-10) (P3)
+
+As an authenticated user, I need one complete, server-authoritative context so
+that every role shell displays the same identity, session, term, and time state.
+
+**Independent Test**: Execute AC-9 in requirements.md with approved SPEC-007
+and SPEC-008 contributor fixtures.
+
+**Acceptance Scenario (AC-9)**
+
+Given SPEC-007 supplies an authenticated session and SPEC-008 supplies the
+authoritative academic context<br>
+When GET /api/context succeeds<br>
+Then the response contains every FR-10 field and only authorized role contexts<br>
+And serviceState and supportReferencePath are always present<br>
+And activeRole is null only for an explicitly modeled dual-role
+role-selection-required state<br>
+And a missing required contributor returns a safe unavailable error rather
+than a partial or browser-derived context.
+
 ## Edge Cases
 
 - EC-1: Malformed JSON -> 400 VALIDATION_ERROR with no command execution.
@@ -131,11 +152,16 @@ formats are identical across responses.
   entities or password/security internals.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
   optional field details.
-- FR-4: Update/delete endpoints MUST require an expected rowversion or
-  If-Match value; retryable create/confirm/submit commands MUST require an
-  idempotency key; cancellation behavior before and after commit MUST be
-  documented per endpoint.
-- FR-5: Listing endpoints MUST use bounded pagination.
+- FR-4: Every versioned update/delete request MUST carry
+  `expectedRowVersion` in its request body. A stale authorized request MUST
+  return 409 `STALE_VERSION` and MAY return the current version; unauthorized
+  callers MUST receive 403 without current-version or resource data.
+  Retryable create/confirm/submit commands MUST require an idempotency key;
+  cancellation behavior before and after commit MUST be documented per endpoint.
+- FR-5: Listing endpoints MUST use page-number pagination with default page
+  size 20 and maximum 100. `page < 1`, `pageSize < 1`, or `pageSize > 100`
+  MUST return 400 `PAGE_SIZE_INVALID`; no silent cap is allowed. Every listing
+  MUST declare a stable default sort ending in a unique identifier tie-breaker.
 - FR-6: API versioning policy MUST be defined before the first breaking change.
 - FR-7: Domain code MUST use TimeProvider abstraction for current time.
 - FR-8: Idempotency contracts MUST define owner/scope, server-canonical payload,
@@ -145,10 +171,21 @@ formats are identical across responses.
   server time/timezone, public teaching/registration term labels, window state,
   maintenance state, and no user, role, student, capacity, or internal-health
   data.
+- FR-10: The shared `AppContextDto` contract MUST contain server time/timezone,
+  teaching term, registration term/window, authenticated display name,
+  authorized roles, the active authorized role context, session state and
+  expiry, service state, and canonical `supportReferencePath`. `activeRole` MAY
+  be null only while a dual-role user is in the explicitly modeled
+  `role-selection-required` session state. SPEC-007 supplies session/user/role
+  values; SPEC-008 supplies time/term/window values and owns GET /api/context
+  and GET /api/public/context handlers. Missing required contributors MUST fail
+  safely; the browser MUST NOT synthesize a partial context.
 
 ### Non-Functional Requirements
 
-- NFR-1: OpenAPI output MUST match implementation in CI.
+- NFR-1: CI MUST generate deterministic OpenAPI from the approved application,
+  compare it semantically with the versioned baseline, and reject any
+  unapproved endpoint, operation, schema, status-code, or security drift.
 - NFR-2: Every success/error response in approved feature specs MUST have a
   contract/integration test.
 - NFR-3: Responses MUST NOT leak stack traces, SQL text, secrets, hashes, or
@@ -157,11 +194,9 @@ formats are identical across responses.
 
 ### Key Entities
 
-- **ApiError**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Page**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **AppContext**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **CommandResult**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **DomainValue**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **ApiError**, **Page**, **CommandResult**, and **DomainValue**: Shared contract/value types owned by SPEC-006; none is a SQL entity.
+- **AppContextDto**: Composed shared response schema owned by SPEC-006. SPEC-007 supplies session/user/authorized-role context; SPEC-008 supplies authoritative time/term/window context and owns the endpoint handler.
+- **TermSummaryDto**: Shared `{ id, code, label, state, rowVersion }` response type owned by SPEC-006 and composed from SPEC-008 AcademicTerm data.
 
 ## Success Criteria
 

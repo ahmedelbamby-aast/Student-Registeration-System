@@ -18,27 +18,50 @@ enforced by ASP.NET Core.
 ## Functional Requirements
 
 - FR-1: Student login MUST accept normalized University ID and password.
-- FR-2: Student activation MUST only claim a pre-imported student record after
-  verification through an approved institutional factor.
+- FR-2: Student activation MUST only claim a pre-imported Identity-owned
+  institutional student identity (`ApplicationUser` with normalized unique
+  University ID) after
+  verification through the institutional factor approved under DEC-01. Until
+  that factor is named and security-reviewed, production activation MUST fail
+  closed and this specification MUST remain In Review.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
-- FR-5: The system MUST support secure recovery, lockout, logout, and
-  invalidate-all-sessions.
-- FR-6: Staff MUST use MFA before production.
+- FR-5: The system MUST support request-and-complete recovery, password
+  change, current-session logout, and revoke-all-sessions. Recovery request
+  responses MUST be indistinguishable for existing and unknown accounts;
+  completion MUST rotate the security stamp and invalidate every earlier
+  session on every replica.
+- FR-6: Staff MUST complete MFA through the institutional identity provider
+  approved under DEC-02. A password-only staff session MUST never be issued,
+  and production staff login MUST fail closed until the provider and MFA
+  method are approved and configured.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
   plus antiforgery for mutations.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
-- FR-10: Activation and recovery tokens MUST be single-use through an atomic
-  database transition; concurrent uses of one token MUST change at most one
-  account state.
+- FR-10: Activation, recovery, and MFA challenges MUST be opaque, hashed at
+  rest where locally persisted, time-bounded, attempt-bounded, and single-use
+  through an atomic database transition; concurrent uses of one challenge
+  MUST change at most one account state.
 - FR-11: Claiming an institutional University ID MUST be protected by a unique
   database constraint so parallel activation requests cannot link it twice.
-- FR-12: Lockout counters, rate-limit state, security stamps, and session
-  invalidation MUST be shared across all application replicas.
+- FR-12: Lockout counters, rate-limit buckets, used challenges, security
+  stamps, role assignments, and session invalidation MUST use shared durable
+  state visible to all replicas. Cookie protection keys MUST use the shared
+  key-ring contract in SPEC-018; sticky sessions and in-memory-only security
+  state MUST NOT be correctness requirements.
 - FR-13: AUTH-02 through AUTH-05 and STU-08 MUST consume the SPEC-003 page,
   state, accessibility, and functional-test contracts.
+- FR-14: An Admin with the explicit identity-management permission MUST be able
+  to submit and inspect a provenance-bearing, idempotent pre-provisioned-user
+  import; page/search users; enable or disable an account; and replace
+  effective role assignments. Status/role commands require reason and expected
+  user/role versions, emit audit facts, and lock the Identity-owned singleton
+  `AdminSecurityGuard` before serializing the enabled-Admin role scope so two
+  concurrent removals cannot eliminate the final enabled Admin. IdentityAccess
+  is the sole role-mutation owner; SPEC-017 may delegate to it but MUST NOT
+  implement a second role writer or guard.
 
 ## Non-Functional Requirements
 
@@ -59,14 +82,15 @@ Then a secure authenticated session is established<br>
 And the server routes only to the student's own context.
 
 ### AC-2: Student activation safety (FR-2)
-Given no pre-imported student record matches an entered University ID<br>
+Given no pre-imported Identity-owned institutional student identity matches an entered University ID<br>
 When activation is submitted<br>
 Then no account is created or linked<br>
 And a generic safe response is returned.
 
 ### AC-3: Shared staff login (FR-3, FR-4, FR-6)
-Given a staff account with TA claim and valid MFA<br>
-When staff login succeeds<br>
+Given a provisioned staff account with TA claim and an MFA proof accepted by
+the approved institutional provider<br>
+When the shared staff login succeeds<br>
 Then the server supplies TA context<br>
 And no client parameter can add Lecturer or Admin permissions.
 
@@ -79,7 +103,8 @@ Then the request is rejected and no state changes.
 Given repeated failed login/recovery attempts for an account<br>
 When the approved threshold is reached<br>
 Then lockout/rate limiting and safe audit occur<br>
-And no long-lived credential is written to browser local storage.
+And no long-lived credential is written to browser local storage<br>
+And recovery request responses do not disclose whether the account exists.
 
 ### AC-6: Parallel activation is single-use (FR-2, FR-10, FR-11)
 Given one valid activation token for one unclaimed University ID<br>
@@ -91,7 +116,7 @@ And no duplicate University ID claim exists.
 
 ### AC-7: Replica-wide invalidation (FR-5, FR-12)
 Given a user has sessions routed to two application replicas<br>
-When recovery changes the password and security stamp<br>
+When recovery, password change, or revoke-all rotates the security stamp<br>
 Then both replicas reject every earlier session<br>
 And lockout/rate-limit counters remain consistent across replicas.
 
@@ -111,6 +136,16 @@ And credential configuration passes the current approved ASP.NET Core security
 baseline<br>
 And every protected endpoint permits and denies exactly the documented roles.
 
+### AC-10: Governed Admin user lifecycle (FR-3, FR-4, FR-12, FR-14)
+Given an authorized identity Admin has current user/role versions, reason, and
+a validated pre-provisioned import or user change<br>
+When the Admin imports users, pages users/import status, disables an account,
+or replaces roles<br>
+Then one idempotent/versioned/audited result is returned and every replica
+observes it<br>
+And unauthorized, stale, non-provisioned, or final-enabled-Admin removal
+attempts change nothing.
+
 ## Edge Cases
 
 - EC-1: University ID already activated -> direct to login/recovery, no second
@@ -127,7 +162,7 @@ And every protected endpoint permits and denies exactly the documented roles.
 
 ```typescript
 interface StudentLoginRequest { universityId: string; password: string; }
-interface StaffLoginRequest { userName: string; password: string; mfaCode?: string; }
+interface StaffLoginRequest { userName: string; password: string; }
 interface ActivateStudentRequest {
   universityId: string;
   activationCode: string;
@@ -136,22 +171,56 @@ interface ActivateStudentRequest {
 interface SessionDto {
   displayName: string;
   roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
+  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant" | null;
+  sessionState: "active" | "expiring" | "role-selection-required";
   expiresAtUtc: string;
+  securityStampVersion: string;
 }
+interface MfaChallengeDto { challengeId: string; expiresAtUtc: string; providerDisplayName: string; }
+interface MfaVerifyRequest { challengeId: string; providerProof: string; }
+interface RecoveryRequest { universityIdOrUserName: string; }
+interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
+interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
+interface SelectRoleContextRequest {
+  role: "Admin" | "Lecturer" | "TeachingAssistant";
+}
+interface IdentityImportBatchDto {
+  id: string;
+  source: string;
+  contentHash: string;
+  state: "uploaded" | "invalid" | "validated" | "published" | "failed";
+  rowVersion: string;
+  errors: Array<{ row?: number; code: string; message: string }>;
+}
+interface UserStatusRequest { enabled: boolean; expectedUserRowVersion: string; reason: string; }
+interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">; expectedUserRowVersion: string; expectedRoleSetVersion: string; reason: string; }
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
-POST /api/auth/staff/login, POST /api/auth/logout, POST /api/auth/recovery,
-GET /api/auth/session.
+POST /api/auth/staff/login, POST /api/auth/staff/mfa/verify, POST
+/api/auth/logout, POST /api/auth/recovery/request, POST
+/api/auth/recovery/complete, POST /api/auth/password/change, POST
+/api/auth/sessions/revoke-all, GET /api/auth/session, and PUT
+/api/auth/session/context; plus GET /api/admin/users, POST
+/api/admin/users/imports, GET /api/admin/users/imports/{importId}, POST
+/api/admin/users/imports/{importId}/publish, PATCH
+/api/admin/users/{userId}/status, and PUT /api/admin/users/{userId}/roles.
+Anonymous activation/recovery responses are generic;
+all account mutations use antiforgery and server-side rate limits.
 
 ## Data Models
 
 | Entity | Key fields |
 |---|---|
-| ApplicationUser | Identity fields, enabled state, student/staff link |
-| StudentActivation | hashed one-time token, expiry, used timestamp |
+| ApplicationUser | Identity fields, normalized unique University ID for student identities, enabled state, optional academic/staff link |
+| StudentActivation | ApplicationUser ID, hashed one-time token, expiry, used timestamp |
+| AccountRecoveryChallenge | hashed token, subject, expiry, attempts, used timestamp |
+| StaffMfaChallenge | provider transaction reference, expiry, attempts, used timestamp |
 | RoleAssignment | user, role, effective dates, assigning actor |
-| SecurityAudit | event code, actor/subject, time, safe metadata |
+| AuthenticationAbuseState | normalized privacy-safe key, counters, lockout/rate-limit windows, rowversion |
+| IdentityImportBatch | source/hash, lifecycle, rowversion, row errors, idempotent publication result |
+| SecurityEvent | append-only identity/abuse fact with safe actor/subject references, code, reason and redacted before/after facts for status/role commands, correlation, server time, and bounded non-secret metadata; SPEC-017 may consume/query it |
+| AdminSecurityGuard | singleton Admin-role serialization row with rowversion; owned and locked by IdentityAccess role commands |
 
 ## Out of Scope
 
@@ -159,3 +228,13 @@ GET /api/auth/session.
 - OS-2: Student-created identity without institutional pre-provisioning.
 - OS-3: Authorization based only on Blazor route/component visibility.
 - OS-4: Final identity-provider integration until AASTMT confirms provider.
+
+## Approval Blockers
+
+- DEC-01 must name the institutional student-ownership verification factor.
+- DEC-02 must name the staff identity provider and managed MFA method.
+- DEC-13 must name the production secret provider and certificate custody
+  process for the shared Data Protection key ring.
+- Until those decisions are approved, affected production flows fail closed;
+  no local substitute, test credential, or guessed provider behavior may be
+  promoted to production.

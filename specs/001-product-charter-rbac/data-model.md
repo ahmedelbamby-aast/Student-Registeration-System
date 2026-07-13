@@ -1,22 +1,25 @@
 # Data Model: Product Charter and RBAC
 
-## Owned Entities
+## Owned Governance Artifacts
 
-- **Role**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Permission**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RoleAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **RoleDefinition**: Governed role vocabulary owned by SPEC-001.
+- **PermissionDefinition**: Governed capability/data-scope definition owned by SPEC-001.
+- **RbacMatrix**: Governed role-to-permission mapping owned by SPEC-001.
+
+Runtime `RoleAssignment` is referenced from SPEC-007 and is not owned here.
 
 ## Detailed Model
 
-| Concept | Required values |
-|---|---|
-| Role | Student, Admin, Lecturer, TeachingAssistant |
-| Permission | Stable server policy name and allowed operations |
-| RoleAssignment | User, role, effective dates, assigning actor |
+| Concept | Artifact role | Runtime owner | Required values |
+|---|---|---|---|
+| RoleDefinition | Governed vocabulary artifact | SPEC-001; consumed by SPEC-007 | Student, Admin, Lecturer, TeachingAssistant |
+| PermissionDefinition | Governed capability/data-scope artifact | SPEC-001; consumed by SPEC-007 | Stable server policy name and allowed operations |
+| RbacMatrix | Governed mapping artifact | SPEC-001; consumed by SPEC-007 | Role, permission, scope rule, denied operations |
 
-## Integrity Rules
+## Governance Rules
 
-- Foreign keys and unique constraints enforce durable identity and relationship rules.
-- Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
-- Audit timestamps use server time; academic activity references an explicit academic term.
-- Deletion and retention behavior follow the project data-lifecycle specification.
+- The role vocabulary and permission matrix are versioned planning artifacts.
+- Every protected capability maps to one or more server policies owned by SPEC-007.
+- Client routes and controls never create roles or extend data scope.
+- Runtime identity constraints, effective dates, concurrency, and retention are
+  defined by SPEC-007 and SPEC-005 rather than duplicated here.

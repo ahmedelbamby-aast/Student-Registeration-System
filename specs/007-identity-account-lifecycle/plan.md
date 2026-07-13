@@ -1,7 +1,7 @@
 # Implementation Plan: Identity and Account Lifecycle
 
 **Branch**: 007-identity-account-lifecycle | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Design complete; DEC-01, DEC-02, and DEC-13 plus human approval are pending. Implementation is not authorized.
 
 ## Summary
 
@@ -37,7 +37,40 @@ Deliver Identity and Account Lifecycle inside the modular monolith while keeping
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Identity domain, application services, and endpoints belong in
+`src/StudentRegistration.IdentityAccess/{Domain,Application,Endpoints}`.
+The same-origin composition root is `src/StudentRegistration.Api`, shared DTO
+conventions are in `src/StudentRegistration.Contracts`, browser pages remain
+in `src/StudentRegistration.Client`, and SQL mappings are implemented by
+`src/StudentRegistration.Infrastructure.SqlServer`. No business handler is
+placed in a generic Server or Domain project.
+
+## Feature Design
+
+1. `ApplicationUser` is the security-stamp root; role assignments and
+   challenge/abuse state are shared durable Identity data.
+2. Student activation and recovery call approved institutional verification
+   ports and atomically consume single-use challenges.
+3. Staff authentication creates an MFA challenge and issues a session only
+   after the approved provider verifies it.
+4. Recovery, password change, and revoke-all rotate the security stamp;
+   protected APIs validate it on every replica.
+5. Identity owns Admin pre-provisioned import/list/status/role commands and
+   locks its singleton AdminSecurityGuard to serialize the final-enabled-Admin
+   invariant; SPEC-017 delegates to Identity and consumes the resulting audit
+   facts and monitoring projections.
+6. Identity owns append-only SecurityEvent facts and writes the shared
+   SPEC-004 AuditEvent in the same role transaction; downstream SPEC-017 may
+   query both. SPEC-018 owns key-ring operations.
+
+## Execution and Gate Order
+
+Dependency baselines and cross-spec consistency analysis run first. The final
+planning action is Ahmed ELbamby's approval after DEC-01, DEC-02, and DEC-13
+are resolved. Implementation then proceeds test-first: contract/model and
+acceptance tests, domain/application delivery, endpoint handlers, frontend E2E
+tests/pages, and measurable release evidence. No handler precedes its linked
+behavior and contract tests.
 
 ## Design Artifacts
 

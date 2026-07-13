@@ -2,54 +2,70 @@
 
 ## Decisions
 
-### Modular boundary
-**Decision**: Own this capability in the Registration module of the modular monolith.
-**Rationale**: It provides a clear extension seam without premature distributed-system cost.
-**Alternatives rejected**: A microservice per feature and direct client-to-database access.
+### SQL Server is the linearization authority
 
-### Authority and consistency
-**Decision**: Validate permissions, term state, policy, conflicts, and durable changes on the server, with database enforcement for contested writes.
-**Rationale**: Browser state is stale and untrusted during registration peaks.
-**Alternatives rejected**: Client-only validation and check-then-write capacity logic.
+**Decision**: Use database-backed StudentTermRegistrationGuard and stable lock
+order, then conditional SectionGroup updates and unique/check constraints.
+Process-local or distributed application locks are prohibited.
 
-### Feature contract
-```typescript
-interface SubmitRegistrationRequest {
-  planId: string;
-  expectedPlanRowVersion: string;
-  termId: string;
-  clientRequestId: string;
-}
-interface RegistrationFinalResult {
-  submissionId: string;
-  status: "accepted" | "rejected";
-  resultCode: string;
-  registeredGroups: GroupDto[];
-  receivedAtUtc: string;
-  completedAtUtc?: string;
-  policyVersion: string;
-  planRowVersion: string;
-}
-interface RegistrationInProgressResponse {
-  clientRequestId: string;
-  status: "processing";
-  retryAfterSeconds: number;
-  resultUrl: string;
-}
-```
+**Rationale**: SQL Server is already required and coordinates every stateless
+API replica. Check-then-write application logic cannot protect the final seat.
 
-Endpoint: POST /api/student/registrations. New final result is 201; idempotent
-final replay is 200; bounded lock-wait expiry is 202 with
-RegistrationInProgressResponse and no submissionId; business/version/
-idempotency conflicts are 409; validation is 400; authentication/authorization
-are 401/403. GET /api/student/registrations/by-request/{clientRequestId}
-returns the authenticated student's committed final result, the same bounded
-202 while the first transaction still holds the key, or 404 REQUEST_NOT_FOUND
-after a rolled-back/nonexistent claim. A 202 is transport-level retry guidance,
-not evidence of a separately committed Processing row.
+### Scoped idempotency record
 
+**Decision**: RegistrationSubmission is the sole claim/final-result record,
+unique by (StudentId, TermId, ClientRequestId). The same UUID in another term
+is independent. Student identity is authenticated, term is route-scoped, and
+the body contains neither.
 
+**Rationale**: One record avoids competing idempotency models. Explicit scope
+makes lookup, privacy, and retry behavior deterministic.
+
+### Claim, savepoint, and final result
+
+**Decision**: Create the claim inside the registration transaction. After final
+validation, create an allocation savepoint. Deterministic allocation rejection
+rolls seat/enrollment changes back to the savepoint and commits the stable
+rejected result. Infrastructure failure rolls back the whole transaction and
+claim.
+
+**Rationale**: This preserves replayable business rejection without an orphan
+Processing row or partial schedule.
+
+### Durable receipt/reference
+
+**Decision**: An accepted transaction generates one unique human-safe Reference
+and immutable ReceiptSnapshot on RegistrationSubmission in the same commit as
+seat counters, enrollments, DecisionSnapshot, audit, and final result.
+
+**Rationale**: A lost response/retry returns the same receipt and cannot create
+another reference, snapshot, audit-success event, or allocation. SPEC-015
+projects this record rather than introducing a second table.
+
+### Bounded duplicate observation
+
+**Decision**: A same-scope concurrent retry waits at most 500 ms. If no final
+row becomes visible, return a non-durable 202 with only ClientRequestId,
+retryAfterSeconds, and the term-scoped result URL. Lookup by another student is
+privacy-safe 404.
+
+### Complete-transaction retry
+
+**Decision**: EF/SQL transient execution retries restart the complete
+idempotent transaction. No transaction fragment or remote call is retried
+inside the transaction.
+
+## Endpoint Contract
+
+- `POST /api/student/terms/{termId}/registrations`
+- `GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId}`
+
+New final result is 201, replay 200, bounded in-progress guidance 202,
+validation 400, authentication/authorization 401/403, business/version/
+same-scope payload conflict 409, and nonexistent/rolled-back/private lookup
+404.
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+Institutional policy values remain governed by their source specs and fail
+closed until approved. No additional concurrency technology is required.

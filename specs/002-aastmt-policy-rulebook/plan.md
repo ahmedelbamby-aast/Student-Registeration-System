@@ -33,7 +33,14 @@ Deliver AASTMT Policy Rulebook inside the modular monolith while keeping server-
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Future implementation follows the project-per-business-module modular monolith in
+`docs/ARCHITECTURE.md`: `StudentRegistration.Client`, `StudentRegistration.Api`,
+`StudentRegistration.Contracts`, `StudentRegistration.IdentityAccess`,
+`StudentRegistration.Academics`, `StudentRegistration.Scheduling`,
+`StudentRegistration.Registration`, `StudentRegistration.StaffAdministration`,
+and `StudentRegistration.Infrastructure.SqlServer`, plus `tests/`. SPEC-002 owns
+the rulebook, provenance, approval, and fail-closed semantics; SPEC-009 owns the
+runtime policy aggregates and evaluator.
 
 ## Design Artifacts
 
@@ -42,6 +49,25 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+## Feature Design
+
+- Keep public-source findings and every unresolved `POLICY-Q` explicitly In
+  Review; no unapproved numeric value becomes a production default.
+- Publish a typed policy contract and boundary examples for SPEC-009 to
+  implement. `PolicySet`, `PolicyRule`, and decision snapshots are reference
+  models here, not downstream runtime prerequisites.
+- Declare the offering-eligibility resource as an endpoint owned and delivered
+  by SPEC-011; this rulebook contributes its decision shape only.
+
+## Execution Strategy
+
+1. Validate SPEC-001 and the institutional provenance/approval register.
+2. Complete consistency analysis and freeze only approved policy inputs.
+3. Record Registrar/SME and Ahmed ELbamby approval as the final planning gate.
+4. Test the rulebook schema and boundary fixtures before publishing them;
+   runtime evaluator work waits for approved SPEC-009 and endpoint work for
+   approved SPEC-011.
 
 
 

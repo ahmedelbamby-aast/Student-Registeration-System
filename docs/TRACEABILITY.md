@@ -9,7 +9,7 @@
 | Simple scalable implementation | SPEC-004, SPEC-018 | load, deployment, and boundary tests |
 | Modular without overengineering | SPEC-004 | rejected-complexity list and dependency rules |
 | .NET Core / Blazor WASM | SPEC-004, SPEC-006 | build and E2E test |
-| Code First SQL Server | SPEC-005 | migrations on real SQL Server |
+| Code First SQL Server | SPEC-004, SPEC-005, SPEC-008, SPEC-010, SPEC-012, SPEC-015, SPEC-017 | declared mapping contributions plus five dependency-ordered migrations on real SQL Server |
 | EF Core and LINQ | SPEC-005, SPEC-006 | integration tests and query review |
 | Student login/register | SPEC-007 | identity acceptance tests |
 | Shared Admin/Lecturer/TA login | SPEC-007 | role-routing and authorization tests |
@@ -21,7 +21,7 @@
 | Multiple groups/capacity | SPEC-010, SPEC-014 | database and collision tests |
 | Conflict detection and best timetable | SPEC-012, SPEC-013 | deterministic constraint tests |
 | Red X and blocked unresolved conflict | SPEC-003, SPEC-012 | accessible E2E test |
-| Race-condition safety | SPEC-003, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-012, SPEC-013, SPEC-014, SPEC-016, SPEC-017, SPEC-018 | duplicate-action UI, identity single-use, constraints, shared lock boundaries, idempotency, two-replica SQL concurrency/load/fault tests |
+| Race-condition safety | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-012, SPEC-013, SPEC-014, SPEC-016, SPEC-017, SPEC-018 | duplicate-action UI, identity single-use/final-Admin guard, atomic audit, constraints, shared lock boundaries, idempotency, reconciliation repair, two-replica SQL concurrency/load/fault tests |
 | Easy future services/features | SPEC-004 | module dependency and ADR review |
 | Scalability | SPEC-018 | measurable performance/recovery gates |
 | Agile phased development | SPEC-001, project plan | sprint reviews and spec status matrix |

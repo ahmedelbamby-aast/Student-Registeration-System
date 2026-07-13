@@ -8,8 +8,8 @@ SQL Server transaction boundaries and work across stateless app replicas.
 | Two students, final seat | SectionGroup conditional update | First committed valid allocation | 409 GROUP_FULL | EnrolledCount <= Capacity |
 | One student, two different plans | StudentTermRegistrationGuard before groups | First valid plan | Re-read and 409 policy/conflict | Combined enrollment remains valid |
 | Same idempotency key, same payload | Atomic uncommitted claim plus 500-ms bounded wait | First claimant | Visible final replay or non-durable 202 with no submissionId | One execution/final result |
-| Same key, different payload/scope | Unique claim plus payload/owner comparison | Original key owner/payload | 409 IDEMPOTENCY_KEY_REUSED | New payload never executes |
-| Multi-group allocation | Allocation savepoint after claim/validation | Valid whole plan | Roll back seat mutations to savepoint; commit stable rejected result | No partial enrollment; rejection replayable |
+| Same scoped key, different payload | Unique (StudentId, TermId, ClientRequestId) claim plus payload comparison | Original scoped payload | 409 IDEMPOTENCY_KEY_REUSED | New payload never executes; same UUID in another term is independent |
+| Multi-group allocation | Allocation savepoint after claim/validation | Valid whole plan | Roll back seat mutations to savepoint; commit stable rejected result | No partial enrollment/receipt; rejection replayable |
 | Hold/profile edit vs submit | Student-term guard/version | First serialized transaction | Re-read and reject or valid later commit | Final profile governs |
 | Scheduled close vs request | Server ReceivedAtUtc | Request received inside window | WINDOW_CLOSED after cutoff | Browser time ignored |
 | Emergency close vs submit | Registration-context version boundary | Emergency closure if committed first | WINDOW_CHANGED | No post-emergency uncommitted commit |
@@ -18,8 +18,8 @@ SQL Server transaction boundaries and work across stateless app replicas.
 | Capacity reduction vs submit | Same SectionGroup row/version | Either serial order | Invalid reduction or GROUP_FULL | 0 <= count <= capacity |
 | Deadlock/transient error | Stable lock order plus complete execution-strategy retry | One complete transaction | Safe idempotent retry | Never retry a fragment |
 | Process death after idempotency claim, before commit | Claim inside the registration SQL transaction | Retried complete request | Rolled-back claim can be reclaimed | No orphan Processing record |
-| Process/network loss after commit | Stored idempotency/result row in same transaction | Committed result | Result lookup/replay | No duplicate allocation |
-| Reconciliation mismatch | Affected-group pause and authorized repair | Enrollment evidence | Alert and repair | Counter equals active enrollment |
+| Process/network loss after commit | Stored submission/result/reference/receipt snapshot in same transaction | Committed result | Term-scoped result lookup/replay | No duplicate allocation, reference, receipt, or audit-success event |
+| Reconciliation mismatch | SectionGroup lock/pause plus GroupId, observed rowversion and evidence-hash repair scope | One authorized operations-service repair from active Enrollment evidence | Duplicate replica replays; unauthorized/Admin invocation denied | Counter equals active enrollment before audited resume |
 
 ## Required proof
 

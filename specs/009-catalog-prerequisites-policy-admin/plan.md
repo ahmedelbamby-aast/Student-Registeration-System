@@ -1,7 +1,7 @@
 # Implementation Plan: Catalogue, Prerequisites, and Policy Administration
 
 **Branch**: 009-catalog-prerequisites-policy-admin | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Design complete; policy/catalogue authority and human approval remain pending. Implementation is not authorized.
 
 ## Summary
 
@@ -38,7 +38,33 @@ Deliver Catalogue, Prerequisites, and Policy Administration inside the modular m
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Catalogue and policy domain, application, and endpoints belong in
+`src/StudentRegistration.Academics/{Domain,Application,Endpoints}`. The API
+composition root, shared contracts, client, and SQL mappings remain in their
+respective `StudentRegistration.Api`, `.Contracts`, `.Client`, and
+`.Infrastructure.SqlServer` projects. No generic business Server/Domain
+project or second catalogue writer is introduced.
+
+## Feature Design
+
+1. Manual changes occur only in `CatalogueDraft`; import batches attach to a
+   draft and preserve source/hash/status/row errors.
+2. Validation computes canonical content/dependency hashes and returns a
+   bounded signed preview.
+3. Confirmation locks one normalized publication scope, revalidates, and
+   atomically writes the immutable version, activation change, idempotency
+   result, and audit fact.
+4. PolicySet uses the same draft/preview/version discipline with typed rules,
+   never arbitrary executable expressions.
+5. ADM-05 consumes only Academics owner APIs plus SPEC-017 audit/report
+   contributions.
+
+## Execution and Gate Order
+
+Dependency and policy-authority baselines plus consistency analysis precede
+Ahmed ELbamby's final approval. After approval, failing model/contract,
+acceptance, race, and workstream tests precede domain/application delivery;
+handlers and the page follow their contract/behavior and E2E tests.
 
 ## Design Artifacts
 

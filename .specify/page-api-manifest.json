@@ -1,0 +1,154 @@
+{
+  "version": "1.0.0",
+  "pages": {
+    "AUTH-01": [
+      "GET /api/public/context"
+    ],
+    "AUTH-02": [
+      "GET /api/public/context",
+      "POST /api/auth/student/login"
+    ],
+    "AUTH-03": [
+      "GET /api/public/context",
+      "POST /api/auth/student/activate"
+    ],
+    "AUTH-04": [
+      "GET /api/public/context",
+      "POST /api/auth/staff/login",
+      "POST /api/auth/staff/mfa/verify"
+    ],
+    "AUTH-05": [
+      "POST /api/auth/recovery/request",
+      "POST /api/auth/recovery/complete"
+    ],
+    "STU-01": [
+      "GET /api/context",
+      "GET /api/students/me/academic-context",
+      "GET /api/student/registrations/current/timetable"
+    ],
+    "STU-02": [
+      "GET /api/student/terms/{termId}/offerings"
+    ],
+    "STU-03": [
+      "GET /api/student/offerings/{offeringId}/eligibility",
+      "GET /api/offerings/{offeringId}",
+      "GET /api/groups/{groupId}"
+    ],
+    "STU-04": [
+      "GET /api/student/terms/{termId}/registration-plan",
+      "PUT /api/student/terms/{termId}/registration-plan",
+      "POST /api/student/terms/{termId}/registration-plan/validate",
+      "POST /api/student/terms/{termId}/registration-plan/recommendations",
+      "PUT /api/student/terms/{termId}/registration-plan/recommended-option"
+    ],
+    "STU-05": [
+      "GET /api/student/terms/{termId}/registration-plan",
+      "POST /api/student/terms/{termId}/registration-plan/validate",
+      "POST /api/student/terms/{termId}/registrations"
+    ],
+    "STU-06": [
+      "GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId}",
+      "GET /api/student/registrations/{submissionId}"
+    ],
+    "STU-07": [
+      "GET /api/student/registrations",
+      "GET /api/student/registrations/{submissionId}",
+      "GET /api/student/registrations/current/timetable"
+    ],
+    "STU-08": [
+      "GET /api/auth/session",
+      "PUT /api/auth/session/context",
+      "POST /api/auth/password/change",
+      "POST /api/auth/sessions/revoke-all",
+      "POST /api/auth/logout"
+    ],
+    "ADM-01": [
+      "GET /api/context",
+      "GET /api/admin/operations/metrics",
+      "GET /api/admin/schedule-impact-alerts"
+    ],
+    "ADM-02": [
+      "GET /api/admin/terms",
+      "POST /api/admin/terms",
+      "PUT /api/admin/terms/{termId}",
+      "POST /api/admin/terms/{termId}/registration-windows/{windowId}/publish"
+    ],
+    "ADM-03": [
+      "GET /api/admin/users",
+      "POST /api/admin/users/imports",
+      "GET /api/admin/users/imports/{importId}",
+      "POST /api/admin/users/imports/{importId}/publish",
+      "PATCH /api/admin/users/{userId}/status",
+      "PUT /api/admin/users/{userId}/roles"
+    ],
+    "ADM-04": [
+      "GET /api/admin/students",
+      "GET /api/admin/students/{studentId}/academic-context",
+      "PATCH /api/admin/students/{studentId}/academic-profile"
+    ],
+    "ADM-05": [
+      "GET /api/admin/programs",
+      "GET /api/admin/catalogue/versions",
+      "GET /api/admin/catalogue/drafts/{draftId}",
+      "PUT /api/admin/catalogue/drafts/{draftId}",
+      "POST /api/admin/catalogue/imports",
+      "GET /api/admin/catalogue/imports/{importId}",
+      "POST /api/admin/catalogue/imports/{importId}/validate",
+      "POST /api/admin/catalogue/imports/{importId}/publish",
+      "GET /api/admin/policies",
+      "POST /api/admin/policies",
+      "PUT /api/admin/policies/{policySetId}",
+      "POST /api/admin/policies/{policySetId}/validate",
+      "POST /api/admin/policies/{policySetId}/simulate",
+      "POST /api/admin/policies/{policySetId}/publish"
+    ],
+    "ADM-06": [
+      "GET /api/admin/offerings",
+      "GET /api/groups/{groupId}",
+      "POST /api/admin/offerings",
+      "PUT /api/admin/groups/{groupId}",
+      "POST /api/admin/offerings/{offeringId}/validate",
+      "POST /api/admin/offerings/{offeringId}/publish"
+    ],
+    "ADM-07": [
+      "GET /api/admin/rooms",
+      "POST /api/admin/rooms",
+      "PUT /api/admin/rooms/{roomId}",
+      "GET /api/admin/staff-availability",
+      "PUT /api/admin/staff/{staffId}/terms/{termId}/availability",
+      "GET /api/admin/schedule-impact-alerts",
+      "POST /api/admin/schedule-impact-alerts/{alertId}/revalidate",
+      "POST /api/admin/schedule-impact-alerts/{alertId}/resolve"
+    ],
+    "ADM-08": [
+      "GET /api/admin/operations/metrics",
+      "GET /api/admin/students/{studentId}/terms/{termId}/registrations",
+      "GET /api/admin/students/{studentId}/terms/{termId}/registrations/{submissionId}"
+    ],
+    "ADM-09": [
+      "GET /api/admin/audit",
+      "POST /api/admin/exports",
+      "GET /api/admin/exports/{jobId}",
+      "GET /api/admin/exports/{jobId}/download"
+    ],
+    "STF-01": [
+      "GET /api/context",
+      "GET /api/staff/assignments",
+      "GET /api/staff/timetable"
+    ],
+    "STF-02": [
+      "GET /api/staff/timetable"
+    ],
+    "STF-03": [
+      "GET /api/staff/groups/{groupId}/roster"
+    ],
+    "STF-04": [
+      "GET /api/staff/availability",
+      "PUT /api/staff/availability"
+    ],
+    "SYS-01": [
+      "GET /api/public/context",
+      "GET /api/health"
+    ]
+  }
+}

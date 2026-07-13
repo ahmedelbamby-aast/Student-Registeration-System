@@ -2,51 +2,47 @@
 
 ## Decisions
 
-### Modular boundary
-**Decision**: Own this capability in the StaffAdministration module of the modular monolith.
-**Rationale**: It provides a clear extension seam without premature distributed-system cost.
-**Alternatives rejected**: A microservice per feature and direct client-to-database access.
+### Availability ownership
 
-### Authority and consistency
-**Decision**: Validate permissions, term state, policy, conflicts, and durable changes on the server, with database enforcement for contested writes.
-**Rationale**: Browser state is stale and untrusted during registration peaks.
-**Alternatives rejected**: Client-only validation and check-then-write capacity logic.
+**Decision**: SPEC-010/Scheduling canonically owns StaffTermAvailability and
+StaffAvailability. SPEC-016 invokes a narrow Scheduling application port for
+complete-range replacement and never maps a duplicate StaffAdministration
+aggregate.
 
-### Feature contract
-```typescript
-interface StaffAssignmentDto {
-  group: GroupDto;
-  staffRole: "Lecturer" | "TeachingAssistant";
-  rosterCount: number;
-}
-interface AvailabilityRangeDto {
-  id: string;
-  dayOfWeek: number;
-  startLocal: string;
-  endLocal: string;
-  type: "available" | "unavailable" | "preferred";
-}
-interface StaffTermAvailabilityDto {
-  staffId: string;
-  termId: string;
-  deadlineUtc: string;
-  rowVersion: string;
-  ranges: AvailabilityRangeDto[];
-}
-interface ReplaceAvailabilityRequest {
-  expectedStaffTermRowVersion: string;
-  ranges: AvailabilityRangeDto[];
-}
-```
+**Rationale**: Publication already validates staff/resource availability.
+Keeping one aggregate owner removes the former downstream dependency cycle and
+gives availability edits and group publication one SQL serialization boundary.
 
-Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
-/api/staff/groups/{id}/roster, GET /api/staff/availability, and PUT
-/api/staff/availability. PUT replaces the complete staff-term range set and
-returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
-fails.
+### Durable schedule impact
 
+**Decision**: If an accepted availability update conflicts with a published
+assignment, the SPEC-010 Scheduling transaction creates an idempotent Open
+ScheduleImpactAlert with captured group/availability versions. SPEC-016
+consumes its state and SPEC-017 exposes Admin discovery/revalidation. No
+automatic move occurs.
 
+**Rationale**: A transient toast can be lost and cannot prove revalidation.
+One Scheduling-owned durable versioned state survives replicas/restarts,
+supports audit, and avoids duplicate ownership.
+
+### Minimal roster
+
+**Decision**: Return only UniversityId, DisplayName, and EnrollmentState in a
+default-20/max-100 page, ordered by DisplayName then UniversityId. Deny before
+query when assignment scope is absent and audit access metadata without row
+content.
+
+**Rationale**: These are sufficient to identify an active roster member while
+excluding GPA, holds, contacts, grades, and transcript.
+
+### Shared UI
+
+**Decision**: Lecturer and TA use the same components; the server-provided
+assignment role and scope drive content. Role context remains visible and all
+calendar views have keyboard/list equivalents.
 
 ## Open Research
 
-No unresolved requirement clarification remains. External institutional approvals are tracked as release prerequisites and configuration provenance, not guessed defaults.
+Institutional availability deadlines remain effective-dated configuration with
+approved provenance. Unknown values fail closed; this spec does not invent
+them.

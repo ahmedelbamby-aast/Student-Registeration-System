@@ -5,71 +5,84 @@
 
 ## Summary
 
-Deliver Registration Capacity and Concurrency inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Implement the atomic registration command in
+`StudentRegistration.Registration`, with SQL Server as the cross-replica
+linearization authority. One short transaction owns the student-term
+idempotency claim, final validation, sorted group allocation, enrollments,
+decision/receipt snapshot, human-safe reference, audit record, and final
+result. Deterministic rejection is replayable; infrastructure failure leaves
+no claim or partial state.
 
 ## Technical Context
 
-**Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
-**Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
-**Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
-**Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
-**Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
+- **Runtime**: C#/.NET 10, ASP.NET Core, EF Core, LINQ, SQL Server.
+- **Module**: `src/StudentRegistration.Registration/`.
+- **SQL adapter**:
+  `src/StudentRegistration.Infrastructure.SqlServer/Registration/`.
+- **EF mapping contribution**:
+  `src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs`;
+  SPEC-004 remains the sole DbContext writer.
+- **Consumed modules**: IdentityAccess, Academics, and Scheduling public ports.
+- **API scope**: authenticated student plus route term; no client student ID.
+- **Scale**: two or more stateless API replicas; no process-local lock.
+- **Targets**: 75 submissions/s for 10 minutes; 200/s for 60 seconds; p95 <= 2
+  seconds while preserving every invariant.
 
-## Constitution Check
+## Workstreams and Order
 
-- PASS: Git ownership is reserved for Ahmed ELbamby.
-- PASS: Requirements, acceptance scenarios, and tasks use stable traceability identifiers.
-- PASS: The design remains a simple modular monolith.
-- PASS: Security, policy, schedule, capacity, and term decisions remain server-authoritative.
-- PASS: Accessibility, scalability, concurrency, and observability requirements are retained.
-- PASS: No application source code or migration is created by this planning phase.
+1. Baseline all declared upstream specifications and shared serialization
+   boundaries; complete consistency/concurrency analysis.
+2. Freeze the student+term idempotency scope, receipt snapshot, SQL constraints,
+   transaction/savepoint sequence, error map, and both endpoints; obtain human
+   approval last.
+3. Write failing schema, contract, acceptance, every-row concurrency-matrix,
+   fault-injection, and load tests against real SQL Server.
+4. Implement the authenticated command, student-term guard, canonical payload
+   hash, and in-transaction idempotency claim.
+5. Implement sorted conditional group updates, savepoint rollback, enrollment,
+   receipt/reference snapshot, audit, and final-result commit.
+6. Implement bounded same-key observation, deterministic replay,
+   reconciliation/pause, complete-transaction retry, and endpoint handlers only
+   after behavior tests fail.
+7. Run two-replica collision/load suites and invariant queries.
 
-## Dependency Check
+## Design Decisions
 
-- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
-- [SPEC-007](../007-identity-account-lifecycle/spec.md)
-- [SPEC-008](../008-academic-term-student-profile/spec.md)
-- [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
-- [SPEC-010](../010-offerings-groups-resources/spec.md)
-- [SPEC-011](../011-eligibility-subject-discovery/spec.md)
-- [SPEC-012](../012-schedule-builder-conflicts/spec.md)
-- [SPEC-013](../013-schedule-recommendations/spec.md)
-- [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+### Linearization Order
 
-## Project Structure
+`StudentTermRegistrationGuard` -> registration-context/version rows ->
+published policy/version boundary -> `SectionGroup` rows sorted by ID.
+Mutable inputs are re-read after these boundaries. There are no HTTP calls,
+messages, email, or other remote work inside the transaction.
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+## Data and Idempotency Decisions
 
-## Design Artifacts
+- `RegistrationSubmission` is the idempotency claim and final-result record;
+  there is no competing `IdempotencyRecord`.
+- Its unique key is `(StudentId, TermId, ClientRequestId)`. The same opaque
+  key may be used independently in another term. A request for another
+  student's key returns the privacy-safe not-found outcome.
+- The accepted transaction creates a unique human-safe `Reference` and
+  immutable `ReceiptSnapshot` on the submission. Replays return these same
+  values and never create another receipt or seat.
+- `SectionGroup` is owned by SPEC-010 and only consumed here.
 
-- [Research](research.md)
+## Constitution and Approval Gate
+
+Implementation is forbidden until every dependency is Approved, SQL/race
+evidence is planned, consistency analysis passes, and Ahmed ELbamby's approval
+is recorded as the final planning gate.
+
+## Artifacts
+
+- [Requirements](requirements.md)
+- [Concurrency matrix](concurrency-matrix.md)
 - [Data model](data-model.md)
 - [API contract](contracts/api.md)
-- [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
-
-
-
-## Non-Functional Requirements
-
-- NFR-1: There MUST be zero group overbooking, duplicate active offering
-  enrollment, partial schedule commit, or combined same-student policy/timetable
-  violation in every target and spike concurrency test.
-- NFR-2: Submission p95 MUST be at most 2 seconds at 75 submissions per second
-  for 10 minutes using the production-like dataset.
-- NFR-3: A 200-submission-per-second, 60-second spike MUST preserve every NFR-1
-  invariant across at least two application replicas.
-- NFR-4: Database transactions MUST be short, cancellation-aware before commit,
-  and contain no HTTP, message-broker, email, or other remote call.
-- NFR-5: Expected conflicts MUST not count as server failures; unexpected
-  failure rate MUST remain below 0.1% at target load.
-- NFR-6: Deadlock count, lock-wait p95, idempotent replay count, conflict-code
-  count, and reconciliation mismatch count MUST be observable without logging
-  student credentials or full academic records.
 
 ## Complexity Tracking
 
-No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.
+The solution uses one database transaction, constraints, row versions, and
+conditional updates. It introduces no queue, distributed lock, seat
+reservation, or partial-acceptance workflow.

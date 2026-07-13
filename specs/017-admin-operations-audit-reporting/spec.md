@@ -8,23 +8,24 @@
 
 ## Context
 
-Admins need safe master-data operations, peak monitoring, authorized
-corrections, audit evidence, and operational exports. Broad Admin access must
-still use least privilege, reasons, optimistic concurrency, and immutable
-audit.
+Admins need safe master-data operations, registration-record inspection, peak
+monitoring, audit evidence, and operational exports. Broad Admin access still
+uses least privilege, reasons, optimistic concurrency, immutable audit, and
+durable cross-replica work claims. Enrollment correction, drop, and withdrawal
+are not part of this MVP.
 
 ## User Scenarios and Testing
 
-### User Story 1 - Reasoned correction (FR-2, FR-4) (P1)
+### User Story 1 - Reasoned sensitive mutation (FR-2, FR-4) (P1)
 
-As a Authorized administrator, I need the Reasoned correction (FR-2, FR-4) behavior so that Admin Operations, Audit, and Reporting produces a verifiable outcome.
+As a Authorized administrator, I need the Reasoned sensitive mutation (FR-2, FR-4) behavior so that Admin Operations, Audit, and Reporting produces a verifiable outcome.
 
 **Independent Test**: Execute AC-1 in requirements.md without relying on another story in this feature.
 
 **Acceptance Scenario (AC-1)**
 
-Given Admin has correction permission and provides a valid reason<br>
-When a safe correction is committed<br>
+Given Admin has the owning feature permission and provides a valid reason<br>
+When a safe feature-spec master-data mutation is committed<br>
 Then the invariant remains valid<br>
 And an append-only event records actor, reason, time and before/after summary.
 ### User Story 2 - Capacity bypass rejected (FR-4, FR-9) (P1)
@@ -35,9 +36,9 @@ As a Authorized administrator, I need the Capacity bypass rejected (FR-4, FR-9) 
 
 **Acceptance Scenario (AC-2)**
 
-Given a group is full<br>
-When Admin attempts a normal correction that adds another active enrollment<br>
-Then the command is rejected<br>
+Given a group has active enrollments at its current capacity<br>
+When Admin attempts a SPEC-010 capacity reduction below EnrolledCount<br>
+Then the owning feature command rejects the change<br>
 And no capacity/enrollment state changes.
 ### User Story 3 - Audit export scope (FR-5, FR-7) (P2)
 
@@ -82,10 +83,11 @@ As a Authorized administrator, I need the Stale preview confirmation (FR-8, FR-1
 
 **Acceptance Scenario (AC-6)**
 
-Given an admin previews a correction and its dependency version changes<br>
-When the admin confirms the old token twice with the same idempotency key<br>
+Given an Admin previews an offering publication and its dependency version
+changes<br>
+When the Admin confirms the old token twice with the same idempotency key<br>
 Then both responses report 409 STALE_PREVIEW<br>
-And no correction or duplicate audit event commits.
+And no publication or duplicate audit event commits.
 ### User Story 7 - Audit failure rolls back mutation (FR-2, FR-12) (P3)
 
 As a Authorized administrator, I need the Audit failure rolls back mutation (FR-2, FR-12) behavior so that Admin Operations, Audit, and Reporting produces a verifiable outcome.
@@ -106,10 +108,11 @@ As a Authorized administrator, I need the Final Admin safeguard (FR-13) behavior
 
 **Acceptance Scenario (AC-8)**
 
-Given one active Admin role assignment remains<br>
-When an ordinary admin command attempts to revoke it<br>
-Then the command returns 409 FINAL_ADMIN_REQUIRED<br>
-And the assignment remains active.
+Given exactly two active Admin role assignments remain<br>
+When two replicas concurrently revoke different assignments<br>
+Then both transactions serialize through the shared AdminSecurityGuard<br>
+And at most one revocation commits, the loser returns 409
+FINAL_ADMIN_REQUIRED, and at least one active Admin remains.
 ### User Story 9 - Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
 
 As a Authorized administrator, I need the Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Admin Operations, Audit, and Reporting produces a verifiable outcome.
@@ -123,7 +126,9 @@ and positive/negative/concurrent admin command matrix<br>
 When admin quality tests execute<br>
 Then metrics are no more than 60 seconds stale and show observation time<br>
 And audit first page returns within 1 second p95<br>
-And export executes asynchronously with bounded resources, expiry, and audit<br>
+And two replicas competing for one export publish exactly one artifact through
+a durable lease, while authorized status/download and secure expiry are
+enforced<br>
 And every admin action passes authorization, audit, concurrency, and
 anti-forgery checks.
 
@@ -143,32 +148,45 @@ anti-forgery checks.
 
 ### Functional Requirements
 
-- FR-1: Authorized Admin MUST manage terms/windows, users/roles, student
-  records/holds, catalogue/policies, resources, offerings/groups, and imports
-  only through feature-spec commands.
-- FR-2: Sensitive changes MUST require reason, actor, timestamp, before/after
-  summary, correlation ID, and audit event.
+- FR-1: Authorized Admin pages MUST call feature-owner endpoints/commands for
+  terms/windows, users/roles, student records/holds, catalogue/policies,
+  resources, offerings/groups, and imports; no generic AdminCommandService is
+  permitted.
+- FR-2: Admin audit search MUST merge scoped SPEC-004 AuditEvent and SPEC-007
+  SecurityEvent records with actor, reason, timestamp, redacted before/after,
+  correlation, action, and source stream.
 - FR-3: The system MUST provide registration-window metrics for traffic,
   success, expected rejections, server failures, fill rates, lock waits, and
   data-quality alerts.
-- FR-4: Normal corrections MUST NOT exceed capacity or create timetable
-  conflicts.
-- FR-5: Exports MUST enforce the same row/data scope and PII minimization as UI.
+- FR-4: Admin orchestration MUST NOT expose enrollment correction, drop,
+  withdrawal, or seat-decrement commands in MVP. Delegated master-data
+  commands MUST preserve capacity and timetable invariants and cannot bypass
+  the owning feature module.
+- FR-5: Exports MUST enforce the same row/data scope and PII minimization as
+  UI and use an explicit request/status/download lifecycle. ExportJob MUST be
+  durable, owner/scope/request-bound, expiring, and claimed by workers through
+  a conditional SQL lease; only the current lease owner may publish one
+  artifact, and request/download actions MUST be audited.
 - FR-6: Admin list/search endpoints MUST be paged, filtered, and safely
   parameterized.
-- FR-7: Audit events for sensitive actions MUST be append-only to normal users.
-- FR-8: Import/publish/correction MUST use preview and explicit confirmation.
+- FR-7: Consumed AuditEvent and SecurityEvent records MUST be append-only to normal users.
+- FR-8: Import, publication, and other approved sensitive feature-spec
+  mutations MUST use preview and explicit confirmation; this does not
+  authorize enrollment correction.
 - FR-9: Break-glass behavior MUST NOT exist without a separate approved spec.
 - FR-10: Update/delete commands MUST require expected rowversion; retryable
-  creates, imports, corrections, exports, and confirmations MUST require an
-  idempotency key.
+  creates, imports, exports, and confirmed feature-spec mutations MUST require
+  an idempotency key.
 - FR-11: Preview tokens MUST bind actor, permission scope, canonical payload,
   dependency versions, and expiry; confirmation MUST reject any changed input,
-  scope, permission, dependency, or expired token.
-- FR-12: A sensitive business mutation and its audit event MUST commit in the
-  same local SQL transaction; audit failure MUST roll back the mutation.
-- FR-13: The final-active-Admin role MUST NOT be removed by an ordinary
-  command; removal requires a separately approved two-actor recovery procedure.
+  scope, permission, dependency, or expired token without introducing a
+  generic AdminConfirmationService.
+- FR-12: Conformance tests MUST prove features use SPEC-004's transaction-aware
+  writer so mutation/audit commit or roll back together; SPEC-017 MUST NOT own
+  a second writer.
+- FR-13: Role changes MUST delegate to SPEC-007, which owns AdminSecurityGuard,
+  RoleAssignment mutation, audit, and FINAL_ADMIN_REQUIRED; SPEC-017 MUST NOT
+  implement a competing role writer.
 
 ### Non-Functional Requirements
 
@@ -176,17 +194,21 @@ anti-forgery checks.
   observation timestamp.
 - NFR-2: Audit search SHOULD return first page within 1 second p95 at approved
   retention volume.
-- NFR-3: Export generation MUST be asynchronous/bounded for large data and
-  expire securely.
+- NFR-3: Export generation MUST be asynchronous and bounded, use a 60-second
+  renewable SQL lease with at most three attempts, publish at most one
+  artifact, and expire the artifact after the configured approved retention
+  interval.
 - NFR-4: Admin actions MUST have authorization, audit, concurrency, and
   validation tests.
 
 ### Key Entities
 
-- **AuditEvent**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ImportBatch**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **ExportJob**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **OperationalMetric**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **AuditEvent**: Consumed append-only entity owned by SPEC-004.
+- **SecurityEvent**: Consumed Identity event owned by SPEC-007.
+- **ImportBatch**: Consumed aggregate owned by SPEC-009.
+- **AdminSecurityGuard**: Consumed Identity serialization row owned by SPEC-007.
+- **ExportJob**: SPEC-017-owned durable request/lease/artifact lifecycle.
+- **OperationalMetric**: Consumed contract owned by SPEC-018.
 
 ## Success Criteria
 
@@ -203,6 +225,7 @@ anti-forgery checks.
 ## Dependencies
 
 - [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
+- [SPEC-004](../004-architecture-engineering-principles/spec.md)
 - [SPEC-007](../007-identity-account-lifecycle/spec.md)
 - [SPEC-008](../008-academic-term-student-profile/spec.md)
 - [SPEC-009](../009-catalog-prerequisites-policy-admin/spec.md)
@@ -229,6 +252,6 @@ anti-forgery checks.
 ## Out of Scope
 
 - OS-1: Unrestricted super-admin and unaudited direct database edits.
-- OS-2: Break-glass capacity/conflict override.
+- OS-2: Break-glass capacity/conflict override and any enrollment correction, drop, withdrawal, or seat-decrement workflow.
 - OS-3: Business-intelligence warehouse.
 - OS-4: Long-term report replica until primary impact is measured.

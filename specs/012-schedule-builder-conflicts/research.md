@@ -16,12 +16,13 @@
 ```typescript
 interface ScheduleConflictDto {
   code: "MEETING_OVERLAP" | "TRAVEL_BUFFER";
-  firstGroupId: string;
-  secondGroupId: string;
+  first: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
+  second: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
   dayOfWeek: number;
   overlapStartLocal: string;
   overlapEndLocal: string;
   message: string;
+  actions: Array<{ action: "change-group" | "remove-group"; targetGroupId: string; label: string; route: string }>;
 }
 interface RegistrationPlanDto {
   id: string;
@@ -33,7 +34,24 @@ interface RegistrationPlanDto {
 }
 ```
 
-Endpoints: GET/PUT /api/student/registration-plans/{id}; POST validate.
+Endpoints are owner/term scoped GET/PUT plus a non-mutating validate operation.
+
+### Plan route and update shape
+**Decision**: Use one active plan per authenticated student/term, a complete-
+replacement PUT with expected rowversion, and a separate non-mutating validate
+endpoint.
+**Rationale**: This avoids arbitrary plan-ID authorization mistakes, item-level
+lost updates, and ambiguous partial patch behavior.
+**Alternatives rejected**: Client-owned plan IDs and independent item writes.
+
+### Conflict and travel semantics
+**Decision**: Use half-open interval overlap, return both meeting details plus
+exact overlap and change/remove actions, and disable TRAVEL_BUFFER until DEC-06
+has an approved matrix/duration.
+**Rationale**: Deterministic adjacency and explicit recovery actions meet the
+student UX requirement without inventing institutional policy.
+**Alternatives rejected**: Closed intervals, guessed travel minutes, and a red
+X with no resolution contract.
 
 
 

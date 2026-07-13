@@ -5,56 +5,62 @@
 
 ## Summary
 
-Deliver Student Registration Records inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
+Build scoped read models and Blazor pages over the canonical SPEC-014
+registration aggregate. SPEC-015 does not introduce a second receipt table:
+it projects the unique reference and immutable receipt/decision snapshot that
+SPEC-014 commits atomically with a registration result.
 
 ## Technical Context
 
-**Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
-**Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
-**Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
-**Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
-**Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
+- **Runtime**: C#/.NET 10, Blazor WebAssembly, ASP.NET Core, EF Core/LINQ.
+- **Module**: `src/StudentRegistration.Registration/` read application and
+  endpoints; pages remain in `src/StudentRegistration.Client/Pages/`.
+- **Storage**: read-only queries over SQL Server Code First entities owned by
+  SPEC-014; no duplicate persistence ownership.
+- **EF mapping contribution**:
+  `RegistrationReceiptModelConfiguration.cs` verifies/projects the canonical
+  submission Reference/ReceiptSnapshot without writing a second receipt table;
+  SPEC-004 remains the sole DbContext writer.
+- **Authorization**: student self-scope; Admin inspection only through explicit
+  student+term scoped endpoints and permissions.
+- **Performance**: receipt first-page/detail p95 <= 300 ms at approved load.
 
-## Constitution Check
+## Workstreams and Order
 
-- PASS: Git ownership is reserved for Ahmed ELbamby.
-- PASS: Requirements, acceptance scenarios, and tasks use stable traceability identifiers.
-- PASS: The design remains a simple modular monolith.
-- PASS: Security, policy, schedule, capacity, and term decisions remain server-authoritative.
-- PASS: Accessibility, scalability, concurrency, and observability requirements are retained.
-- PASS: No application source code or migration is created by this planning phase.
+1. Baseline SPEC-003, SPEC-008, SPEC-014, and SPEC-018; run consistency analysis.
+2. Freeze projections, pagination, self/Admin authorization, immutable snapshot,
+   empty/archive states, and API contracts; obtain human approval last.
+3. Write failing projection/model, endpoint contract, ownership, acceptance,
+   snapshot-retention, accessibility, and performance tests.
+4. Implement bounded current/history/receipt queries and Admin-scoped
+   inspection after tests fail.
+5. Map handlers after behavior tests; implement STU-06/STU-07 only after the
+   SPEC-003 page contracts and E2E tests fail.
+6. Produce retention, PII-minimization, accessibility, and trace evidence.
 
-## Dependency Check
+## Design Decisions
 
-- [SPEC-003](../003-ux-storyboard-accessibility/spec.md)
-- [SPEC-008](../008-academic-term-student-profile/spec.md)
-- [SPEC-014](../014-registration-capacity-concurrency/spec.md)
-- [SPEC-018](../018-quality-security-scalability-operations/spec.md)
+### Ownership
 
-## Project Structure
+SPEC-014 owns `RegistrationSubmission`, `Enrollment`,
+`DecisionSnapshot`, `Reference`, and `ReceiptSnapshot`. SPEC-015 owns only
+the receipt/history DTOs, query services, endpoints, and canonical student
+pages. No drop, withdrawal, or correction command is introduced.
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+## Constitution and Approval Gate
 
-## Design Artifacts
+All queries are server-authorized, paginated, and stable-sorted; student history supports cross-term browsing with an optional term filter. Application
+work remains prohibited until dependencies and this package are Approved and
+Ahmed ELbamby's approval is the final completed planning gate.
 
-- [Research](research.md)
+## Artifacts
+
+- [Requirements](requirements.md)
 - [Data model](data-model.md)
 - [API contract](contracts/api.md)
-- [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
-
-
-
-## Non-Functional Requirements
-
-- NFR-1: Receipt retrieval SHOULD respond within 300 ms p95.
-- NFR-2: Record access MUST have ownership/role-scope tests.
-- NFR-3: Printed/exported views MUST be accessible and minimize PII.
-- NFR-4: Historical records MUST be durable under the approved retention plan.
 
 ## Complexity Tracking
 
-No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.
+The read model is a projection over existing data; there is no reporting
+database, public receipt link, or asynchronous messaging.

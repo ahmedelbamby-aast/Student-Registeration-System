@@ -18,25 +18,41 @@ docs/ARCHITECTURE.md and ADR-001 define the proposed modular monolith.
 
 - FR-1: The solution MUST use .NET 10 LTS, ASP.NET Core, Blazor WebAssembly,
   EF Core/LINQ, and SQL Server.
-- FR-2: The solution MUST contain IdentityAccess, Academics, Scheduling,
-  Registration, and StaffAdministration business modules.
+- FR-2: The solution MUST use the exact project-per-business-module shape from
+  `docs/ARCHITECTURE.md`: Client, Api, Contracts, IdentityAccess, Academics,
+  Scheduling, Registration, StaffAdministration, and Infrastructure.SqlServer.
+  The API project is composition-only; generic Server, Domain, Application, or
+  Infrastructure projects MUST NOT replace these module projects.
 - FR-3: Module internals MUST NOT be referenced across boundaries; interaction
   uses approved interfaces/contracts.
-- FR-4: One DbContext/database MUST support atomic registration initially.
+- FR-4: Infrastructure.SqlServer MUST own the single DbContext, migrations, and
+  configuration composition for one SQL Server database so registration can be
+  atomic initially; canonical feature specs own their model/mapping requirements.
 - FR-5: API DTOs MUST NOT expose EF entities.
 - FR-6: Reads SHOULD use LINQ projection/AsNoTracking; commands use focused
   application services.
 - FR-7: Generic repository, microservices, broker, event sourcing, dynamic rule
   DSL, and institution-wide solver MUST NOT be introduced in MVP.
 - FR-8: Architectural changes MUST include an ADR and architecture-test update.
+- FR-9: The architecture MUST provide one shared `IAuditEventWriter` contract,
+  append-only `AuditEvent` model/mapping, and SQL implementation that joins the
+  caller's existing `StudentRegistrationDbContext` transaction. Sensitive
+  business mutation and audit MUST commit or roll back together; feature
+  modules supply actor, reason, redacted before/after summary, correlation ID,
+  and server time without depending on downstream SPEC-017.
 
 ## Non-Functional Requirements
 
 - NFR-1: Architecture tests MUST fail on forbidden module references/cycles.
 - NFR-2: Application instances MUST be stateless except for shared database
-  and approved key/config stores.
+  and approved key/config stores. Data Protection keys MUST be shared across
+  replicas, encrypted at rest, rotated under an approved runbook, and readable
+  by only the application identity. The production repository and key-encryption
+  authority remain an explicit Security/DevOps institutional decision; release
+  readiness MUST fail closed until approved.
 - NFR-3: The architecture MUST support at least two application replicas.
-- NFR-4: Domain projects MUST have no dependency on ASP.NET, Blazor, EF, or SQL.
+- NFR-4: Domain code inside each business-module project MUST reference no
+  ASP.NET, Blazor, EF Core, or SQL Server type or namespace.
 
 ## Acceptance Criteria
 
@@ -48,7 +64,8 @@ Then the architecture test fails the build.
 ### AC-2: Horizontal instance (NFR-2, NFR-3)
 Given two application instances share SQL and Data Protection keys<br>
 When an authenticated user sends consecutive requests to different instances<br>
-Then authorization and plan state remain correct.
+Then authorization and plan state remain correct<br>
+And evidence proves encrypted shared-key persistence without sticky sessions.
 
 ### AC-3: Complexity gate (FR-7)
 Given a proposal adds a message broker before a durable external consumer
@@ -71,8 +88,15 @@ Then an approved ADR and updated architecture test are required.
 Given the solution manifest and compiled dependency graph<br>
 When architecture conformance tests execute<br>
 Then the solution uses the approved .NET/ASP.NET Core/Blazor/EF Core/SQL Server
-stack<br>
-And Domain projects reference none of ASP.NET, Blazor, EF Core, or SQL Server.
+stack and exact project-per-business-module shape<br>
+And business-module Domain code references none of ASP.NET, Blazor, EF Core,
+or SQL Server.
+
+### AC-7: Upstream atomic audit foundation (FR-9)
+Given an offering publication or registration command writes business state<br>
+When the shared audit writer succeeds or is fault-injected to fail<br>
+Then business state and its append-only AuditEvent commit together or both roll back<br>
+And the owning feature has no dependency on SPEC-017.
 
 ## Edge Cases
 
@@ -85,8 +109,9 @@ And Domain projects reference none of ASP.NET, Blazor, EF Core, or SQL Server.
 ## API Contracts
 
 This spec establishes dependency/deployment constraints. Its minimal
-composition boundary includes GET /api/health; public feature shapes belong to
-SPEC-006 onward.
+composition boundary references `GET /api/health`, whose canonical behavior and
+handler are owned by SPEC-018; public feature shapes belong to SPEC-006 onward.
+SPEC-004 owns no endpoint.
 
 ## Data Models
 
@@ -97,6 +122,10 @@ SPEC-006 onward.
 | scheduling | Scheduling |
 | registration | Registration |
 | audit | StaffAdministration / audit service |
+
+The append-only audit persistence foundation is owned by SPEC-004 in
+Infrastructure.SqlServer; SPEC-017 owns authorized query/export experiences,
+not the transaction writer.
 
 ## Out of Scope
 

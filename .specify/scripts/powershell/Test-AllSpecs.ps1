@@ -6,13 +6,28 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $manifest = Get-Content (Join-Path $root '.specify/spec-manifest.json') -Raw | ConvertFrom-Json
 $routeManifest = Get-Content (Join-Path $root '.specify/route-manifest.json') -Raw | ConvertFrom-Json
 $endpointManifest = Get-Content (Join-Path $root '.specify/endpoint-manifest.json') -Raw | ConvertFrom-Json
+$pageApiManifest = Get-Content (Join-Path $root '.specify/page-api-manifest.json') -Raw | ConvertFrom-Json
 $componentManifest = Get-Content (Join-Path $root '.specify/component-manifest.json') -Raw | ConvertFrom-Json
 $workstreamManifest = Get-Content (Join-Path $root '.specify/workstream-manifest.json') -Raw | ConvertFrom-Json
 $entityOwnership = Get-Content (Join-Path $root '.specify/entity-ownership.json') -Raw | ConvertFrom-Json
+$persistenceManifest = Get-Content (Join-Path $root '.specify/persistence-manifest.json') -Raw | ConvertFrom-Json
 $auditDate = Get-Date -Format 'yyyy-MM-dd'
 $failures = New-Object System.Collections.Generic.List[string]
 $results = New-Object System.Collections.Generic.List[object]
 $required = @('spec.md','requirements.md','plan.md','research.md','data-model.md','quickstart.md','clarifications.md','contracts/api.md','checklists/requirements.md','checklists/gates.md','tasks.md')
+$strictValidatorCandidates = @(
+    $env:SPEC_VALIDATOR_PATH,
+    (Join-Path $HOME '.codex/skills/claude-spec-driven-workflow/scripts/spec_validator.py'),
+    (Join-Path $HOME '.agents/skills/claude-spec-driven-workflow/scripts/spec_validator.py')
+) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and (Test-Path $_ -PathType Leaf) }
+$strictValidatorPath = $strictValidatorCandidates | Select-Object -First 1
+$persistenceMappingEvidence = @{}
+foreach ($property in $persistenceManifest.contributions.PSObject.Properties) {
+    $persistenceMappingEvidence[[string]$property.Name] = @(
+        [string]$property.Value.testPath,
+        [string]$property.Value.path
+    )
+}
 
 function Add-Failure([string]$Message) { $script:failures.Add($Message) }
 function One-Line([string]$Value) { return ([regex]::Replace($Value, '\s+', ' ')).Trim() }
@@ -38,6 +53,28 @@ function Test-ExactFuturePath([string]$Value) {
 function Get-TaskNumber([object]$TaskMatch) {
     return [int]([regex]::Match($TaskMatch.Groups[1].Value, '\d+$').Value)
 }
+function Get-ReferencedTaskIds([string]$Body) {
+    $references = New-Object System.Collections.Generic.List[string]
+    foreach ($range in [regex]::Matches($Body, '\bT(\d{3})-T(\d{3})\b')) {
+        $first = [int]$range.Groups[1].Value
+        $last = [int]$range.Groups[2].Value
+        if ($last -lt $first -or ($last - $first) -gt 1000) { continue }
+        for ($number = $first; $number -le $last; $number++) {
+            $references.Add(('T{0:d3}' -f $number))
+        }
+    }
+    foreach ($single in [regex]::Matches($Body, '\bT\d{3}\b')) {
+        $references.Add($single.Value)
+    }
+    return @($references | Select-Object -Unique)
+}
+function Get-TaskPaths([string]$Body) {
+    $paths = @([regex]::Matches($Body, '(?:src|tests|specs|docs|\.github)/[^\s,;()]+\.[A-Za-z0-9]+') | ForEach-Object {
+        $_.Value.TrimEnd('.', ':')
+    })
+    if ($Body -match '(?<![A-Za-z0-9_./-])global\.json(?![A-Za-z0-9_./-])') { $paths += 'global.json' }
+    return @($paths | Select-Object -Unique)
+}
 function Test-TaskTags([string]$Body, [string[]]$Tags) {
     foreach ($tag in $Tags) {
         if ($Body -notmatch "\[$([regex]::Escape($tag))\]") { return $false }
@@ -49,12 +86,11 @@ function Get-EntityArtifactPath([string]$SpecId, [string]$Entity) {
     $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties | Where-Object Name -eq $Entity
     $canonicalOwner = if ($ownerProperty) { [string]$ownerProperty.Value } else { $SpecId }
     $ownerSpec = $manifest.specs | Where-Object id -eq $canonicalOwner
-    $ownerModule = ([string]$ownerSpec.module) -replace '[^A-Za-z0-9]', ''
-    $path = "src/StudentRegistration.Domain/Modules/$ownerModule/$Entity.cs"
+    $ownerProject = if ([string]$ownerSpec.module -eq 'Operations') { 'Api' } else { [string]$ownerSpec.module }
+    $path = "src/StudentRegistration.$ownerProject/Domain/$Entity.cs"
     $overrideKey = "$SpecId`:$Entity"
     $overrideProperty = $entityOwnership.artifactOverrides.PSObject.Properties | Where-Object Name -eq $overrideKey
     if ($overrideProperty) { return [string]$overrideProperty.Value }
-    if ($SpecId -eq '005') { return "src/StudentRegistration.Infrastructure/Persistence/Configurations/$($Entity)Configuration.cs" }
     if ($SpecId -eq '006') { return "src/StudentRegistration.Contracts/$Entity.cs" }
     if ($SpecId -eq '003') { return "src/StudentRegistration.Client/Features/Frontend/Models/$Entity.cs" }
     if ($canonicalOwner -ne $SpecId) {
@@ -113,6 +149,55 @@ foreach ($endpoint in @($endpointManifest.endpoints)) {
 }
 if (($endpointKeys | Select-Object -Unique).Count -ne $endpointKeys.Count) { Add-Failure 'Endpoint manifest contains duplicate method/path keys.' }
 
+if (-not (Has-Property $persistenceManifest 'version') -or
+    -not (Has-Property $persistenceManifest 'dbContext') -or
+    -not (Has-Property $persistenceManifest 'contributions') -or
+    -not (Has-Property $persistenceManifest 'migrations')) {
+    Add-Failure 'Persistence manifest must contain version, dbContext, contributions, and migrations.'
+} else {
+    Assert-RequiredProperties 'Persistence DbContext' $persistenceManifest.dbContext @('owner','path','testPath')
+    if ([string]$persistenceManifest.dbContext.owner -ne '004') { Add-Failure 'SPEC-004 must be the sole StudentRegistrationDbContext owner.' }
+    if ([string]$persistenceManifest.dbContext.path -ne 'src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs') {
+        Add-Failure 'Persistence manifest has a non-canonical StudentRegistrationDbContext path.'
+    }
+    foreach ($property in $persistenceManifest.contributions.PSObject.Properties) {
+        $specId = [string]$property.Name
+        $contribution = $property.Value
+        Assert-RequiredProperties "Persistence contribution SPEC-$specId" $contribution @('mode','entities','path','testPath')
+        if ($ids -notcontains $specId) { Add-Failure "Persistence contribution references missing SPEC-$specId." }
+        if ([string]$contribution.path -notmatch '^src/StudentRegistration\.Infrastructure\.SqlServer/Persistence/Configurations/.+\.cs$') {
+            Add-Failure "SPEC-$specId has invalid persistence configuration path $($contribution.path)."
+        }
+        if ([string]$contribution.testPath -notmatch '^tests/.+Tests\.cs$') {
+            Add-Failure "SPEC-$specId has invalid persistence mapping test path $($contribution.testPath)."
+        }
+        $declaredSpec = $manifest.specs | Where-Object id -eq $specId
+        foreach ($entity in @($contribution.entities)) {
+            if (@($declaredSpec.entities) -notcontains [string]$entity) {
+                Add-Failure "SPEC-$specId persistence contribution lists undeclared entity $entity."
+            }
+        }
+    }
+    $migrationIds = @($persistenceManifest.migrations.id)
+    if (($migrationIds | Select-Object -Unique).Count -ne $migrationIds.Count) { Add-Failure 'Persistence migrations contain duplicate IDs.' }
+    if (@($persistenceManifest.migrations | Where-Object kind -eq 'initial').Count -ne 1 -or [string]$persistenceManifest.migrations[0].kind -ne 'initial') {
+        Add-Failure 'Persistence migrations must start with exactly one initial migration.'
+    }
+    foreach ($migration in @($persistenceManifest.migrations)) {
+        Assert-RequiredProperties "Migration $($migration.id)" $migration @('id','kind','owner','path','snapshotPath','prerequisiteSpecs')
+        if ([string]$migration.id -notmatch '^[A-Za-z][A-Za-z0-9]+$') { Add-Failure "Migration ID $($migration.id) is invalid." }
+        if ([string]$migration.kind -notin @('initial','incremental')) { Add-Failure "Migration $($migration.id) has invalid kind $($migration.kind)." }
+        if ($ids -notcontains [string]$migration.owner) { Add-Failure "Migration $($migration.id) references missing owner SPEC-$($migration.owner)." }
+        if (@($migration.prerequisiteSpecs).Count -eq 0) { Add-Failure "Migration $($migration.id) has no prerequisite mapping specifications." }
+        foreach ($specId in @($migration.prerequisiteSpecs)) {
+            if ($ids -notcontains [string]$specId) { Add-Failure "Migration $($migration.id) references missing prerequisite SPEC-$specId." }
+            if ($null -eq $persistenceManifest.contributions.PSObject.Properties[[string]$specId]) {
+                Add-Failure "Migration $($migration.id) prerequisite SPEC-$specId has no persistence contribution."
+            }
+        }
+    }
+}
+
 if (-not (Has-Property $componentManifest 'version') -or -not (Has-Property $componentManifest 'components')) {
     Add-Failure 'Component manifest must contain version and components.'
 }
@@ -154,6 +239,10 @@ foreach ($specId in $workstreamSpecIds) {
         if (@($stream.requirements).Count -eq 0) { Add-Failure "SPEC-$specId workstream $($stream.name) has no FR mapping." }
         if ((@($stream.requirements) | Select-Object -Unique).Count -ne @($stream.requirements).Count) { Add-Failure "SPEC-$specId workstream $($stream.name) repeats an FR." }
         if (-not (Test-ExactFuturePath ([string]$stream.deliveryPath))) { Add-Failure "SPEC-$specId workstream $($stream.name) has invalid deliveryPath $($stream.deliveryPath)." }
+        if ([string]$stream.deliveryPath -match '^src/StudentRegistration\.(?:Server|Domain|Application)/' -or
+            [string]$stream.deliveryPath -match '^src/StudentRegistration\.Infrastructure/') {
+            Add-Failure "SPEC-$specId workstream $($stream.name) uses a prohibited layer-project delivery path $($stream.deliveryPath)."
+        }
         if ([string]$stream.testPath -notmatch '^tests/.+\.[A-Za-z0-9]+$') { Add-Failure "SPEC-$specId workstream $($stream.name) has invalid testPath $($stream.testPath)." }
         if ([string]$stream.testFocus -notmatch '\S+\s+\S+') { Add-Failure "SPEC-$specId workstream $($stream.name) has an underspecified testFocus." }
     }
@@ -222,6 +311,27 @@ foreach ($route in $routeManifest.routes) {
     }
 }
 
+if (-not (Has-Property $pageApiManifest 'version') -or -not (Has-Property $pageApiManifest 'pages')) {
+    Add-Failure 'Page-to-API manifest must contain version and pages.'
+} else {
+    $pageApiRouteIds = @($pageApiManifest.pages.PSObject.Properties.Name)
+    if ((Compare-Object @($routeIds | Sort-Object) @($pageApiRouteIds | Sort-Object))) {
+        Add-Failure 'Page-to-API manifest keys do not exactly match the 27 route IDs.'
+    }
+    foreach ($routeId in $pageApiRouteIds) {
+        $pageEndpoints = @($pageApiManifest.pages.PSObject.Properties[$routeId].Value)
+        if ($pageEndpoints.Count -eq 0) { Add-Failure "$routeId has no frontend API dependency." }
+        if (($pageEndpoints | Select-Object -Unique).Count -ne $pageEndpoints.Count) {
+            Add-Failure "$routeId repeats an endpoint in the page-to-API manifest."
+        }
+        foreach ($pageEndpoint in $pageEndpoints) {
+            if ($endpointKeys -notcontains [string]$pageEndpoint) {
+                Add-Failure "$routeId references unregistered page endpoint $pageEndpoint."
+            }
+        }
+    }
+}
+
 foreach ($item in $manifest.specs) {
     foreach ($dep in $item.dependencies) {
         if ($dep -eq $item.id) { Add-Failure "SPEC-$($item.id) depends on itself." }
@@ -254,6 +364,28 @@ function Test-ReachesRoot([string]$Id, [hashtable]$Seen) {
 }
 foreach ($id in $ids) {
     if (-not (Test-ReachesRoot $id @{})) { Add-Failure "SPEC-$id is not connected to root SPEC-001." }
+}
+
+function Test-DependsTransitively([string]$SpecId, [string]$RequiredId, [hashtable]$Seen) {
+    if ($Seen[$SpecId]) { return $false }
+    $Seen[$SpecId] = $true
+    $node = $manifest.specs | Where-Object id -eq $SpecId
+    foreach ($dependencyId in @($node.dependencies)) {
+        if ($dependencyId -eq $RequiredId) { return $true }
+        if (Test-DependsTransitively $dependencyId $RequiredId $Seen) { return $true }
+    }
+    return $false
+}
+foreach ($consumerSpec in $manifest.specs) {
+    foreach ($entity in @($consumerSpec.entities)) {
+        $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties[$entity]
+        if ($null -eq $ownerProperty) { continue }
+        $ownerId = [string]$ownerProperty.Value
+        if ($ownerId -eq [string]$consumerSpec.id -or [string]$consumerSpec.id -eq '005') { continue }
+        if (-not (Test-DependsTransitively ([string]$consumerSpec.id) $ownerId @{})) {
+            Add-Failure "SPEC-$($consumerSpec.id) consumes canonical $entity from downstream/unrelated SPEC-$ownerId without a dependency path."
+        }
+    }
 }
 
 $taskRegistry = New-Object System.Collections.Generic.List[object]
@@ -292,9 +424,47 @@ foreach ($item in $manifest.specs) {
 
     $requirements = Get-Content (Join-Path $dir 'requirements.md') -Raw
     $spec = Get-Content (Join-Path $dir 'spec.md') -Raw
+    $plan = Get-Content (Join-Path $dir 'plan.md') -Raw
     $tasks = Get-Content (Join-Path $dir 'tasks.md') -Raw
     $model = Get-Content (Join-Path $dir 'data-model.md') -Raw
     $apiContract = Get-Content (Join-Path $dir 'contracts/api.md') -Raw
+
+    if ("$requirements`n$apiContract" -match ':\s*unknown(?:\[\])?\s*[;,}]') {
+        Add-Failure "SPEC-$($item.id) requirements/API contract contains an untyped unknown field."
+    }
+
+    $canonicalTypeBlock = [regex]::Match($apiContract, '(?s)```typescript\s*(.*?)\s*```')
+    if ($canonicalTypeBlock.Success) {
+        $requirementsTypeBlock = [regex]::Match($requirements, '(?s)## API Contracts.*?```typescript\s*(.*?)\s*```')
+        if (-not $requirementsTypeBlock.Success) {
+            Add-Failure "SPEC-$($item.id) requirements omit the canonical TypeScript API contract block."
+        } else {
+            $normalizedCanonicalTypes = [regex]::Replace($canonicalTypeBlock.Groups[1].Value, '(?m)//.*$', '')
+            $normalizedRequirementsTypes = [regex]::Replace($requirementsTypeBlock.Groups[1].Value, '(?m)//.*$', '')
+            $normalizedCanonicalTypes = [regex]::Replace($normalizedCanonicalTypes, '\s+', '')
+            $normalizedRequirementsTypes = [regex]::Replace($normalizedRequirementsTypes, '\s+', '')
+            if ($normalizedCanonicalTypes -cne $normalizedRequirementsTypes) {
+                Add-Failure "SPEC-$($item.id) requirements API declarations drift from contracts/api.md."
+            }
+        }
+    }
+
+    if ($model -match '(?m)^## Owned Entities\s*$' -or $model -match '(?i)Feature-owned concept') {
+        Add-Failure "SPEC-$($item.id) data model uses an unqualified ownership claim instead of canonical owner/consumer responsibilities."
+    }
+
+    foreach ($literal in [regex]::Matches("$requirements`n$apiContract", '\b(GET|POST|PUT|PATCH|DELETE)\s+(/api/[A-Za-z0-9_{}?=&/\-]+)')) {
+        $literalPath = $literal.Groups[2].Value.Split('?')[0]
+        $literalKey = "$($literal.Groups[1].Value.ToUpperInvariant()) $literalPath"
+        if ($endpointKeys -notcontains $literalKey) {
+            Add-Failure "SPEC-$($item.id) documents unregistered endpoint literal $literalKey."
+        }
+    }
+
+    if ($plan -notmatch '(?m)^## (?:Feature (?:Design|Design and Boundaries)|Design Decisions)' -or
+        $plan -notmatch '(?m)^## (?:Delivery Sequence|Delivery Sequence and Rollback|Workstreams and Order|Execution and Gate Order|Execution Strategy)') {
+        Add-Failure "SPEC-$($item.id) plan lacks feature-specific design/boundary and delivery-sequence sections."
+    }
 
     if ($requirements -notmatch "^# SPEC-$($item.id): $([regex]::Escape($item.title))") {
         Add-Failure "SPEC-$($item.id) title does not match the manifest."
@@ -362,8 +532,73 @@ foreach ($item in $manifest.specs) {
         if (-not (Test-ExactFuturePath $body)) {
             Add-Failure "SPEC-$($item.id) $taskId does not name an exact future file."
         }
+        if ($body -match 'src/StudentRegistration\.(?:Server|Domain|Application)/' -or
+            $body -match 'src/StudentRegistration\.Infrastructure/(?!SqlServer)') {
+            Add-Failure "SPEC-$($item.id) $taskId uses a prohibited layer-project source path instead of the owning business-module project."
+        }
     }
     $taskLines = ($taskMatches | ForEach-Object { $_.Value }) -join "`n"
+
+    $parallelPathClaims = New-Object System.Collections.Generic.List[object]
+    foreach ($parallelTask in @($taskMatches | Where-Object { $_.Groups[2].Value -match '^\[P\]' })) {
+        foreach ($parallelPath in Get-TaskPaths $parallelTask.Groups[2].Value) {
+            $parallelPathClaims.Add([pscustomobject]@{ path = $parallelPath; task = $parallelTask.Groups[1].Value })
+        }
+    }
+    foreach ($parallelGroup in ($parallelPathClaims | Group-Object path | Where-Object Count -gt 1)) {
+        $collidingIds = (@($parallelGroup.Group.task) | Sort-Object) -join ', '
+        Add-Failure "SPEC-$($item.id) falsely marks parallel tasks $collidingIds that write the same path $($parallelGroup.Name)."
+    }
+
+    $approvalTasksForSpec = @($taskMatches | Where-Object { $_.Groups[2].Value -match "(?i)Ahmed Elbamby's human approval|human approval for SPEC" })
+    if ($approvalTasksForSpec.Count -ne 1) {
+        Add-Failure "SPEC-$($item.id) must have exactly one final pre-implementation human-approval task; found $($approvalTasksForSpec.Count)."
+    } else {
+        $approvalNumber = Get-TaskNumber $approvalTasksForSpec[0]
+        $readinessTasks = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match '\[DEP-SPEC-|implementation-readiness\.md|\[CONSISTENCY-ANALYSIS\]'
+        })
+        if (@($readinessTasks | Where-Object { (Get-TaskNumber $_) -ge $approvalNumber }).Count -gt 0) {
+            Add-Failure "SPEC-$($item.id) requests human approval before dependency/readiness/consistency analysis is complete."
+        }
+        $executionTasks = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match '(?:tests|src|\.github)/[^\s,;]+\.[A-Za-z0-9]+'
+        })
+        if (@($executionTasks | Where-Object { (Get-TaskNumber $_) -le $approvalNumber }).Count -gt 0) {
+            Add-Failure "SPEC-$($item.id) schedules test/source execution before the human-approval gate."
+        }
+    }
+
+    if ($persistenceMappingEvidence.ContainsKey([string]$item.id)) {
+        $mappingPaths = $persistenceMappingEvidence[[string]$item.id]
+        $mappingTests = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match '\[PERSISTENCE-MAPPING\]' -and
+            $_.Groups[2].Value -match [regex]::Escape($mappingPaths[0]) -and
+            $_.Groups[2].Value -match '(?i)\b(failing|test)\b'
+        })
+        $mappingDeliveries = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match '\[PERSISTENCE-MAPPING\]' -and
+            $_.Groups[2].Value -match [regex]::Escape($mappingPaths[1]) -and
+            $_.Groups[2].Value -match '(?i)\bdeliver\b' -and
+            $_.Groups[2].Value -notmatch '^\[P\]'
+        })
+        if ($mappingTests.Count -ne 1) { Add-Failure "SPEC-$($item.id) must have exactly one real-SQL persistence mapping test at $($mappingPaths[0]); found $($mappingTests.Count)." }
+        if ($mappingDeliveries.Count -ne 1) { Add-Failure "SPEC-$($item.id) must have exactly one owner mapping contribution at $($mappingPaths[1]); found $($mappingDeliveries.Count)." }
+        if ($mappingTests.Count -eq 1 -and $mappingDeliveries.Count -eq 1 -and
+            (Get-TaskNumber $mappingTests[0]) -ge (Get-TaskNumber $mappingDeliveries[0])) {
+            Add-Failure "SPEC-$($item.id) persistence mapping delivery is not preceded by its real-SQL test."
+        }
+        $mapping = $persistenceManifest.contributions.PSObject.Properties[[string]$item.id].Value
+        foreach ($entity in @($mapping.entities)) {
+            $entityTag = "\[ENTITY-$([regex]::Escape([string]$entity))\]"
+            if ($mappingTests.Count -eq 1 -and $mappingTests[0].Groups[2].Value -notmatch $entityTag) {
+                Add-Failure "SPEC-$($item.id) persistence mapping test omits entity tag $entity."
+            }
+            if ($mappingDeliveries.Count -eq 1 -and $mappingDeliveries[0].Groups[2].Value -notmatch $entityTag) {
+                Add-Failure "SPEC-$($item.id) persistence mapping delivery omits entity tag $entity."
+            }
+        }
+    }
 
     $specWorkstreamProperty = $workstreamManifest.specs.PSObject.Properties | Where-Object Name -eq $item.id
     $specWorkstreams = if ($specWorkstreamProperty) { @($specWorkstreamProperty.Value) } else { @() }
@@ -373,6 +608,8 @@ foreach ($item in $manifest.specs) {
     }
     foreach ($stream in $specWorkstreams) {
         $streamName = [string]$stream.name
+        $workstreamTag = ($streamName -replace '[^A-Za-z0-9]+', '-').Trim('-').ToUpperInvariant()
+        $workstreamTagPattern = "\[WORKSTREAM-$([regex]::Escape($workstreamTag))\]"
         $streamRequirements = @($stream.requirements | ForEach-Object { [string]$_ })
         foreach ($fr in $streamRequirements) {
             if ($frs -notcontains $fr) { Add-Failure "SPEC-$($item.id) workstream $streamName references undefined $fr." }
@@ -387,13 +624,15 @@ foreach ($item in $manifest.specs) {
                 $body = $_.Groups[2].Value
                 $body -match $frTag -and
                     $body -match [regex]::Escape($testPath) -and
-                    $body -match [regex]::Escape($testFocus)
+                    $body -match $workstreamTagPattern -and
+                    $body -match '(?i)\b(?:test|tests|suite|verify|assert|coverage)\b'
             })
             $deliveryCandidates = @($taskMatches | Where-Object {
                 $body = $_.Groups[2].Value
                 $body -match $frTag -and
                     $body -match [regex]::Escape($deliveryPath) -and
-                    $body -match "(?i)\bDeliver $([regex]::Escape($streamFr)) through the bounded\b" -and
+                    $body -match $workstreamTagPattern -and
+                    $body -match '(?i)\bDeliver\b' -and
                     $body -notmatch '^\[P\]'
             })
             if ($testCandidates.Count -ne 1) {
@@ -417,6 +656,16 @@ foreach ($item in $manifest.specs) {
     foreach ($id in @($nfrs + $acs + $ecs + $oss)) {
         if ($taskLines -notmatch "\[$([regex]::Escape($id))\]") { Add-Failure "SPEC-$($item.id) $id lacks an actionable task." }
     }
+    for ($successIndex = 1; $successIndex -le @($item.successCriteria).Count; $successIndex++) {
+        $successId = "SC-$successIndex"
+        $successTasks = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match "\[$([regex]::Escape($successId))\]" -and
+            $_.Groups[2].Value -match '(?:tests|docs/release-evidence)/[^\s,;]+\.[A-Za-z0-9]+'
+        })
+        if ($successTasks.Count -lt 1) {
+            Add-Failure "SPEC-$($item.id) $successId has no explicit measurable test/release-evidence task."
+        }
+    }
     foreach ($dep in $item.dependencies) {
         if ($taskLines -notmatch "\[DEP-SPEC-$dep\]") { Add-Failure "SPEC-$($item.id) lacks a dependency task for SPEC-$dep." }
     }
@@ -432,12 +681,17 @@ foreach ($item in $manifest.specs) {
         if ($taskLines -notmatch "\[ENTITY-$([regex]::Escape($entity))\]") { Add-Failure "SPEC-$($item.id) entity $entity lacks model/test task." }
         $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties | Where-Object Name -eq $entity
         $canonicalOwner = if ($ownerProperty) { [string]$ownerProperty.Value } else { [string]$item.id }
+        if ($canonicalOwner -ne [string]$item.id -and
+            $model -notmatch "(?is)$([regex]::Escape($entity)).{0,300}(?:SPEC-$canonicalOwner|canonical owner)" -and
+            $model -notmatch "(?is)(?:SPEC-$canonicalOwner|canonical owner).{0,300}$([regex]::Escape($entity))") {
+            Add-Failure "SPEC-$($item.id) data model does not identify $entity as consumed from canonical owner SPEC-$canonicalOwner."
+        }
         $canonicalPath = Get-EntityArtifactPath $canonicalOwner $entity
         $entityTagPattern = "\[ENTITY-$([regex]::Escape($entity))\]"
         $globalEntityTasks = @($taskRegistry | Where-Object { $_.body -match $entityTagPattern })
         $ownerWriters = @($globalEntityTasks | Where-Object {
             $_.body -match [regex]::Escape($canonicalPath) -and
-            $_.body -match '(?i)\bdeliver the canonical\b' -and
+            $_.body -match '(?i)\b(?:deliver|publish) the canonical\b' -and
             $_.body -notmatch '^\[P\]'
         })
         if ($item.id -eq $canonicalOwner) {
@@ -451,9 +705,17 @@ foreach ($item in $manifest.specs) {
             if ($ownerTests.Count -lt 1) { Add-Failure "Canonical entity $entity has no owner test task." }
             elseif ($ownerWriters.Count -eq 1 -and (Get-TaskNumber $ownerTests[0]) -ge $ownerWriters[0].number) { Add-Failure "Canonical entity $entity delivery is not preceded by its owner test." }
         } elseif ($item.id -eq '005') {
-            $mappingPath = Get-EntityArtifactPath $item.id $entity
-            $mappingTasks = @($taskMatches | Where-Object { $_.Groups[2].Value -match $entityTagPattern -and $_.Groups[2].Value -match '\[PERSISTENCE-MAPPING\]' })
-            if ($mappingTasks.Count -lt 2 -or $taskLines -notmatch [regex]::Escape($mappingPath)) { Add-Failure "SPEC-005 entity $entity lacks test-first persistence mapping at $mappingPath." }
+            $schemaTasks = @($taskMatches | Where-Object {
+                $_.Groups[2].Value -match $entityTagPattern -and
+                $_.Groups[2].Value -match '\[SCHEMA-CONTRACT\]' -and
+                $_.Groups[2].Value -match "\[CONSUMER-SPEC-$canonicalOwner\]" -and
+                $_.Groups[2].Value -match [regex]::Escape($canonicalPath) -and
+                $_.Groups[2].Value -match [regex]::Escape('docs/diagrams/ERD.md')
+            })
+            if ($schemaTasks.Count -ne 1) { Add-Failure "SPEC-005 entity $entity must have exactly one schema-conformance task against canonical owner SPEC-$canonicalOwner; found $($schemaTasks.Count)." }
+            if (@($schemaTasks | Where-Object { $_.Groups[2].Value -match '(?i)\b(deliver|implement|map the canonical)\b' }).Count -gt 0) {
+                Add-Failure "SPEC-005 attempts to deliver downstream runtime model/mapping $entity."
+            }
         } else {
             $consumerTag = "\[CONSUMER-SPEC-$canonicalOwner\]"
             $consumerTasks = @($taskMatches | Where-Object {
@@ -474,8 +736,8 @@ foreach ($item in $manifest.specs) {
         $endpointCode = 'Endpoint{0:d2}' -f $endpointIndex
         $contractPath = "specs/$name/contracts/api.md"
         $testPath = "tests/StudentRegistration.ContractTests/Specs/Spec$($item.id)/$($endpointCode)ContractTests.cs"
-        $moduleSafe = ([string]$item.module) -replace '[^A-Za-z0-9]', ''
-        $handlerPath = "src/StudentRegistration.Server/Modules/$moduleSafe/Endpoints/Spec$($item.id)Endpoints.cs"
+        $moduleProject = if ([string]$item.module -eq 'Operations') { 'Api' } else { [string]$item.module }
+        $handlerPath = "src/StudentRegistration.$moduleProject/Endpoints/Spec$($item.id)Endpoints.cs"
         $endpointPattern = [regex]::Escape($endpoint) + '(?![A-Za-z0-9_{}?=&/\-])'
         $contractTasks = @($taskMatches | Where-Object { $_.Groups[2].Value -match $endpointPattern -and $_.Groups[2].Value -match [regex]::Escape($contractPath) })
         $testTasksForEndpoint = @($taskMatches | Where-Object { $_.Groups[2].Value -match $endpointPattern -and $_.Groups[2].Value -match [regex]::Escape($testPath) })
@@ -485,6 +747,28 @@ foreach ($item in $manifest.specs) {
         if ($handlerTasks.Count -ne 1) { Add-Failure "SPEC-$($item.id) endpoint $endpoint must have exactly one handler task at $handlerPath; found $($handlerTasks.Count)." }
         if ($testTasksForEndpoint.Count -eq 1 -and $handlerTasks.Count -eq 1 -and (Get-TaskNumber $testTasksForEndpoint[0]) -ge (Get-TaskNumber $handlerTasks[0])) {
             Add-Failure "SPEC-$($item.id) endpoint $endpoint handler is not preceded by its contract test."
+        }
+        $behaviorTests = @($taskMatches | Where-Object {
+            $_.Groups[2].Value -match 'tests/[^\s,;]+\.[A-Za-z0-9]+' -and
+            ($_.Groups[2].Value -match '\[WORKSTREAM-[A-Za-z0-9-]+\]' -or
+             ($_.Groups[2].Value -match '\[AC-\d+\]' -and $_.Groups[2].Value -match 'tests/StudentRegistration\.AcceptanceTests/'))
+        })
+        if ($handlerTasks.Count -eq 1 -and $testTasksForEndpoint.Count -eq 1) {
+            $handlerBody = $handlerTasks[0].Groups[2].Value
+            $referencedTaskIds = @(Get-ReferencedTaskIds $handlerBody)
+            $contractTaskId = $testTasksForEndpoint[0].Groups[1].Value
+            if ($referencedTaskIds -notcontains $contractTaskId) {
+                Add-Failure "SPEC-$($item.id) endpoint $endpoint handler does not explicitly depend on contract test $contractTaskId."
+            }
+            $referencedBehaviorTests = @($behaviorTests | Where-Object { $referencedTaskIds -contains $_.Groups[1].Value })
+            if ($referencedBehaviorTests.Count -lt 1) {
+                Add-Failure "SPEC-$($item.id) endpoint $endpoint handler has no explicit acceptance/workstream test dependency."
+            }
+            foreach ($referencedTest in @($testTasksForEndpoint[0]) + $referencedBehaviorTests) {
+                if ((Get-TaskNumber $referencedTest) -ge (Get-TaskNumber $handlerTasks[0])) {
+                    Add-Failure "SPEC-$($item.id) endpoint $endpoint handler precedes referenced test $($referencedTest.Groups[1].Value)."
+                }
+            }
         }
         $foreignHandlerClaims = @($taskRegistry | Where-Object {
             $_.spec -ne ([string]$item.id) -and
@@ -640,10 +924,14 @@ foreach ($item in $manifest.specs) {
     $output = & (Join-Path $PSScriptRoot 'check-prerequisites.ps1') -Json -RequireTasks -IncludeTasks 2>&1
     if ($LASTEXITCODE -ne 0) { Add-Failure "SPEC-$($item.id) official prerequisite gate failed: $output" }
 
-    $validator = 'C:/Users/Ahmed/.codex/skills/claude-spec-driven-workflow/scripts/spec_validator.py'
-    $validationJson = & python $validator --file (Join-Path $dir 'requirements.md') --strict --json 2>&1
-    if ($LASTEXITCODE -ne 0) { Add-Failure "SPEC-$($item.id) strict requirements validation failed: $validationJson" }
-    $score = try { ($validationJson | ConvertFrom-Json).score } catch { $null }
+    $score = $null
+    if ([string]::IsNullOrWhiteSpace($strictValidatorPath)) {
+        Add-Failure 'Strict requirements validator was not found. Set SPEC_VALIDATOR_PATH or install the documented development skill.'
+    } else {
+        $validationJson = & python $strictValidatorPath --file (Join-Path $dir 'requirements.md') --strict --json 2>&1
+        if ($LASTEXITCODE -ne 0) { Add-Failure "SPEC-$($item.id) strict requirements validation failed: $validationJson" }
+        $score = try { ($validationJson | ConvertFrom-Json).score } catch { $null }
+    }
 
     $results.Add([pscustomobject]@{
         spec = "SPEC-$($item.id)"
@@ -670,6 +958,71 @@ foreach ($taskRecord in $taskRegistry) {
         }
     }
 }
+
+$sourceWriterClaims = New-Object System.Collections.Generic.List[object]
+foreach ($taskRecord in $taskRegistry) {
+    if ($taskRecord.body -notmatch '(?i)\b(deliver|implement|map the canonical)\b' -or
+        $taskRecord.body -match '(?i)\bwithout editing\b') { continue }
+    foreach ($path in Get-TaskPaths $taskRecord.body) {
+        if ($path -match '^src/') {
+            $sourceWriterClaims.Add([pscustomobject]@{ path = $path; spec = $taskRecord.spec; task = $taskRecord.id })
+        }
+    }
+}
+foreach ($writerGroup in ($sourceWriterClaims | Group-Object path)) {
+    $writerSpecs = @($writerGroup.Group.spec | Select-Object -Unique)
+    $declaredSnapshotPaths = @($persistenceManifest.migrations.snapshotPath | Select-Object -Unique)
+    if ($declaredSnapshotPaths -contains $writerGroup.Name) {
+        $allowedSnapshotWriters = @($persistenceManifest.migrations.owner | Select-Object -Unique)
+        $foreignSnapshotWriters = @($writerSpecs | Where-Object { $allowedSnapshotWriters -notcontains $_ })
+        if ($foreignSnapshotWriters.Count -gt 0) {
+            Add-Failure "EF model snapshot has undeclared migration writers in SPEC-$($foreignSnapshotWriters -join ', SPEC-')."
+        }
+    } elseif ($writerSpecs.Count -gt 1) {
+        $claims = @($writerGroup.Group | ForEach-Object { "SPEC-$($_.spec)/$($_.task)" }) -join ', '
+        Add-Failure "Canonical source path $($writerGroup.Name) has delivery writers in multiple specs: $claims."
+    }
+}
+$dbContextPath = 'src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs'
+$dbContextWriters = @($taskRegistry | Where-Object {
+    $_.body -match [regex]::Escape($dbContextPath) -and
+    $_.body -match '(?i)\b(create|deliver|implement)\b' -and
+    $_.body -notmatch '(?i)\b(test|verify|assert|failing)\b'
+})
+if ($dbContextWriters.Count -ne 1 -or ($dbContextWriters.Count -eq 1 -and $dbContextWriters[0].spec -ne '004')) {
+    Add-Failure "StudentRegistrationDbContext must have exactly one canonical SPEC-004 writer; found $($dbContextWriters.Count)."
+}
+for ($migrationIndex = 0; $migrationIndex -lt @($persistenceManifest.migrations).Count; $migrationIndex++) {
+    $migration = $persistenceManifest.migrations[$migrationIndex]
+    $tag = "\[MIGRATION-$([regex]::Escape([string]$migration.id))\]"
+    $testTasks = @($taskRegistry | Where-Object {
+        $_.spec -eq [string]$migration.owner -and $_.body -match $tag -and
+        $_.body -match 'tests/[^\s,;]+Tests\.cs' -and $_.body -match '(?i)\b(?:test|tests|failing|verify)\b'
+    })
+    $deliveryTasks = @($taskRegistry | Where-Object {
+        $_.spec -eq [string]$migration.owner -and $_.body -match $tag -and
+        $_.body -match [regex]::Escape([string]$migration.path) -and
+        $_.body -match [regex]::Escape([string]$migration.snapshotPath) -and
+        $_.body -match '(?i)\b(?:generate|deliver)\b'
+    })
+    if ($testTasks.Count -ne 1) { Add-Failure "Migration $($migration.id) must have exactly one owner test task; found $($testTasks.Count)." }
+    if ($deliveryTasks.Count -ne 1) { Add-Failure "Migration $($migration.id) must have exactly one owner delivery task; found $($deliveryTasks.Count)." }
+    if ($testTasks.Count -eq 1 -and $deliveryTasks.Count -eq 1 -and $testTasks[0].number -ge $deliveryTasks[0].number) {
+        Add-Failure "Migration $($migration.id) delivery is not preceded by its test."
+    }
+    foreach ($prerequisiteId in @($migration.prerequisiteSpecs)) {
+        if ([string]$migration.owner -ne [string]$prerequisiteId -and
+            -not (Test-DependsTransitively ([string]$migration.owner) ([string]$prerequisiteId) @{})) {
+            Add-Failure "Migration $($migration.id) owner SPEC-$($migration.owner) does not depend on prerequisite SPEC-$prerequisiteId."
+        }
+    }
+    if ($migrationIndex -gt 0) {
+        $previousOwner = [string]$persistenceManifest.migrations[$migrationIndex - 1].owner
+        if ([string]$migration.owner -ne $previousOwner -and -not (Test-DependsTransitively ([string]$migration.owner) $previousOwner @{})) {
+            Add-Failure "Migration $($migration.id) owner SPEC-$($migration.owner) does not follow prior migration owner SPEC-$previousOwner."
+        }
+    }
+}
 Remove-Item Env:SPECIFY_FEATURE -ErrorAction SilentlyContinue
 Remove-Item Env:SPECIFY_FEATURE_DIRECTORY -ErrorAction SilentlyContinue
 
@@ -682,24 +1035,69 @@ $erd = if (Test-Path $erdPath) { Get-Content $erdPath -Raw } else { '' }
 foreach ($term in @(
     'StudentTermRegistrationGuard', 'PayloadHash', 'ProcessingState',
     'ReceivedAtUtc', 'CompletedAtUtc', 'RegistrationPaused',
-    'RegistrationWindow', 'StaffTermAvailability', 'rowversion'
+    'RegistrationWindow', 'StaffTermAvailability', 'RegistrationReceipt',
+    'CatalogueVersion', 'AccountRecoveryChallenge', 'RoleAssignment',
+    'ScheduleImpactAlert', 'ExportJob', 'AdminSecurityGuard',
+    'BeforeSummaryJson', 'AfterSummaryJson', 'CorrelationId',
+    'LeaseOwnerId', 'LeaseExpiresAtUtc', 'ApplicationUserId', 'ProgramCode',
+    'CourseCode', 'ActorReference', 'SubjectReference', 'rowversion'
 )) {
     if ($erd -notmatch [regex]::Escape($term)) { Add-Failure "Shared ERD omits concurrency field/entity $term." }
 }
 
+$classDiagramPath = Join-Path $root 'docs/diagrams/CLASS_DIAGRAM.md'
+$classDiagram = if (Test-Path $classDiagramPath) { Get-Content $classDiagramPath -Raw } else { '' }
+foreach ($term in @(
+    'RegistrationCommandFactory', 'RegistrationTransactionCoordinator',
+    'SqlSeatAllocator', 'RegistrationSubmissionStore',
+    'StudentRegistrationDbContext', 'OptimizationCoordinator', 'ScheduleOptimizer',
+    'ScheduleScorer', 'RecommendationApplicationService', 'AcademicContextResolver',
+    'IRegistrationTransactionCoordinator', 'CancellationToken'
+)) {
+    if ($classDiagram -notmatch [regex]::Escape($term)) { Add-Failure "Shared class diagram omits current design term $term." }
+}
+foreach ($staleTerm in @('RegistrationService', 'IRegistrationCommitter', 'SqlRegistrationCommitter', 'RegistrationDbContext')) {
+    if ($classDiagram -match "\b$([regex]::Escape($staleTerm))\b") { Add-Failure "Shared class diagram still contains stale type $staleTerm." }
+}
+
 $contractTermChecks = @{
-    '009-catalog-prerequisites-policy-admin' = @('expectedDraftRowVersion','previewToken','clientRequestId','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
-    '010-offerings-groups-resources' = @('registrationPaused','expectedGroupRowVersions','previewToken','clientRequestId','GROUP_CHANGED')
-    '013-schedule-recommendations' = @('expectedPlanRowVersion','requestCorrelationId','catalogueVersion','policyVersion','optimizerConfigurationVersion','recommended-option')
-    '014-registration-capacity-concurrency' = @('expectedPlanRowVersion','clientRequestId','receivedAtUtc','completedAtUtc','RegistrationFinalResult','RegistrationInProgressResponse','retryAfterSeconds','no submissionId','REQUEST_NOT_FOUND','201','200','202','409','by-request')
-    '016-lecturer-ta-workspace' = @('rowVersion','expectedStaffTermRowVersion','STALE_VERSION','AVAILABILITY_DEADLINE_PASSED')
-    '017-admin-operations-audit-reporting' = @('expectedRowVersion','clientRequestId','previewToken','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
+    '006-domain-class-api-contracts' = @('TermSummaryDto','serviceState','role-selection-required','supportReferencePath','PAGE_SIZE_INVALID','expectedRowVersion','STALE_VERSION','If-Match','OpenAPI','semantic diff')
+    '007-identity-account-lifecycle' = @('MfaChallengeDto','IdentityImportBatchDto','SessionDto','sessionState','activeRole','recovery/complete','revoke-all','expectedRoleSetVersion','role-selection-required','AdminSecurityGuard','FINAL_ADMIN_REQUIRED')
+    '008-academic-term-student-profile' = @('TermSummaryDto','PublicContextDto','AcademicProfileCorrectionOperation','set-gpa','upsert-transcript-attempt','transcript','blocksRegistration','supportReferencePath','expectedStudentRowVersion','WINDOW_OVERLAP')
+    '009-catalog-prerequisites-policy-admin' = @('CatalogueDraftDto','CatalogueDraftOperation','PolicyRuleAdminDto','PolicySetMutationRequest','PolicyPublishRequest','PolicySimulationResult','CatalogueVersionSummaryDto','ImportBatchDto','expectedDraftRowVersion','previewToken','clientRequestId','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
+    '010-offerings-groups-resources' = @('registrationPaused','expectedGroupRowVersions','expectedRoomRowVersions','expectedStaffTermAvailabilityRowVersions','StaffTermAvailabilityDto','ScheduleImpactAlert','previewToken','clientRequestId','GROUP_CHANGED')
+    '011-eligibility-subject-discovery' = @('requiredValue','currentValue','sourceReference','supportReferencePath','Page<OfferingEligibilityDto>','PAGE_SIZE_INVALID')
+    '012-schedule-builder-conflicts' = @('ScheduleConflictDto','courseCode','subjectTitle','actions','expectedPlanRowVersion','registration-plan/validate','STALE_VERSION')
+    '013-schedule-recommendations' = @('MeetingIntervalDto','SchedulePreferencesDto','OptimizerConfiguration','preference-violations','idle-minutes','optionToken','OptimizationDiagnosticDto','inclusion-minimal','expectedPlanRowVersion','requestCorrelationId','catalogueVersion','policyVersion','optimizerConfigurationVersion','Registration.ScheduleOption.v1','10 minutes','recommended-option')
+    '014-registration-capacity-concurrency' = @('RegistrationGroupSnapshotDto','RegistrationReceiptSnapshotDto','expectedPlanRowVersion','clientRequestId','receivedAtUtc','completedAtUtc','RegistrationFinalResult','RegistrationInProgressResponse','retryAfterSeconds','no submissionId','REQUEST_NOT_FOUND','201','200','202','409','route TermId','by-request','ReceiptSnapshot')
+    '015-student-registration-records' = @('RegistrationReceiptDto','RegistrationDetailDto','RegistrationRejectedResultDto','noPartialRegistration','Page<RegistrationHistoryRowDto>','reference?:','Reference','ReceiptSnapshot','RegistrationRecords.Read','PAGE_SIZE_INVALID')
+    '016-lecturer-ta-workspace' = @('RosterRowDto','Page<RosterRowDto>','rowVersion','expectedStaffTermRowVersion','ScheduleImpactAlert','STALE_VERSION','AVAILABILITY_DEADLINE_PASSED')
+    '017-admin-operations-audit-reporting' = @('RedactedChangeSummaryDto','sourceStream','RegistrationReconciliationAlertDto','supportReferencePath','beforeSummary','afterSummary','correlationId','ExportJobDto','LeaseOwnerId','LeaseExpiresAtUtc','AdminSecurityGuard','FINAL_ADMIN_REQUIRED','expectedRowVersion','clientRequestId','previewToken','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
+    '018-quality-security-scalability-operations' = @('HealthSummary','OperationalMetric','observedAtUtc')
 }
 foreach ($contractEntry in $contractTermChecks.GetEnumerator()) {
     $contractPath = Join-Path $root "specs/$($contractEntry.Key)/contracts/api.md"
     $contractText = if (Test-Path $contractPath) { Get-Content $contractPath -Raw } else { '' }
     foreach ($term in $contractEntry.Value) {
         if ($contractText -notmatch [regex]::Escape($term)) { Add-Failure "$($contractEntry.Key) API contract omits concurrency token/result $term." }
+    }
+}
+
+$requirementsApiTermChecks = @{
+    '007-identity-account-lifecycle' = @('activeRole','sessionState','expiring','role-selection-required')
+    '008-academic-term-student-profile' = @('PublicContextDto','AcademicProfileCorrectionOperation','upsert-transcript-attempt')
+    '009-catalog-prerequisites-policy-admin' = @('CatalogueDraftOperation','PolicyRuleAdminDto','PolicyPublishRequest','PolicySimulationResult')
+    '010-offerings-groups-resources' = @('ScheduleImpactAlertDto')
+    '015-student-registration-records' = @('RegistrationDetailDto','RegistrationRejectedResultDto','reference?:','noPartialRegistration')
+    '017-admin-operations-audit-reporting' = @('RedactedChangeSummaryDto','AdminOperationsMetricsDto','RegistrationReconciliationAlertDto','ExportJobDto')
+}
+foreach ($requirementsEntry in $requirementsApiTermChecks.GetEnumerator()) {
+    $requirementsPath = Join-Path $root "specs/$($requirementsEntry.Key)/requirements.md"
+    $requirementsText = if (Test-Path $requirementsPath) { Get-Content $requirementsPath -Raw } else { '' }
+    foreach ($term in $requirementsEntry.Value) {
+        if ($requirementsText -notmatch [regex]::Escape($term)) {
+            Add-Failure "$($requirementsEntry.Key) requirements API section omits canonical term $term."
+        }
     }
 }
 
@@ -737,6 +1135,7 @@ $($reportRows -join "`r`n")
 - Dependencies exist, match requirements metadata, contain no cycle, and every spec reaches SPEC-001.
 - Every FR/NFR has acceptance coverage; every FR has delivery and verification tasks.
 - Every NFR, AC, EC, out-of-scope guard, entity, endpoint, dependency, and owned route has actionable exact-file tasks.
+- Every requirements API declaration is structurally synchronized with its canonical `contracts/api.md` declaration block.
 - SPEC-003 has per-route design, Blazor, component, E2E, accessibility, browser, and visual tasks.
 - SPEC-014 has explicit cross-aggregate serialization, idempotency, cutoff, admin-versus-submit, two-replica, failure, and reconciliation design.
 - Official Spec Kit prerequisite and strict workflow validators run for every package.

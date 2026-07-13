@@ -17,19 +17,28 @@ preview, source provenance, and controlled publication.
 ## Functional Requirements
 
 - FR-1: Admin MUST manage programs, curricula, courses, credit values, status,
-  prerequisites, minimum grades/GPA/earned credits, and cohort scope.
+  prerequisites, minimum grades/GPA/earned credits, and cohort scope inside a
+  versioned `CatalogueDraft`; published catalogue records are never edited in
+  place.
 - FR-2: Imports MUST provide preview, row-level validation, provenance, and
-  all-or-nothing publication.
+  all-or-nothing publication. Each `ImportBatch` MUST record the target draft,
+  source, access/import time, content hash, status, rowversion, errors, and the
+  resulting published version when successful.
 - FR-3: The system MUST detect missing references, duplicate codes, invalid
   credits, and prerequisite cycles before publish.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
   before publication.
-- FR-6: Published catalogue/policy versions MUST be immutable and superseded.
+- FR-6: Published `CatalogueVersion` and `PolicySet` versions MUST be immutable
+  and superseded. Drafts use Editing, Validated, Published, or Abandoned state;
+  import batches use Uploaded, Validating, Invalid, Validated, Publishing,
+  Published, or Failed state. State changes are server-controlled and
+  versioned.
 - FR-7: Only approved Admin/Registrar permissions MAY publish.
 - FR-8: Every update/publish confirmation MUST include the expected draft
   version and a preview token bound to actor, scope, canonical draft content,
-  dependency versions, and expiry.
+  dependency versions, import/content hash where applicable, and expiry. Any
+  draft/import/dependency change invalidates the prior preview.
 - FR-9: Catalogue/policy publication MUST lock the affected publication scope,
   revalidate references and conflicts inside one transaction, and atomically
   create its immutable version and audit event.
@@ -115,6 +124,45 @@ interface CourseAdminDto {
   active: boolean;
   rowVersion: string;
 }
+interface ProgramAdminDto { id: string; code: string; displayName: string; active: boolean; }
+interface CurriculumCourseAdminDto { programCode: string; courseCode: string; level: number; termSequence?: number; required: boolean; }
+interface CatalogueDraftDto {
+  id: string;
+  scope: string;
+  basedOnVersionId?: string;
+  state: "editing" | "validated" | "published" | "abandoned";
+  canonicalContentHash: string;
+  rowVersion: string;
+  programs: ProgramAdminDto[];
+  courses: CourseAdminDto[];
+  curricula: CurriculumCourseAdminDto[];
+}
+type CatalogueDraftOperation =
+  | { kind: "upsert-program"; program: ProgramAdminDto }
+  | { kind: "upsert-course"; course: CourseAdminDto }
+  | { kind: "upsert-curriculum-course"; curriculumCourse: CurriculumCourseAdminDto }
+  | { kind: "remove-curriculum-course"; programCode: string; courseCode: string }
+  | { kind: "set-prerequisites"; courseCode: string; requiredCourseCodes: string[] };
+interface CatalogueDraftMutationRequest { expectedDraftRowVersion: string; reason: string; source: string; operations: CatalogueDraftOperation[]; }
+interface CatalogueVersionSummaryDto {
+  id: string;
+  scope: string;
+  version: string;
+  state: "published" | "superseded";
+  source: string;
+  publishedAtUtc: string;
+}
+interface ImportBatchDto {
+  id: string;
+  draftId: string;
+  state: "uploaded" | "validating" | "invalid" | "validated" | "publishing" | "published" | "failed";
+  source: string;
+  contentHash: string;
+  rowVersion: string;
+  errors: Array<{ row?: number; field?: string; code: string; message: string }>;
+  publishedVersionId?: string;
+}
+interface CreateImportRequest { draftId: string; source: string; contentHash: string; clientRequestId: string; }
 interface CatalogueValidationResult {
   valid: boolean;
   errors: Array<{ row?: number; code: string; message: string }>;
@@ -127,14 +175,37 @@ interface PublishVersionRequest {
   previewToken: string;
   clientRequestId: string;
 }
+interface PolicyRuleAdminDto {
+  id?: string;
+  code: string;
+  valueType: "number" | "boolean" | "string" | "string-list";
+  value: number | boolean | string | string[];
+  effectiveFromUtc: string;
+  effectiveToUtc?: string;
+  sourceReference: string;
+}
+interface PolicySetAdminDto { id: string; scope: string; version: string; state: "draft" | "validated" | "published" | "superseded"; rowVersion: string; rules: PolicyRuleAdminDto[]; }
+type PolicySetOperation =
+  | { kind: "upsert-rule"; rule: PolicyRuleAdminDto }
+  | { kind: "remove-rule"; ruleId: string };
+interface PolicySetMutationRequest { expectedPolicySetRowVersion: string; reason: string; operations: PolicySetOperation[]; }
+interface PolicyPublishRequest { expectedPolicySetRowVersion: string; previewToken: string; clientRequestId: string; }
+interface PolicySimulationRequest { policySetId: string; studentContextFixtureId: string; requestedCourseCodes: string[]; }
+interface PolicySimulationResult { eligible: boolean; ruleResults: Array<{ ruleCode: string; passed: boolean; requiredValue?: string; currentValue?: string; sourceReference: string }>; }
 ```
 
-Endpoints: GET /api/admin/programs, POST /api/admin/courses, PUT
-/api/admin/curricula/{id}, POST /api/admin/policies/{id}/validate, POST
-/api/admin/policies/{id}/simulate, and POST /api/admin/policies/{id}/publish.
-Every update/publish request uses expected version; retryable create/publish
-uses clientRequestId. Stale preview/version and idempotency payload mismatch
-return 409 STALE_PREVIEW, STALE_VERSION, or IDEMPOTENCY_KEY_REUSED.
+Endpoints: GET /api/admin/programs, GET /api/admin/catalogue/versions, GET and
+PUT /api/admin/catalogue/drafts/{draftId}, POST /api/admin/catalogue/imports,
+GET /api/admin/catalogue/imports/{importId}, POST
+/api/admin/catalogue/imports/{importId}/validate, POST
+/api/admin/catalogue/imports/{importId}/publish, GET and POST
+/api/admin/policies, PUT /api/admin/policies/{policySetId}, POST
+/api/admin/policies/{policySetId}/validate, POST /api/admin/policies/{policySetId}/simulate, and
+POST /api/admin/policies/{policySetId}/publish. Lists use the shared bounded pagination
+contract. Every update/publish request uses expected version; retryable
+create/import/publish uses clientRequestId. Stale preview/version and
+idempotency payload mismatch return 409 STALE_PREVIEW, STALE_VERSION, or
+IDEMPOTENCY_KEY_REUSED.
 
 ## Data Models
 
@@ -145,6 +216,9 @@ return 409 STALE_PREVIEW, STALE_VERSION, or IDEMPOTENCY_KEY_REUSED.
 | CoursePrerequisite | composite key | course != required course; acyclic graph |
 | PolicySet.Version | string | unique in scope; published immutable |
 | ImportRowError.SourceRow | integer | required when input row is known |
+| CatalogueDraft | aggregate root | scope + rowversion; editable/validated lifecycle; canonical content hash |
+| CatalogueVersion | immutable aggregate | unique scope + version; published/superseded lifecycle |
+| ImportBatch | aggregate root | target draft, source, hash, lifecycle, rowversion, row errors, published version |
 
 ## Out of Scope
 

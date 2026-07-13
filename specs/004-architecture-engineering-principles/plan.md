@@ -34,7 +34,13 @@ Deliver Architecture and Engineering Principles inside the modular monolith whil
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+The canonical solution shape is exactly the project-per-business-module modular
+monolith in `docs/ARCHITECTURE.md`: Client, Api, Contracts, IdentityAccess,
+Academics, Scheduling, Registration, StaffAdministration, and
+Infrastructure.SqlServer projects plus `tests/`. The API project is composition
+only; each business project contains its own Domain, Application, and Endpoints
+folders. A generic Server, Domain, Application, or Infrastructure project is a
+forbidden alternative shape.
 
 ## Design Artifacts
 
@@ -44,6 +50,33 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+## Feature Design
+
+- Encode allowed project references and absence of cycles as executable
+  architecture rules.
+- Keep one deployable API and one SQL Server database/DbContext while allowing
+  each module to own its model/configuration contribution through narrow ports.
+- Require encrypted, least-privilege shared Data Protection keys for all API
+  replicas without sticky sessions; production repository/encryption authority
+  remain fail-closed until Security/DevOps approval.
+- Own architecture records and conformance tests only; runtime module
+  registration belongs to the API composition root, and DbContext source and
+  migrations belong exclusively to Infrastructure.SqlServer.
+- Own the narrow transaction-aware audit write port, append-only AuditEvent
+  mapping, and SQL writer upstream so every feature can audit atomically
+  without depending on SPEC-017's Admin query/export module.
+
+## Execution Strategy
+
+1. Validate SPEC-001 and SPEC-003, then reconcile architecture documents,
+   module contracts, and planned paths through consistency analysis.
+2. Record Architect and Ahmed ELbamby approval as the final planning gate.
+3. Write failing solution-shape, dependency, DTO-isolation, persistence, and
+   atomic-audit boundary tests before creating the solution, composition,
+   persistence, and audit seams.
+4. Require an approved ADR plus updated tests for every later boundary or
+   deployment change.
+
 
 
 ## Non-Functional Requirements
@@ -52,7 +85,8 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - NFR-2: Application instances MUST be stateless except for shared database
   and approved key/config stores.
 - NFR-3: The architecture MUST support at least two application replicas.
-- NFR-4: Domain projects MUST have no dependency on ASP.NET, Blazor, EF, or SQL.
+- NFR-4: Domain code inside each business-module project MUST reference no
+  ASP.NET, Blazor, EF Core, or SQL Server type or namespace.
 
 ## Complexity Tracking
 

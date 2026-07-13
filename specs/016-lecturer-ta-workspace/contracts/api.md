@@ -8,6 +8,12 @@ interface StaffAssignmentDto {
   staffRole: "Lecturer" | "TeachingAssistant";
   rosterCount: number;
 }
+interface RosterRowDto {
+  universityId: string;
+  displayName: string;
+  enrollmentState: "active";
+}
+type RosterPageDto = Page<RosterRowDto>; // canonical Page<T> from SPEC-006
 interface AvailabilityRangeDto {
   id: string;
   dayOfWeek: number;
@@ -26,18 +32,42 @@ interface ReplaceAvailabilityRequest {
   expectedStaffTermRowVersion: string;
   ranges: AvailabilityRangeDto[];
 }
+interface AvailabilityUpdateResult {
+  availability: StaffTermAvailabilityDto;
+  impactAlertIds: string[];
+}
 ```
 
-Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
-/api/staff/groups/{id}/roster, GET /api/staff/availability, and PUT
-/api/staff/availability. PUT replaces the complete staff-term range set and
-returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
-fails.
+## Endpoints
+
+- `GET /api/staff/assignments`
+- `GET /api/staff/timetable`
+- `GET /api/staff/groups/{groupId}/roster?page=1&pageSize=20`
+- `GET /api/staff/availability`
+- `PUT /api/staff/availability`
+
+Every route uses the authenticated staff ID and current GroupStaffAssignment
+scope. Direct object authorization occurs before query execution.
+
+The roster response is the SPEC-006 `Page<RosterRowDto>`; page defaults to 1,
+pageSize to 20, max 100, and `sort` echoes the stable DisplayName then
+UniversityId order. Only
+UniversityId, DisplayName, and EnrollmentState are permitted. A successful
+roster access writes privacy-safe audit metadata (actor, group, purpose,
+outcome, row count, correlation), never the returned rows.
+
+PUT replaces the complete SPEC-010 StaffTermAvailability range set through the
+Scheduling application port. It returns 200 with the new aggregate rowversion
+and any durable impact-alert IDs; 409 `STALE_VERSION` includes the authorized
+current range set, and 409 `AVAILABILITY_DEADLINE_PASSED` includes server time
+and deadline. If a published assignment conflicts, availability and a unique
+Open ScheduleImpactAlert commit atomically; no class moves automatically.
+
+SPEC-017 supplies the Admin alert discovery/revalidation surface. SPEC-016
+does not expose an Admin mutation endpoint.
 
 ## Shared Rules
 
-- All protected operations require server-validated authentication and role/data-scope authorization.
-- Validation errors use stable codes and actionable, privacy-safe messages.
-- Mutation requests support idempotency or concurrency tokens where retries can duplicate or contest a write.
-- Dates use ISO 8601 and the server-configured academic term.
-- Lists are bounded and paginated; filtering and sorting are server-side.
+Validation uses stable safe codes; dates are ISO-8601 server values; list
+payloads are bounded; no client role claim or client-authoritative scope is
+accepted.

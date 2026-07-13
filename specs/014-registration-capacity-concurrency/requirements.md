@@ -25,9 +25,11 @@ define the required ordering and winner/loser outcomes.
 
 - FR-1: Submission MUST resolve the student from authenticated server identity
   and MUST NOT accept a client-supplied student identifier.
-- FR-2: Submission MUST accept PlanId, expected plan rowversion, term ID, and a
-  client-generated idempotency key and MUST reject a term outside the student's
-  resolved registration context.
+- FR-2: The route MUST identify TermId and the request MUST contain PlanId,
+  expected plan rowversion, and a client-generated ClientRequestId. The server
+  MUST reject a route term outside the authenticated student's resolved
+  registration context; TermId and student ID MUST NOT be duplicated as
+  client-authoritative body fields.
 - FR-3: The server MUST revalidate window, student profile/holds, policy and
   catalogue versions, eligibility, credit load, duplicate courses, group
   state/meeting versions, and timetable inside the commit transaction.
@@ -45,15 +47,17 @@ define the required ordering and winner/loser outcomes.
   transient or transaction-aborting infrastructure failure MUST roll back the
   entire transaction and its claim. No failure path MAY create an active
   partial enrollment, counter, receipt, or success audit state.
-- FR-7: A concurrent request using the same student/term/idempotency key MUST
-  NOT execute allocation again. If the final claim/result is committed, the
-  same canonical payload MUST replay it. While the first claim remains
-  uncommitted, the server MUST wait at most 500 ms for that key; if no final
-  row becomes visible, it MUST return the non-durable bounded 202
-  RegistrationInProgressResponse containing clientRequestId, retryAfterSeconds,
-  and resultUrl only. The 202 MUST NOT expose or imply a visible submissionId
-  or committed Processing row; payload/owner mismatch is checked once the
-  winning claim becomes visible.
+- FR-7: A concurrent request using the same authenticated-student/route-term/
+  ClientRequestId scope MUST NOT execute allocation again. If the final
+  claim/result is committed, the same canonical payload MUST replay it. While
+  the first claim remains uncommitted, the server MUST wait at most 500 ms for
+  that scoped key; if no final row becomes visible, it MUST return the
+  non-durable bounded 202 RegistrationInProgressResponse containing
+  clientRequestId, retryAfterSeconds, and the term-scoped resultUrl only. The
+  202 MUST NOT expose or imply a visible submissionId or committed Processing
+  row; payload mismatch is checked once the winning claim becomes visible.
+  Reusing the same opaque ClientRequestId in another term is independent and
+  MUST NOT conflict; another student cannot discover the first student's key.
 - FR-8: Unique, foreign-key, and check constraints MUST be final guards for
   student/offering duplicates, idempotency ownership, group ownership, and
   0 <= EnrolledCount <= Capacity.
@@ -62,19 +66,30 @@ define the required ordering and winner/loser outcomes.
   policy/workflow specification.
 - FR-10: Expected business conflicts MUST return 409 with a stable reason code,
   current version where relevant, and no mutation.
-- FR-11: The system MUST reconcile EnrolledCount to active Enrollment, alert on
-  mismatch, and pause affected-group registration before a controlled repair.
+- FR-11: The scheduled reconciliation worker MUST compare EnrolledCount with
+  active Enrollment under the owning SectionGroup lock. On mismatch it MUST
+  atomically pause that group and publish a safe operational alert. Repair MAY
+  be invoked only by the approved operations service identity holding
+  `Registration.Reconcile`; it MUST use the idempotency scope GroupId + observed
+  group rowversion + enrollment-evidence hash, recompute the count from active
+  Enrollment, write the shared audit event in the same transaction, and clear
+  the pause only after the invariant passes. Admin UI is observation-only in
+  MVP; no public repair endpoint exists.
 - FR-12: Every registration mutation for one student and term MUST serialize
   through a database-backed StudentTermRegistrationGuard; in-memory locks are
   prohibited because multiple application replicas are supported.
-- FR-13: Idempotency claim MUST be atomic and store owner/scope, canonical
-  payload hash, processing state, deterministic result, and timestamps. Reuse
-  with a different payload MUST return 409 IDEMPOTENCY_KEY_REUSED.
+- FR-13: RegistrationSubmission is the sole idempotency claim/final-result
+  record. Its database uniqueness scope MUST be (StudentId, TermId,
+  ClientRequestId), and it MUST atomically store that owner/scope, canonical
+  payload hash, internal processing state, deterministic result, timestamps,
+  and—when accepted—a unique human-safe Reference plus immutable
+  ReceiptSnapshot. Reuse in the same scope with a different payload MUST
+  return 409 IDEMPOTENCY_KEY_REUSED; reuse in another term is independent.
 - FR-14: After acquiring the required database boundaries, the server MUST
   re-read and validate every mutable input and commit guard/version changes,
-  seat counters, enrollments, submission result, decision snapshot, audit
-  event, and idempotency result in one short local SQL transaction with no
-  remote calls.
+  seat counters, enrollments, submission result, unique reference, immutable
+  receipt and decision snapshots, audit event, and idempotency final result in
+  one short local SQL transaction with no remote calls.
 - FR-15: The server MUST capture ReceivedAtUtc once at authenticated command
   ingress. Scheduled opening/closing boundaries use that instant; an emergency
   administrative closure or registration-context version change before commit
@@ -150,8 +165,10 @@ Given a controlled fault creates a counter/enrollment mismatch in a test
 fixture<br>
 When reconciliation runs<br>
 Then the affected group is alerted and paused for new registration<br>
-And controlled repair restores the count from active Enrollment evidence<br>
-And the repair is audited.
+And an unprivileged Admin can observe but cannot invoke repair<br>
+And an approved operations-service repair replays idempotently, restores the
+count from active Enrollment evidence, audits before/after facts, and clears
+the pause only after verification.
 
 ### AC-7: Same student submits different plans concurrently (FR-3, FR-5, FR-12, NFR-1)
 Given two plans for one student/term are individually valid but jointly exceed
@@ -226,8 +243,9 @@ And a fault after commit replays the stored final result.
   committed stored result by idempotency key; never compensate a valid commit.
 - EC-4: Capacity reduction races enrollment -> shared SectionGroup boundary
   permits only outcomes satisfying 0 <= EnrolledCount <= Capacity.
-- EC-5: Counter reconciliation mismatch -> alert, pause the affected group,
-  and use an authorized, audited, idempotent controlled repair.
+- EC-5: Counter reconciliation mismatch -> alert and pause the affected group;
+  only the approved `Registration.Reconcile` service identity may run the
+  evidence-hash-bound, audited, idempotent repair. Admin pages remain read-only.
 - EC-6: Two different plans for the same student/term -> serialize through one
   guard even when routed to different application replicas.
 - EC-7: Same key and payload arrive while the first transaction is uncommitted
@@ -245,21 +263,39 @@ And a fault after commit replays the stored final result.
 ## API Contracts
 
 ```typescript
+interface RegistrationGroupSnapshotDto {
+  offeringId: string;
+  courseCode: string;
+  subjectTitle: string;
+  groupId: string;
+  groupCode: string;
+  credits: number;
+  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; displayName: string }>;
+  meetings: Array<{ dayOfWeek: number; startLocal: string; endLocal: string; roomCode: string; location: string }>;
+}
+interface RegistrationReceiptSnapshotDto {
+  term: TermSummaryDto;
+  groups: RegistrationGroupSnapshotDto[];
+  totalCredits: number;
+  policyVersion: string;
+  submittedAtUtc: string;
+}
 interface SubmitRegistrationRequest {
   planId: string;
   expectedPlanRowVersion: string;
-  termId: string;
   clientRequestId: string;
 }
 interface RegistrationFinalResult {
   submissionId: string;
   status: "accepted" | "rejected";
   resultCode: string;
-  registeredGroups: GroupDto[];
+  registeredGroups: RegistrationGroupSnapshotDto[];
   receivedAtUtc: string;
-  completedAtUtc?: string;
+  completedAtUtc: string;
   policyVersion: string;
   planRowVersion: string;
+  reference?: string;
+  receiptSnapshot?: RegistrationReceiptSnapshotDto;
 }
 interface RegistrationInProgressResponse {
   clientRequestId: string;
@@ -269,11 +305,11 @@ interface RegistrationInProgressResponse {
 }
 ```
 
-Endpoint: POST /api/student/registrations. New final result is 201; idempotent
+Endpoint: POST /api/student/terms/{termId}/registrations. New final result is 201; idempotent
 final replay is 200; bounded lock-wait expiry is 202 with
 RegistrationInProgressResponse and no submissionId; business/version/
 idempotency conflicts are 409; validation is 400; authentication/authorization
-are 401/403. GET /api/student/registrations/by-request/{clientRequestId}
+are 401/403. GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId}
 returns the authenticated student's committed final result, the same bounded
 202 while the first transaction still holds the key, or 404 REQUEST_NOT_FOUND
 after a rolled-back/nonexistent claim. A 202 is transport-level retry guidance,

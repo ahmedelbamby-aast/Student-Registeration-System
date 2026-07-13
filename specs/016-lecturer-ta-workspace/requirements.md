@@ -24,20 +24,30 @@ availability without access to policy, user, or unrelated student data.
   tutorial/lab groups according to server data.
 - FR-4: Staff MUST view group code, subject, role partners, room, meeting
   slots, capacity and roster count.
-- FR-5: Staff MAY view the minimum authorized roster fields for assigned
-  groups.
-- FR-6: Staff MUST create/edit own availability before deadline using
-  concurrency protection.
+- FR-5: Staff MAY view only a bounded page of UniversityId, DisplayName, and
+  EnrollmentState for an assigned group. GPA, standing, holds, contact data,
+  grades, transcript, and unrelated identifiers MUST NOT be returned. The list
+  defaults to 20, caps at 100, and is stable-sorted by DisplayName then
+  UniversityId.
+- FR-6: Staff MUST create/edit their own availability before the server-time
+  deadline through the Scheduling application port owned by SPEC-010, using
+  the expected StaffTermAvailability rowversion and complete-range
+  replacement; SPEC-016 MUST NOT redefine or bypass that aggregate.
 - FR-7: Staff MUST NOT manage policy, users, capacity, terms, or unrelated
   rosters.
-- FR-8: Availability changes after schedule publication MUST trigger an admin
-  warning and MUST NOT silently move a class.
-- FR-9: Availability MUST be a versioned staff-plus-term aggregate; edits MUST
-  validate the complete range set and replace/update it atomically rather than
-  inserting independently validated ranges.
-- FR-10: Availability deadline and published-schedule impact MUST be
-  revalidated with server time inside the same transaction as the aggregate
-  update.
+- FR-8: If an accepted availability change conflicts with a published
+  assignment, the same transaction MUST create or update a durable
+  ScheduleImpactAlert containing term, staff, affected group, availability and
+  group versions, detected time, reason, and revalidation state. Admin MUST be
+  able to discover it through SPEC-017; no class moves automatically.
+- FR-9: SPEC-016 MUST consume SPEC-010's versioned staff-plus-term
+  StaffTermAvailability aggregate. Edits MUST validate the complete range set
+  and replace it atomically through the Scheduling port; independent child
+  inserts/updates/deletes are prohibited.
+- FR-10: The Scheduling port MUST revalidate deadline, current aggregate
+  version, current published assignments, and impact-alert state using server
+  time inside one local SQL transaction. Availability update and required
+  ScheduleImpactAlert write MUST commit or roll back together.
 
 ## Non-Functional Requirements
 
@@ -52,7 +62,8 @@ availability without access to policy, user, or unrelated student data.
 ### AC-1: Scoped roster (FR-2, FR-5)
 Given a TA is assigned to Group A but not Group B<br>
 When the TA requests Group A and Group B rosters<br>
-Then Group A is returned with approved minimal fields<br>
+Then Group A returns one bounded page containing only UniversityId,
+DisplayName, and EnrollmentState<br>
 And Group B is denied with no data.
 
 ### AC-2: Shared page, different scope (FR-1, FR-3)
@@ -77,7 +88,8 @@ And the Admin operation is denied.
 ### AC-5: Post-publication availability warning (FR-8)
 Given an approved availability change conflicts with a published assignment<br>
 When the change is saved through the allowed process<br>
-Then Admin receives an affected-group warning<br>
+Then one durable open ScheduleImpactAlert records the affected group and
+captured versions for Admin revalidation<br>
 And no class, room or staff assignment moves automatically.
 
 ### AC-6: Concurrent availability insert (FR-6, FR-9, FR-10)
@@ -122,6 +134,12 @@ interface StaffAssignmentDto {
   staffRole: "Lecturer" | "TeachingAssistant";
   rosterCount: number;
 }
+interface RosterRowDto {
+  universityId: string;
+  displayName: string;
+  enrollmentState: "active";
+}
+type RosterPageDto = Page<RosterRowDto>; // canonical Page<T> from SPEC-006
 interface AvailabilityRangeDto {
   id: string;
   dayOfWeek: number;
@@ -140,10 +158,14 @@ interface ReplaceAvailabilityRequest {
   expectedStaffTermRowVersion: string;
   ranges: AvailabilityRangeDto[];
 }
+interface AvailabilityUpdateResult {
+  availability: StaffTermAvailabilityDto;
+  impactAlertIds: string[];
+}
 ```
 
 Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
-/api/staff/groups/{id}/roster, GET /api/staff/availability, and PUT
+/api/staff/groups/{groupId}/roster, GET /api/staff/availability, and PUT
 /api/staff/availability. PUT replaces the complete staff-term range set and
 returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
 fails.

@@ -2,14 +2,14 @@
 
 ## Feature Contract
 
-Database design is exposed only through approved feature endpoints, for
-example GET /api/student/registrations; feature DTOs are defined in SPEC-006
-onward.
+Database design is exposed only through approved feature endpoints. SPEC-015
+owns the student registration-record resource, and SPEC-006 owns shared DTO
+rules. SPEC-005 owns no route or handler.
 
 ## Shared Rules
 
 - All protected operations require server-validated authentication and role/data-scope authorization.
 - Validation errors use stable codes and actionable, privacy-safe messages.
-- Mutation requests support idempotency or concurrency tokens where retries can duplicate or contest a write.
+- Versioned updates/deletes follow SPEC-006 request-body `expectedRowVersion` and 409 `STALE_VERSION`; retryable commands follow their owner-spec idempotency contract.
 - Dates use ISO 8601 and the server-configured academic term.
-- Lists are bounded and paginated; filtering and sorting are server-side.
+- Lists follow the exact SPEC-006 default-20/maximum-100 pagination and deterministic unique-ID tie-break sorting protocol.

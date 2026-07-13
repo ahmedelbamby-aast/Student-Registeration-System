@@ -1,151 +1,119 @@
 # Tasks: Academic Term and Student Profile
 
-**Status**: Planned only. Do not execute until human approval.
+**Status**: Planned only. Do not execute until all readiness checks and Ahmed ELbamby's human approval pass.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
-**Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
+**Rule**: Approval is the final planning gate. Every delivery is preceded by a failing exact-file test, and `[P]` never targets the same file twice.
 
-## Phase 1 - Approval and Dependency Gates
+## Phase 1 - Planning Readiness and Final Approval
 
-- [ ] T001 [GATE] Record Ahmed ELbamby's human approval for SPEC-008 in specs/008-academic-term-student-profile/checklists/approval.md before executing any later task.
-- [ ] T002 [DEP-SPEC-002] Validate the consumed upstream requirements, plan, data model, and API contract at specs/002-aastmt-policy-rulebook/ and record the accepted versions in specs/008-academic-term-student-profile/dependency-baseline.md.
-- [ ] T003 [DEP-SPEC-003] Validate the consumed upstream requirements, plan, data model, and API contract at specs/003-ux-storyboard-accessibility/ and record the accepted versions in specs/008-academic-term-student-profile/dependency-baseline.md.
-- [ ] T004 [DEP-SPEC-005] Validate the consumed upstream requirements, plan, data model, and API contract at specs/005-erd-data-lifecycle/ and record the accepted versions in specs/008-academic-term-student-profile/dependency-baseline.md.
-- [ ] T005 [DEP-SPEC-007] Validate the consumed upstream requirements, plan, data model, and API contract at specs/007-identity-account-lifecycle/ and record the accepted versions in specs/008-academic-term-student-profile/dependency-baseline.md.
-- [ ] T006 [DEP-SPEC-018] Validate the consumed upstream requirements, plan, data model, and API contract at specs/018-quality-security-scalability-operations/ and record the accepted versions in specs/008-academic-term-student-profile/dependency-baseline.md.
-- [ ] T007 [GATE] Freeze SPEC-008 requirements, API, data-model, policy approvals, and dependency versions in specs/008-academic-term-student-profile/checklists/implementation-readiness.md.
+- [ ] T001 [DEP-SPEC-002] Baseline approved term/policy semantics from specs/002-aastmt-policy-rulebook/ in specs/008-academic-term-student-profile/dependency-baseline.md.
+- [ ] T002 [DEP-SPEC-003] Baseline AUTH-01, STU-01, ADM-02, and ADM-04 page/state contracts from specs/003-ux-storyboard-accessibility/ in specs/008-academic-term-student-profile/dependency-baseline.md.
+- [ ] T003 [DEP-SPEC-005] [DEP-SPEC-006] Baseline persistence, UTC, rowversion, and provenance contracts from specs/005-erd-data-lifecycle/ plus the canonical TermSummaryDto, AppContextDto, pagination, and error contracts from specs/006-domain-class-api-contracts/ in specs/008-academic-term-student-profile/dependency-baseline.md.
+- [ ] T004 [DEP-SPEC-007] Baseline session/AppContext identity fields and role scope from specs/007-identity-account-lifecycle/ in specs/008-academic-term-student-profile/dependency-baseline.md.
+- [ ] T005 [DEP-SPEC-018] Baseline performance, authorization, two-replica, and operations gates from specs/018-quality-security-scalability-operations/ in specs/008-academic-term-student-profile/dependency-baseline.md.
+- [ ] T006 [GATE] Analyze requirements, AppContext composition, ownership, APIs, window state/version, student-term locking, routes, and tasks and freeze the result in specs/008-academic-term-student-profile/checklists/implementation-readiness.md.
+- [ ] T007 [GATE] As the final planning action, record Ahmed ELbamby's human approval in specs/008-academic-term-student-profile/checklists/approval.md; do not start T008 or later before T001-T007 pass.
 
-## Phase 2 - Models and API Contracts
+## Phase 2 - Failing Model and Contract Tests
 
-- [ ] T008 [P] [ENTITY-AcademicTerm] [OWNER-SPEC-008] Create the future failing invariant/schema/serialization checks for canonical AcademicTerm ownership in tests/StudentRegistration.IntegrationTests/Specs/Spec008/AcademicTermModelTests.cs.
-- [ ] T009 [ENTITY-AcademicTerm] [OWNER-SPEC-008] Deliver the canonical AcademicTerm model or governed artifact at src/StudentRegistration.Domain/Modules/Academics/AcademicTerm.cs after T008 fails for the expected reason (depends on T008).
-- [ ] T010 [P] [ENTITY-RegistrationWindow] [OWNER-SPEC-008] Create the future failing invariant/schema/serialization checks for canonical RegistrationWindow ownership in tests/StudentRegistration.IntegrationTests/Specs/Spec008/RegistrationWindowModelTests.cs.
-- [ ] T011 [ENTITY-RegistrationWindow] [OWNER-SPEC-008] Deliver the canonical RegistrationWindow model or governed artifact at src/StudentRegistration.Domain/Modules/Academics/RegistrationWindow.cs after T010 fails for the expected reason (depends on T010).
-- [ ] T012 [P] [ENTITY-Student] [OWNER-SPEC-008] Create the future failing invariant/schema/serialization checks for canonical Student ownership in tests/StudentRegistration.IntegrationTests/Specs/Spec008/StudentModelTests.cs.
-- [ ] T013 [ENTITY-Student] [OWNER-SPEC-008] Deliver the canonical Student model or governed artifact at src/StudentRegistration.Domain/Modules/Academics/Student.cs after T012 fails for the expected reason (depends on T012).
-- [ ] T014 [P] [ENTITY-TranscriptAttempt] [OWNER-SPEC-008] Create the future failing invariant/schema/serialization checks for canonical TranscriptAttempt ownership in tests/StudentRegistration.IntegrationTests/Specs/Spec008/TranscriptAttemptModelTests.cs.
-- [ ] T015 [ENTITY-TranscriptAttempt] [OWNER-SPEC-008] Deliver the canonical TranscriptAttempt model or governed artifact at src/StudentRegistration.Domain/Modules/Academics/TranscriptAttempt.cs after T014 fails for the expected reason (depends on T014).
-- [ ] T016 [P] [ENTITY-StudentHold] [OWNER-SPEC-008] Create the future failing invariant/schema/serialization checks for canonical StudentHold ownership in tests/StudentRegistration.IntegrationTests/Specs/Spec008/StudentHoldModelTests.cs.
-- [ ] T017 [ENTITY-StudentHold] [OWNER-SPEC-008] Deliver the canonical StudentHold model or governed artifact at src/StudentRegistration.Domain/Modules/Academics/StudentHold.cs after T016 fails for the expected reason (depends on T016).
-- [ ] T018 [API-Endpoint01] [OWNER-SPEC-008] Finalize request, success, validation, authentication, authorization, conflict, rate-limit, and unexpected-error shapes for GET /api/public/context in specs/008-academic-term-student-profile/contracts/api.md.
-- [ ] T019 [P] [API-Endpoint01] Verify every documented response and authorization outcome for GET /api/public/context in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint01ContractTests.cs.
-- [ ] T020 [API-Endpoint01] [OWNER-SPEC-008] Deliver the sole canonical GET /api/public/context handler at src/StudentRegistration.Server/Modules/Academics/Endpoints/Spec008Endpoints.cs after T019 fails for the expected reason (depends on T019).
-- [ ] T021 [API-Endpoint02] [OWNER-SPEC-008] Finalize request, success, validation, authentication, authorization, conflict, rate-limit, and unexpected-error shapes for GET /api/context in specs/008-academic-term-student-profile/contracts/api.md.
-- [ ] T022 [P] [API-Endpoint02] Verify every documented response and authorization outcome for GET /api/context in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint02ContractTests.cs.
-- [ ] T023 [API-Endpoint02] [OWNER-SPEC-008] Deliver the sole canonical GET /api/context handler at src/StudentRegistration.Server/Modules/Academics/Endpoints/Spec008Endpoints.cs after T022 fails for the expected reason (depends on T022).
-- [ ] T024 [API-Endpoint03] [OWNER-SPEC-008] Finalize request, success, validation, authentication, authorization, conflict, rate-limit, and unexpected-error shapes for GET /api/students/me/academic-context in specs/008-academic-term-student-profile/contracts/api.md.
-- [ ] T025 [P] [API-Endpoint03] Verify every documented response and authorization outcome for GET /api/students/me/academic-context in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint03ContractTests.cs.
-- [ ] T026 [API-Endpoint03] [OWNER-SPEC-008] Deliver the sole canonical GET /api/students/me/academic-context handler at src/StudentRegistration.Server/Modules/Academics/Endpoints/Spec008Endpoints.cs after T025 fails for the expected reason (depends on T025).
+- [ ] T008 [P] [ENTITY-AcademicTerm] [OWNER-SPEC-008] Create failing lifecycle, timezone, uniqueness, and rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/AcademicTermModelTests.cs.
+- [ ] T009 [P] [ENTITY-RegistrationWindow] [OWNER-SPEC-008] Create failing lifecycle, scope, interval, computed-state, and rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/RegistrationWindowModelTests.cs.
+- [ ] T010 [P] [ENTITY-Student] [OWNER-SPEC-008] Create failing University-ID, provenance, active-state, and rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/StudentModelTests.cs.
+- [ ] T011 [P] [ENTITY-TranscriptAttempt] [OWNER-SPEC-008] Create failing immutable attempt/provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/TranscriptAttemptModelTests.cs.
+- [ ] T012 [P] [ENTITY-StudentHold] [OWNER-SPEC-008] Create failing effective-period, blocking, source, and term checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/StudentHoldModelTests.cs.
+- [ ] T013 [P] [ENTITY-StudentTermAcademicState] [OWNER-SPEC-008] Create failing unique student-term and shared rowversion-lock checks in tests/StudentRegistration.IntegrationTests/Specs/Spec008/StudentTermAcademicStateModelTests.cs.
+- [ ] T014 [API-Endpoint01] [OWNER-SPEC-008] Finalize GET /api/public/context in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T015 [P] [API-Endpoint01] Create failing public-data-minimization and server-time checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint01ContractTests.cs for GET /api/public/context.
+- [ ] T016 [API-Endpoint02] [OWNER-SPEC-008] Finalize GET /api/context in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T017 [P] [API-Endpoint02] Create failing composed identity/academic AppContext and replica-consistency checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint02ContractTests.cs for GET /api/context.
+- [ ] T018 [API-Endpoint03] [OWNER-SPEC-008] Finalize GET /api/students/me/academic-context in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T019 [P] [API-Endpoint03] Create failing self-scope, transcript summary/attempts, all active holds with blocking flags, data-version/as-of, and provenance checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint03ContractTests.cs for GET /api/students/me/academic-context.
+- [ ] T020 [API-Endpoint04] [OWNER-SPEC-008] Finalize GET /api/admin/terms in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T021 [P] [API-Endpoint04] Create failing bounded paging/filtering and Admin authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint04ContractTests.cs for GET /api/admin/terms.
+- [ ] T022 [API-Endpoint05] [OWNER-SPEC-008] Finalize POST /api/admin/terms in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T023 [P] [API-Endpoint05] Create failing create-term provenance, validation, and authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint05ContractTests.cs for POST /api/admin/terms.
+- [ ] T024 [API-Endpoint06] [OWNER-SPEC-008] Finalize PUT /api/admin/terms/{termId} in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T025 [P] [API-Endpoint06] Create failing term/window expected-version and no-partial-edit checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint06ContractTests.cs for PUT /api/admin/terms/{termId}.
+- [ ] T026 [API-Endpoint07] [OWNER-SPEC-008] Finalize POST /api/admin/terms/{termId}/registration-windows/{windowId}/publish in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T027 [P] [API-Endpoint07] Create failing publish overlap, stale-version, stable-lock, and audit checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint07ContractTests.cs for POST /api/admin/terms/{termId}/registration-windows/{windowId}/publish.
+- [ ] T028 [API-Endpoint08] [OWNER-SPEC-008] Finalize GET /api/admin/students in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T029 [P] [API-Endpoint08] Create failing bounded search, field minimization, and Admin authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint08ContractTests.cs for GET /api/admin/students.
+- [ ] T030 [API-Endpoint09] [OWNER-SPEC-008] Finalize GET /api/admin/students/{studentId}/academic-context in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T031 [P] [API-Endpoint09] Create failing authorized detail, direct-object denial, and provenance checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint09ContractTests.cs for GET /api/admin/students/{studentId}/academic-context.
+- [ ] T032 [API-Endpoint10] [OWNER-SPEC-008] Finalize PATCH /api/admin/students/{studentId}/academic-profile in specs/008-academic-term-student-profile/contracts/api.md.
+- [ ] T033 [P] [API-Endpoint10] Create failing reason/source/version/guard/audit and unauthorized/stale checks in tests/StudentRegistration.ContractTests/Specs/Spec008/Endpoint10ContractTests.cs for PATCH /api/admin/students/{studentId}/academic-profile.
 
-## Phase 3 - User-Story Acceptance and Edge Tests
+## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
-### US1 - Device-clock independence (FR-1, FR-6) (P1)
+- [ ] T034 [P] [AC-1] [FR-1] [FR-6] Create device-clock independence coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-1Tests.cs.
+- [ ] T035 [P] [AC-2] [FR-2] [FR-4] Create no-active-context coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-2Tests.cs.
+- [ ] T036 [P] [AC-3] [FR-5] [FR-6] Create hold-before-submit fail-closed coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-3Tests.cs.
+- [ ] T037 [P] [AC-4] [FR-3] [FR-7] Create governed term/profile edit coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-4Tests.cs.
+- [ ] T038 [P] [AC-5] [FR-6] [FR-8] Create real-SQL hold-versus-submit serial-order coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-5Tests.cs.
+- [ ] T039 [P] [AC-6] [FR-3] [FR-4] [FR-9] Create concurrent overlapping-window publication one-winner coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-6Tests.cs.
+- [ ] T040 [P] [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create term/profile quality-gate coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-7Tests.cs.
+- [ ] T041 [P] [AC-8] [FR-1] [FR-2] [FR-4] [FR-10] Create composed AppContext coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-8Tests.cs.
+- [ ] T042 [P] [AC-9] [FR-3] [FR-7] [FR-9] [FR-11] Create complete ADM-02/ADM-04 API journey coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-9Tests.cs.
+- [ ] T043 [P] [EC-1] Create overlapping-window coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-1Tests.cs.
+- [ ] T044 [P] [EC-2] Create missing GPA/provenance fail-closed coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-2Tests.cs.
+- [ ] T045 [P] [EC-3] Create UTC/timezone rule-change coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-3Tests.cs.
+- [ ] T046 [P] [EC-4] Create stale Admin edit coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-4Tests.cs.
+- [ ] T047 [P] [EC-5] Create scheduled-cutoff versus emergency-close coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-5Tests.cs.
+- [ ] T048 [P] [SC-1] Create authoritative time/window outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/SC-1OutcomeTests.cs.
+- [ ] T049 [P] [SC-2] Create complete sourced-profile outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/SC-2OutcomeTests.cs.
+- [ ] T050 [P] [SC-3] Create non-overlapping context outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/SC-3OutcomeTests.cs.
 
-**Goal**: Prove AC-1 as an independently demonstrable slice of Academic Term and Student Profile.
+## Phase 4 - Consolidated Behavior Tests and Delivery
 
-**Independent Test**: Execute only the AC-1 Given/When/Then fixture with its declared data and dependency doubles.
+- [ ] T051 [FR-1] [FR-2] [FR-4] [FR-6] [FR-10] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Create the failing consolidated canonical SPEC-006 TermSummaryDto consumption, time/term/window/AppContext/supportReferencePath/re-resolution suite in tests/StudentRegistration.ApplicationTests/Academics/AcademicContextBoundaryTests.cs.
+- [ ] T052 [FR-3] [FR-9] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Create the failing consolidated lifecycle/version/overlap/two-admin publication suite in tests/StudentRegistration.IntegrationTests/Academics/RegistrationWindowConcurrencyTests.cs.
+- [ ] T053 [FR-5] [FR-7] [FR-8] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Create the failing consolidated profile/transcript/all-active-holds/provenance/version/correction/hold-submit suite in tests/StudentRegistration.IntegrationTests/Academics/ProfileHoldConcurrencyTests.cs.
+- [ ] T054 [FR-11] [WORKSTREAM-ADMIN-ACADEMIC-JOURNEYS] Create the failing bounded Admin list and owner-command suite in tests/StudentRegistration.IntegrationTests/Academics/AdminAcademicJourneyTests.cs.
+- [ ] T055 [ENTITY-AcademicTerm] [OWNER-SPEC-008] Deliver the canonical AcademicTerm at src/StudentRegistration.Academics/Domain/AcademicTerm.cs after T008 fails.
+- [ ] T056 [ENTITY-RegistrationWindow] [OWNER-SPEC-008] Deliver the canonical RegistrationWindow at src/StudentRegistration.Academics/Domain/RegistrationWindow.cs after T009 fails.
+- [ ] T057 [ENTITY-Student] [OWNER-SPEC-008] Deliver the canonical Student at src/StudentRegistration.Academics/Domain/Student.cs after T010 fails.
+- [ ] T058 [ENTITY-TranscriptAttempt] [OWNER-SPEC-008] Deliver the canonical TranscriptAttempt at src/StudentRegistration.Academics/Domain/TranscriptAttempt.cs after T011 fails.
+- [ ] T059 [ENTITY-StudentHold] [OWNER-SPEC-008] Deliver the canonical StudentHold at src/StudentRegistration.Academics/Domain/StudentHold.cs after T012 fails.
+- [ ] T060 [ENTITY-StudentTermAcademicState] [OWNER-SPEC-008] Deliver the canonical StudentTermAcademicState at src/StudentRegistration.Academics/Domain/StudentTermAcademicState.cs after T013 fails.
+- [ ] T061 [FR-1] [FR-2] [FR-4] [FR-6] [FR-10] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Deliver academic context composition at src/StudentRegistration.Academics/Application/AcademicContextResolver.cs after T051 fails.
+- [ ] T062 [FR-3] [FR-9] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Deliver term/window publication at src/StudentRegistration.Academics/Application/RegistrationWindowService.cs after T052 fails.
+- [ ] T063 [FR-5] [FR-7] [FR-8] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Deliver academic profile and student-term guarding at src/StudentRegistration.Academics/Application/StudentAcademicProfileService.cs after T053 fails.
+- [ ] T064 [FR-11] [WORKSTREAM-ADMIN-ACADEMIC-JOURNEYS] Deliver bounded Admin queries/commands at src/StudentRegistration.Academics/Application/AdminAcademicManagementService.cs after T054 fails.
 
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T027 [P] [AC-1] [FR-1] [FR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-1Tests.cs for AC-1: Device-clock independence (FR-1, FR-6): Given a device clock is one day ahead When registration-window state is requested Then server time and configured term/window determine the state.
-### US2 - No active term (FR-2, FR-4) (P1)
+## Phase 5 - Endpoint Handlers After Behavior Tests
 
-**Goal**: Prove AC-2 as an independently demonstrable slice of Academic Term and Student Profile.
+- [ ] T065 [API-Endpoint01] Deliver GET /api/public/context at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T015 and T051 fail.
+- [ ] T066 [API-Endpoint02] Deliver GET /api/context at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T017 and T051 fail.
+- [ ] T067 [API-Endpoint03] Deliver GET /api/students/me/academic-context at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T019 and T053 fail.
+- [ ] T068 [API-Endpoint04] Deliver GET /api/admin/terms at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T021 and T054 fail.
+- [ ] T069 [API-Endpoint05] Deliver POST /api/admin/terms at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T023 and T054 fail.
+- [ ] T070 [API-Endpoint06] Deliver PUT /api/admin/terms/{termId} at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T025, T052, and T054 fail.
+- [ ] T071 [API-Endpoint07] Deliver POST /api/admin/terms/{termId}/registration-windows/{windowId}/publish at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T027 and T052 fail.
+- [ ] T072 [API-Endpoint08] Deliver GET /api/admin/students at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T029 and T054 fail.
+- [ ] T073 [API-Endpoint09] Deliver GET /api/admin/students/{studentId}/academic-context at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T031, T053, and T054 fail.
+- [ ] T074 [API-Endpoint10] Deliver PATCH /api/admin/students/{studentId}/academic-profile at src/StudentRegistration.Academics/Endpoints/Spec008Endpoints.cs after T033, T053, and T054 fail.
 
-**Independent Test**: Execute only the AC-2 Given/When/Then fixture with its declared data and dependency doubles.
+## Phase 6 - Frontend Functional Tests and Pages
 
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T028 [P] [AC-2] [FR-2] [FR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-2Tests.cs for AC-2: No active term (FR-2, FR-4): Given no registration term matches the student and server instant When the dashboard loads Then registration is read-only/unavailable And a clear no-active-window message is shown.
-### US3 - Hold changes before submit (FR-5, FR-6) (P2)
+- [ ] T075 [P] [AUTH-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-10] [AC-1] [AC-2] [AC-8] Create failing role-gateway/composed-context journeys in tests/StudentRegistration.E2ETests/Specs/Spec008/RoleGatewayPageFeatureTests.cs.
+- [ ] T076 [AUTH-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-10] [AC-1] [AC-2] [AC-8] Deliver RoleGatewayPage at src/StudentRegistration.Client/Pages/RoleGatewayPage.razor after T075 fails.
+- [ ] T077 [P] [STU-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-5] [FR-10] [AC-1] [AC-2] [AC-7] [AC-8] Create failing student-dashboard composed-context states in tests/StudentRegistration.E2ETests/Specs/Spec008/StudentDashboardPageFeatureTests.cs.
+- [ ] T078 [STU-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-5] [FR-10] [AC-1] [AC-2] [AC-7] [AC-8] Deliver StudentDashboardPage at src/StudentRegistration.Client/Pages/StudentDashboardPage.razor after T077 fails.
+- [ ] T079 [P] [ADM-02] [UI-CONTRACT-SPEC-003] [FR-3] [FR-4] [FR-7] [FR-9] [FR-11] [AC-4] [AC-6] [AC-9] Create failing term-list/edit/publish owner-API journeys in tests/StudentRegistration.E2ETests/Specs/Spec008/TermAdministrationPageFeatureTests.cs.
+- [ ] T080 [ADM-02] [UI-CONTRACT-SPEC-003] [FR-3] [FR-4] [FR-7] [FR-9] [FR-11] [AC-4] [AC-6] [AC-9] Deliver TermAdministrationPage at src/StudentRegistration.Client/Pages/TermAdministrationPage.razor after T079 and SPEC-017 contributor tests fail.
+- [ ] T081 [P] [ADM-04] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [FR-11] [AC-4] [AC-5] [AC-9] Create failing student-search/detail/correction owner-API journeys in tests/StudentRegistration.E2ETests/Specs/Spec008/StudentAdministrationPageFeatureTests.cs.
+- [ ] T082 [ADM-04] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [FR-11] [AC-4] [AC-5] [AC-9] Deliver StudentAdministrationPage at src/StudentRegistration.Client/Pages/StudentAdministrationPage.razor after T081 and SPEC-017 contributor tests fail.
 
-**Goal**: Prove AC-3 as an independently demonstrable slice of Academic Term and Student Profile.
+## Phase 7 - Quality, Scope, and Release Evidence
 
-**Independent Test**: Execute only the AC-3 Given/When/Then fixture with its declared data and dependency doubles.
-
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T029 [P] [AC-3] [FR-5] [FR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-3Tests.cs for AC-3: Hold changes before submit (FR-5, FR-6): Given a plan was eligible when created And a blocking hold is added before submission When the student submits Then submission is rejected with the hold reason And no seat/enrollment changes occur.
-### US4 - Governed term/profile edit (FR-3, FR-7) (P2)
-
-**Goal**: Prove AC-4 as an independently demonstrable slice of Academic Term and Student Profile.
-
-**Independent Test**: Execute only the AC-4 Given/When/Then fixture with its declared data and dependency doubles.
-
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T030 [P] [AC-4] [FR-3] [FR-7] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-4Tests.cs for AC-4: Governed term/profile edit (FR-3, FR-7): Given Admin has permission, reason, source and current rowversion When a valid term/window or academic-profile correction is submitted Then explicit dates/state/provenance are saved and audited And a stale rowversion would be rejected.
-### US5 - Hold mutation races submission (FR-6, FR-8) (P3)
-
-**Goal**: Prove AC-5 as an independently demonstrable slice of Academic Term and Student Profile.
-
-**Independent Test**: Execute only the AC-5 Given/When/Then fixture with its declared data and dependency doubles.
-
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T031 [P] [AC-5] [FR-6] [FR-8] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-5Tests.cs for AC-5: Hold mutation races submission (FR-6, FR-8): Given an eligible student submits while an authorized admin adds a blocking hold for the same term When both transactions execute concurrently Then the operations have one valid serial order And a submission that loses the student-term serialization boundary revalidates and returns HOLD_BLOCKED without enrollment changes.
-### US6 - Concurrent window publication (FR-3, FR-4, FR-9) (P3)
-
-**Goal**: Prove AC-6 as an independently demonstrable slice of Academic Term and Student Profile.
-
-**Independent Test**: Execute only the AC-6 Given/When/Then fixture with its declared data and dependency doubles.
-
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T032 [P] [AC-6] [FR-3] [FR-4] [FR-9] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-6Tests.cs for AC-6: Concurrent window publication (FR-3, FR-4, FR-9): Given two draft windows overlap for the same term and student scope When two admins publish them concurrently Then exactly one publication may commit And the loser receives 409 STALE_VERSION or WINDOW_OVERLAP And no student matches two permitted registration contexts.
-### US7 - Term and profile quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
-
-**Goal**: Prove AC-7 as an independently demonstrable slice of Academic Term and Student Profile.
-
-**Independent Test**: Execute only the AC-7 Given/When/Then fixture with its declared data and dependency doubles.
-
-**Dependencies**: Approval/dependency/model/API baseline through T026.
-- [ ] T033 [P] [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec008/AC-7Tests.cs for AC-7: Term and profile quality gate (NFR-1, NFR-2, NFR-3, NFR-4): Given fake-clock boundary fixtures, approved dashboard read load, persistence inspection, and student/staff authorization matrix When the feature quality gate executes Then time behavior passes opening/closing boundary tests And dashboard context is at most 300 ms p95 And instants use UTC datetime2 while recurring meetings use local day/time plus IANA timezone And academic data is visible only to self or approved staff scope.
-- [ ] T034 [P] [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-1Tests.cs and assert: Overlapping active windows for same scope -> publication fails.
-- [ ] T035 [P] [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-2Tests.cs and assert: Missing GPA/provenance -> affected policy decision fails closed.
-- [ ] T036 [P] [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-3Tests.cs and assert: Daylight/timezone rule changes -> UTC window remains unambiguous and display uses configured timezone library.
-- [ ] T037 [P] [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-4Tests.cs and assert: Stale admin edit -> 409 with current rowversion.
-- [ ] T038 [P] [EC-5] Exercise EC-5 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec008/EdgeCases/EC-5Tests.cs and assert: A scheduled window closes while a request is in flight -> the server-received timestamp governs the scheduled cutoff, while an emergency administrative closure/version change blocks every uncommitted request.
-
-## Phase 4 - Requirement Tests and Bounded Delivery
-
-- [ ] T039 [P] [FR-1] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Create the future failing FR-1 checks in tests/StudentRegistration.ApplicationTests/Academics/AcademicContextBoundaryTests.cs. Test focus: server time, teaching versus registration term, one context and submit-time re-resolution. Prove the requirement against its linked AC/EC fixtures: The server MUST expose current UTC time and configured institutional timezone, initially Africa/Cairo.
-- [ ] T040 [FR-1] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Deliver FR-1 through the bounded Academic context resolution workstream at src/StudentRegistration.Server/Modules/Academics/AcademicContextResolver.cs only after T039 fails for the expected reason (depends on T039): The server MUST expose current UTC time and configured institutional timezone, initially Africa/Cairo.
-- [ ] T041 [P] [FR-2] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Create the future failing FR-2 checks in tests/StudentRegistration.ApplicationTests/Academics/AcademicContextBoundaryTests.cs. Test focus: server time, teaching versus registration term, one context and submit-time re-resolution. Prove the requirement against its linked AC/EC fixtures: The system MUST distinguish teaching term from registration term.
-- [ ] T042 [FR-2] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Deliver FR-2 through the bounded Academic context resolution workstream at src/StudentRegistration.Server/Modules/Academics/AcademicContextResolver.cs only after T041 fails for the expected reason (depends on T041): The system MUST distinguish teaching term from registration term.
-- [ ] T043 [P] [FR-3] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Create the future failing FR-3 checks in tests/StudentRegistration.IntegrationTests/Academics/RegistrationWindowConcurrencyTests.cs. Test focus: versioned dates/scope, overlap rejection and concurrent publication one-winner behavior. Prove the requirement against its linked AC/EC fixtures: Terms/windows MUST have explicit dates, states, scope, and rowversion.
-- [ ] T044 [FR-3] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Deliver FR-3 through the bounded Term and window publication workstream at src/StudentRegistration.Server/Modules/Academics/RegistrationWindowService.cs only after T043 fails for the expected reason (depends on T043): Terms/windows MUST have explicit dates, states, scope, and rowversion.
-- [ ] T045 [P] [FR-4] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Create the future failing FR-4 checks in tests/StudentRegistration.ApplicationTests/Academics/AcademicContextBoundaryTests.cs. Test focus: server time, teaching versus registration term, one context and submit-time re-resolution. Prove the requirement against its linked AC/EC fixtures: At most one permitted registration context MAY match a student at an instant.
-- [ ] T046 [FR-4] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Deliver FR-4 through the bounded Academic context resolution workstream at src/StudentRegistration.Server/Modules/Academics/AcademicContextResolver.cs only after T045 fails for the expected reason (depends on T045): At most one permitted registration context MAY match a student at an instant.
-- [ ] T047 [P] [FR-5] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Create the future failing FR-5 checks in tests/StudentRegistration.IntegrationTests/Academics/ProfileHoldConcurrencyTests.cs. Test focus: sourced GPA/credits/standing/transcript/holds, governed correction and submission serialization. Prove the requirement against its linked AC/EC fixtures: Student profile MUST include University ID, program/cohort, GPA, earned credits, standing, transcript summary, active holds, and provenance.
-- [ ] T048 [FR-5] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Deliver FR-5 through the bounded Student academic profile workstream at src/StudentRegistration.Server/Modules/Academics/StudentAcademicProfileService.cs only after T047 fails for the expected reason (depends on T047): Student profile MUST include University ID, program/cohort, GPA, earned credits, standing, transcript summary, active holds, and provenance.
-- [ ] T049 [P] [FR-6] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Create the future failing FR-6 checks in tests/StudentRegistration.ApplicationTests/Academics/AcademicContextBoundaryTests.cs. Test focus: server time, teaching versus registration term, one context and submit-time re-resolution. Prove the requirement against its linked AC/EC fixtures: Registration commands MUST re-resolve time, term, window, student state, and holds.
-- [ ] T050 [FR-6] [WORKSTREAM-ACADEMIC-CONTEXT-RESOLUTION] Deliver FR-6 through the bounded Academic context resolution workstream at src/StudentRegistration.Server/Modules/Academics/AcademicContextResolver.cs only after T049 fails for the expected reason (depends on T049): Registration commands MUST re-resolve time, term, window, student state, and holds.
-- [ ] T051 [P] [FR-7] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Create the future failing FR-7 checks in tests/StudentRegistration.IntegrationTests/Academics/ProfileHoldConcurrencyTests.cs. Test focus: sourced GPA/credits/standing/transcript/holds, governed correction and submission serialization. Prove the requirement against its linked AC/EC fixtures: Admin profile corrections MUST require authorization, reason, source, optimistic concurrency, and audit.
-- [ ] T052 [FR-7] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Deliver FR-7 through the bounded Student academic profile workstream at src/StudentRegistration.Server/Modules/Academics/StudentAcademicProfileService.cs only after T051 fails for the expected reason (depends on T051): Admin profile corrections MUST require authorization, reason, source, optimistic concurrency, and audit.
-- [ ] T053 [P] [FR-8] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Create the future failing FR-8 checks in tests/StudentRegistration.IntegrationTests/Academics/ProfileHoldConcurrencyTests.cs. Test focus: sourced GPA/credits/standing/transcript/holds, governed correction and submission serialization. Prove the requirement against its linked AC/EC fixtures: A hold/profile mutation and a registration submission for the same student/term MUST participate in one database-backed student-term serialization boundary and advance its aggregate version.
-- [ ] T054 [FR-8] [WORKSTREAM-STUDENT-ACADEMIC-PROFILE] Deliver FR-8 through the bounded Student academic profile workstream at src/StudentRegistration.Server/Modules/Academics/StudentAcademicProfileService.cs only after T053 fails for the expected reason (depends on T053): A hold/profile mutation and a registration submission for the same student/term MUST participate in one database-backed student-term serialization boundary and advance its aggregate version.
-- [ ] T055 [P] [FR-9] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Create the future failing FR-9 checks in tests/StudentRegistration.IntegrationTests/Academics/RegistrationWindowConcurrencyTests.cs. Test focus: versioned dates/scope, overlap rejection and concurrent publication one-winner behavior. Prove the requirement against its linked AC/EC fixtures: Registration-window publication MUST lock the affected term/scope in a stable order, recheck overlap inside the transaction, and reject a stale expected version.
-- [ ] T056 [FR-9] [WORKSTREAM-TERM-AND-WINDOW-PUBLICATION] Deliver FR-9 through the bounded Term and window publication workstream at src/StudentRegistration.Server/Modules/Academics/RegistrationWindowService.cs only after T055 fails for the expected reason (depends on T055): Registration-window publication MUST lock the affected term/scope in a stable order, recheck overlap inside the transaction, and reject a stale expected version.
-
-## Phase 5 - Frontend Route Tests and Integration
-
-- [ ] T057 [P] [AUTH-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [AC-1] [AC-2] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for AUTH-01 in tests/StudentRegistration.E2ETests/Specs/Spec008/RoleGatewayPageFeatureTests.cs.
-- [ ] T058 [AUTH-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [AC-1] [AC-2] Deliver the sole canonical Blazor implementation for AUTH-01 at src/StudentRegistration.Client/Pages/RoleGatewayPage.razor after T057 and the SPEC-003 contract/component checks fail for expected reasons (depends on T057).
-- [ ] T059 [P] [STU-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-5] [AC-1] [AC-2] [AC-7] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for STU-01 in tests/StudentRegistration.E2ETests/Specs/Spec008/StudentDashboardPageFeatureTests.cs.
-- [ ] T060 [STU-01] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-4] [FR-5] [AC-1] [AC-2] [AC-7] Deliver the sole canonical Blazor implementation for STU-01 at src/StudentRegistration.Client/Pages/StudentDashboardPage.razor after T059 and the SPEC-003 contract/component checks fail for expected reasons (depends on T059).
-- [ ] T061 [P] [ADM-02] [UI-CONTRACT-SPEC-003] [FR-3] [FR-4] [FR-7] [FR-9] [AC-4] [AC-6] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for ADM-02 in tests/StudentRegistration.E2ETests/Specs/Spec008/TermAdministrationPageFeatureTests.cs.
-- [ ] T062 [ADM-02] [UI-CONTRACT-SPEC-003] [FR-3] [FR-4] [FR-7] [FR-9] [AC-4] [AC-6] Deliver the sole canonical Blazor implementation for ADM-02 at src/StudentRegistration.Client/Pages/TermAdministrationPage.razor after T061 and the SPEC-003 contract/component checks fail for expected reasons (depends on T061).
-- [ ] T063 [P] [ADM-04] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [AC-4] [AC-5] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for ADM-04 in tests/StudentRegistration.E2ETests/Specs/Spec008/StudentAdministrationPageFeatureTests.cs.
-- [ ] T064 [ADM-04] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [AC-4] [AC-5] Deliver the sole canonical Blazor implementation for ADM-04 at src/StudentRegistration.Client/Pages/StudentAdministrationPage.razor after T063 and the SPEC-003 contract/component checks fail for expected reasons (depends on T063).
-
-## Phase 6 - Measurable Non-Functional Evidence
-
-- [ ] T065 [P] [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-1.md: Time-dependent behavior MUST use TimeProvider and boundary tests.
-- [ ] T066 [P] [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-2.md: Dashboard context SHOULD load within 300 ms p95 at the SPEC-018 300-read-requests-per-second target.
-- [ ] T067 [P] [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-3.md: Instants MUST be stored in UTC datetime2; recurring class times use DayOfWeek/TimeOnly and term timezone.
-- [ ] T068 [P] [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-4.md: Student academic data MUST be restricted to self and approved staff scopes.
-
-## Phase 7 - Scope and Release Evidence
-
-- [ ] T069 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-008-scope-review.md that OS-1 remains excluded: Computing official grades from assessment events.
-- [ ] T070 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-008-scope-review.md that OS-2 remains excluded: Inferring a term from month/date alone.
-- [ ] T071 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-008-scope-review.md that OS-3 remains excluded: Browser clock as an authority.
-- [ ] T072 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-008-scope-review.md that OS-4 remains excluded: SIS synchronization mechanism until integration is specified.
-- [ ] T073 [TRACE] Generate the completed FR/NFR/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-008-traceability.md and reject release if any row lacks passing evidence.
-- [ ] T074 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-008 in docs/release-evidence/SPEC-008-release-approval.md.
+- [ ] T083 [ENTITY-AcademicTerm] [ENTITY-RegistrationWindow] [ENTITY-Student] [ENTITY-StudentTermAcademicState] [ENTITY-TranscriptAttempt] [ENTITY-StudentHold] [PERSISTENCE-MAPPING] [MIGRATION-S1IdentityAcademicFoundation] Create the failing real-SQL Academics mapping suite in tests/StudentRegistration.IntegrationTests/Specs/Spec008/AcademicContextModelConfigurationTests.cs and initial-migration empty-database/update/rollback/snapshot parity suite in tests/StudentRegistration.IntegrationTests/Persistence/S1IdentityAcademicFoundationMigrationTests.cs, including unique ApplicationUserId, stable ProgramCode/CourseCode source references with no downstream Program/Course FK, scope/window constraints, provenance, rowversion, holds, transcripts, and student-term guard.
+- [ ] T084 [ENTITY-AcademicTerm] [ENTITY-RegistrationWindow] [ENTITY-Student] [ENTITY-StudentTermAcademicState] [ENTITY-TranscriptAttempt] [ENTITY-StudentHold] [PERSISTENCE-MAPPING] [MIGRATION-S1IdentityAcademicFoundation] Deliver the Academics EF Core mapping contribution at src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AcademicContextModelConfiguration.cs, generate the initial migration at src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713010000_IdentityAcademicFoundation.cs, and update src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs after T083 and prerequisite SPEC-004/SPEC-007 mappings pass; SPEC-004 remains the sole DbContext writer.
+- [ ] T085 [P] [NFR-1] Produce fake-clock boundary evidence in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-1.md.
+- [ ] T086 [P] [NFR-2] Produce 300-read/s latency evidence in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-2.md.
+- [ ] T087 [P] [NFR-3] Produce UTC/IANA persistence evidence in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-3.md.
+- [ ] T088 [P] [NFR-4] Produce self/staff/Admin authorization evidence in tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-008-NFR-4.md.
+- [ ] T089 [OS-1] [OS-2] [OS-3] [OS-4] Record verified scope exclusions in docs/release-evidence/SPEC-008-scope-review.md.
+- [ ] T090 [TRACE] [SC-1] [SC-2] [SC-3] Generate the complete FR/NFR/AC/EC/SC/route/entity/endpoint trace matrix in docs/release-evidence/SPEC-008-traceability.md.
+- [ ] T091 [GATE] Record product, Registrar, Identity, QA, accessibility, data/concurrency, security, and operations release approvals in docs/release-evidence/SPEC-008-release-approval.md.
 
 No task is complete and no implementation file has been created.

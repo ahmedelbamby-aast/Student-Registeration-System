@@ -16,6 +16,16 @@ interface Page<T> {
   page: number;
   pageSize: number;
   totalCount: number;
+  sort: string;
+}
+
+interface TermSummaryDto {
+  id: string;
+  code: string;
+  label: string;
+  state: "draft" | "registrationOpen" | "registrationClosed" |
+    "teaching" | "completed" | "archived";
+  rowVersion: string;
 }
 
 interface AppContextDto {
@@ -24,7 +34,13 @@ interface AppContextDto {
   teachingTerm?: TermSummaryDto;
   registrationTerm?: TermSummaryDto;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
-  roles: string[];
+  serviceState: "available" | "maintenance" | "unavailable";
+  displayName: string;
+  authorizedRoles: string[];
+  activeRole: string | null;
+  sessionState: "active" | "expiring" | "role-selection-required";
+  expiresAtUtc: string;
+  supportReferencePath: string;
 }
 
 interface PublicContextDto {
@@ -37,16 +53,45 @@ interface PublicContextDto {
 }
 ```
 
-Feature endpoints are defined in SPEC-007 through SPEC-017.
+`activeRole` is non-null for `active` and `expiring`. It is null only when
+the authenticated user has multiple authorized roles and `sessionState` is
+`role-selection-required`; no client-selected value grants authorization.
 
-Examples: GET /api/public/context, GET /api/context, GET
-/api/resources?page=1&pageSize=20, and POST /api/commands with the
-feature-specific DTO.
+Feature endpoints are defined and owned in SPEC-007 through SPEC-017. SPEC-008
+owns `GET /api/public/context` and `GET /api/context`. SPEC-006 owns the shared
+schemas and protocol only; it owns no context handler or generic resource/command
+endpoint.
+
+### Pagination protocol
+
+- Omitted `page` and `pageSize` mean `1` and `20`; maximum `pageSize` is `100`.
+- `page < 1`, `pageSize < 1`, or `pageSize > 100` returns 400
+  `PAGE_SIZE_INVALID`; servers do not silently cap.
+- Each listing contract declares an allow-listed default sort ending with its
+  unique identifier as a deterministic tie-breaker. `Page.sort` echoes the
+  applied canonical sort.
+- Page-number reads reflect committed state at each request; after a concurrent
+  mutation the client refetches from page 1 rather than treating pages as a
+  snapshot.
+
+### Optimistic concurrency protocol
+
+- Versioned update/delete request DTOs contain required `expectedRowVersion`.
+- An authorized stale request returns 409 `STALE_VERSION` and may include
+  `ApiError.currentVersion`; unauthorized requests return 403 without resource
+  or version disclosure.
+- `If-Match` and 412 are outside the MVP protocol.
+
+### OpenAPI protocol
+
+CI generates a deterministic OpenAPI document and performs a semantic diff
+against the approved versioned baseline. Unapproved operation, schema,
+status-code, or security drift fails; formatting/order-only differences do not.
 
 ## Shared Rules
 
 - All protected operations require server-validated authentication and role/data-scope authorization.
 - Validation errors use stable codes and actionable, privacy-safe messages.
-- Mutation requests support idempotency or concurrency tokens where retries can duplicate or contest a write.
+- Retryable create/confirm/submit commands require their feature-owned idempotency key; versioned update/delete DTOs require `expectedRowVersion` and use 409 `STALE_VERSION`.
 - Dates use ISO 8601 and the server-configured academic term.
-- Lists are bounded and paginated; filtering and sorting are server-side.
+- Lists use the exact bounded pagination and deterministic sorting protocol above.

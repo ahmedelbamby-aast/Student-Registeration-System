@@ -1,7 +1,7 @@
 # Implementation Plan: Schedule Builder and Conflicts
 
 **Branch**: 012-schedule-builder-conflicts | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Planning complete; implementation is not authorized.
+**Status**: Design complete; DEC-06 remains fail-closed/disabled and human approval is pending. Implementation is not authorized.
 
 ## Summary
 
@@ -36,7 +36,30 @@ Deliver Schedule Builder and Conflicts inside the modular monolith while keeping
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Plan/conflict domain, application, and endpoints belong in
+`src/StudentRegistration.Registration/{Domain,Application,Endpoints}`. Pages
+remain in `StudentRegistration.Client`; persistence mappings are in
+`StudentRegistration.Infrastructure.SqlServer`; Academics/Scheduling are
+consumed through module interfaces. No generic Server/Domain business project
+or duplicate upstream aggregate is introduced.
+
+## Feature Design
+
+1. One RegistrationPlan root owns a complete student/term selection and
+   rowversion; PUT replaces it atomically.
+2. Resolve current group/activity/meeting versions from Scheduling and run the
+   deterministic half-open interval detector.
+3. Return exact overlap plus accessible change/remove actions and a dependency-
+   version ValidationSnapshot; stale/unavailable groups block review.
+4. Keep capacity advisory and validation side-effect-free; SPEC-014 revalidates
+   everything for submission.
+5. Disable travel-buffer conflicts until DEC-06 is institutionally approved.
+
+## Execution and Gate Order
+
+Dependency baselines, DEC-06/fail-closed review, and consistency analysis
+precede Ahmed ELbamby's final approval. Failing model/contract, acceptance,
+concurrency, domain, and frontend tests precede every delivery and handler.
 
 ## Design Artifacts
 

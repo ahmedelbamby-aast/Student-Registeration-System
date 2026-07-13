@@ -21,24 +21,46 @@ interface StudentAcademicContextDto {
   currentGpa: number;
   earnedCredits: number;
   standing: string;
-  blockingHolds: Array<{ code: string; message: string }>;
+  transcriptSummary: { attemptedCredits: number; earnedCredits: number; attemptCount: number };
+  transcriptAttempts: Array<{ courseCode: string; termCode: string; credits: number; grade?: string; status: string; provenance: string }>;
+  activeHolds: Array<{ code: string; message: string; blocksRegistration: boolean; effectiveFromUtc: string; effectiveToUtc?: string; source: string }>;
+  dataVersion: string;
   dataAsOfUtc: string;
-  provenance: string;
+  provenance: Array<{ source: string; reference: string; importedAtUtc: string }>;
 }
-interface PublicAcademicContextDto {
+type PublicAcademicContextDto = PublicContextDto; // canonical SPEC-006 public shape
+interface AcademicAppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTermLabel?: string;
-  registrationTermLabel?: string;
-  registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  teachingTerm?: TermSummaryDto;
+  registrationTerm?: TermSummaryDto;
+  registrationWindow?: { id: string; state: "upcoming" | "open" | "closed"; opensAtUtc: string; closesAtUtc: string; rowVersion: string };
   serviceState: "available" | "maintenance" | "unavailable";
+  supportReferencePath: string;
 }
 ```
 
 Endpoints: GET /api/public/context, GET /api/context, and GET
-/api/students/me/academic-context; admin mutation contracts live in SPEC-017.
-The public response contains no user, role, student, capacity, or
-internal-health data.
+/api/students/me/academic-context plus SPEC-008-owned term/window and student
+Admin endpoints. SPEC-017 consumes audit/report contracts instead of owning
+Academics mutations.
+
+### Academic AppContext composition
+**Decision**: SPEC-008 owns `/api/context` composition and the academic
+portion; SPEC-007 owns session fields and SPEC-006 owns shared DTO/error
+conventions.
+**Rationale**: One endpoint gives every replica and page a coherent server
+instant, role, term, window, and version without duplicate ownership.
+**Alternatives rejected**: Browser clock/term inference and two independently
+loaded contexts with no shared version.
+
+### Student-term serialization
+**Decision**: Own `StudentTermAcademicState` upstream in Academics. Hold/profile
+mutations and registration submissions lock it before reading decision inputs.
+**Rationale**: Registration already depends on Academics, avoiding a forward
+dependency while preventing hold-versus-submit write skew.
+**Alternatives rejected**: A downstream-owned guard consumed by SPEC-008 and
+application-instance locks.
 
 
 

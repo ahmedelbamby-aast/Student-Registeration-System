@@ -33,7 +33,14 @@ Deliver Product Charter and RBAC inside the modular monolith while keeping serve
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Future implementation follows the project-per-business-module modular monolith in
+`docs/ARCHITECTURE.md`: `StudentRegistration.Client`, `StudentRegistration.Api`,
+`StudentRegistration.Contracts`, `StudentRegistration.IdentityAccess`,
+`StudentRegistration.Academics`, `StudentRegistration.Scheduling`,
+`StudentRegistration.Registration`, `StudentRegistration.StaffAdministration`,
+and `StudentRegistration.Infrastructure.SqlServer`, plus `tests/`. SPEC-001 owns
+governance artifacts and permission vocabulary; SPEC-007 owns runtime identity,
+role assignments, authorization policies, and staff/student login behavior.
 
 ## Design Artifacts
 
@@ -42,6 +49,24 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+## Feature Design
+
+- Maintain one normative role/permission matrix for Student, Admin, Lecturer,
+  and TeachingAssistant, including dual-role and no-supported-role outcomes.
+- Treat `Role` and `Permission` as governed vocabulary in this charter, not
+  runtime persistence entities. `RoleAssignment` is referenced from SPEC-007.
+- Prove product scope through conformance and release-evidence tests; do not
+  write `RolePolicies.cs` from this cross-cutting charter.
+
+## Execution Strategy
+
+1. Validate the root scope, consistency analysis, and traceability inventory.
+2. Record Ahmed ELbamby's approval as the final planning gate.
+3. Write failing charter/permission conformance tests before governance
+   artifacts or release evidence.
+4. Defer runtime authorization implementation to approved SPEC-007 tasks and
+   verify this charter through its published contract.
 
 
 

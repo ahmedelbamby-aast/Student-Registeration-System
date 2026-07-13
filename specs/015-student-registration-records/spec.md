@@ -48,8 +48,10 @@ As a Student, I need the Ownership (FR-5, NFR-2) behavior so that Student Regist
 
 Given Student A knows Student B's submission identifier<br>
 When Student A requests it<br>
-Then the API returns 403/404 according to security policy<br>
-And no Student B data is returned.
+Then the API returns 404 and no Student B data is returned<br>
+And given an Admin with RegistrationRecords.Read requests Student B's matching
+student/term-scoped endpoint<br>
+Then the authorized record is returned and the inspection is audited.
 ### User Story 4 - Historical snapshot (FR-7) (P2)
 
 As a Student, I need the Historical snapshot (FR-7) behavior so that Student Registration Records produces a verifiable outcome.
@@ -101,17 +103,23 @@ retention lifecycle.
 
 ### Functional Requirements
 
-- FR-1: Successful submission MUST produce a unique receipt/reference.
+- FR-1: Every accepted SPEC-014 submission MUST atomically persist one
+  globally unique human-safe Reference and immutable ReceiptSnapshot on the
+  canonical RegistrationSubmission; SPEC-015 MUST project that same durable
+  record and MUST NOT create a second receipt row.
 - FR-2: Receipt MUST include term, course/group, credits, Lecturer/TA, room,
   day/time, policy version, and submission time.
 - FR-3: A rejected atomic submission MUST state the reason and that no partial
   enrollment was created.
-- FR-4: Students MUST view their current registrations/timetable and historical
-  terms.
-- FR-5: Authorized staff/admin MAY inspect records within server-enforced scope.
+- FR-4: Students MUST view bounded, stable-sorted pages across current and historical registrations, with an optional TermId filter, plus the current timetable.
+- FR-5: An Admin with RegistrationRecords.Read MUST inspect a student's
+  term-scoped list/detail only through the explicit Admin endpoints; ordinary
+  staff have no general registration-record endpoint, and Lecturer/TA access
+  remains limited to assigned-group roster projections in SPEC-016.
 - FR-6: Calendar and printable table/list MUST present equivalent schedule data.
-- FR-7: Decision snapshots and historical group details MUST retain their
-  original meaning after later edits.
+- FR-7: The immutable ReceiptSnapshot and DecisionSnapshot committed by
+  SPEC-014 MUST retain original term, course/group, credits, Lecturer/TA, room,
+  meeting, policy-version, and server-time meaning after later edits.
 - FR-8: Drop/correction actions MUST be absent until approved policy/workflow
   is specified.
 
@@ -124,10 +132,10 @@ retention lifecycle.
 
 ### Key Entities
 
-- **RegistrationReceipt**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **RegistrationSubmission**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **Enrollment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **DecisionSnapshot**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **RegistrationReceipt**: SPEC-015-owned immutable read value projected over the canonical SPEC-014 submission reference and snapshots; it is not a second EF row.
+- **RegistrationSubmission**: Consumed entity owned by SPEC-014.
+- **Enrollment**: Consumed entity owned by SPEC-014.
+- **DecisionSnapshot**: Consumed immutable value owned by SPEC-014.
 
 ## Success Criteria
 

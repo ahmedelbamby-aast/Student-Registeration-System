@@ -34,7 +34,11 @@ Deliver Domain Classes and API Contracts inside the modular monolith while keepi
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Future implementation follows the project-per-business-module modular monolith
+in `docs/ARCHITECTURE.md`. Shared DTO conventions and cross-module identifiers
+live in `StudentRegistration.Contracts`; endpoint handlers live in the owning
+business module; `StudentRegistration.Api` is composition only. No generic
+Server, Domain, Application, or Infrastructure project is introduced.
 
 ## Design Artifacts
 
@@ -44,11 +48,38 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
 
+## Feature Design
+
+- Own only stable shared contract types: `ApiError`, `Page<T>`, command
+  metadata/result conventions, strong identifiers, public context, and the
+  composed authenticated `AppContextDto` schema.
+- SPEC-007 contributes session/user/authorized-role fields; SPEC-008 contributes
+  authoritative time, teaching/registration term, and window fields and owns
+  the context endpoint handlers. SPEC-006 owns neither feature state nor those
+  endpoint implementations.
+- Standardize page-number pagination at default 20 and maximum 100, stable sort
+  with a unique-ID tie-breaker, required `expectedRowVersion` mutation fields,
+  and `409 STALE_VERSION` responses.
+- Generate a deterministic OpenAPI baseline and reject unapproved semantic
+  drift in CI.
+
+## Execution Strategy
+
+1. Validate SPEC-004/SPEC-005 and complete DTO, endpoint-owner, error,
+   pagination, concurrency, and OpenAPI consistency analysis.
+2. Record Technical Lead and Ahmed ELbamby approval as the final planning gate.
+3. Write failing shared-contract and OpenAPI-baseline tests before contract
+   source; feature endpoint handlers remain in their approved owner specs.
+4. Run downstream contract integration only against approved, version-pinned
+   feature contracts.
+
 
 
 ## Non-Functional Requirements
 
-- NFR-1: OpenAPI output MUST match implementation in CI.
+- NFR-1: CI MUST generate deterministic OpenAPI from the approved application,
+  compare it semantically with the versioned baseline, and reject any
+  unapproved endpoint, operation, schema, status-code, or security drift.
 - NFR-2: Every success/error response in approved feature specs MUST have a
   contract/integration test.
 - NFR-3: Responses MUST NOT leak stack traces, SQL text, secrets, hashes, or

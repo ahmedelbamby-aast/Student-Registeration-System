@@ -6,9 +6,11 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $manifest = Get-Content (Join-Path $root '.specify/spec-manifest.json') -Raw | ConvertFrom-Json
 $routeManifest = Get-Content (Join-Path $root '.specify/route-manifest.json') -Raw | ConvertFrom-Json
 $endpointManifest = Get-Content (Join-Path $root '.specify/endpoint-manifest.json') -Raw | ConvertFrom-Json
+$pageApiManifest = Get-Content (Join-Path $root '.specify/page-api-manifest.json') -Raw | ConvertFrom-Json
 $componentManifest = Get-Content (Join-Path $root '.specify/component-manifest.json') -Raw | ConvertFrom-Json
 $workstreamManifest = Get-Content (Join-Path $root '.specify/workstream-manifest.json') -Raw | ConvertFrom-Json
 $entityOwnership = Get-Content (Join-Path $root '.specify/entity-ownership.json') -Raw | ConvertFrom-Json
+$persistenceManifest = Get-Content (Join-Path $root '.specify/persistence-manifest.json') -Raw | ConvertFrom-Json
 $generationDate = Get-Date -Format 'yyyy-MM-dd'
 
 function Get-Section([string]$Text, [string]$Name) {
@@ -35,6 +37,13 @@ function New-TaskLine([ref]$Counter, [string]$Tags, [string]$Action) {
     $id = 'T{0:d3}' -f $Counter.Value
     if ([string]::IsNullOrWhiteSpace($Tags)) { return "- [ ] $id $Action" }
     return "- [ ] $id $Tags $Action"
+}
+
+function Get-ModuleProjectName([string]$Module) {
+    switch ($Module) {
+        'Operations' { return 'Api' }
+        default { return $Module }
+    }
 }
 
 foreach ($item in $manifest.specs) {
@@ -98,19 +107,22 @@ $body
     $taskNumber = 0
     $approvalTasks = New-Object System.Collections.Generic.List[string]
     $foundationTasks = New-Object System.Collections.Generic.List[string]
+    $endpointDeliveryTasks = New-Object System.Collections.Generic.List[string]
+    $endpointDeliveryDefinitions = New-Object System.Collections.Generic.List[object]
     $requirementTasks = New-Object System.Collections.Generic.List[string]
     $testTasks = New-Object System.Collections.Generic.List[string]
     $frontendTasks = New-Object System.Collections.Generic.List[string]
     $qualityTasks = New-Object System.Collections.Generic.List[string]
     $scopeTasks = New-Object System.Collections.Generic.List[string]
 
-    $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Record Ahmed ELbamby's human approval for SPEC-$($item.id) in specs/$featureName/checklists/approval.md before executing any later task."))
     foreach ($depId in $item.dependencies) {
         $dep = $manifest.specs | Where-Object id -eq $depId
         $depName = "$depId-$($dep.slug)"
         $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) "[DEP-SPEC-$depId]" "Validate the consumed upstream requirements, plan, data model, and API contract at specs/$depName/ and record the accepted versions in specs/$featureName/dependency-baseline.md."))
     }
     $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Freeze SPEC-$($item.id) requirements, API, data-model, policy approvals, and dependency versions in specs/$featureName/checklists/implementation-readiness.md."))
+    $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE] [CONSISTENCY-ANALYSIS]' "Run the cross-artifact and cross-spec consistency analysis and record zero unresolved critical/high findings in specs/$featureName/checklists/implementation-readiness.md."))
+    $approvalTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Record Ahmed ELbamby's human approval for SPEC-$($item.id) in specs/$featureName/checklists/approval.md as the final gate before any test or implementation task."))
 
     $moduleSafe = $item.module -replace '[^A-Za-z0-9]', ''
     $specWorkstreams = @($workstreamManifest.specs.PSObject.Properties | Where-Object Name -eq $item.id | ForEach-Object Value)
@@ -119,8 +131,8 @@ $body
         $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties | Where-Object Name -eq $entity
         $canonicalOwner = if ($ownerProperty) { [string]$ownerProperty.Value } else { [string]$item.id }
         $ownerSpec = $manifest.specs | Where-Object id -eq $canonicalOwner
-        $ownerModule = $ownerSpec.module -replace '[^A-Za-z0-9]', ''
-        $entityFile = "src/StudentRegistration.Domain/Modules/$ownerModule/$entity.cs"
+        $ownerProject = Get-ModuleProjectName ([string]$ownerSpec.module)
+        $entityFile = "src/StudentRegistration.$ownerProject/Domain/$entity.cs"
         $overrideKey = "$($item.id):$entity"
         $overrideProperty = $entityOwnership.artifactOverrides.PSObject.Properties | Where-Object Name -eq $overrideKey
         if ($overrideProperty) { $entityFile = [string]$overrideProperty.Value }
@@ -129,15 +141,12 @@ $body
             $ownerOverrideProperty = $entityOwnership.artifactOverrides.PSObject.Properties | Where-Object Name -eq $ownerOverrideKey
             if ($ownerOverrideProperty) { $entityFile = [string]$ownerOverrideProperty.Value }
         }
-        if ($item.id -eq '005') { $entityFile = "src/StudentRegistration.Infrastructure/Persistence/Configurations/$($entity)Configuration.cs" }
         if ($item.id -eq '006') { $entityFile = "src/StudentRegistration.Contracts/$entity.cs" }
         if ($item.id -eq '003' -and -not $overrideProperty) { $entityFile = "src/StudentRegistration.Client/Features/Frontend/Models/$entity.cs" }
         $entityTest = "tests/StudentRegistration.IntegrationTests/Specs/Spec$($item.id)/$($entity)ModelTests.cs"
         if ($overrideProperty -and $entityFile -match '^(?:specs|docs)/') { $entityTest = "tests/StudentRegistration.SpecificationTests/Specs/Spec$($item.id)/$($entity)SchemaTests.cs" }
         if ($item.id -eq '005') {
-            $entityTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
-            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] [PERSISTENCE-MAPPING]" "Create the future failing SQL mapping/constraint test for $entity in $entityTest against the canonical domain model owned by SPEC-$canonicalOwner."))
-            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[ENTITY-$entity] [PERSISTENCE-MAPPING]" "Map the canonical $entity model without redefining it at $entityFile after $entityTestTaskId fails for the expected reason (depends on $entityTestTaskId)."))
+            $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[ENTITY-$entity] [SCHEMA-CONTRACT] [CONSUMER-SPEC-$canonicalOwner]" "Verify the canonical SPEC-$canonicalOwner $entity mapping at $entityFile against the ERD/schema contract in docs/diagrams/ERD.md using $entityTest; SPEC-005 does not deliver the runtime entity or mapping."))
         } elseif ($canonicalOwner -ne $item.id) {
             $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] [CONSUMER-SPEC-$canonicalOwner]" "Verify SPEC-$($item.id) consumes the canonical $entity at $entityFile without redefining ownership in $entityTest."))
         } else {
@@ -146,6 +155,27 @@ $body
             $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [ENTITY-$entity] $kindTag" "Create the future failing invariant/schema/serialization checks for canonical $entity ownership in $entityTest."))
             $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[ENTITY-$entity] $kindTag" "Deliver the canonical $entity model or governed artifact at $entityFile after $entityTestTaskId fails for the expected reason (depends on $entityTestTaskId)."))
         }
+    }
+
+    if ([string]$persistenceManifest.dbContext.owner -eq [string]$item.id) {
+        $dbContextTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) '[P] [PERSISTENCE-BOUNDARY] [OWNER-SPEC-004]' "Create the future failing single-DbContext and module-mapping boundary checks in $($persistenceManifest.dbContext.testPath)."))
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) '[PERSISTENCE-BOUNDARY] [OWNER-SPEC-004]' "Deliver the sole application DbContext at $($persistenceManifest.dbContext.path) after $dbContextTestTaskId fails for the expected reason (depends on $dbContextTestTaskId)."))
+    }
+
+    $persistenceProperty = $persistenceManifest.contributions.PSObject.Properties | Where-Object Name -eq $item.id
+    if ($persistenceProperty) {
+        $mapping = $persistenceProperty.Value
+        $mappingEntityTags = (@($mapping.entities) | ForEach-Object { "[ENTITY-$_]" }) -join ' '
+        $mappingTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [EF-MAPPING] $mappingEntityTags" "Create the future failing SQL Server mapping, key/index/rowversion, delete-behavior, and mode '$($mapping.mode)' checks in $($mapping.testPath)."))
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[EF-MAPPING] $mappingEntityTags" "Deliver the SPEC-$($item.id) EF Core configuration at $($mapping.path) after $mappingTestTaskId fails for the expected reason (depends on $mappingTestTaskId)."))
+    }
+
+    foreach ($migration in @($persistenceManifest.migrations | Where-Object owner -eq $item.id)) {
+        $migrationTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [MIGRATION-$($migration.id)]" "Create the future failing $($migration.kind) migration completeness, empty-database/update/rollback, and snapshot parity checks in tests/StudentRegistration.IntegrationTests/Persistence/$($migration.id)MigrationTests.cs after accepting prerequisite mappings: $(@($migration.prerequisiteSpecs) -join ', ')."))
+        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[MIGRATION-$($migration.id)]" "Generate the $($migration.kind) SQL Server migration at $($migration.path) and update the model snapshot at $($migration.snapshotPath) after $migrationTestTaskId fails for the expected reason (depends on $migrationTestTaskId)."))
     }
 
     $endpoints = @($endpointManifest.endpoints | Where-Object owner -eq $item.id | ForEach-Object { "$($_.method) $($_.path)" })
@@ -157,7 +187,13 @@ $body
         $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[API-$endpointCode] [OWNER-SPEC-$($item.id)]" "Finalize request, success, validation, authentication, authorization, conflict, rate-limit, and unexpected-error shapes for $endpoint in specs/$featureName/contracts/api.md."))
         $endpointTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
         $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [API-$endpointCode]" "Verify every documented response and authorization outcome for $endpoint in tests/StudentRegistration.ContractTests/Specs/Spec$($item.id)/$($endpointCode)ContractTests.cs."))
-        $foundationTasks.Add((New-TaskLine ([ref]$taskNumber) "[API-$endpointCode] [OWNER-SPEC-$($item.id)]" "Deliver the sole canonical $endpoint handler at src/StudentRegistration.Server/Modules/$moduleSafe/Endpoints/Spec$($item.id)Endpoints.cs after $endpointTestTaskId fails for the expected reason (depends on $endpointTestTaskId)."))
+        $moduleProject = Get-ModuleProjectName ([string]$item.module)
+        $endpointDeliveryDefinitions.Add([pscustomobject]@{
+            Endpoint = $endpoint
+            EndpointCode = $endpointCode
+            HandlerPath = "src/StudentRegistration.$moduleProject/Endpoints/Spec$($item.id)Endpoints.cs"
+            ContractTestTaskId = $endpointTestTaskId
+        })
     }
 
     $foundationTaskId = 'T{0:d3}' -f $taskNumber
@@ -170,6 +206,7 @@ $body
         $acTitle = ConvertTo-OneLine $ac.Groups[2].Value
         $acSummary = ConvertTo-OneLine "$($ac.Groups[2].Value): $($ac.Groups[3].Value)"
         $priority = if ($storyTaskNumber -le 2) { 'P1' } elseif ($storyTaskNumber -le 4) { 'P2' } else { 'P3' }
+        $successTag = if ($storyTaskNumber -le @($item.successCriteria).Count) { "[SC-$storyTaskNumber] " } else { '' }
         $testTasks.Add(@"
 ### US$storyTaskNumber - $acTitle ($priority)
 
@@ -179,7 +216,7 @@ $body
 
 **Dependencies**: Approval/dependency/model/API baseline through $foundationTaskId.
 "@)
-        $testTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$acId] $refTags" "Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec$($item.id)/$($acId)Tests.cs for $($acId): $acSummary."))
+        $testTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] $successTag[$acId] $refTags" "Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec$($item.id)/$($acId)Tests.cs for $($acId): $acSummary."))
     }
 
     foreach ($ec in $ecItems) {
@@ -239,21 +276,28 @@ $body
         }
     }
 
-    foreach ($fr in $frItems) {
-        $frId = $fr.Groups[1].Value
-        $summary = ConvertTo-OneLine $fr.Groups[3].Value
-        $frWorkstreams = @($specWorkstreams | Where-Object { @($_.requirements) -contains $frId })
-        if ($frWorkstreams.Count -ne 1) {
-            throw "SPEC-$($item.id) $frId must map to exactly one workstream; found $($frWorkstreams.Count)."
+    foreach ($workstream in $specWorkstreams) {
+        $streamRequirements = @($workstream.requirements | ForEach-Object { [string]$_ })
+        foreach ($frId in $streamRequirements) {
+            if (@($frItems | Where-Object { $_.Groups[1].Value -eq $frId }).Count -ne 1) {
+                throw "SPEC-$($item.id) workstream $($workstream.name) references undefined $frId."
+            }
         }
-        $workstream = $frWorkstreams[0]
         $workstreamTag = ($workstream.name -replace '[^A-Za-z0-9]+', '-').Trim('-').ToUpperInvariant()
+        $requirementTags = ($streamRequirements | ForEach-Object { "[$_]" }) -join ' '
+        $summaries = @($frItems | Where-Object { $streamRequirements -contains $_.Groups[1].Value } | ForEach-Object {
+            "$($_.Groups[1].Value): $(ConvertTo-OneLine $_.Groups[3].Value)"
+        }) -join ' | '
         $testPath = [string]$workstream.testPath
         $deliveryPath = [string]$workstream.deliveryPath
         $testFocus = ConvertTo-OneLine ([string]$workstream.testFocus)
-        $frTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
-        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$frId] [WORKSTREAM-$workstreamTag]" "Create the future failing $frId checks in $testPath. Test focus: $testFocus. Prove the requirement against its linked AC/EC fixtures: $summary."))
-        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "[$frId] [WORKSTREAM-$workstreamTag]" "Deliver $frId through the bounded $($workstream.name) workstream at $deliveryPath only after $frTestTaskId fails for the expected reason (depends on $frTestTaskId): $summary."))
+        $streamTestTaskId = 'T{0:d3}' -f ($taskNumber + 1)
+        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] $requirementTags [WORKSTREAM-$workstreamTag]" "Create one cohesive future-failing workstream suite in $testPath. Test focus: $testFocus. Prove every linked AC/EC fixture for $summaries."))
+        $requirementTasks.Add((New-TaskLine ([ref]$taskNumber) "$requirementTags [WORKSTREAM-$workstreamTag]" "Deliver the bounded $($workstream.name) workstream at $deliveryPath only after $streamTestTaskId fails for the expected reasons (depends on $streamTestTaskId): $summaries."))
+    }
+
+    foreach ($definition in $endpointDeliveryDefinitions) {
+        $endpointDeliveryTasks.Add((New-TaskLine ([ref]$taskNumber) "[API-$($definition.EndpointCode)] [OWNER-SPEC-$($item.id)]" "Deliver the sole canonical $($definition.Endpoint) handler at $($definition.HandlerPath) only after contract test $($definition.ContractTestTaskId) and all linked acceptance/requirement tests fail for expected reasons (depends on $($definition.ContractTestTaskId))."))
     }
 
     if ($item.id -eq '003') {
@@ -281,8 +325,10 @@ $body
     foreach ($route in $ownedRoutes) {
         $routeId = $route.id
         $page = $route.page
+        $pageApiProperty = $pageApiManifest.pages.PSObject.Properties | Where-Object Name -eq $routeId
+        $pageApiText = if ($pageApiProperty) { @($pageApiProperty.Value) -join ', ' } else { 'no registered endpoint' }
         if ($item.id -eq '003') {
-            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [FR-1] [FR-2] [FR-11]" "Produce and approve the Page Design Record with annotated layouts at 320, 375, 768, 1024, 1280, and 1920 CSS pixels, complete state matrix, focus order, API/reason mapping, and test IDs for $routeId $($route.template) at specs/$featureName/design/pages/$routeId.md."))
+            $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[$routeId] [FR-1] [FR-2] [FR-11]" "Produce and approve the Page Design Record with annotated layouts at 320, 375, 768, 1024, 1280, and 1920 CSS pixels, complete state matrix, focus order, exact APIs '$pageApiText', reason mapping, and test IDs for $routeId $($route.template) at specs/$featureName/design/pages/$routeId.md."))
             $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [FR-12] [FR-14]" "Create the route API/reason-code fixture and failing contract assertions for $routeId in tests/StudentRegistration.Client.ContractTests/Routes/$($page)ContractTests.cs."))
             $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [FR-5] [FR-12]" "Create failing component-state, navigation, form, focus, pending, and duplicate-action assertions for $routeId in tests/StudentRegistration.Client.UnitTests/Pages/$($page)ComponentTests.cs."))
             $frontendTasks.Add((New-TaskLine ([ref]$taskNumber) "[P] [$routeId] [NFR-1] [NFR-2] [NFR-5]" "Run axe, keyboard, focus, screen-reader, 400-percent zoom, and responsive assertions for $routeId in tests/StudentRegistration.AccessibilityTests/Routes/$($page)AccessibilityTests.cs."))
@@ -323,7 +369,14 @@ $body
         $summary = ConvertTo-OneLine $os.Groups[3].Value
         $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) "[$osId]" "Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-$($item.id)-scope-review.md that $osId remains excluded: $summary."))
     }
-    $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) '[TRACE]' "Generate the completed FR/NFR/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-$($item.id)-traceability.md and reject release if any row lacks passing evidence."))
+    $successCriterionNumber = 0
+    foreach ($criterion in @($item.successCriteria)) {
+        $successCriterionNumber++
+        $criterionId = "SC-$successCriterionNumber"
+        $criterionSummary = ConvertTo-OneLine ([string]$criterion)
+        $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) "[$criterionId] [SUCCESS-EVIDENCE]" "Map the supporting FR/NFR/AC tasks, execute their approved tests, and record measured pass/fail evidence for '$criterionSummary' in docs/release-evidence/SPEC-$($item.id)-$criterionId.md."))
+    }
+    $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) '[TRACE]' "Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-$($item.id)-traceability.md and reject release if any row lacks passing evidence."))
     $scopeTasks.Add((New-TaskLine ([ref]$taskNumber) '[GATE]' "Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-$($item.id) in docs/release-evidence/SPEC-$($item.id)-release-approval.md."))
 
     $routeOwnership = if ($ownedRoutes.Count) {
@@ -341,7 +394,18 @@ $($routeRows -join "`r`n")
     }
 
     $success = ($item.successCriteria | ForEach-Object -Begin { $n = 0 } -Process { $n++; "- **SC-$n**: $_" }) -join "`r`n"
-    $entities = ($item.entities | ForEach-Object { "- **$_**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD." }) -join "`r`n"
+    $entities = ($item.entities | ForEach-Object {
+        $entityName = [string]$_
+        $ownerProperty = $entityOwnership.canonicalOwners.PSObject.Properties | Where-Object Name -eq $entityName
+        $canonicalOwner = if ($ownerProperty) { [string]$ownerProperty.Value } else { [string]$item.id }
+        if ($item.id -eq '005') {
+            "- **$entityName**: Schema-contract reference governed by SPEC-005; the runtime model and EF mapping are delivered by canonical owner SPEC-$canonicalOwner after that feature is approved."
+        } elseif ($canonicalOwner -eq $item.id) {
+            "- **$entityName**: Canonical entity/artifact owned by SPEC-$canonicalOwner; attributes and relationships are refined in requirements.md and the shared ERD."
+        } else {
+            "- **$entityName**: Referenced/consumed from canonical owner SPEC-$canonicalOwner; this feature MUST NOT redefine or deliver it."
+        }
+    }) -join "`r`n"
 
     $frontendPlan = if ($item.id -eq '003') {
 @"
@@ -401,6 +465,17 @@ $($routeRows -join "`r`n")
 - Each route MUST trace to its PageDesignRecord, ownerSpecs, contributing API/reason contracts, implementation task, component tests, client-contract tests, Playwright journeys, axe/keyboard evidence, visual baselines, and manual evidence where required.
 - Every visual baseline MUST record route, state, viewport, browser/browser-engine build, operating-system image, token version, fixture version, approval actor, and approval date; automatic baseline replacement is prohibited.
 - PageDesignRecord, DesignTokenSet, and FrontendTestRecord are governed design/test metadata, not SQL entities, unless a separately approved runtime requirement introduces persistence.
+"@
+    } elseif ($item.id -in @('004','006')) {
+@"
+- Architecture and contract artifacts are versioned documents or DTO schemas,
+  not assumed SQL entities.
+- Each artifact has one canonical owner, stable identifiers, exact consumers,
+  compatibility rules, and an automated conformance test.
+- Public DTOs exclude EF navigation state, secrets, credential material, and
+  internal exception details.
+- Mutation DTOs carry the approved expectedRowVersion/idempotency metadata;
+  list DTOs use the bounded shared Page contract.
 "@
     } else {
 @"
@@ -505,7 +580,42 @@ $depLinks
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+The composition root is `src/StudentRegistration.Api`; the UI is
+`src/StudentRegistration.Client`; public conventions are
+`src/StudentRegistration.Contracts`; business code belongs to the owning
+`src/StudentRegistration.$(Get-ModuleProjectName ([string]$item.module))`
+project; SQL mappings and migrations belong to
+`src/StudentRegistration.Infrastructure.SqlServer`. Domain, Application, and
+Endpoints are folders inside the relevant business module. These are future
+paths only.
+
+## Feature Design and Boundaries
+
+- **Owner**: SPEC-$($item.id) owns the $($item.title) contract in the
+  $($item.module) boundary.
+- **Inputs**: Only the published interfaces and version baselines listed in
+  Dependencies may be consumed; downstream specifications are not planning
+  prerequisites.
+- **Authority**: Identity, role, academic time, policy, schedule, and durable
+  mutations are evaluated on the server. Browser state is advisory.
+- **Consistency**: The owning feature requirements define whether the use case
+  is read-only, optimistic-versioned, idempotent, or part of the short
+  registration SQL transaction; no remote call occurs inside that transaction.
+- **Extension seam**: A future feature calls a narrow module application port
+  and receives DTOs; it does not reference another module's EF entities or
+  handler internals.
+
+## Delivery Sequence and Rollback
+
+1. Baseline upstream contracts and complete consistency analysis.
+2. Record Ahmed Elbamby's approval as the final planning gate.
+3. Add failing contract, acceptance, authorization, concurrency, and
+   non-functional tests applicable to this feature.
+4. Deliver one cohesive workstream at a time through its owning module.
+5. Run migration/recovery rehearsal when persistence changes, then all Gate C
+   and Gate D evidence before release.
+6. Roll back the application and reversible migration using SPEC-018 runbooks;
+   never repair a failed release by bypassing an invariant.
 
 ## Design Artifacts
 
@@ -554,7 +664,7 @@ No unresolved requirement clarification remains. External institutional approval
     @"
 # Data Model: $($item.title)
 
-## Owned Entities
+## Entity Responsibilities
 
 $entities
 
@@ -652,7 +762,7 @@ Automated gates pass. Human approval remains pending and implementation MUST NOT
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
 
-## Phase 1 - Approval and Dependency Gates
+## Phase 1 - Dependency, Consistency, and Approval Gates
 
 $($approvalTasks -join "`r`n")
 
@@ -667,6 +777,8 @@ $($testTasks -join "`r`n")
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
 $($requirementTasks -join "`r`n")
+
+$($endpointDeliveryTasks -join "`r`n")
 
 ## Phase 5 - Frontend Route Tests and Integration
 

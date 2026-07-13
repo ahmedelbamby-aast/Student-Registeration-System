@@ -117,6 +117,22 @@ Then the registration re-read detects GROUP_CHANGED and cannot enroll against
 rowversion 8<br>
 And concurrent availability/publication uses one valid staff-term serial order.
 
+### User Story 9 - Audited Admin availability correction (FR-6, FR-8, FR-10) (P3)
+
+As an authorized Admin with the separate correction permission, I need a
+previewed, versioned correction path so that staff-owned availability is never
+silently overwritten and published groups are revalidated.
+
+**Independent Test**: Execute AC-9 with one staff-term aggregate, one affected
+published group, an audit double, and a staff-notification double.
+
+**Acceptance Scenario (AC-9)**
+
+Given reason, signed preview, current version, and correction permission<br>
+When the Admin replaces the complete availability range set<br>
+Then one versioned write, audit fact, staff notification, and durable schedule
+impact alert are produced; stale or unauthorized writes change nothing.
+
 ## Edge Cases
 
 - EC-1: Multi-slot group has one invalid slot -> entire group cannot publish.
@@ -135,7 +151,8 @@ And concurrent availability/publication uses one valid staff-term serial order.
 
 - FR-1: Admin MUST create term course offerings and one or more section groups.
 - FR-2: Each group MUST have code, capacity, state, meeting slots, room(s), and
-  required Lecturer/TA assignments before publish.
+  activity-type staff assignments before publish: Lecture requires Lecturer,
+  Tutorial/Laboratory requires TA, and a group containing both requires both.
 - FR-3: Publish validation MUST reject staff overlap/unavailability, room
   overlap/unavailability, room capacity below group capacity, invalid slots,
   missing roles, and duplicate offering/group codes.
@@ -143,7 +160,9 @@ And concurrent availability/publication uses one valid staff-term serial order.
   groups.
 - FR-5: Capacity MUST NOT be set below active EnrolledCount.
 - FR-6: Staff assignments/availability and resource changes MUST be
-  optimistic-concurrency protected and audited.
+  optimistic-concurrency protected and audited. Staff own declarations;
+  DEC-12 Admin correction requires separate permission, reason, preview,
+  expected version, audit, and notification.
 - FR-7: Publication MUST be transactional.
 - FR-8: Publication MUST lock every touched offering, room, and staff resource
   in stable identifier order and revalidate overlaps/availability inside the
@@ -153,8 +172,8 @@ And concurrent availability/publication uses one valid staff-term serial order.
   0 <= EnrolledCount <= Capacity for every outcome.
 - FR-10: Every group-state, meeting-slot, room-assignment, and staff-assignment
   mutation MUST lock and advance the owning SectionGroup rowversion. Staff
-  availability mutation and group publication MUST also share the versioned
-  staff-term availability boundary defined by SPEC-016.
+  availability mutation and group publication share the SPEC-010-owned
+  versioned StaffTermAvailability boundary; SPEC-016 consumes it.
 
 ### Non-Functional Requirements
 
@@ -172,6 +191,8 @@ And concurrent availability/publication uses one valid staff-term serial order.
 - **Room**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **GroupStaffAssignment**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StaffAvailability**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **StaffTermAvailability**: SPEC-010-owned aggregate root for the complete staff-plus-term range set.
+- **ScheduleImpactAlert**: SPEC-010-owned durable revalidation state for availability/resource changes affecting published groups.
 
 ## Success Criteria
 

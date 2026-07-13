@@ -87,7 +87,7 @@ There are exactly 18 living specifications.
 | SPEC-014 | Registration Capacity and Concurrency | Data/Backend Lead | Atomic commit, idempotency, constraints, race safety | S6 |
 | SPEC-015 | Student Registration Records | Product Owner | Receipt, current timetable, history, decision snapshot | S6 |
 | SPEC-016 | Lecturer and TA Workspace | Product Owner | Assignments, scoped roster, timetable, availability | S7 |
-| SPEC-017 | Admin Operations, Audit, and Reporting | Product Owner | Master data, monitor, corrections, audit, exports | S2-S7 |
+| SPEC-017 | Admin Operations, Audit, and Reporting | Product Owner | Delegated master-data commands, monitoring, audit, exports, invariant safeguards | S2-S7 |
 | SPEC-018 | Quality, Security, Scalability, and Operations | QA/DevOps/Security | SLOs, threat model, test gates, recovery, release | S0-S8 |
 
 ## 5. Dependencies
@@ -118,6 +118,7 @@ flowchart LR
   S002 --> S008["008 Term and Profile"]
   S003 --> S008
   S005 --> S008
+  S006 --> S008
   S007 --> S008
   S018 --> S008
 
@@ -136,6 +137,7 @@ flowchart LR
 
   S002 --> S011["011 Eligibility"]
   S003 --> S011
+  S006 --> S011
   S008 --> S011
   S009 --> S011
   S010 --> S011
@@ -147,6 +149,8 @@ flowchart LR
   S018 --> S012
 
   S003 --> S013["013 Recommendations"]
+  S010 --> S013
+  S011 --> S013
   S012 --> S013
   S018 --> S013
 
@@ -172,6 +176,7 @@ flowchart LR
   S018 --> S016
 
   S003 --> S017["017 Admin and Audit"]
+  S004 --> S017
   S007 --> S017
   S008 --> S017
   S009 --> S017
@@ -259,6 +264,15 @@ A story may enter a sprint when:
 | S7 Role workspaces | Complete staff and admin operations | 016-017 | Scoped staff data and auditable operations |
 | S8 Hardening/release | Prove production readiness | 018 | Gate D UAT, security, load, accessibility, and recovery pass |
 
+Each demonstrable slice applies the migration declared in
+`.specify/persistence-manifest.json` before its end-to-end SQL tests: S1 creates
+the Identity/Academic foundation; S2 adds catalogue/scheduling; S4 adds
+discovery/plan persistence; S6 adds registration/receipt persistence; S7 adds
+staff-admin/export persistence. Every migration has one owner/test/delivery
+task, updates the shared EF snapshot in dependency order, and must pass fresh
+database, prior-version upgrade, idempotent-script, rollback, and model-parity
+checks. Production never auto-migrates on application startup.
+
 ## 8. Provisional non-functional targets
 
 These are planning hypotheses, not promises. Replace them with AASTMT
@@ -277,9 +291,14 @@ enrollment and registration-window forecasts during Sprint 0.
 | Recovery | RPO <= 5 min; RTO <= 1 hour |
 | Accessibility | WCAG 2.2 AA on critical flows |
 
-Tests run at target, 2x target, and a short 5x spike. A mandatory collision
-test submits 100 registrations to a 30-seat group and must produce exactly 30
-active enrollments.
+Tests run at target for 10 minutes (75 submissions/s plus 300 reads/s), 2x for
+10 minutes (150 plus 600), the existing 60-second burst (200 plus 300), and a
+60-second 5x spike (375 plus 1,500). Reads are 50% offering discovery, 25%
+eligibility detail, 15% plan/timetable, and 10% registration records;
+submissions are 70% valid unique, 20% expected business rejection, and 10%
+same-key replay. A separate 120-minute target-mix soak runs across at least two
+replicas. A mandatory collision test submits 100 registrations to a 30-seat
+group and must produce exactly 30 active enrollments.
 
 ## 9. Risks
 

@@ -34,7 +34,14 @@ Deliver Frontend Page Design, Storyboard, Accessibility and Functional Testing i
 
 ## Project Structure
 
-Future implementation paths are src/StudentRegistration.Client, src/StudentRegistration.Server, src/StudentRegistration.Domain, src/StudentRegistration.Infrastructure, and tests/. These paths are declarations only and do not exist yet.
+Future implementation follows the project-per-business-module modular monolith in
+`docs/ARCHITECTURE.md`. Frontend source is owned by
+`StudentRegistration.Client`; contracts come from `StudentRegistration.Contracts`
+and the relevant business module; the composition root is
+`StudentRegistration.Api`. No generic `Server`, `Domain`, `Application`, or
+`Infrastructure` project is introduced. The complete solution also contains the
+IdentityAccess, Academics, Scheduling, Registration, StaffAdministration, and
+Infrastructure.SqlServer projects plus `tests/`.
 
 ## Design Artifacts
 
@@ -43,6 +50,31 @@ Future implementation paths are src/StudentRegistration.Client, src/StudentRegis
 - [API contract](contracts/api.md)
 - [Planning quickstart](quickstart.md)
 - [Tasks](tasks.md)
+
+## Feature Design
+
+- Produce one approved Page Design Record for each of the 27 route templates,
+  with six widths, state applicability, focus order, data/reason contracts,
+  component inventory, transitions, and unique test IDs.
+- Own frontend view models, design/test metadata, tokens, reusable components,
+  and presentation behavior. Runtime domain DTOs and server endpoints remain
+  owned by their contributing feature specifications.
+- Treat every downstream route as deferred integration: design may proceed
+  from a reviewed contract, but contract tests, page implementation, and E2E
+  evidence require the implementation-owner spec and all contributing API
+  contracts to be approved and version-pinned.
+
+## Execution Strategy
+
+1. Validate SPEC-001/SPEC-002, route ownership, component ownership, and the
+   cross-spec contributor matrix; complete consistency analysis.
+2. Record UX/brand decisions and Ahmed ELbamby's approval as the final planning
+   gate. Unapproved institutional brand values remain blocked and tokenized.
+3. Build design/test schemas, then failing component/contract/accessibility/E2E
+   tests, then the smallest page/component implementation that passes them.
+4. Run each route slice only after its owner/contributor approval gate; collect
+   deterministic browser, visual, keyboard, screen-reader, and usability
+   evidence without allowing retries to hide a first-run failure.
 
 ## Frontend Verification Toolchain and Evidence
 
