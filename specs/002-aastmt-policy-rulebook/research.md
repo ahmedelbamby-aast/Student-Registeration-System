@@ -18,11 +18,16 @@ interface PolicyDecisionDto {
   eligible: boolean;
   policyVersion: string;
   evaluatedAtUtc: string;
+  inputSummary: Record<string, string>;
+  approvedBy: string;
+  effectiveFromUtc: string;
+  effectiveToUtc?: string;
   results: Array<{
     reasonCode: string;
     passed: boolean;
     explanation: string;
     sourceUrl: string;
+    sourceAccessedOn: string;
     overridePossible: boolean;
   }>;
 }
@@ -48,6 +53,11 @@ ELbamby on 2026-07-13:
 - automatic exceptions, add/drop, withdrawal, and advisor workflows are not
   part of the POC.
 
+Repeat attempts have a typed rule category but remain deny-by-default in this
+profile because Ahmed has not approved a repeat workflow for the POC. The
+decision returns `REPEAT_POLICY_UNAVAILABLE`; it does not contradict or
+reinterpret the sourced institutional repeat rules.
+
 **Rationale**: These rules are sufficient to prove explainable eligibility,
 capacity, and conflict concepts without implementing ambiguous institutional
 workflows.
@@ -55,7 +65,9 @@ workflows.
 **Curriculum decision**: Seed the exact 19-course Data Science snapshot in
 `docs/DEMO_CURRICULUM.md`, curated from the official AASTMT College of
 Artificial Intelligence page registered in `docs/POLICY_RESEARCH.md`.
-Every copied row retains its URL and access date. A missing row needed to make
+Every copied field retains its URL and access date. Course credits remain
+field-level `SyntheticDemo` values even when code/title/prerequisites are
+`OfficialAASTMT`. A missing row needed to make
 the POC coherent may be synthetic only when explicitly labelled synthetic in
 data and UI; it cannot be attributed to AASTMT.
 

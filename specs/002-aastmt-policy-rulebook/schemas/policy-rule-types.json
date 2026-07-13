@@ -1,0 +1,63 @@
+{
+  "version": "policy-rule-types/1.0",
+  "definitionSchema": "policy-rule-definition.schema.json",
+  "runtimeOwner": "SPEC-009",
+  "unknownTypeOutcome": "Reject",
+  "executableContentOutcome": "RejectWithoutStoreOrRun",
+  "types": [
+    {
+      "typeKey": "RegistrationWindow",
+      "order": 10,
+      "configurationDefinition": "#/$defs/registrationWindow",
+      "reasonCodes": ["REGISTRATION_WINDOW_OPEN", "REGISTRATION_WINDOW_CLOSED", "REGISTRATION_WINDOW_UNAVAILABLE"]
+    },
+    {
+      "typeKey": "AcademicStanding",
+      "order": 20,
+      "configurationDefinition": "#/$defs/academicStanding",
+      "reasonCodes": ["ACADEMIC_STANDING_ALLOWED", "ACADEMIC_STANDING_UNAVAILABLE"]
+    },
+    {
+      "typeKey": "BlockingHold",
+      "order": 30,
+      "configurationDefinition": "#/$defs/blockingHold",
+      "reasonCodes": ["NO_BLOCKING_HOLD", "REGISTRATION_HOLD"]
+    },
+    {
+      "typeKey": "Prerequisite",
+      "order": 40,
+      "configurationDefinition": "#/$defs/prerequisite",
+      "reasonCodes": ["PREREQUISITE_MET", "PREREQUISITE_NOT_COMPLETED", "MINIMUM_GPA_NOT_MET", "MINIMUM_EARNED_CREDITS_NOT_MET"]
+    },
+    {
+      "typeKey": "CreditLoad",
+      "order": 50,
+      "configurationDefinition": "#/$defs/creditLoad",
+      "reasonCodes": ["LOAD_ALLOWED", "LOAD_BELOW_MINIMUM", "LOAD_ABOVE_NORMAL_MAXIMUM"]
+    },
+    {
+      "typeKey": "ProbationLoad",
+      "order": 60,
+      "configurationDefinition": "#/$defs/probationLoad",
+      "reasonCodes": ["PROBATION_LOAD_ALLOWED", "PROBATION_LOAD_EXCEEDED"]
+    },
+    {
+      "typeKey": "RepeatEligibility",
+      "order": 70,
+      "configurationDefinition": "#/$defs/repeatEligibility",
+      "reasonCodes": ["REPEAT_NOT_APPLICABLE", "REPEAT_POLICY_UNAVAILABLE"]
+    },
+    {
+      "typeKey": "Capacity",
+      "order": 80,
+      "configurationDefinition": "#/$defs/capacity",
+      "reasonCodes": ["SEAT_AVAILABLE", "GROUP_FULL"]
+    },
+    {
+      "typeKey": "MeetingConflict",
+      "order": 90,
+      "configurationDefinition": "#/$defs/meetingConflict",
+      "reasonCodes": ["NO_MEETING_CONFLICT", "MEETING_CONFLICT"]
+    }
+  ]
+}

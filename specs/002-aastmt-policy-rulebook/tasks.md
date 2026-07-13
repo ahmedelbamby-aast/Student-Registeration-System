@@ -1,25 +1,31 @@
 # Tasks: AASTMT Policy Rulebook
 
 **Status**: Approved for Gate A demo implementation on 2026-07-13. Execute in dependency order; later release and production gates remain required.
+**Implementation progress**: 24/43 tasks complete. The governed rulebook,
+schemas, provenance, and contract tests are verified; runtime evaluator,
+historical integration, measured NFR, and release tasks remain pending their
+owning specifications.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
-**Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
+**Rule**: Every task names an exact artifact and trace. Checked tasks have
+passing evidence and existing artifacts; unchecked tasks remain pending their
+runtime owner or release gate.
 
 ## Phase 1 - Dependency, Consistency, Readiness, and Final Approval Gates
 
-- [ ] T001 [DEP-SPEC-001] Validate the consumed upstream requirements, plan, data model, and API contract at specs/001-product-charter-rbac/ and record the accepted versions in specs/002-aastmt-policy-rulebook/dependency-baseline.md.
-- [ ] T002 [GATE] Run cross-spec consistency analysis for SPEC-002; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/002-aastmt-policy-rulebook/checklists/consistency-analysis.md.
-- [ ] T003 [GATE] After T002 passes, freeze the SPEC-002 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/002-aastmt-policy-rulebook/checklists/implementation-readiness.md.
-- [ ] T004 [GATE] After T003 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-002 in specs/002-aastmt-policy-rulebook/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
+- [x] T001 [DEP-SPEC-001] Validate the consumed upstream requirements, plan, data model, and API contract at specs/001-product-charter-rbac/ and record the accepted versions in specs/002-aastmt-policy-rulebook/dependency-baseline.md.
+- [x] T002 [GATE] Run cross-spec consistency analysis for SPEC-002; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/002-aastmt-policy-rulebook/checklists/consistency-analysis.md.
+- [x] T003 [GATE] After T002 passes, freeze the SPEC-002 requirements, data/API/design contracts, institutional decision states, dependency versions, and executable task baseline in specs/002-aastmt-policy-rulebook/checklists/implementation-readiness.md.
+- [x] T004 [GATE] After T003 passes, verify the accountable owner and Ahmed ELbamby's 2026-07-13 Gate A human approval for SPEC-002 in specs/002-aastmt-policy-rulebook/checklists/approval.md as the final planning gate; no test, source, migration, or other implementation task may execute without this approval record.
 
 ## Phase 2 - Models and API Contracts
 
-- [ ] T005 [ENTITY-PolicyRulebook] [ARTIFACT-OWNER-SPEC-002] Create the future failing version/scope/rule-category/approval and downstream-owner schema checks in tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyRulebookSchemaTests.cs.
-- [ ] T006 [ENTITY-PolicyRulebook] [ARTIFACT-OWNER-SPEC-002] Record the approved PolicyRulebook schema/version target in specs/002-aastmt-policy-rulebook/checklists/policy-rulebook-schema.md after T005 fails for the expected reason (depends on T005); canonical publication remains deferred until all rulebook behavior tests fail as expected.
-- [ ] T007 [ENTITY-PolicyRuleDefinition] [ENTITY-PolicyBoundaryExample] [ENTITY-PolicySourceRecord] [ARTIFACT-OWNER-SPEC-002] Create the future failing typed-rule, demo-profile boundary, official-curriculum-versus-synthetic-gap provenance, conflict, approval, and SPEC-015 snapshot-owner checks in tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyEvidenceSchemaTests.cs.
-- [ ] T008 [ENTITY-PolicyRuleDefinition] [ARTIFACT-OWNER-SPEC-002] Publish the canonical typed, non-executable rule definitions at specs/002-aastmt-policy-rulebook/schemas/policy-rule-definition.schema.json after T007 fails for the expected reason (depends on T007); SPEC-009 owns runtime evaluation.
+- [x] T005 [ENTITY-PolicyRulebook] [ARTIFACT-OWNER-SPEC-002] Create the future failing version/scope/rule-category/approval and downstream-owner schema checks in tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyRulebookSchemaTests.cs.
+- [x] T006 [ENTITY-PolicyRulebook] [ARTIFACT-OWNER-SPEC-002] Record the approved PolicyRulebook schema/version target in specs/002-aastmt-policy-rulebook/checklists/policy-rulebook-schema.md after T005 fails for the expected reason (depends on T005); canonical publication remains deferred until all rulebook behavior tests fail as expected.
+- [x] T007 [ENTITY-PolicyRuleDefinition] [ENTITY-PolicyBoundaryExample] [ENTITY-PolicySourceRecord] [ARTIFACT-OWNER-SPEC-002] Create the future failing typed-rule, demo-profile boundary, official-curriculum-versus-synthetic-gap provenance, conflict, approval, and SPEC-015 snapshot-owner checks in tests/StudentRegistration.SpecificationTests/Specs/Spec002/PolicyEvidenceSchemaTests.cs.
+- [x] T008 [ENTITY-PolicyRuleDefinition] [ARTIFACT-OWNER-SPEC-002] Publish the canonical typed, non-executable rule definitions at specs/002-aastmt-policy-rulebook/schemas/policy-rule-definition.schema.json after T007 fails for the expected reason (depends on T007); SPEC-009 owns runtime evaluation.
 
-- [ ] T009 [ENTITY-PolicyBoundaryExample] [ARTIFACT-OWNER-SPEC-002] Publish the canonical approved boundary fixtures, including 9/12/18-credit, prerequisite, capacity, overlap, and disabled-travel-buffer cases, at specs/002-aastmt-policy-rulebook/policy-boundary-examples.md after T007 fails for the expected reason (depends on T007).
-- [ ] T010 [ENTITY-PolicySourceRecord] [ARTIFACT-OWNER-SPEC-002] Publish the canonical provenance/conflict/approval register at specs/002-aastmt-policy-rulebook/policy-sources.md after T007 fails for the expected reason (depends on T007); record official curriculum URL/access dates, Ahmed's separate demo approval, and every synthetic gap label, while unresolved out-of-profile institutional values remain In Review and fail closed.
+- [x] T009 [ENTITY-PolicyBoundaryExample] [ARTIFACT-OWNER-SPEC-002] Publish the canonical approved boundary fixtures, including 9/12/18-credit, prerequisite, capacity, overlap, and disabled-travel-buffer cases, at specs/002-aastmt-policy-rulebook/policy-boundary-examples.md after T007 fails for the expected reason (depends on T007).
+- [x] T010 [ENTITY-PolicySourceRecord] [ARTIFACT-OWNER-SPEC-002] Publish the canonical provenance/conflict/approval register at specs/002-aastmt-policy-rulebook/policy-sources.md after T007 fails for the expected reason (depends on T007); record official curriculum URL/access dates, Ahmed's separate demo approval, and every synthetic gap label, while unresolved out-of-profile institutional values remain In Review and fail closed.
 
 ## Phase 3 - User-Story Acceptance and Edge Tests
 
@@ -70,20 +76,20 @@
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
-- [ ] T020 [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-7] [WORKSTREAM-VERSIONED-POLICY-EVALUATION] Create the future failing consolidated rulebook checks in tests/StudentRegistration.SpecificationTests/Spec002/PolicyRulebookTests.cs. Test focus: effective scope, `DEMO-POC-2026.1` rules, fail-closed approval, official-versus-synthetic provenance, deterministic reasons and immutable history consumed by owning feature specs.
-- [ ] T021 [FR-1] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the version/scope/effective-period contract at specs/002-aastmt-policy-rulebook/contracts/policy-versioning.md only after T020 fails for the expected reason (depends on T020).
-- [ ] T022 [FR-2] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing required-rule-category coverage checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyRuleCoverageTests.cs for configured window, standing, holds, prerequisites, regular 9-18/default-18 load, GPA-below-2.0 maximum 12, first-commit capacity, hard overlap blocking, zero travel buffer, excluded workflows, and the 19-course `docs/DEMO_CURRICULUM.md` provenance labels.
-- [ ] T023 [FR-2] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the required typed-rule category catalogue and bounded `DEMO-POC-2026.1` values at specs/002-aastmt-policy-rulebook/contracts/policy-rule-coverage.md only after T022 fails for the expected reason (depends on T022).
-- [ ] T024 [FR-3] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing decision/provenance shape checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyDecisionContractTests.cs.
-- [ ] T025 [FR-3] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the reason/explanation/version/input/source decision contract at specs/002-aastmt-policy-rulebook/contracts/policy-decision.md only after T024 fails for the expected reason (depends on T024).
-- [ ] T026 [FR-4] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing approval-state/fail-closed checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyApprovalGateTests.cs.
-- [ ] T027 [FR-4] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the approval and fail-closed rules at specs/002-aastmt-policy-rulebook/contracts/policy-approval-gate.md only after T026 fails for the expected reason (depends on T026).
-- [ ] T028 [FR-5] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing source-conflict resolution checks in tests/StudentRegistration.SpecificationTests/Policy/PolicySourceResolutionTests.cs.
-- [ ] T029 [FR-5] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the Registrar-perspective source-conflict gate at specs/002-aastmt-policy-rulebook/contracts/source-resolution.md only after T028 fails for the expected reason (depends on T028); the bounded Ahmed-approved demo values are distinguished from source-derived values, and every unresolved out-of-profile POLICY-Q remains In Review and fail closed.
-- [ ] T030 [FR-6] [WORKSTREAM-TYPED-POLICY-RULE-REGISTRY] Create the future failing typed-rule/no-executable-content checks in tests/StudentRegistration.SpecificationTests/Spec002/PolicyRuleTypeRegistryTests.cs. Test focus: known typed rules accepted and unknown or executable rule content rejected.
-- [ ] T031 [FR-6] [WORKSTREAM-TYPED-POLICY-RULE-REGISTRY] Deliver the bounded Typed policy rule registry workstream at specs/002-aastmt-policy-rulebook/schemas/policy-rule-types.json only after T030 fails for the expected reason (depends on T030); SPEC-009 implements the runtime registry.
-- [ ] T032 [FR-7] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing published-version immutability checks in tests/StudentRegistration.SpecificationTests/Policy/PublishedPolicyImmutabilityTests.cs.
-- [ ] T033 [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-7] [ENTITY-PolicyRulebook] [WORKSTREAM-VERSIONED-POLICY-EVALUATION] Deliver the bounded Versioned policy evaluation workstream and publish the canonical PolicyRulebook with immutable `DEMO-POC-2026.1` at specs/002-aastmt-policy-rulebook/policy-rules.md only after T020, T022, T024, T026, T028, and T032 fail for their expected reasons (depends on T020, T022, T024, T026, T028, T032); SPEC-009 owns runtime PolicySet/PolicyRule evaluation.
+- [x] T020 [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-7] [WORKSTREAM-VERSIONED-POLICY-EVALUATION] Create the future failing consolidated rulebook checks in tests/StudentRegistration.SpecificationTests/Spec002/PolicyRulebookTests.cs. Test focus: effective scope, `DEMO-POC-2026.1` rules, fail-closed approval, official-versus-synthetic provenance, deterministic reasons and immutable history consumed by owning feature specs.
+- [x] T021 [FR-1] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the version/scope/effective-period contract at specs/002-aastmt-policy-rulebook/contracts/policy-versioning.md only after T020 fails for the expected reason (depends on T020).
+- [x] T022 [FR-2] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing required-rule-category coverage checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyRuleCoverageTests.cs for configured window, standing, holds, prerequisites, regular 9-18/default-18 load, GPA-below-2.0 maximum 12, first-commit capacity, hard overlap blocking, zero travel buffer, excluded workflows, and the 19-course `docs/DEMO_CURRICULUM.md` provenance labels.
+- [x] T023 [FR-2] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the required typed-rule category catalogue and bounded `DEMO-POC-2026.1` values at specs/002-aastmt-policy-rulebook/contracts/policy-rule-coverage.md only after T022 fails for the expected reason (depends on T022).
+- [x] T024 [FR-3] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing decision/provenance shape checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyDecisionContractTests.cs.
+- [x] T025 [FR-3] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the reason/explanation/version/input/source decision contract at specs/002-aastmt-policy-rulebook/contracts/policy-decision.md only after T024 fails for the expected reason (depends on T024).
+- [x] T026 [FR-4] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing approval-state/fail-closed checks in tests/StudentRegistration.SpecificationTests/Policy/PolicyApprovalGateTests.cs.
+- [x] T027 [FR-4] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the approval and fail-closed rules at specs/002-aastmt-policy-rulebook/contracts/policy-approval-gate.md only after T026 fails for the expected reason (depends on T026).
+- [x] T028 [FR-5] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing source-conflict resolution checks in tests/StudentRegistration.SpecificationTests/Policy/PolicySourceResolutionTests.cs.
+- [x] T029 [FR-5] [WORKSTREAM-RULEBOOK-CONTRACT] Publish the Registrar-perspective source-conflict gate at specs/002-aastmt-policy-rulebook/contracts/source-resolution.md only after T028 fails for the expected reason (depends on T028); the bounded Ahmed-approved demo values are distinguished from source-derived values, and every unresolved out-of-profile POLICY-Q remains In Review and fail closed.
+- [x] T030 [FR-6] [WORKSTREAM-TYPED-POLICY-RULE-REGISTRY] Create the future failing typed-rule/no-executable-content checks in tests/StudentRegistration.SpecificationTests/Spec002/PolicyRuleTypeRegistryTests.cs. Test focus: known typed rules accepted and unknown or executable rule content rejected.
+- [x] T031 [FR-6] [WORKSTREAM-TYPED-POLICY-RULE-REGISTRY] Deliver the bounded Typed policy rule registry workstream at specs/002-aastmt-policy-rulebook/schemas/policy-rule-types.json only after T030 fails for the expected reason (depends on T030); SPEC-009 implements the runtime registry.
+- [x] T032 [FR-7] [WORKSTREAM-RULEBOOK-CONTRACT] Create the future failing published-version immutability checks in tests/StudentRegistration.SpecificationTests/Policy/PublishedPolicyImmutabilityTests.cs.
+- [x] T033 [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-7] [ENTITY-PolicyRulebook] [WORKSTREAM-VERSIONED-POLICY-EVALUATION] Deliver the bounded Versioned policy evaluation workstream and publish the canonical PolicyRulebook with immutable `DEMO-POC-2026.1` at specs/002-aastmt-policy-rulebook/policy-rules.md only after T020, T022, T024, T026, T028, and T032 fail for their expected reasons (depends on T020, T022, T024, T026, T028, T032); SPEC-009 owns runtime PolicySet/PolicyRule evaluation.
 
 ## Phase 5 - Frontend Route Tests and Integration
 
@@ -105,4 +111,6 @@ No direct frontend route is owned by this specification; frontend integration re
 - [ ] T042 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-002-traceability.md and reject release if any row lacks passing evidence.
 - [ ] T043 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-002 in docs/release-evidence/SPEC-002-release-approval.md.
 
-No task is complete and no implementation file has been created.
+Twenty-four governance tasks are complete. Nineteen runtime acceptance/edge,
+measured NFR, scope-review, traceability, and release-approval tasks remain
+open until their owning downstream evidence exists.

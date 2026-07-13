@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/policy-rule-definition/1.0",
+  "title": "SPEC-002 PolicyRuleDefinition",
+  "description": "Closed, non-executable governed rule definition consumed at runtime only by SPEC-009.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typeKey",
+    "reasonCode",
+    "configuration",
+    "sourceRef",
+    "provenanceKind",
+    "runtimeOwner"
+  ],
+  "properties": {
+    "typeKey": {
+      "enum": [
+        "RegistrationWindow",
+        "AcademicStanding",
+        "BlockingHold",
+        "Prerequisite",
+        "CreditLoad",
+        "ProbationLoad",
+        "RepeatEligibility",
+        "Capacity",
+        "MeetingConflict"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "sourceRef": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9._-]{2,63}$"
+    },
+    "provenanceKind": {
+      "enum": [
+        "OfficialAASTMT",
+        "AhmedApprovedDemo",
+        "SyntheticDemo",
+        "UnresolvedInstitutional"
+      ]
+    },
+    "runtimeOwner": {
+      "const": "SPEC-009"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "typeKey": { "const": "RegistrationWindow" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/registrationWindow" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "AcademicStanding" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/academicStanding" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "BlockingHold" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/blockingHold" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "Prerequisite" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/prerequisite" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "CreditLoad" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/creditLoad" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "ProbationLoad" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/probationLoad" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "RepeatEligibility" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/repeatEligibility" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "Capacity" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/capacity" } } }
+    },
+    {
+      "if": { "properties": { "typeKey": { "const": "MeetingConflict" } } },
+      "then": { "properties": { "configuration": { "$ref": "#/$defs/meetingConflict" } } }
+    }
+  ],
+  "$defs": {
+    "registrationWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuredTermWindowRequired"],
+      "properties": {
+        "configuredTermWindowRequired": { "const": true }
+      }
+    },
+    "academicStanding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedStandingCodes", "unknownFailsClosed"],
+      "properties": {
+        "allowedStandingCodes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 40 }
+        },
+        "unknownFailsClosed": { "const": true }
+      }
+    },
+    "blockingHold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blockingFlagField", "activeBlockingValue"],
+      "properties": {
+        "blockingFlagField": { "const": "blocksRegistration" },
+        "activeBlockingValue": { "const": true }
+      }
+    },
+    "prerequisite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completedCourseRequired", "conditionKinds"],
+      "properties": {
+        "completedCourseRequired": { "const": true },
+        "conditionKinds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["CompletedCourse", "MinimumGpa", "MinimumEarnedCredits"]
+          }
+        }
+      }
+    },
+    "creditLoad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimumCredits", "targetCredits", "maximumCredits"],
+      "properties": {
+        "minimumCredits": { "const": 9 },
+        "targetCredits": { "const": 18 },
+        "maximumCredits": { "const": 18 }
+      }
+    },
+    "probationLoad": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gpaBelow", "maximumCredits"],
+      "properties": {
+        "gpaBelow": { "const": 2.0 },
+        "maximumCredits": { "const": 12 }
+      }
+    },
+    "repeatEligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "const": "FailClosedPendingApproval" }
+      }
+    },
+    "capacity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allocationMode", "waitlistEnabled", "overrideEnabled"],
+      "properties": {
+        "allocationMode": { "const": "FirstSuccessfulCommit" },
+        "waitlistEnabled": { "const": false },
+        "overrideEnabled": { "const": false }
+      }
+    },
+    "meetingConflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unresolvedExactOverlapBlocks", "travelBufferMinutes", "overrideEnabled"],
+      "properties": {
+        "unresolvedExactOverlapBlocks": { "const": true },
+        "travelBufferMinutes": { "const": 0 },
+        "overrideEnabled": { "const": false }
+      }
+    }
+  }
+}

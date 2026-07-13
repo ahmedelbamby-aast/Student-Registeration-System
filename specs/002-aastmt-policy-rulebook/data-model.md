@@ -17,13 +17,15 @@ snapshots to SPEC-015.
 | PolicyRulebook | Governed artifact | SPEC-002; consumed by SPEC-009 | version, scope, priority, effective dates, rule categories, approval state/actor |
 | PolicyRuleDefinition | Governed typed-rule artifact | SPEC-002; consumed by SPEC-009 | type key, validated configuration schema, reason code, source reference |
 | PolicyBoundaryExample | Governed boundary fixture | SPEC-002; consumed by SPEC-009 | input, expected reason/result, boundary label, approval |
-| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source reference, access date, authority, affected rules, approval state |
+| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source reference, access date, field-level authority/classification, affected rules, approval state |
 
 `DEMO-POC-2026.1` is represented by one `PolicyRulebook` version with typed
-definitions for window, standing, hold, prerequisite, load, probation,
-capacity, and overlap rules. Its source records distinguish `OfficialAASTMT`
-curriculum rows from `SyntheticDemoGap` rows; a synthetic row requires a
-human-readable label and rationale and cannot cite AASTMT as its authority.
+definitions for window, standing, hold, prerequisite, load, probation, repeat,
+capacity, and overlap rules. Its source records classify each governed field as
+`OfficialAASTMT`, `AhmedApprovedDemo`, `SyntheticDemo`, or
+`UnresolvedInstitutional`. An otherwise official-source course still marks its
+demo credit value as `SyntheticDemo`; a wholly synthetic row also requires a
+human-readable gap label and rationale and cannot cite AASTMT as its authority.
 
 ## Governance Rules
 

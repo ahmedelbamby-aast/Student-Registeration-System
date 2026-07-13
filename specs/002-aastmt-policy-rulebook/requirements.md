@@ -110,11 +110,16 @@ interface PolicyDecisionDto {
   eligible: boolean;
   policyVersion: string;
   evaluatedAtUtc: string;
+  inputSummary: Record<string, string>;
+  approvedBy: string;
+  effectiveFromUtc: string;
+  effectiveToUtc?: string;
   results: Array<{
     reasonCode: string;
     passed: boolean;
     explanation: string;
     sourceUrl: string;
+    sourceAccessedOn: string;
     overridePossible: boolean;
   }>;
 }
@@ -132,7 +137,7 @@ both endpoints and does not implement either handler.
 | PolicyRulebook | Governed artifact | SPEC-002; consumed by SPEC-009 | version, scope, priority, effective dates, rule categories, approval state/actor |
 | PolicyRuleDefinition | Governed typed-rule artifact | SPEC-002; consumed by SPEC-009 | type key, validated configuration schema, reason code, source reference |
 | PolicyBoundaryExample | Governed boundary fixture | SPEC-002; consumed by SPEC-009 | input, expected reason/result, boundary label, approval |
-| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source URL/reference, access date, authority, affected rules, approval state |
+| PolicySourceRecord | Governed provenance artifact | SPEC-002; consumed by SPEC-009/SPEC-015 | source URL/reference, access date, field-level authority/classification, affected rules, approval state |
 
 Runtime `PolicySet`/`PolicyRule` are owned by SPEC-009 and durable decision
 snapshots by SPEC-015.
