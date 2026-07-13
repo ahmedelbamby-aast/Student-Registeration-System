@@ -149,7 +149,9 @@ than a partial or browser-derived context.
 - FR-1: Endpoints MUST delegate business decisions to focused application
   services.
 - FR-2: Contracts MUST use DTOs/value identifiers and MUST NOT serialize EF
-  entities or password/security internals.
+  entities or password/security internals. `StudentRegistration.Contracts`
+  MUST remain framework- and persistence-free: it references no ASP.NET Core,
+  Blazor, EF Core, SQL Server, or business-module implementation type.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
   optional field details.
 - FR-4: Every versioned update/delete request MUST carry
@@ -179,7 +181,12 @@ than a partial or browser-derived context.
   `role-selection-required` session state. SPEC-007 supplies session/user/role
   values; SPEC-008 supplies time/term/window values and owns GET /api/context
   and GET /api/public/context handlers. Missing required contributors MUST fail
-  safely; the browser MUST NOT synthesize a partial context.
+  safely with no partial success body; the browser MUST NOT synthesize a
+  partial context. A present SPEC-008 contribution MAY authoritatively report
+  no applicable teaching term or no applicable registration term. That valid
+  absence is distinct from a missing contributor: a null `registrationTerm`
+  requires `registrationWindowState = "none"`, while contributor failure
+  returns a safe unavailable error instead of `AppContextDto`.
 
 ### Non-Functional Requirements
 
@@ -194,13 +201,25 @@ than a partial or browser-derived context.
 
 ### Key Entities
 
-- **ApiError**, **Page**, **CommandResult**, and **DomainValue**: Shared contract/value types owned by SPEC-006; none is a SQL entity.
-- **AppContextDto**: Composed shared response schema owned by SPEC-006. SPEC-007 supplies session/user/authorized-role context; SPEC-008 supplies authoritative time/term/window context and owns the endpoint handler.
-- **TermSummaryDto**: Shared `{ id, code, label, state, rowVersion }` response type owned by SPEC-006 and composed from SPEC-008 AcademicTerm data.
+- **ApiError**: Shared safe error response owned by SPEC-006.
+- **Page&lt;T&gt;**: Shared bounded list response owned by SPEC-006.
+- **AppContextDto**: Composed authenticated response schema owned by SPEC-006.
+  SPEC-007 supplies session/user/authorized-role context; SPEC-008 supplies
+  authoritative time/term/window context and owns the endpoint handler.
+- **TermSummaryDto**: Shared `{ id, code, label, state, rowVersion }` response
+  type owned by SPEC-006 and composed from SPEC-008 AcademicTerm data.
+- **PublicContextDto**: Privacy-safe unauthenticated context response owned by
+  SPEC-006; SPEC-008 supplies its values and owns the endpoint handler.
+
+These five concepts are serialized/value contracts, not SQL entities or
+aggregate roots.
 
 ## Success Criteria
 
-- **SC-1**: Every declared interface has explicit success, validation, authorization, conflict, and unexpected-error outcomes.
+- **SC-1**: Every declared endpoint interface explicitly records success,
+  validation, authentication/authorization, conflict/concurrency, and
+  unexpected-error outcomes. A category the operation cannot produce MUST be
+  marked `not applicable` with a reason rather than omitted.
 - **SC-2**: No persistence-internal or credential field is part of a public contract.
 - **SC-3**: All externally visible dates, identifiers, pagination, and error formats are consistent.
 

@@ -1,5 +1,5 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.2",
   "specs": [
     {
       "id": "001",
@@ -139,11 +139,11 @@
         "ApiError",
         "Page",
         "AppContext",
-        "CommandResult",
-        "DomainValue"
+        "TermSummaryDto",
+        "PublicContextDto"
       ],
       "successCriteria": [
-        "Every declared interface has explicit success, validation, authorization, conflict, and unexpected-error outcomes.",
+        "Every declared endpoint interface records success, validation, authorization, conflict, and unexpected-error outcomes, or marks an inapplicable category with a reason.",
         "No persistence-internal or credential field is part of a public contract.",
         "All externally visible dates, identifiers, pagination, and error formats are consistent."
       ]

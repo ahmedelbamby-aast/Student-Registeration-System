@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "specs": {
     "001": [
       { "name": "Role and authorization boundaries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-5"], "deliveryPath": "specs/001-product-charter-rbac/contracts/rbac-matrix.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs", "testFocus": "student/staff entry separation, server-derived claims, direct-route denials, dual-role and no-role contexts without pre-implementing SPEC-007" },
@@ -35,7 +35,7 @@
     ],
     "006": [
       { "name": "Focused application service boundary", "requirements": ["FR-1"], "deliveryPath": "docs/architecture/application-service-boundary.md", "testPath": "tests/StudentRegistration.ArchitectureTests/ApplicationServiceBoundaryTests.cs", "testFocus": "endpoints delegate to module-owned use cases and domain code stays infrastructure independent" },
-      { "name": "Safe DTO and error contracts", "requirements": ["FR-2", "FR-3"], "deliveryPath": "src/StudentRegistration.Contracts/ApiError.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/ApiErrorAndDtoTests.cs", "testFocus": "declared DTO fields, stable errors, correlation and no EF/security leakage" },
+      { "name": "Safe DTO and error contracts", "requirements": ["FR-2", "FR-3"], "deliveryPath": "src/StudentRegistration.Api/Composition/ApiErrorHandlingExtensions.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/ApiErrorAndDtoTests.cs", "testFocus": "declared DTO fields, stable errors, correlation, safe exception mapping and no EF/security leakage" },
       { "name": "Mutation metadata", "requirements": ["FR-4", "FR-8"], "deliveryPath": "src/StudentRegistration.Contracts/CommandMetadata.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/CommandMetadataTests.cs", "testFocus": "rowversion, idempotency owner/payload/replay/mismatch and cancellation semantics" },
       { "name": "Pagination contract", "requirements": ["FR-5"], "deliveryPath": "src/StudentRegistration.Contracts/Page.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/PaginationContractTests.cs", "testFocus": "bounded page size, stable order and total metadata" },
       { "name": "API version governance", "requirements": ["FR-6"], "deliveryPath": "docs/API_VERSIONING.md", "testPath": "tests/StudentRegistration.ContractTests/Shared/ApiVersionPolicyTests.cs", "testFocus": "breaking-change detection and approved version process" },

@@ -31,8 +31,8 @@ interface TermSummaryDto {
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTerm?: TermSummaryDto;
-  registrationTerm?: TermSummaryDto;
+  teachingTerm: TermSummaryDto | null;
+  registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
@@ -46,8 +46,8 @@ interface AppContextDto {
 interface PublicContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTermLabel?: string;
-  registrationTermLabel?: string;
+  teachingTermLabel: string | null;
+  registrationTermLabel: string | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
 }
@@ -56,6 +56,11 @@ interface PublicContextDto {
 `activeRole` is non-null for `active` and `expiring`. It is null only when
 the authenticated user has multiple authorized roles and `sessionState` is
 `role-selection-required`; no client-selected value grants authorization.
+
+A term field is null only when the authoritative academic-term contributor
+successfully reports that no applicable term exists. A missing or failed
+required contributor returns 503 `CONTEXT_UNAVAILABLE` as `ApiError`; the API
+does not return a partial context or use null to hide composition failure.
 
 Feature endpoints are defined and owned in SPEC-007 through SPEC-017. SPEC-008
 owns `GET /api/public/context` and `GET /api/context`. SPEC-006 owns the shared
@@ -84,9 +89,12 @@ endpoint.
 
 ### OpenAPI protocol
 
-CI generates a deterministic OpenAPI document and performs a semantic diff
-against the approved versioned baseline. Unapproved operation, schema,
-status-code, or security drift fails; formatting/order-only differences do not.
+Before a downstream endpoint can pass its release gate, CI must generate a
+deterministic OpenAPI document and perform a semantic diff against an approved
+versioned baseline. Unapproved operation, schema, status-code, or security
+drift fails; formatting/order-only differences do not. SPEC-006 cannot create
+that baseline until approved, version-pinned handlers and a real OpenAPI
+generator exist; design-time schemas alone are not runtime API evidence.
 
 ## Shared Rules
 

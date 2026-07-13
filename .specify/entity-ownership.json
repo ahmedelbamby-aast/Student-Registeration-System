@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -55,8 +55,8 @@
     "006:ApiError": "src/StudentRegistration.Contracts/ApiError.cs",
     "006:Page": "src/StudentRegistration.Contracts/Page.cs",
     "006:AppContext": "src/StudentRegistration.Contracts/AppContextDto.cs",
-    "006:CommandResult": "src/StudentRegistration.Contracts/CommandResult.cs",
-    "006:DomainValue": "src/StudentRegistration.Contracts/DomainValue.cs",
+    "006:TermSummaryDto": "src/StudentRegistration.Contracts/TermSummaryDto.cs",
+    "006:PublicContextDto": "src/StudentRegistration.Contracts/PublicContextDto.cs",
     "018:StructuredLog": "docs/operations/telemetry-contract.md",
     "018:Trace": "docs/operations/telemetry-contract.md",
     "018:ThreatModel": "docs/security/THREAT_MODEL.md",

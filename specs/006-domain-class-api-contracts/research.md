@@ -42,8 +42,8 @@ interface TermSummaryDto {
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTerm?: TermSummaryDto;
-  registrationTerm?: TermSummaryDto;
+  teachingTerm: TermSummaryDto | null;
+  registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
@@ -57,8 +57,8 @@ interface AppContextDto {
 interface PublicContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTermLabel?: string;
-  registrationTermLabel?: string;
+  teachingTermLabel: string | null;
+  registrationTermLabel: string | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
 }
@@ -68,6 +68,11 @@ Feature endpoints are defined in SPEC-007 through SPEC-017. SPEC-008 owns the
 two context handlers; SPEC-006 owns their shared schemas only. Generic example
 resource and command paths were rejected because every literal method/path must
 have one feature owner and canonical contract.
+
+Null term values mean the authoritative contributor reported that no applicable
+term exists. Missing or failed required contributors produce 503
+`CONTEXT_UNAVAILABLE`; partial context responses are rejected so clients cannot
+confuse an outage with a valid absence.
 
 ### Pagination and concurrency protocol
 **Decision**: Page-number pagination uses default 20, maximum 100, invalid-value
@@ -80,12 +85,13 @@ equivalent concurrency mechanisms or cap-versus-reject ambiguity.
 If-Match plus body tokens, and generic pseudo endpoints.
 
 ### OpenAPI drift gate
-**Decision**: Generate deterministic OpenAPI and compare an approved baseline
-semantically in CI.
+**Decision**: Once approved, version-pinned downstream handlers and a real
+generator exist, generate deterministic OpenAPI and compare an approved
+baseline semantically in CI.
 **Rationale**: A semantic gate detects real endpoint/schema/security drift while
 ignoring formatting and ordering noise.
-**Alternatives rejected**: Documentation-only review and byte-for-byte output
-comparison.
+**Alternatives rejected**: Documentation-only review, generating a speculative
+baseline from schemas with no handlers, and byte-for-byte output comparison.
 
 
 

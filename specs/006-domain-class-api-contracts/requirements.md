@@ -19,7 +19,9 @@ in docs/diagrams/CLASS_DIAGRAM.md.
 - FR-1: Endpoints MUST delegate business decisions to focused application
   services.
 - FR-2: Contracts MUST use DTOs/value identifiers and MUST NOT serialize EF
-  entities or password/security internals.
+  entities or password/security internals. `StudentRegistration.Contracts`
+  MUST remain framework- and persistence-free: it references no ASP.NET Core,
+  Blazor, EF Core, SQL Server, or business-module implementation type.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
   optional field details.
 - FR-4: Every versioned update/delete request MUST carry
@@ -49,7 +51,12 @@ in docs/diagrams/CLASS_DIAGRAM.md.
   `role-selection-required` session state. SPEC-007 supplies session/user/role
   values; SPEC-008 supplies time/term/window values and owns GET /api/context
   and GET /api/public/context handlers. Missing required contributors MUST fail
-  safely; the browser MUST NOT synthesize a partial context.
+  safely with no partial success body; the browser MUST NOT synthesize a
+  partial context. A present SPEC-008 contribution MAY authoritatively report
+  no applicable teaching term or no applicable registration term. That valid
+  absence is distinct from a missing contributor: a null `registrationTerm`
+  requires `registrationWindowState = "none"`, while contributor failure
+  returns a safe unavailable error instead of `AppContextDto`.
 
 ## Non-Functional Requirements
 
@@ -134,6 +141,31 @@ than a partial or browser-derived context.
   idempotent retry returns stored result.
 - EC-4: Unauthenticated/unauthorized -> 401/403 with no protected data.
 
+## Owned Shared Contract Types
+
+- **ApiError**: Shared safe error response owned by SPEC-006.
+- **Page&lt;T&gt;**: Shared bounded list response owned by SPEC-006.
+- **AppContextDto**: Composed authenticated response schema owned by SPEC-006;
+  SPEC-007/SPEC-008 supply its values and SPEC-008 owns the handler.
+- **TermSummaryDto**: Shared `{ id, code, label, state, rowVersion }` response
+  type owned by SPEC-006 and composed from SPEC-008 AcademicTerm data.
+- **PublicContextDto**: Privacy-safe unauthenticated response schema owned by
+  SPEC-006; SPEC-008 supplies its values and owns the handler.
+
+These five concepts are serialized/value contracts, not SQL entities or
+aggregate roots.
+
+## Success Criteria
+
+- **SC-1**: Every declared endpoint interface explicitly records success,
+  validation, authentication/authorization, conflict/concurrency, and
+  unexpected-error outcomes. A category the operation cannot produce MUST be
+  marked `not applicable` with a reason rather than omitted.
+- **SC-2**: No persistence-internal or credential field is part of a public
+  contract.
+- **SC-3**: All externally visible dates, identifiers, pagination, and error
+  formats are consistent.
+
 ## API Contracts
 
 ```typescript
@@ -165,8 +197,8 @@ interface TermSummaryDto {
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTerm?: TermSummaryDto;
-  registrationTerm?: TermSummaryDto;
+  teachingTerm: TermSummaryDto | null;
+  registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
@@ -180,8 +212,8 @@ interface AppContextDto {
 interface PublicContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
-  teachingTermLabel?: string;
-  registrationTermLabel?: string;
+  teachingTermLabel: string | null;
+  registrationTermLabel: string | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
   serviceState: "available" | "maintenance" | "unavailable";
 }
@@ -190,6 +222,13 @@ interface PublicContextDto {
 Feature endpoints are defined and owned by SPEC-007 through SPEC-017. SPEC-008
 owns `GET /api/public/context` and `GET /api/context`; SPEC-006 owns only the
 shared response schemas and protocol rules.
+
+Nullable teaching/registration term fields represent an authoritative
+SPEC-008 result that no applicable term exists. They do not represent a failed
+or absent contributor. A null `registrationTerm` requires
+`registrationWindowState = "none"`; a missing or failed required contributor
+returns a safe unavailable error and no partial context DTO. The nullable
+public term labels follow the same authoritative-absence rule.
 
 Pagination request rule: omitted `page`/`pageSize` means `1`/`20`; maximum
 `pageSize` is `100`; invalid values return 400 `PAGE_SIZE_INVALID`; every
@@ -207,12 +246,11 @@ ignored; operation/schema/status/security drift requires explicit approval.
 
 | Type | Role and owner | Purpose |
 |---|---|---|
-| Strong ID/value object | Shared contract convention, SPEC-006 | Prevent accidental entity/primitive mixing |
-| Command/result | Shared envelope convention, SPEC-006; feature payload owned downstream | One application use case |
-| API request/response DTO | Shared protocol here; feature DTO owned by its endpoint spec | Versioned client contract |
-| AppContextDto | Composed schema SPEC-006; contributors SPEC-007/SPEC-008; handler SPEC-008 | One authenticated context response |
-| TermSummaryDto | Shared schema SPEC-006; composed from SPEC-008 AcademicTerm | id, code, label, Draft/RegistrationOpen/RegistrationClosed/Teaching/Completed/Archived state, rowVersion |
-| Domain entity/aggregate | Canonical feature owner | Invariant behavior; never exposed directly |
+| ApiError | Shared schema, SPEC-006 | Stable privacy-safe error details and correlation |
+| Page&lt;T&gt; | Shared schema, SPEC-006 | Bounded items, page metadata, total, and applied sort |
+| AppContextDto | Composed schema, SPEC-006; contributors SPEC-007/SPEC-008; handler SPEC-008 | Complete authenticated context or no success body |
+| TermSummaryDto | Shared schema, SPEC-006; composed from SPEC-008 AcademicTerm | Minimal versioned authoritative term reference |
+| PublicContextDto | Shared schema, SPEC-006; contributor/handler SPEC-008 | Public time, term labels, window, and service state only |
 
 ## Out of Scope
 

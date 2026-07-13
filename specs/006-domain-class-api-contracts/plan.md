@@ -11,8 +11,8 @@ Deliver Domain Classes and API Contracts inside the modular monolith while keepi
 ## Technical Context
 
 **Language/Version**: C# / .NET 10
-**Primary Dependencies**: ASP.NET Core, Blazor WebAssembly, Entity Framework Core, LINQ
-**Storage**: SQL Server with Code First migrations
+**Primary Dependencies**: .NET BCL and System.Text.Json only for `StudentRegistration.Contracts`; ASP.NET Core and Blazor WebAssembly consume the contracts from their owning projects
+**Storage**: None owned; the Contracts project references neither EF Core nor SQL Server and consumes only SPEC-005 persistence-boundary contracts
 **Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
 **Project Type**: Web application with hosted WebAssembly client and server API
 **Performance Goals**: Governed by SPEC-018 and feature NFRs
@@ -40,6 +40,9 @@ in `docs/ARCHITECTURE.md`. Shared DTO conventions and cross-module identifiers
 live in `StudentRegistration.Contracts`; endpoint handlers live in the owning
 business module; `StudentRegistration.Api` is composition only. No generic
 Server, Domain, Application, or Infrastructure project is introduced.
+`StudentRegistration.Contracts` remains framework- and persistence-free: no
+ASP.NET Core, Blazor, EF Core, SQL Server, or business-module implementation
+reference is permitted.
 
 ## Design Artifacts
 
@@ -51,18 +54,26 @@ Server, Domain, Application, or Infrastructure project is introduced.
 
 ## Feature Design
 
-- Own only stable shared contract types: `ApiError`, `Page<T>`, command
-  metadata/result conventions, strong identifiers, public context, and the
-  composed authenticated `AppContextDto` schema.
+- Own only the stable shared serialized/value types `ApiError`, `Page<T>`,
+  `AppContextDto`, `TermSummaryDto`, and `PublicContextDto`, plus the narrow
+  expected-rowversion and idempotency-key metadata required by FR-4/FR-8.
 - SPEC-007 contributes session/user/authorized-role fields; SPEC-008 contributes
   authoritative time, teaching/registration term, and window fields and owns
   the context endpoint handlers. SPEC-006 owns neither feature state nor those
   endpoint implementations.
+- An authoritative SPEC-008 response may report no applicable teaching or
+  registration term; null `registrationTerm` then requires window state
+  `none`. A missing/failed contributor produces a safe unavailable response
+  with no partial context DTO.
 - Standardize page-number pagination at default 20 and maximum 100, stable sort
   with a unique-ID tie-breaker, required `expectedRowVersion` mutation fields,
   and `409 STALE_VERSION` responses.
-- Generate a deterministic OpenAPI baseline and reject unapproved semantic
-  drift in CI.
+- Require every endpoint contract to record success, validation,
+  authentication/authorization, conflict/concurrency, and unexpected-error
+  outcomes, using an explained `not applicable` entry where appropriate.
+- After approved version-pinned handlers and a real generator exist, generate
+  a deterministic OpenAPI baseline and reject unapproved semantic drift in CI;
+  do not approve an empty or design-only baseline.
 
 ## Execution Strategy
 

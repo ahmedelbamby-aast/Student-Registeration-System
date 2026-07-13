@@ -9,6 +9,11 @@ This is a pre-implementation verification guide. It does not run or create appli
 3. Verify each functional requirement appears in spec.md and tasks.md.
 4. Walk through each acceptance scenario with the accountable owner.
 5. Review data-model.md and contracts/api.md against upstream dependencies.
-6. Run the repository Spec Kit gate script.
-7. Verify the Gate A approval record, then execute approved implementation
-   tasks in dependency order; preserve Gates B-D and production release gates.
+6. Run the repository Spec Kit gate script and the SPEC-006 consistency and
+   implementation-readiness checklists.
+7. Execute approved tasks test-first in dependency order. Compiled skipped
+   downstream fixtures may document future integration boundaries, but they do
+   not satisfy runtime HTTP, OpenAPI, performance, accessibility, security, or
+   release evidence.
+8. Preserve Gates B-D and all production release gates until their real
+   deployment inputs and accountable approvals exist.
