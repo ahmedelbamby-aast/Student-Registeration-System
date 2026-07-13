@@ -17,7 +17,9 @@ Gates B-D or production release approval.
 
 ## Post-Gate-A consistency correction
 
-**Status**: PENDING AHMED ELBAMBY APPROVAL
+**Status**: APPROVED
+**Approved by**: Ahmed ELbamby
+**Approval date**: 2026-07-13
 **Prepared**: 2026-07-13
 **Scope effect**: No new requirement, module, endpoint, route, database, or
 distributed component
@@ -37,6 +39,9 @@ The corrected executable baseline:
    SPEC-004 write/SPEC-017 query-export ownership recorded by the entity
    manifest and both features' data models.
 
-The original Gate A approval remains valid for the requirements and architecture
-decision. T006+ implementation remains forbidden until Ahmed explicitly
-approves this exact consistency correction and T005 is checked.
+Ahmed ELbamby approved this exact correction and authorized the simplest
+best-practice demo decisions without unnecessary design complexity. The
+original Gate A approval remains valid for the requirements and architecture
+decision. T006+ implementation may proceed in dependency order after T005 is
+checked. Gates B-D, production release, production SQL topology, and production
+key-storage/deployment authorities remain separately fail closed.

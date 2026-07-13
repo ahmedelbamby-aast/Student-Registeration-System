@@ -1,6 +1,6 @@
 # SPEC-004 Implementation Readiness
 
-**Candidate baseline:** TECHNICALLY FROZEN; HUMAN APPROVAL PENDING
+**Candidate baseline:** FROZEN AND APPROVED
 **Prepared:** 2026-07-13
 
 - [x] Approved SPEC-001 and SPEC-003 dependency versions are recorded.
@@ -22,11 +22,10 @@
   authority remain fail closed until their later institutional gates.
 - [x] SPEC-004 owns no route and creates no route-specific source or tests.
 - [x] Ahmed ELbamby's original Gate A approval record is present and verified.
-- Pending human gate: Ahmed ELbamby must explicitly approve the exact
-  post-Gate-A consistency correction summarized in `approval.md`.
+- [x] Ahmed ELbamby explicitly approved the exact post-Gate-A consistency
+  correction summarized in `approval.md` on 2026-07-13.
 
-T006 and every later implementation task remain blocked until the final item
-and T005 are complete. After approval, tasks must proceed in dependency order.
+T005 is complete and T006 may proceed. Tasks must continue in dependency order.
 Any later change to module dependencies, deployment shape, single-context
 ownership, or accepted upstream versions requires an ADR, updated architecture
 tests, and a new reviewed baseline.

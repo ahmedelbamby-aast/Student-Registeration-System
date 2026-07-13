@@ -1,10 +1,10 @@
 # Implementation Plan: Architecture and Engineering Principles
 
 **Branch**: 004-architecture-engineering-principles | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Gate A requirements approved on 2026-07-13. A post-Gate-A
-consistency correction to the executable task baseline awaits Ahmed ELbamby's
-explicit approval before T006 or any later implementation task may run; Gates
-B-D and production release approval remain required.
+**Status**: Gate A requirements and the post-Gate-A consistency correction to
+the executable task baseline were approved by Ahmed ELbamby on 2026-07-13.
+T006 and later implementation tasks may run in dependency order; Gates B-D and
+production release approval remain required.
 
 ## Summary
 
@@ -102,14 +102,14 @@ forbidden alternative shape.
 
 ## Post-Gate-A Consistency Correction
 
-The candidate task baseline adds no requirement or architecture decision. It
+The approved task baseline adds no requirement or architecture decision. It
 restores the already-approved AC-2 and AC-7 traceability, makes audit ownership
 and ADR status literal, moves project creation ahead of tests that need those
 projects, removes a shared-file writer collision, and adds the missing bounded
 NFR-2 delivery task before release evidence. It also completes one truncated
 activation sentence from DEC-01/DEC-08 and corrects SPEC-005's single stale
-AuditEvent owner line. The exact correction remains blocked at T005 until Ahmed
-approves it.
+AuditEvent owner line. Ahmed ELbamby approved the exact correction on
+2026-07-13, completing T005 and allowing dependency-ordered implementation.
 
 
 

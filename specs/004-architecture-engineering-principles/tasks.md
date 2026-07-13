@@ -1,7 +1,7 @@
 # Tasks: Architecture and Engineering Principles
 
-**Status**: Gate A requirements approved on 2026-07-13. Corrected executable
-task baseline awaits Ahmed ELbamby's explicit T005 approval; T006+ is blocked.
+**Status**: Gate A requirements and the corrected executable task baseline were
+approved by Ahmed ELbamby on 2026-07-13. T006+ may proceed in dependency order.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts and passing gates. Unchecked tasks remain dependency-ordered and must follow test-first delivery.
 
@@ -11,7 +11,7 @@ task baseline awaits Ahmed ELbamby's explicit T005 approval; T006+ is blocked.
 - [x] T002 [DEP-SPEC-003] Validate the consumed upstream requirements, plan, data model, and API contract at specs/003-ux-storyboard-accessibility/ and record the accepted versions in specs/004-architecture-engineering-principles/dependency-baseline.md.
 - [x] T003 [GATE] Run cross-spec consistency analysis for SPEC-004; verify requirement/acceptance/success-criterion traceability, truthful artifact/runtime ownership, exact architecture paths, endpoint/route contracts, acyclic dependencies, task ordering, and approved Gate A demo-implementation status; record findings and resolutions in specs/004-architecture-engineering-principles/checklists/consistency-analysis.md.
 - [x] T004 [GATE] After T003 passes, prepare the technically frozen candidate SPEC-004 requirements, data/API/design contracts, institutional decision states, dependency versions, and corrected executable task baseline in specs/004-architecture-engineering-principles/checklists/implementation-readiness.md; T005 human approval is required before it becomes executable.
-- [ ] T005 [GATE] After T004 passes, verify the accountable owner, the 2026-07-13 Gate A record, and Ahmed ELbamby's human approval of the post-Gate-A consistency correction in specs/004-architecture-engineering-principles/checklists/approval.md as the final planning gate; no T006+ test, source, migration, or other implementation task may execute without both approval records.
+- [x] T005 [GATE] After T004 passes, verify the accountable owner, the 2026-07-13 Gate A record, and Ahmed ELbamby's human approval of the post-Gate-A consistency correction in specs/004-architecture-engineering-principles/checklists/approval.md as the final planning gate; no T006+ test, source, migration, or other implementation task may execute without both approval records.
 
 ## Phase 2 - Models and API Contracts
 
@@ -122,6 +122,6 @@ No direct frontend route is owned by this specification; frontend integration re
 - [ ] T049 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-004-traceability.md and reject release if any row lacks passing evidence, including exact project-shape, atomic-audit, stateless-key-ring, artifact-lifecycle, and single-writer DbContext proof.
 - [ ] T050 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-004 in docs/release-evidence/SPEC-004-release-approval.md.
 
-Verified progress: T001-T004 are complete. T005 awaits Ahmed ELbamby's explicit
-approval of the corrected executable baseline. T006-T050 remain blocked; no
-SPEC-004 implementation source has been created yet.
+Verified progress: T001-T005 are complete. Ahmed ELbamby approved the corrected
+executable baseline on 2026-07-13. T006-T050 are open and must execute in
+dependency order; no SPEC-004 implementation source has been created yet.
