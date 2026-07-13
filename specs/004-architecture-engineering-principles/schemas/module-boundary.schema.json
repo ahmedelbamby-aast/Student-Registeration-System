@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/module-boundary/1.0",
+  "title": "SPEC-004 ModuleBoundary",
+  "description": "Closed, versioned declaration of one canonical modular-monolith project boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "ownerSpec",
+    "module",
+    "project",
+    "ownedConcerns",
+    "allowedProjectReferences",
+    "exposedContracts",
+    "approvalVersion"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "ownerSpec": { "const": "SPEC-004" },
+    "module": {
+      "enum": [
+        "Client",
+        "Api",
+        "Contracts",
+        "IdentityAccess",
+        "Academics",
+        "Scheduling",
+        "Registration",
+        "StaffAdministration",
+        "Infrastructure.SqlServer"
+      ]
+    },
+    "project": {
+      "enum": [
+        "StudentRegistration.Client",
+        "StudentRegistration.Api",
+        "StudentRegistration.Contracts",
+        "StudentRegistration.IdentityAccess",
+        "StudentRegistration.Academics",
+        "StudentRegistration.Scheduling",
+        "StudentRegistration.Registration",
+        "StudentRegistration.StaffAdministration",
+        "StudentRegistration.Infrastructure.SqlServer"
+      ]
+    },
+    "ownedConcerns": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowedProjectReferences": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "StudentRegistration.Client",
+          "StudentRegistration.Api",
+          "StudentRegistration.Contracts",
+          "StudentRegistration.IdentityAccess",
+          "StudentRegistration.Academics",
+          "StudentRegistration.Scheduling",
+          "StudentRegistration.Registration",
+          "StudentRegistration.StaffAdministration",
+          "StudentRegistration.Infrastructure.SqlServer"
+        ]
+      }
+    },
+    "exposedContracts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "approvalVersion": { "type": "string", "minLength": 1 }
+  }
+}

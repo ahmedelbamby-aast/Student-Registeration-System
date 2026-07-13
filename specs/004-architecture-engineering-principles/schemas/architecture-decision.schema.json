@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/architecture-decision/1.0",
+  "title": "SPEC-004 ArchitectureDecision",
+  "description": "Closed, approved record of an accepted or superseded architecture decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "ownerSpec",
+    "decisionId",
+    "title",
+    "status",
+    "decidedAt",
+    "approvedBy",
+    "context",
+    "decision",
+    "consequences",
+    "simplerAlternativesConsidered",
+    "affectedBoundaries",
+    "architectureTestUpdates"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "ownerSpec": { "const": "SPEC-004" },
+    "decisionId": {
+      "type": "string",
+      "pattern": "^ADR-[0-9]{3}$"
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["accepted", "superseded"]
+    },
+    "decidedAt": { "type": "string", "format": "date" },
+    "approvedBy": { "const": "Ahmed ELbamby" },
+    "context": { "type": "string", "minLength": 1 },
+    "decision": { "type": "string", "minLength": 1 },
+    "consequences": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "simplerAlternativesConsidered": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "affectedBoundaries": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "architectureTestUpdates": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}
