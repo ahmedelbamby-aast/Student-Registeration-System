@@ -13,3 +13,13 @@ proceed in the documented test-first order.
 
 This approval does not authorize production deployment, official AASTMT
 go-live, Gate B-D, or release sign-off.
+
+## Constitution compliance review
+
+Reverified on 2026-07-14 by Ahmed ELbamby. The frozen baseline preserves the
+nine-project modular monolith, server-authoritative decisions, test-first
+delivery, synthetic-only non-production data, shared durable replica state,
+accessible critical flows, and fail-closed production authority. The load
+wording correction keeps the approved target and 200/s spike blocking while
+classifying 2x, 5x, and soak profiles only as optional diagnostics; it does not
+weaken any correctness invariant.

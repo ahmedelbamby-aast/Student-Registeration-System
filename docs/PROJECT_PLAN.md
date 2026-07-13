@@ -332,14 +332,15 @@ production-readiness scope. Secrets use User Secrets/environment variables,
 and two-replica tests share SQL-backed Data Protection keys protected by a
 generated local certificate outside Git.
 
-Tests run at target for 10 minutes (75 submissions/s plus 300 reads/s), 2x for
-10 minutes (150 plus 600), the existing 60-second burst (200 plus 300), and a
-60-second 5x spike (375 plus 1,500). Reads are 50% offering discovery, 25%
+Blocking POC tests run the target mix for 10 minutes (75 submissions/s plus
+300 reads/s) and a 60-second spike at 200 registration submissions/s across at
+least two stateless replicas. Reads are 50% offering discovery, 25%
 eligibility detail, 15% plan/timetable, and 10% registration records;
 submissions are 70% valid unique, 20% expected business rejection, and 10%
-same-key replay. A separate 120-minute target-mix soak runs across at least two
-replicas. A mandatory collision test submits 100 registrations to a 30-seat
-group and must produce exactly 30 active enrollments.
+same-key replay. Existing 2x, 5x, and 120-minute soak profiles may run as
+non-blocking diagnostics and cannot relax correctness. A mandatory collision
+test submits 100 registrations to a 30-seat group and must produce exactly 30
+active enrollments.
 
 ## 9. Risks
 

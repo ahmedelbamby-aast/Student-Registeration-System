@@ -16,7 +16,7 @@
 | Generated Development/Testing databases | SPEC-005, SPEC-007, SPEC-008, SPEC-018 | migration-first environment guards, isolated database, synthetic profile, idempotent seed/reset, and credential-leakage tests |
 | University ID + PIN/password | SPEC-007 | generated synthetic identity, hash-only persistence, first-use activation, and login tests |
 | Current date and academic term | SPEC-008 | fake-clock and term-boundary tests |
-| User/load handling | SPEC-018 | target, 2x, and spike load tests |
+| User/load handling | SPEC-018 | blocking target and 200/s spike tests, with optional higher-load diagnostics |
 | GPA/policy-based availability | SPEC-002, SPEC-009, SPEC-011 | rule-unit and decision-explanation tests |
 | Staff/location/time shown | SPEC-010, SPEC-011 | API and UI tests |
 | Multiple groups/capacity | SPEC-010, SPEC-014 | database and collision tests |

@@ -367,6 +367,6 @@ Evidence-triggered evolution:
 - Integration tests use real SQL Server, EF migrations, constraints, and
   parallel transactions.
 - E2E tests verify role scope, student journey, conflict UI, and stale states.
-- k6 tests target/2x/spike traffic.
+- Load tests block on target and 200/s spike traffic; 2x/5x/soak profiles are optional diagnostics.
 - Accessibility automation plus keyboard and screen-reader UAT.
 - Backup/restore and migration rollback are rehearsed before Gate D.

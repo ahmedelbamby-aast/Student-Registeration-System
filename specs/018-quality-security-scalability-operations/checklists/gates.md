@@ -14,3 +14,6 @@
 Automated gates pass and Gate A authorizes non-production demo implementation.
 Gate B-D evidence and release approvals remain required; no production or
 official AASTMT deployment is authorized.
+
+Dependency pins and the cross-spec consistency result were frozen in
+`dependency-baseline.md` and `implementation-readiness.md` on 2026-07-14.

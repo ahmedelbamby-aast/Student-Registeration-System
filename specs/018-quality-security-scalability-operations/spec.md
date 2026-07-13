@@ -29,7 +29,7 @@ Then p95 budgets and unexpected error rate pass<br>
 And no capacity/duplicate/partial invariant fails.
 ### User Story 2 - Approved spike load (NFR-2, NFR-4, NFR-5) (P1)
 
-As a Operations and security reviewer, I need the Double and spike load (NFR-2, NFR-4) behavior so that Quality, Security, Scalability, and Operations produces a verifiable outcome.
+As an Operations and security reviewer, I need the approved spike-load (NFR-2, NFR-4, NFR-5) behavior so that Quality, Security, Scalability, and Operations produces a verifiable outcome.
 
 **Independent Test**: Execute AC-2 in requirements.md without relying on another story in this feature.
 
