@@ -57,6 +57,30 @@ public sealed class DataTableTests
     }
 
     [Fact]
+    public void Overflow_region_is_named_and_keyboard_reachable_with_an_equivalent_narrow_alternative()
+    {
+        using var context = new BunitContext();
+        RenderFragment narrowAlternative = builder =>
+            builder.AddMarkupContent(0, "<article><h3>Group G1</h3><p>Open</p></article>");
+
+        var table = RenderTable(
+            context,
+            narrowAlternative: narrowAlternative,
+            narrowAlternativeLabel: "Available groups stacked list");
+
+        var viewport = table.Find(".srs-data-table__viewport");
+        Assert.Equal("region", viewport.GetAttribute("role"));
+        Assert.Equal("Available groups", viewport.GetAttribute("aria-label"));
+        Assert.Equal("0", viewport.GetAttribute("tabindex"));
+
+        var alternative = table.Find("[data-table-alternative]");
+        Assert.Equal("region", alternative.GetAttribute("role"));
+        Assert.Equal("Available groups stacked list", alternative.GetAttribute("aria-label"));
+        Assert.Contains("Group G1", alternative.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Open", alternative.TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Table_styles_cover_hover_active_focus_disabled_loading_and_token_only_states()
     {
         var css = RepositoryFiles.Read(
@@ -78,7 +102,9 @@ public sealed class DataTableTests
         bool isLoading = false,
         bool isEmpty = false,
         bool isDisabled = false,
-        string? errorMessage = null)
+        string? errorMessage = null,
+        RenderFragment? narrowAlternative = null,
+        string? narrowAlternativeLabel = null)
     {
         RenderFragment rows = builder =>
         {
@@ -104,6 +130,8 @@ public sealed class DataTableTests
             .Add(component => component.SortedColumnKey, "group")
             .Add(component => component.Direction, DataTable.SortDirection.Ascending)
             .Add(component => component.BodyContent, rows)
+            .Add(component => component.NarrowAlternative, narrowAlternative)
+            .Add(component => component.NarrowAlternativeLabel, narrowAlternativeLabel)
             .Add(component => component.LoadingContent, "Loading groups")
             .Add(component => component.EmptyContent, "No groups")
             .Add(component => component.IsLoading, isLoading)

@@ -1,4 +1,7 @@
-<div class="srs-data-table__viewport">
+<div class="srs-data-table__viewport"
+     role="region"
+     aria-label="@ViewportAccessibleName"
+     tabindex="0">
     <table class="srs-data-table"
            data-table-id="@TableId"
            data-state="@StateName"
@@ -60,6 +63,16 @@
     </table>
 </div>
 
+@if (NarrowAlternative is not null)
+{
+    <section class="srs-data-table__alternative"
+             data-table-alternative
+             role="region"
+             aria-label="@NarrowAlternativeAccessibleName">
+        @NarrowAlternative
+    </section>
+}
+
 @code {
     public enum SortDirection
     {
@@ -92,6 +105,9 @@
     [Parameter, EditorRequired]
     public string Caption { get; set; } = string.Empty;
 
+    [Parameter]
+    public string? ViewportLabel { get; set; }
+
     [Parameter, EditorRequired]
     public IReadOnlyList<ColumnDefinition> Columns { get; set; } = [];
 
@@ -106,6 +122,12 @@
 
     [Parameter]
     public RenderFragment? BodyContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? NarrowAlternative { get; set; }
+
+    [Parameter]
+    public string? NarrowAlternativeLabel { get; set; }
 
     [Parameter]
     public bool IsEmpty { get; set; }
@@ -127,6 +149,12 @@
 
     private bool InteractionBlocked =>
         IsDisabled || IsLoading || !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private string ViewportAccessibleName =>
+        string.IsNullOrWhiteSpace(ViewportLabel) ? Caption : ViewportLabel;
+
+    private string NarrowAlternativeAccessibleName =>
+        string.IsNullOrWhiteSpace(NarrowAlternativeLabel) ? Caption : NarrowAlternativeLabel;
 
     private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
         ? "error"

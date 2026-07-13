@@ -15,7 +15,18 @@
 
 <body>
     <div id="app">
-        <div class="startup-progress" role="progressbar"></div>
+        <div class="startup-progress"
+             role="progressbar"
+             aria-label="Loading Student Registration"></div>
+        <section class="startup-recovery"
+                 data-startup-recovery
+                 role="status"
+                 aria-live="polite"
+                 aria-labelledby="startup-recovery-heading">
+            <h1 id="startup-recovery-heading">Starting Student Registration</h1>
+            <p>If the application does not start, check your connection and retry.</p>
+            <a href="/">Retry loading</a>
+        </section>
     </div>
     <div id="blazor-error-ui" role="alert"></div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>

@@ -1,6 +1,6 @@
 # Tasks: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
-**Status**: Approved for Gate A demo implementation on 2026-07-13. Shared design contracts, infrastructure, and reusable components through T121 are verified; route-specific work remains governed by each route's owner/contributor version pins.
+**Status**: Approved for Gate A demo implementation on 2026-07-13. Dependency-safe acceptance/edge coverage plus shared design contracts, infrastructure, and reusable components through T121 are verified; route-specific work remains governed by each route's owner/contributor version pins.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts and passing scoped tests. Unchecked tasks remain pending or dependency-gated; no route-specific source or executable evidence may run before its T073 row is implementation-ready.
 
@@ -36,7 +36,7 @@
 **Independent Test**: Execute only the AC-1 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T018 [AC-1] [FR-1] [FR-2] [FR-5] [FR-11] [FR-13] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-1Tests.cs for AC-1: Complete Page Design Record (FR-1, FR-2, FR-5, FR-11, FR-13): Given any one of the 27 route IDs is selected for implementation When its frontend readiness review occurs Then its approved Page Design Record contains every FR-2 field And every applicable state and responsive width is designed And its owning requirement, task, and test IDs are linked.
+- [x] T018 [AC-1] [FR-1] [FR-2] [FR-5] [FR-11] [FR-13] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-1Tests.cs for AC-1: Complete Page Design Record (FR-1, FR-2, FR-5, FR-11, FR-13): Given any one of the 27 route IDs is selected for implementation When its frontend readiness review occurs Then its approved Page Design Record contains every FR-2 field And every applicable state and responsive width is designed And its owning requirement, task, and test IDs are linked.
 ### US2 - Versioned design system (FR-3, FR-4, NFR-3, NFR-4) (P1)
 
 **Goal**: Prove AC-2 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -44,7 +44,7 @@
 **Independent Test**: Execute only the AC-2 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T019 [AC-2] [FR-3] [FR-4] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-2Tests.cs for AC-2: Versioned design system (FR-3, FR-4, NFR-3, NFR-4): Given the first page is ready for visual implementation When the design-system review occurs Then every required token category and reusable component is documented And component default/hover/active/focus/disabled/loading/error states use only approved tokens And the official-logo source, local-copy provenance, unchanged rendering, and accessible name are verified And contrast and pointer-target measurements pass.
+- [x] T019 [AC-2] [FR-3] [FR-4] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-2Tests.cs for AC-2: Versioned design system (FR-3, FR-4, NFR-3, NFR-4): Given the first page is ready for visual implementation When the design-system review occurs Then every required token category and reusable component is documented And component default/hover/active/focus/disabled/loading/error states use only approved tokens And the official-logo source, local-copy provenance, unchanged rendering, and accessible name are verified And contrast and pointer-target measurements pass.
 ### US3 - Functional state coverage (FR-5, FR-12) (P2)
 
 **Goal**: Prove AC-3 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -52,7 +52,7 @@
 **Independent Test**: Execute only the AC-3 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T020 [AC-3] [FR-5] [FR-12] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-3Tests.cs for AC-3: Functional state coverage (FR-5, FR-12): Given a data route declares its complete applicable UI-state set When component and Playwright test plans are inspected Then every applicable state has a unique test ID, deterministic fixture, expected content, focus behavior, and retry/next action And no applicable state is covered only by a visual snapshot.
+- [x] T020 [AC-3] [FR-5] [FR-12] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-3Tests.cs for AC-3: Functional state coverage (FR-5, FR-12): Given a data route declares its complete applicable UI-state set When component and Playwright test plans are inspected Then every applicable state has a unique test ID, deterministic fixture, expected content, focus behavior, and retry/next action And no applicable state is covered only by a visual snapshot.
 ### US4 - Distinct identity pages (FR-9, FR-12, FR-14) (P2)
 
 **Goal**: Prove AC-4 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -165,14 +165,14 @@
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
 - [ ] T034 [AC-17] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-17Tests.cs for AC-17: Safe system status functionality (FR-1, FR-5, FR-12, FR-14): Given 403, 404, session-expired, maintenance, offline, and unexpected-error fixtures When SYS-01 functional journeys execute Then the correct safe heading, next action, and reference ID are shown And no stack trace, SQL text, credential, or unauthorized identifier appears.
-- [ ] T035 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-1Tests.cs and assert: Status changes while keyboard focus is in a group card -> announce the update politely without stealing focus or changing the selected group.
+- [x] T035 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-1Tests.cs and assert: Status changes while keyboard focus is in a group card -> announce the update politely without stealing focus or changing the selected group.
 - [ ] T036 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-2Tests.cs and assert: Session expires with an unsaved plan -> preserve only the safe plan identifier, reauthenticate, fetch the server plan, and revalidate before rendering editable state.
-- [ ] T037 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-3Tests.cs and assert: 400% zoom or 320-pixel width -> critical actions remain reachable and labels do not truncate blocking reasons.
-- [ ] T038 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-4Tests.cs and assert: Reduced motion enabled -> disable nonessential animation and preserve equivalent state feedback.
-- [ ] T039 [EC-5] Exercise EC-5 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-5Tests.cs and assert: JavaScript/WebAssembly startup fails or the user is offline -> render a static recoverable status with retry guidance; never display a false success.
-- [ ] T040 [EC-6] Exercise EC-6 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-6Tests.cs and assert: API returns an unknown reason code -> render the generic safe message, correlation/reference ID, and retry/support action; log no sensitive payload.
-- [ ] T041 [EC-7] Exercise EC-7 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-7Tests.cs and assert: A visual baseline changes intentionally -> require UX approval, documented affected routes/states, and a versioned baseline update.
-- [ ] T042 [EC-8] Exercise EC-8 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-8Tests.cs and assert: A table exceeds the viewport -> retain headers and keyboard access and provide the specified stacked/list alternative.
+- [x] T037 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-3Tests.cs and assert: 400% zoom or 320-pixel width -> critical actions remain reachable and labels do not truncate blocking reasons.
+- [x] T038 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-4Tests.cs and assert: Reduced motion enabled -> disable nonessential animation and preserve equivalent state feedback.
+- [x] T039 [EC-5] Exercise EC-5 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-5Tests.cs and assert: JavaScript/WebAssembly startup fails or the user is offline -> render a static recoverable status with retry guidance; never display a false success.
+- [x] T040 [EC-6] Exercise EC-6 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-6Tests.cs and assert: API returns an unknown reason code -> render the generic safe message, correlation/reference ID, and retry/support action; log no sensitive payload.
+- [x] T041 [EC-7] Exercise EC-7 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-7Tests.cs and assert: A visual baseline changes intentionally -> require UX approval, documented affected routes/states, and a versioned baseline update.
+- [x] T042 [EC-8] Exercise EC-8 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-8Tests.cs and assert: A table exceeds the viewport -> retain headers and keyboard access and provide the specified stacked/list alternative.
 - [ ] T043 [EC-9] Exercise EC-9 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-9Tests.cs and assert: Browser autofill populates identity fields -> labels remain visible, values remain reviewable, and secret values are not exposed.
 - [ ] T044 [EC-10] Exercise EC-10 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-10Tests.cs and assert: Rapid double activation of a command button -> disable while pending and rely on the command idempotency contract; only one result is presented.
 
@@ -425,4 +425,4 @@ A contributor change returns the row to design-only until revalidated.
 - [ ] T275 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-003-traceability.md and reject release if any row lacks passing evidence.
 - [ ] T276 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-003 in docs/release-evidence/SPEC-003-release-approval.md.
 
-Verified progress: T001-T017 and T045-T121 are complete. T018-T044 and T122-T276 remain open; route implementation remains governed by T073 and exact contributor-version pins.
+Verified progress: T001-T020, T035, T037-T042, and T045-T121 are complete. T021-T034, T036, T043-T044, and T122-T276 remain open; route implementation remains governed by T073 and exact contributor-version pins.
