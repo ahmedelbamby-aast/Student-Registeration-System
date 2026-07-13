@@ -32,6 +32,13 @@ playwright-report/
 test-results/
 load-test-results/
 
+# Generated local demo artifacts (credentials are reveal-once and never tracked)
+.local/
+credentials/
+logs/
+exports/
+*.log
+
 # OS
 .DS_Store
 Thumbs.db

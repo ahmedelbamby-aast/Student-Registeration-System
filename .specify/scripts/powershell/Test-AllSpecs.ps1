@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [ValidateSet('Auto', 'Planning', 'Implementation')]
+    [string]$Phase = 'Auto'
+)
 
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
@@ -15,6 +18,13 @@ $auditDate = Get-Date -Format 'yyyy-MM-dd'
 $failures = New-Object System.Collections.Generic.List[string]
 $results = New-Object System.Collections.Generic.List[object]
 $required = @('spec.md','requirements.md','plan.md','research.md','data-model.md','quickstart.md','clarifications.md','contracts/api.md','checklists/requirements.md','checklists/gates.md','tasks.md')
+$implementationFiles = @(Get-ChildItem $root -Recurse -File -Include *.cs,*.razor,*.csproj,*.sln,*.slnx,*.sql |
+    Where-Object { $_.FullName -notmatch '\\.agents\\|\\.specify\\' })
+$implementationMode = switch ($Phase) {
+    'Planning' { $false }
+    'Implementation' { $true }
+    default { $implementationFiles.Count -gt 0 }
+}
 $strictValidatorCandidates = @(
     $env:SPEC_VALIDATOR_PATH,
     (Join-Path $HOME '.codex/skills/claude-spec-driven-workflow/scripts/spec_validator.py'),
@@ -417,7 +427,7 @@ foreach ($taskSpec in $manifest.specs) {
     $taskFile = Join-Path $root "specs/$taskFeatureName/tasks.md"
     if (-not (Test-Path $taskFile -PathType Leaf)) { continue }
     $taskText = Get-Content $taskFile -Raw
-    foreach ($taskMatch in [regex]::Matches($taskText, '(?m)^- \[ \] (T\d{3})\s+(.+)$')) {
+    foreach ($taskMatch in [regex]::Matches($taskText, '(?mi)^- \[(?: |x)\] (T\d{3})\s+(.+)$')) {
         $taskRegistry.Add([pscustomobject]@{
             spec = [string]$taskSpec.id
             id = $taskMatch.Groups[1].Value
@@ -554,8 +564,16 @@ foreach ($item in $manifest.specs) {
     Assert-Sequential $item.id 'task' $taskIds
     $completedTaskMatches = @([regex]::Matches($tasks, '(?mi)^- \[[xX]\] (T\d{3})\s+(.+)$'))
     foreach ($completedTask in $completedTaskMatches) {
-        if ($completedTask.Groups[2].Value -notmatch "(?i)Ahmed Elbamby's (?:human approval|.*Gate A demo approval)|human approval for SPEC|Gate A demo approval by Ahmed") {
+        $isApprovalTask = $completedTask.Groups[2].Value -match "(?i)Ahmed Elbamby's (?:human approval|.*Gate A demo approval)|human approval for SPEC|Gate A demo approval by Ahmed"
+        if (-not $implementationMode -and -not $isApprovalTask) {
             Add-Failure "SPEC-$($item.id) marks non-approval task $($completedTask.Groups[1].Value) complete before implementation."
+        }
+        if ($implementationMode) {
+            foreach ($completedPath in Get-TaskPaths $completedTask.Groups[2].Value) {
+                if (-not (Test-Path (Join-Path $root $completedPath) -PathType Leaf)) {
+                    Add-Failure "SPEC-$($item.id) marks $($completedTask.Groups[1].Value) complete but required artifact $completedPath is missing."
+                }
+            }
         }
     }
     foreach ($task in $taskMatches) {
@@ -1062,9 +1080,9 @@ for ($migrationIndex = 0; $migrationIndex -lt @($persistenceManifest.migrations)
 Remove-Item Env:SPECIFY_FEATURE -ErrorAction SilentlyContinue
 Remove-Item Env:SPECIFY_FEATURE_DIRECTORY -ErrorAction SilentlyContinue
 
-$sourceFiles = @(Get-ChildItem $root -Recurse -File -Include *.cs,*.razor,*.csproj,*.sln,*.sql |
-    Where-Object { $_.FullName -notmatch '\\.agents\\|\\.specify\\' })
-if ($sourceFiles.Count -gt 0) { Add-Failure "Planning-only boundary violated by $($sourceFiles.Count) implementation files." }
+if (-not $implementationMode -and $implementationFiles.Count -gt 0) {
+    Add-Failure "Planning-only boundary violated by $($implementationFiles.Count) implementation files."
+}
 
 $erdPath = Join-Path $root 'docs/diagrams/ERD.md'
 $erd = if (Test-Path $erdPath) { Get-Content $erdPath -Raw } else { '' }

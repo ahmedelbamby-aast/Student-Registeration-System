@@ -7,7 +7,7 @@
 
 | Spec | Artifacts | FR+NFR | AC | EC | Actionable tasks | Strict score | Automated gates | Human approval |
 |---|---:|---:|---:|---:|---:|---:|---|---|
-| SPEC-001 | 12 | 11 | 5 | 3 | 42 | 100 | PASS | APPROVED |
+| SPEC-001 | 22 | 11 | 5 | 3 | 42 | 100 | PASS | APPROVED |
 | SPEC-002 | 12 | 11 | 5 | 4 | 43 | 100 | PASS | APPROVED |
 | SPEC-003 | 13 | 24 | 17 | 10 | 276 | 100 | PASS | APPROVED |
 | SPEC-004 | 12 | 13 | 7 | 3 | 48 | 100 | PASS | APPROVED |

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/StudentRegistration.AcceptanceTests/StudentRegistration.AcceptanceTests.csproj" />
+    <Project Path="tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj" />
+    <Project Path="tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj" />
+    <Project Path="tests/StudentRegistration.SpecificationTests/StudentRegistration.SpecificationTests.csproj" />
+  </Folder>
+</Solution>
