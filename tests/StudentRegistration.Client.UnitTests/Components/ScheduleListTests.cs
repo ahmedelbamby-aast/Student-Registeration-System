@@ -21,7 +21,7 @@ public sealed class ScheduleListTests
 
         var items = cut.FindAll("ol > li");
         Assert.Equal(["meeting-2", "meeting-1"],
-            items.Select(item => item.GetAttribute("data-meeting-id")).ToArray());
+            items.Select(item => item.GetAttribute("data-meeting-id") ?? string.Empty).ToArray());
         Assert.Contains("DS221 Data Science", items[0].TextContent, StringComparison.Ordinal);
         Assert.Contains("G02", items[0].TextContent, StringComparison.Ordinal);
         Assert.Contains("Lecture", items[0].TextContent, StringComparison.Ordinal);

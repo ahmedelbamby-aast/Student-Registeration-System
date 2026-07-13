@@ -1,0 +1,72 @@
+.srs-receipt-summary {
+    display: grid;
+    gap: var(--srs-spacing-primitive-4);
+    padding: var(--srs-spacing-primitive-6);
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+}
+
+.srs-receipt-summary h2,
+.srs-receipt-summary p,
+.srs-receipt-summary dl,
+.srs-receipt-summary dd {
+    margin: var(--srs-spacing-primitive-0);
+}
+
+.srs-receipt-summary__items {
+    display: grid;
+    gap: var(--srs-spacing-primitive-3);
+}
+
+.srs-receipt-summary__items div,
+.srs-receipt-summary__reference {
+    display: grid;
+    gap: var(--srs-spacing-primitive-1);
+}
+
+.srs-receipt-summary button {
+    min-height: var(--srs-sizing-interactive-minimum);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-4);
+    color: var(--srs-color-component-button-primary-text);
+    background: var(--srs-color-component-button-primary-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-component-button-primary-background);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-receipt-summary button:hover {
+    color: var(--srs-color-component-button-secondary-text);
+    background: var(--srs-color-component-button-secondary-background);
+}
+
+.srs-receipt-summary button:active {
+    background: var(--srs-color-semantic-surface-muted);
+}
+
+.srs-receipt-summary button:focus-visible {
+    outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-receipt-summary button:disabled {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+    border-color: var(--srs-color-semantic-disabled-text);
+}
+
+.srs-receipt-summary__error {
+    color: var(--srs-color-semantic-danger-text);
+}
+
+@media print {
+    .srs-receipt-summary {
+        border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-text-primary);
+    }
+
+    .srs-receipt-summary button,
+    .srs-receipt-summary__disabled {
+        display: none;
+    }
+}

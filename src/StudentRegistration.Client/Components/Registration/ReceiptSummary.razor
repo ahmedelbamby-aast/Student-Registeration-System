@@ -1,0 +1,145 @@
+<section id="@ComponentId"
+         class="srs-receipt-summary"
+         role="region"
+         aria-labelledby="@HeadingId"
+         aria-live="polite"
+         aria-busy="@IsLoading.ToString().ToLowerInvariant()"
+         aria-disabled="@IsDisabled.ToString().ToLowerInvariant()"
+         data-state="@StateName">
+    <h2 id="@HeadingId">@Heading</h2>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <p class="srs-receipt-summary__error" role="alert">@ErrorMessage</p>
+    }
+    else if (IsLoading)
+    {
+        <p class="srs-receipt-summary__status" role="status">@LoadingText</p>
+    }
+    else
+    {
+        <dl class="srs-receipt-summary__items">
+            @foreach (var item in Items)
+            {
+                <div data-receipt-item>
+                    <dt>@item.Label</dt>
+                    <dd>@item.Value</dd>
+                </div>
+            }
+        </dl>
+
+        <p class="srs-receipt-summary__reference" data-receipt-reference>
+            <span>@ReferenceLabel</span>
+            <strong>@Reference</strong>
+        </p>
+
+        @if (IsDisabled)
+        {
+            <p class="srs-receipt-summary__disabled" data-disabled-reason>@DisabledReason</p>
+        }
+
+        <button type="button"
+                data-print-receipt
+                disabled="@IsDisabled"
+                @onclick="PrintAsync">@PrintLabel</button>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ComponentId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ReferenceLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Reference { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string PrintLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<ReceiptItem> Items { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnPrint { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private string HeadingId => $"{ComponentId}-heading";
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ComponentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+
+        if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            return;
+        }
+
+        if (IsLoading)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(LoadingText);
+            return;
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(ReferenceLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Reference);
+        ArgumentException.ThrowIfNullOrWhiteSpace(PrintLabel);
+
+        if (Items.Count == 0)
+        {
+            throw new ArgumentException("A receipt must contain at least one summary item.", nameof(Items));
+        }
+
+        if (IsDisabled)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(DisabledReason);
+        }
+    }
+
+    private Task PrintAsync() => IsDisabled
+        ? Task.CompletedTask
+        : OnPrint.InvokeAsync();
+
+    public sealed class ReceiptItem
+    {
+        public ReceiptItem(string label, string value)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(label);
+            ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+            Label = label;
+            Value = value;
+        }
+
+        public string Label { get; }
+
+        public string Value { get; }
+    }
+}

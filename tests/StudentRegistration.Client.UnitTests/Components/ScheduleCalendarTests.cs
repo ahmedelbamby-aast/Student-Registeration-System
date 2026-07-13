@@ -36,7 +36,7 @@ public sealed class ScheduleCalendarTests
 
         var rows = cut.FindAll("tbody tr");
         Assert.Equal(["meeting-2", "meeting-1"],
-            rows.Select(row => row.GetAttribute("data-meeting-id")).ToArray());
+            rows.Select(row => row.GetAttribute("data-meeting-id") ?? string.Empty).ToArray());
         Assert.Contains("Data Science", rows[0].TextContent, StringComparison.Ordinal);
         Assert.Contains("Dr. Salma", rows[0].TextContent, StringComparison.Ordinal);
         Assert.Contains("TA Noor", rows[0].TextContent, StringComparison.Ordinal);

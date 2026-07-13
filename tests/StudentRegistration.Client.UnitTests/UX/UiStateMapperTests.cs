@@ -45,7 +45,7 @@ public sealed class UiStateMapperTests
             serverAccepted: false,
             "FUTURE_SERVER_REASON",
             "REF-UNKNOWN",
-            [new UiStatusAction("support", "Support", "/status/support") ]));
+            [new UiStatusAction("support", "Support", "/status/support")]));
 
         Assert.Equal(RouteUiState.ServiceError, result.State);
         Assert.Equal("FUTURE_SERVER_REASON", result.Status.Code);

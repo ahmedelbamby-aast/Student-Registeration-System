@@ -1,0 +1,227 @@
+@using StudentRegistration.Client.Features.Frontend.Models
+
+<section id="@ComponentId"
+         class="srs-conflict-panel"
+         role="region"
+         aria-labelledby="@HeadingId"
+         aria-live="polite"
+         aria-busy="@IsLoading.ToString().ToLowerInvariant()"
+         aria-disabled="@IsDisabled.ToString().ToLowerInvariant()"
+         data-state="@StateName">
+    <h2 id="@HeadingId" class="srs-conflict-panel__heading">
+        <span data-conflict-icon aria-hidden="true">&#10006;</span>
+        <span>@Heading</span>
+    </h2>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <p class="srs-conflict-panel__error" role="alert">@ErrorMessage</p>
+    }
+    else if (IsLoading)
+    {
+        <p class="srs-conflict-panel__status" role="status">@LoadingText</p>
+    }
+    else
+    {
+        <p class="srs-conflict-panel__explanation">@Explanation</p>
+
+        @if (IsDisabled)
+        {
+            <p class="srs-conflict-panel__disabled" data-disabled-reason>@DisabledReason</p>
+        }
+
+        <section aria-labelledby="@SubjectsHeadingId">
+            <h3 id="@SubjectsHeadingId">@SubjectsHeading</h3>
+            <ul class="srs-conflict-panel__groups">
+                @foreach (var group in Conflict!.SubjectGroups)
+                {
+                    <li data-conflict-group>
+                        <dl>
+                            <div><dt>@SubjectLabel</dt><dd>@group.SubjectCode @group.SubjectName</dd></div>
+                            <div><dt>@GroupLabel</dt><dd>@group.GroupCode</dd></div>
+                        </dl>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section aria-labelledby="@OverlapsHeadingId">
+            <h3 id="@OverlapsHeadingId">@OverlapsHeading</h3>
+            <ol class="srs-conflict-panel__overlaps">
+                @foreach (var slot in Conflict.OverlapSlots)
+                {
+                    <li data-overlap-slot>
+                        <dl>
+                            <div><dt>@DayLabel</dt><dd>@slot.Day</dd></div>
+                            <div><dt>@StartLabel</dt><dd><time>@FormatTime(slot.StartsAt)</time></dd></div>
+                            <div><dt>@EndLabel</dt><dd><time>@FormatTime(slot.EndsAt)</time></dd></div>
+                            <div>
+                                <dt>@InvolvedGroupsLabel</dt>
+                                <dd>@string.Join(", ", slot.SubjectGroupReferences)</dd>
+                            </div>
+                        </dl>
+                    </li>
+                }
+            </ol>
+        </section>
+
+        @if (Conflict.Alternatives.Count > 0)
+        {
+            <section aria-labelledby="@AlternativesHeadingId">
+                <h3 id="@AlternativesHeadingId">@AlternativesHeading</h3>
+                <ul class="srs-conflict-panel__alternatives">
+                    @foreach (var alternative in Conflict.Alternatives)
+                    {
+                        <li data-alternative-id="@alternative.AlternativeId">
+                            <p>@alternative.Summary</p>
+                            <dl>
+                                <div>
+                                    <dt>@ReplacementGroupsLabel</dt>
+                                    <dd>@string.Join(", ", alternative.ReplacementGroupReferences)</dd>
+                                </div>
+                            </dl>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        <section aria-labelledby="@ResolutionHeadingId">
+            <h3 id="@ResolutionHeadingId">@ResolutionHeading</h3>
+            <ul class="srs-conflict-panel__actions">
+                @foreach (var link in Conflict.ResolutionLinks)
+                {
+                    <li>
+                        @if (IsDisabled)
+                        {
+                            <span data-resolution-link aria-disabled="true">@link.Label</span>
+                        }
+                        else
+                        {
+                            <a data-resolution-link href="@link.Href">@link.Label</a>
+                        }
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ComponentId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Explanation { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string SubjectsHeading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string SubjectLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string GroupLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string OverlapsHeading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string DayLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string StartLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string EndLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string InvolvedGroupsLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string AlternativesHeading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ReplacementGroupsLabel { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string ResolutionHeading { get; set; } = string.Empty;
+
+    [Parameter]
+    public ConflictView? Conflict { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string? DisabledReason { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private string HeadingId => $"{ComponentId}-heading";
+
+    private string SubjectsHeadingId => $"{ComponentId}-subjects-heading";
+
+    private string OverlapsHeadingId => $"{ComponentId}-overlaps-heading";
+
+    private string AlternativesHeadingId => $"{ComponentId}-alternatives-heading";
+
+    private string ResolutionHeadingId => $"{ComponentId}-resolution-heading";
+
+    private string StateName => !string.IsNullOrWhiteSpace(ErrorMessage)
+        ? "error"
+        : IsLoading
+            ? "loading"
+            : IsDisabled
+                ? "disabled"
+                : "default";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ComponentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+
+        if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            return;
+        }
+
+        if (IsLoading)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(LoadingText);
+            return;
+        }
+
+        ArgumentNullException.ThrowIfNull(Conflict);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Explanation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(SubjectsHeading);
+        ArgumentException.ThrowIfNullOrWhiteSpace(SubjectLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(GroupLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(OverlapsHeading);
+        ArgumentException.ThrowIfNullOrWhiteSpace(DayLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(StartLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(EndLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(InvolvedGroupsLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(AlternativesHeading);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ReplacementGroupsLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ResolutionHeading);
+
+        if (IsDisabled)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(DisabledReason);
+        }
+    }
+
+    private static string FormatTime(TimeOnly value) =>
+        value.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+}
