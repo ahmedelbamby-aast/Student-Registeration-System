@@ -14,3 +14,18 @@ persistence until guarded reset, synthetic-only data, and Git-ignored local
 credential/log/export artifacts retained no more than seven days. Production
 edition/topology, retention, deployment-window, migration, Gates B-D, and
 release approvals remain separate and fail closed where specified.
+
+## Corrected baseline verification
+
+**Status**: APPROVED<br>
+**Verified by**: Ahmed ELbamby<br>
+**Verification date**: 2026-07-13<br>
+**Scope effect**: No new runtime feature, route, endpoint, database, or
+production authority
+
+Ahmed ELbamby approved the simplest best-practice corrections recorded in
+`consistency-analysis.md`: the complete RegistrationSubmission timestamp
+contract, synchronized manifest entity/SC-2, explicit MigrationTests project
+creation, deferred-runtime activation gate, and design-time future-source-path
+contract. T006 and later work may proceed in dependency order after T001-T005
+are checked. Production-only decisions and later gates remain fail closed.

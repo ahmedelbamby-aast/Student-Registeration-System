@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "specs": [
     {
       "id": "001",
@@ -114,12 +114,13 @@
         "SectionGroup",
         "RegistrationPlan",
         "RegistrationSubmission",
+        "StudentTermRegistrationGuard",
         "Enrollment",
         "AuditEvent"
       ],
       "successCriteria": [
         "All required uniqueness, capacity, relationship, and historical invariants are explicitly modeled.",
-        "Every imported academic record retains source provenance.",
+        "Every imported or synthetic seeded academic record retains source provenance, and rebuilding the same seed version reproduces the same logical identities and academic values.",
         "Migration, backup, and rollback requirements are documented before schema implementation."
       ]
     },

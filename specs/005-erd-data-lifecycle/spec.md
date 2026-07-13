@@ -154,8 +154,9 @@ And sensitive fields are absent from unsafe logs.
 - FR-9: The ERD MUST model a unique student-term registration guard and MUST
   use `RegistrationSubmission` as the single idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
-  deterministic result, created/updated/completed timestamps, and uniqueness
-  on owner/scope/key. A second `IdempotencyRecord` entity MUST NOT be created.
+  deterministic result, `ReceivedAtUtc` as its creation instant,
+  `UpdatedAtUtc`, nullable `CompletedAtUtc`, and uniqueness on owner/scope/key.
+  A second `IdempotencyRecord` entity MUST NOT be created.
 
 ### Non-Functional Requirements
 

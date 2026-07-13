@@ -45,8 +45,9 @@ proposed model is in docs/diagrams/ERD.md.
 - FR-9: The ERD MUST model a unique student-term registration guard and MUST
   use `RegistrationSubmission` as the single idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
-  deterministic result, created/updated/completed timestamps, and uniqueness
-  on owner/scope/key. A second `IdempotencyRecord` entity MUST NOT be created.
+  deterministic result, `ReceivedAtUtc` as its creation instant,
+  `UpdatedAtUtc`, nullable `CompletedAtUtc`, and uniqueness on owner/scope/key.
+  A second `IdempotencyRecord` entity MUST NOT be created.
 
 ## Non-Functional Requirements
 
@@ -172,7 +173,7 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | Non-production seed profile | SPEC-005 contract; canonical owners write their rows | configuration, not an entity | Development or per-run Testing only; versioned deterministic logical fixture; idempotent seed; explicit guarded reset |
 | ApplicationUser password credential | SPEC-007 | password hash | ASP.NET Identity hash only; no plaintext PIN/password persistence |
 | StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
-| RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, timestamps |
+| RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, ReceivedAtUtc creation instant, UpdatedAtUtc, nullable CompletedAtUtc |
 
 Each canonical owner implements its entity and EF configuration in its module.
 `StudentRegistration.Infrastructure.SqlServer` composes those configurations

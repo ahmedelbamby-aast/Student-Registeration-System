@@ -12,6 +12,7 @@
 - [x] G10 Pre-Gate-A planning-only boundary
 - [x] G11 Gate A demo implementation approval by Ahmed ELbamby on 2026-07-13
 
-Automated gates and Gate A human approval pass. Demo implementation MAY begin;
+Automated gates, corrected-baseline analysis, and Gate A human approval pass.
+Demo implementation MAY begin in dependency order after T001-T005 are checked;
 production migration-window, Gates B-D, and production release approval remain
 required.

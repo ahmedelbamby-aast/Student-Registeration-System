@@ -31,7 +31,7 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | Non-production seed profile | SPEC-005 contract; canonical owners write their rows | configuration, not an entity | SQL Server 2022 Developer compatibility 160; Docker Development persists until guarded reset; Testcontainers Testing is disposed per run; wholly synthetic versioned deterministic fixture; idempotent seed; no real data |
 | ApplicationUser password credential | SPEC-007 | password hash | ASP.NET Identity hash only; no plaintext PIN/password persistence |
 | StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
-| RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, timestamps |
+| RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, ReceivedAtUtc creation instant, UpdatedAtUtc, nullable CompletedAtUtc |
 
 ## Integrity Rules
 

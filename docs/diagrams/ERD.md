@@ -352,6 +352,7 @@ erDiagram
     string ReceiptSnapshotJson
     string DecisionSnapshotJson
     datetime2 ReceivedAtUtc
+    datetime2 UpdatedAtUtc
     datetime2 CompletedAtUtc
   }
   STUDENT_TERM_REGISTRATION_GUARD {
