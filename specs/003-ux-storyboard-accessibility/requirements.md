@@ -8,6 +8,10 @@
 **Target:** Sprint 0 design baseline; implemented incrementally with each feature<br>
 **Dependencies:** SPEC-001, SPEC-002<br>
 
+**Draft Page Design Record amendment:** The 1.1 route-design batch, including
+trigger-aware empty states and complete SYS-01 health-status mapping, is pending
+Ahmed ELbamby's review and is not yet an immutable implementation pin.
+
 ## Context
 
 Registration occurs under time pressure and must communicate eligibility,
@@ -246,10 +250,11 @@ Then timestamps, staleness, text-equivalent metrics, pause/resume, warnings,
 and authorization behavior match SPEC-017/SPEC-018 contracts.
 
 ### AC-17: Safe system status functionality (FR-1, FR-5, FR-12, FR-14)
-Given 403, 404, session-expired, maintenance, offline, and unexpected-error
-fixtures<br>
+Given healthy, degraded, unhealthy, 403, 404, session-expired, maintenance,
+offline, and unexpected-error fixtures<br>
 When SYS-01 functional journeys execute<br>
-Then the correct safe heading, next action, and reference ID are shown<br>
+Then the correct safe health/status heading, public or authorized next action,
+and reference ID when applicable are shown<br>
 And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
 ## Edge Cases

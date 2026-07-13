@@ -8,6 +8,10 @@
 **Target:** Sprint 4<br>
 **Dependencies:** SPEC-003, SPEC-010, SPEC-011, SPEC-018<br>
 
+**Draft amendment:** The credit-load response projection below is pending
+Ahmed ELbamby's review. It corrects a pre-implementation contract gap and is
+not an immutable downstream pin or runtime authorization.
+
 ## Context
 
 A student may select groups with overlapping meeting intervals. The builder
@@ -30,7 +34,10 @@ submission until the plan is valid.
 - FR-5: Review/submission MUST be blocked while any hard conflict exists.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
   credits/conflicts through an explicit GET, versioned PUT, and non-mutating
-  validate contract.
+  validate contract. Every plan response MUST also return the policy-sourced
+  default target of 18 credits, the Student's effective maximum of 12 or 18,
+  and safe load reasons with policy/source provenance. The browser MUST NOT
+  derive the limit from GPA.
 - FR-7: One active RegistrationPlan per authenticated student and term MUST
   persist server-side and use rowversion. Owner routes use the authorized
   term, not an arbitrary client-owned plan identifier; direct-object access to
@@ -70,11 +77,14 @@ When the student opens Review<br>
 Then submission is disabled with a visible reason and resolution links.
 
 ### AC-4: Versioned plan editing (FR-1, FR-6, FR-7, FR-8)
-Given a current plan and advisory group capacity<br>
+Given a current plan and advisory group capacity for either a normal
+18-credit maximum or a GPA-below-2.0 12-credit maximum<br>
 When the student selects a second group for one offering or saves with a stale
 rowversion<br>
 Then the invalid/stale update is rejected<br>
-And the student can load the current plan and change/remove a group.
+And the student can load the current plan and change/remove a group<br>
+And every response returns total credits, default target 18, the effective
+12/18 maximum, and its safe policy/source reasons.
 
 ### AC-5: Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
 Given an eight-course/ten-groups-per-course plan, fixed meeting data, equivalent
@@ -116,12 +126,25 @@ interface ValidationSnapshotDto {
   offeringVersions: Record<string, string>;
   groupVersions: Record<string, string>;
 }
+interface LoadPolicyReasonDto {
+  code: string;
+  blocking: boolean;
+  message: string;
+  requiredValue?: string;
+  currentValue?: string;
+  policySetId: string;
+  policyVersion: string;
+  sourceReference: string;
+}
 interface RegistrationPlanDto {
   id: string;
   termId: string;
   rowVersion: string;
   selectedGroups: GroupDto[];
   totalCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
+  loadReasons: LoadPolicyReasonDto[];
   conflicts: ScheduleConflictDto[];
   validation: ValidationSnapshotDto;
   reviewBlocked: boolean;
@@ -134,7 +157,8 @@ Endpoints: GET and PUT /api/student/terms/{termId}/registration-plan, and POST
 the selected group set, recalculates credits/conflicts/validation, and returns
 the new plan. A stale version returns 409 STALE_VERSION with the current plan
 only to its authorized owner. Validate never reserves a seat or mutates the
-plan.
+plan. The server composes the credit-load fields from the current SPEC-011
+eligibility/policy evaluation; the client never infers them from GPA.
 
 ## Data Models
 

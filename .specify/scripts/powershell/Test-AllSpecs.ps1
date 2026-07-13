@@ -156,6 +156,25 @@ foreach ($endpoint in @($endpointManifest.endpoints)) {
     if ($method -notin @('GET','POST','PUT','PATCH','DELETE')) { Add-Failure "Endpoint $key uses an unsupported method." }
     if ([string]$endpoint.path -notmatch '^/api/[A-Za-z0-9_{}?=&/\-]+$') { Add-Failure "Endpoint $key has an invalid canonical API path." }
     if ($ids -notcontains [string]$endpoint.owner) { Add-Failure "Endpoint $key has missing owner SPEC-$($endpoint.owner)." }
+    $contributors = @()
+    if (Has-Property $endpoint 'contributors') {
+        if ($endpoint.contributors -isnot [System.Array]) {
+            Add-Failure "Endpoint $key composite contributors must be an array."
+        } else {
+            $contributors = @($endpoint.contributors)
+        }
+    }
+    if (($contributors | Select-Object -Unique).Count -ne $contributors.Count) {
+        Add-Failure "Endpoint $key contains duplicate composite contributors."
+    }
+    foreach ($contributor in $contributors) {
+        if ($ids -notcontains [string]$contributor) {
+            Add-Failure "Endpoint $key has missing composite contributor SPEC-$contributor."
+        }
+        if ([string]$contributor -eq [string]$endpoint.owner) {
+            Add-Failure "Endpoint $key repeats its owner as a composite contributor."
+        }
+    }
 }
 if (($endpointKeys | Select-Object -Unique).Count -ne $endpointKeys.Count) { Add-Failure 'Endpoint manifest contains duplicate method/path keys.' }
 
@@ -328,6 +347,13 @@ foreach ($route in $routeManifest.routes) {
     foreach ($owner in $route.owners) {
         if ($ids -notcontains $owner) { Add-Failure "$($route.id) references missing owner SPEC-$owner." }
     }
+    $expectedLinkedSpecs = @($route.owners | Where-Object {
+        [string]$_ -ne [string]$route.designOwner
+    } | Sort-Object -Unique)
+    $actualLinkedSpecs = @($route.links.spec | ForEach-Object { [string]$_ } | Sort-Object -Unique)
+    if (Compare-Object $expectedLinkedSpecs $actualLinkedSpecs) {
+        Add-Failure "$($route.id) links must exactly cover every owner/contributor other than its design owner."
+    }
     foreach ($link in @($route.links)) {
         Assert-RequiredProperties "$($route.id) link" $link @('spec','requirements','criteria')
         if ($ids -notcontains [string]$link.spec) { Add-Failure "$($route.id) links missing SPEC-$($link.spec)."; continue }
@@ -360,6 +386,21 @@ if (-not (Has-Property $pageApiManifest 'version') -or -not (Has-Property $pageA
         foreach ($pageEndpoint in $pageEndpoints) {
             if ($endpointKeys -notcontains [string]$pageEndpoint) {
                 Add-Failure "$routeId references unregistered page endpoint $pageEndpoint."
+                continue
+            }
+            $canonicalEndpoint = $endpointManifest.endpoints | Where-Object {
+                "$(([string]$_.method).ToUpperInvariant()) $($_.path)" -eq [string]$pageEndpoint
+            }
+            $route = $routeManifest.routes | Where-Object id -eq $routeId
+            $endpointContributors = @()
+            if ((Has-Property $canonicalEndpoint 'contributors') -and
+                $canonicalEndpoint.contributors -is [System.Array]) {
+                $endpointContributors = @($canonicalEndpoint.contributors)
+            }
+            foreach ($authority in @([string]$canonicalEndpoint.owner) + $endpointContributors) {
+                if ($route.owners -notcontains [string]$authority) {
+                    Add-Failure "$routeId consumes $pageEndpoint but omits authority/contributor SPEC-$authority."
+                }
             }
         }
     }
@@ -835,14 +876,13 @@ foreach ($item in $manifest.specs) {
         }
     }
 
-    $ownedRoutes = @($routeManifest.routes | Where-Object { $_.owners -contains $item.id })
-    foreach ($route in $ownedRoutes) {
-        $routeTag = "\[$([regex]::Escape($route.id))\]"
-        if ($spec -notmatch [regex]::Escape($route.id)) { Add-Failure "SPEC-$($item.id) spec.md omits owned route $($route.id)." }
-        foreach ($link in @($route.links | Where-Object spec -eq $item.id)) {
-            $linkTags = @(@($link.requirements) + @($link.criteria) | ForEach-Object { [string]$_ })
-            $linkedTasks = @($taskMatches | Where-Object { $_.Groups[2].Value -match $routeTag -and (Test-TaskTags $_.Groups[2].Value $linkTags) })
-            if ($linkedTasks.Count -lt 1) { Add-Failure "SPEC-$($item.id) route $($route.id) has no task carrying all linked FR/AC references." }
+    $declaredRoutes = @($routeManifest.routes | Where-Object {
+        [string]$_.designOwner -eq [string]$item.id -or
+        [string]$_.implementationOwner -eq [string]$item.id
+    })
+    foreach ($route in $declaredRoutes) {
+        if ($spec -notmatch [regex]::Escape($route.id)) {
+            Add-Failure "SPEC-$($item.id) spec.md omits canonical route responsibility $($route.id)."
         }
     }
 

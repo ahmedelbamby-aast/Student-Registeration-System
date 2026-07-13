@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0-draft",
   "pages": {
     "AUTH-01": [
       "GET /api/public/context"
@@ -14,7 +14,8 @@
     ],
     "AUTH-04": [
       "GET /api/public/context",
-      "POST /api/auth/staff/login"
+      "POST /api/auth/staff/login",
+      "PUT /api/auth/session/context"
     ],
     "AUTH-05": [
       "POST /api/auth/recovery/request",
@@ -131,6 +132,7 @@
     ],
     "STF-01": [
       "GET /api/context",
+      "PUT /api/auth/session/context",
       "GET /api/staff/assignments",
       "GET /api/staff/timetable"
     ],

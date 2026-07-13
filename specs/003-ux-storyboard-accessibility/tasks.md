@@ -3,6 +3,7 @@
 **Status**: Approved for Gate A demo implementation on 2026-07-13. Dependency-safe acceptance/edge coverage plus shared design contracts, infrastructure, and reusable components through T121 are verified; route-specific work remains governed by each route's owner/contributor version pins.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts and passing scoped tests. Unchecked tasks remain pending or dependency-gated; no route-specific source or executable evidence may run before its T073 row is implementation-ready.
+**Draft amendment gate**: The PDR/index 1.1 changes, trigger-aware filtered-empty journeys, and complete SYS-01 health mapping remain blocked pending Ahmed's explicit approval.
 
 ## Phase 1 - Dependency, Consistency, Readiness, and Final Approval Gates
 
@@ -164,7 +165,7 @@
 **Independent Test**: Execute only the AC-17 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T034 [AC-17] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-17Tests.cs for AC-17: Safe system status functionality (FR-1, FR-5, FR-12, FR-14): Given 403, 404, session-expired, maintenance, offline, and unexpected-error fixtures When SYS-01 functional journeys execute Then the correct safe heading, next action, and reference ID are shown And no stack trace, SQL text, credential, or unauthorized identifier appears.
+- [ ] T034 [AC-17] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-17Tests.cs for AC-17: Safe system status functionality (FR-1, FR-5, FR-12, FR-14): Given healthy, degraded, unhealthy, 403, 404, session-expired, maintenance, offline, and unexpected-error fixtures When SYS-01 functional journeys execute Then the correct safe health/status heading, public or authorized next action, and reference ID when applicable are shown And no stack trace, SQL text, credential, or unauthorized identifier appears.
 - [x] T035 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-1Tests.cs and assert: Status changes while keyboard focus is in a group card -> announce the update politely without stealing focus or changing the selected group.
 - [ ] T036 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-2Tests.cs and assert: Session expires with an unsaved plan -> preserve only the safe plan identifier, reauthenticate, fetch the server plan, and revalidate before rendering editable state.
 - [x] T037 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-3Tests.cs and assert: 400% zoom or 320-pixel width -> critical actions remain reachable and labels do not truncate blocking reasons.
@@ -398,7 +399,7 @@ A contributor change returns the row to design-only until revalidated.
 - [ ] T254 [SYS-01] [FR-5] [FR-12] Create failing component-state, navigation, form, focus, pending, and duplicate-action assertions for SYS-01 in tests/StudentRegistration.Client.UnitTests/Pages/SystemStatusPageComponentTests.cs.
 - [ ] T255 [SYS-01] [NFR-1] [NFR-2] [NFR-5] Run axe, keyboard, focus, screen-reader, 400-percent zoom, and responsive assertions for SYS-01 in tests/StudentRegistration.AccessibilityTests/Routes/SystemStatusPageAccessibilityTests.cs.
 - [ ] T256 [SYS-01] [NFR-7] [NFR-9] Approve cross-browser visual baselines for SYS-01 at 375, 768, 1280, and 1920 CSS pixels in tests/StudentRegistration.VisualTests/Routes/SystemStatusPageVisualTests.cs.
-- [ ] T257 [SYS-01] [AC-17] Create the future failing safe-status end-to-end journey for SYS-01 in tests/StudentRegistration.E2ETests/Routes/SystemStatusPageJourneyTests.cs.
+- [ ] T257 [SYS-01] [AC-17] Create the future failing healthy/degraded/unhealthy and safe-status end-to-end journeys, including the public-gateway recovery, for SYS-01 in tests/StudentRegistration.E2ETests/Routes/SystemStatusPageJourneyTests.cs.
 - [ ] T258 [SYS-01] [FR-4] [FR-5] Deliver the token-based SYS-01 page at src/StudentRegistration.Client/Pages/SystemStatusPage.razor only after T257 and the SPEC-003 route contract/component/accessibility checks fail for expected reasons (depends on T257).
 
 ## Phase 6 - Measurable Non-Functional Evidence

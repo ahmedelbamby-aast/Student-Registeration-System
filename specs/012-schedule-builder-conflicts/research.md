@@ -1,5 +1,8 @@
 # Research: Schedule Builder and Conflicts
 
+**Draft amendment:** The credit-load response projection is pending Ahmed
+ELbamby's review and is not yet an immutable downstream contract pin.
+
 ## Decisions
 
 ### Modular boundary
@@ -30,11 +33,24 @@ interface RegistrationPlanDto {
   rowVersion: string;
   selectedGroups: GroupDto[];
   totalCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
+  loadReasons: Array<{
+    code: string;
+    blocking: boolean;
+    message: string;
+    policySetId: string;
+    policyVersion: string;
+    sourceReference: string;
+  }>;
   conflicts: ScheduleConflictDto[];
 }
 ```
 
 Endpoints are owner/term scoped GET/PUT plus a non-mutating validate operation.
+All responses carry the server-composed 18-credit default target, effective
+12/18 maximum, and safe policy/source load reasons so direct schedule
+navigation never depends on client state or a browser GPA calculation.
 
 ### Plan route and update shape
 **Decision**: Use one active plan per authenticated student/term, a complete-

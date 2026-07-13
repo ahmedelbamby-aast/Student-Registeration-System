@@ -13,3 +13,13 @@ documented test-first order.
 
 This approval does not authorize production deployment, official AASTMT
 go-live, Gate B-D, or release sign-off.
+
+## Pending Credit-Load Response Amendment
+
+**Amendment status**: PENDING Ahmed ELbamby review
+
+The original Gate A approval remains immutable. The draft addition of
+`defaultTargetCredits`, `maximumAllowedCredits`, and sourced `loadReasons` to
+every RegistrationPlan response corrects a pre-implementation STU-04 contract
+gap, but its tests and runtime delivery are not authorized until Ahmed approves
+and versions this amendment explicitly.

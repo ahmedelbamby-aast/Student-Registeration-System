@@ -1,5 +1,8 @@
 # API Contract: Schedule Builder and Conflicts
 
+**Draft amendment:** The credit-load response projection is pending Ahmed
+ELbamby's review and is not yet an immutable downstream contract pin.
+
 ## Feature Contract
 
 ```typescript
@@ -21,12 +24,25 @@ interface ValidationSnapshotDto {
   offeringVersions: Record<string, string>;
   groupVersions: Record<string, string>;
 }
+interface LoadPolicyReasonDto {
+  code: string;
+  blocking: boolean;
+  message: string;
+  requiredValue?: string;
+  currentValue?: string;
+  policySetId: string;
+  policyVersion: string;
+  sourceReference: string;
+}
 interface RegistrationPlanDto {
   id: string;
   termId: string;
   rowVersion: string;
   selectedGroups: GroupDto[];
   totalCredits: number;
+  defaultTargetCredits: 18;
+  maximumAllowedCredits: 12 | 18;
+  loadReasons: LoadPolicyReasonDto[];
   conflicts: ScheduleConflictDto[];
   validation: ValidationSnapshotDto;
   reviewBlocked: boolean;
@@ -46,6 +62,10 @@ returns `DUPLICATE_OFFERING_SELECTION`, `GROUP_CHANGED`, `GROUP_FULL`,
 uses half-open intervals. `TRAVEL_BUFFER` is reserved for a future approved
 policy and is not emitted by the demo.
 Neither read, PUT, nor validate reserves a seat.
+Every response composes `defaultTargetCredits`, `maximumAllowedCredits`, and
+`loadReasons` from the current SPEC-011 eligibility/policy evaluation. The
+browser never calculates an effective maximum from GPA, and a 12-credit
+probation limit is returned with a safe policy/source explanation.
 
 ## Shared Rules
 

@@ -3,6 +3,7 @@
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. Execute remaining readiness and test-first tasks in dependency order.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Approval is the final planning gate. Failing tests precede every model, service, endpoint, and page; `[P]` never targets one shared file.
+**Draft amendment gate**: Credit-load response additions in T012/T014/T016/T020/T029/T042 remain blocked pending Ahmed's explicit amendment approval.
 
 ## Phase 1 - Planning Readiness and Recorded Gate A Approval
 
@@ -20,18 +21,18 @@
 - [ ] T009 [P] [ENTITY-ScheduleConflict] [OWNER-SPEC-012] Create failing both-group/course/interval/overlap/code/message/action checks in tests/StudentRegistration.IntegrationTests/Specs/Spec012/ScheduleConflictModelTests.cs.
 - [ ] T010 [P] [ENTITY-ValidationSnapshot] [OWNER-SPEC-012] Create failing timestamped academic/policy/catalogue/offering/group version checks in tests/StudentRegistration.IntegrationTests/Specs/Spec012/ValidationSnapshotModelTests.cs.
 - [ ] T011 [API-Endpoint01] [OWNER-SPEC-012] Finalize GET /api/student/terms/{termId}/registration-plan in specs/012-schedule-builder-conflicts/contracts/api.md.
-- [ ] T012 [P] [API-Endpoint01] Create failing owner/term, empty/current plan, no-seat-reservation, and direct-object privacy checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint01ContractTests.cs for GET /api/student/terms/{termId}/registration-plan.
+- [ ] T012 [P] [API-Endpoint01] Create failing owner/term, empty/current plan, server-composed default-18/effective-12-or-18/load-reason projection, no-seat-reservation, and direct-object privacy checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint01ContractTests.cs for GET /api/student/terms/{termId}/registration-plan.
 - [ ] T013 [API-Endpoint02] [OWNER-SPEC-012] Finalize PUT /api/student/terms/{termId}/registration-plan in specs/012-schedule-builder-conflicts/contracts/api.md.
-- [ ] T014 [P] [API-Endpoint02] Create failing complete-replacement, expected-rowversion, duplicate offering, stale-current-plan, and atomic response checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint02ContractTests.cs for PUT /api/student/terms/{termId}/registration-plan.
+- [ ] T014 [P] [API-Endpoint02] Create failing complete-replacement, expected-rowversion, duplicate offering, stale-current-plan, default/effective credit-load projection, and atomic response checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint02ContractTests.cs for PUT /api/student/terms/{termId}/registration-plan.
 - [ ] T015 [API-Endpoint03] [OWNER-SPEC-012] Finalize POST /api/student/terms/{termId}/registration-plan/validate in specs/012-schedule-builder-conflicts/contracts/api.md.
-- [ ] T016 [P] [API-Endpoint03] Create failing non-mutating complete conflict/action/snapshot/stale-group/no-seat-reservation checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint03ContractTests.cs for POST /api/student/terms/{termId}/registration-plan/validate.
+- [ ] T016 [P] [API-Endpoint03] Create failing non-mutating complete conflict/action/snapshot/stale-group/default-18/effective-12-or-18/load-reason/no-seat-reservation checks in tests/StudentRegistration.ContractTests/Specs/Spec012/Endpoint03ContractTests.cs for POST /api/student/terms/{termId}/registration-plan/validate.
 
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
 - [ ] T017 [P] [AC-1] [FR-2] [FR-3] [FR-4] Create exact overlap/red-X/text/both-subject/action coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-1Tests.cs.
 - [ ] T018 [P] [AC-2] [FR-2] Create adjacent half-open interval and approved disabled-demo-travel coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-2Tests.cs.
 - [ ] T019 [P] [AC-3] [FR-5] Create blocked Review and accessible resolution-link coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-3Tests.cs.
-- [ ] T020 [P] [AC-4] [FR-1] [FR-6] [FR-7] [FR-8] Create versioned add/change/remove/stale/advisory capacity coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-4Tests.cs.
+- [ ] T020 [P] [AC-4] [FR-1] [FR-6] [FR-7] [FR-8] Create versioned add/change/remove/stale/advisory-capacity plus normal-18 and GPA-below-2.0/effective-12 load coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-4Tests.cs.
 - [ ] T021 [P] [AC-5] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create performance/determinism/view-equivalence/two-editor quality coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec012/AC-5Tests.cs.
 - [ ] T022 [P] [EC-1] Create one-slot-of-many conflict coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec012/EdgeCases/EC-1Tests.cs.
 - [ ] T023 [P] [EC-2] Create stale update/current plan coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec012/EdgeCases/EC-2Tests.cs.
@@ -43,7 +44,7 @@
 
 ## Phase 4 - Consolidated Behavior Tests and Delivery
 
-- [ ] T029 [FR-1] [FR-6] [FR-7] [FR-8] [WORKSTREAM-VERSIONED-REGISTRATION-PLAN] Create the failing consolidated owner/term/full-replacement/rowversion/actions/snapshot/advisory-capacity suite in tests/StudentRegistration.IntegrationTests/Registration/RegistrationPlanConcurrencyTests.cs.
+- [ ] T029 [FR-1] [FR-6] [FR-7] [FR-8] [WORKSTREAM-VERSIONED-REGISTRATION-PLAN] Create the failing consolidated owner/term/full-replacement/rowversion/actions/snapshot/advisory-capacity/default-18/effective-12-or-18/load-reason suite in tests/StudentRegistration.IntegrationTests/Registration/RegistrationPlanConcurrencyTests.cs.
 - [ ] T030 [FR-2] [FR-3] [WORKSTREAM-INTERVAL-CONFLICT-DETECTOR] Create the failing consolidated half-open/adjacent/multi-slot/de-duplication/details/actions suite in tests/StudentRegistration.DomainTests/Registration/ScheduleConflictDetectorTests.cs.
 - [ ] T031 [FR-4] [FR-5] [WORKSTREAM-ACCESSIBLE-BLOCKING-CONFLICT-STATE] Create the failing red-X/text/icon/review-block/change-remove/calendar-list state suite in tests/StudentRegistration.Client.UnitTests/Scheduling/ConflictStateMapperTests.cs.
 - [ ] T032 [ENTITY-RegistrationPlan] [OWNER-SPEC-012] Deliver the canonical RegistrationPlan at src/StudentRegistration.Registration/Domain/RegistrationPlan.cs after T007 fails.
@@ -62,7 +63,7 @@
 
 ## Phase 6 - Frontend Functional Tests and Page
 
-- [ ] T042 [P] [STU-04] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-7] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Create failing add/change/remove/overlap/stale/view-equivalence journeys in tests/StudentRegistration.E2ETests/Specs/Spec012/ScheduleBuilderPageFeatureTests.cs.
+- [ ] T042 [P] [STU-04] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-7] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Create failing add/change/remove/overlap/stale/view-equivalence plus normal-18 and GPA-below-2.0/effective-12 load journeys in tests/StudentRegistration.E2ETests/Specs/Spec012/ScheduleBuilderPageFeatureTests.cs.
 - [ ] T043 [STU-04] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-6] [FR-7] [FR-8] [AC-1] [AC-2] [AC-4] [AC-5] Deliver ScheduleBuilderPage at src/StudentRegistration.Client/Pages/ScheduleBuilderPage.razor after T042 fails.
 - [ ] T044 [STU-05] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [AC-3] [AC-4] [AC-5] Finalize the blocked-review/conflict/action/snapshot contribution in specs/012-schedule-builder-conflicts/contracts/routes/STU-05.md without editing its Razor page.
 - [ ] T045 [P] [STU-05] [UI-CONTRACT-SPEC-003] [FR-5] [FR-7] [FR-8] [AC-3] [AC-4] [AC-5] Verify the Review contribution in tests/StudentRegistration.E2ETests/Specs/Spec012/RegistrationReviewPageContributorTests.cs.

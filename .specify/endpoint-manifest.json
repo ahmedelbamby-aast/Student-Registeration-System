@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0-draft",
   "endpoints": [
     { "method": "POST", "path": "/api/auth/student/login", "owner": "007" },
     { "method": "POST", "path": "/api/auth/student/activate", "owner": "007" },
@@ -19,7 +19,7 @@
     { "method": "PUT", "path": "/api/admin/users/{userId}/roles", "owner": "007" },
 
     { "method": "GET", "path": "/api/public/context", "owner": "008" },
-    { "method": "GET", "path": "/api/context", "owner": "008" },
+    { "method": "GET", "path": "/api/context", "owner": "008", "contributors": ["007"] },
     { "method": "GET", "path": "/api/students/me/academic-context", "owner": "008" },
     { "method": "GET", "path": "/api/admin/terms", "owner": "008" },
     { "method": "POST", "path": "/api/admin/terms", "owner": "008" },
