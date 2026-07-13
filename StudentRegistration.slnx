@@ -17,6 +17,7 @@
     <Project Path="tests/StudentRegistration.ContractTests/StudentRegistration.ContractTests.csproj" />
     <Project Path="tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj" />
     <Project Path="tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj" />
+    <Project Path="tests/StudentRegistration.MigrationTests/StudentRegistration.MigrationTests.csproj" />
     <Project Path="tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj" />
     <Project Path="tests/StudentRegistration.SpecificationTests/StudentRegistration.SpecificationTests.csproj" />
   </Folder>
