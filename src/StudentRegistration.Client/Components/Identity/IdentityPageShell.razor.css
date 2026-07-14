@@ -1,0 +1,71 @@
+.srs-identity-shell {
+    display: grid;
+    min-block-size: 100vh;
+    grid-template-rows: auto 1fr auto;
+}
+
+.srs-identity-shell__header,
+.srs-identity-shell__navigation,
+.srs-identity-shell__main {
+    inline-size: min(100% - 2rem, 72rem);
+    margin-inline: auto;
+}
+
+.srs-identity-shell__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1rem;
+}
+
+.srs-identity-shell__logo {
+    block-size: 3.5rem;
+    inline-size: auto;
+}
+
+.srs-identity-shell__product {
+    font-weight: 700;
+}
+
+.srs-identity-shell__main {
+    display: grid;
+    place-items: start center;
+    padding-block: 2rem;
+}
+
+.srs-identity-panel {
+    inline-size: min(100%, 38rem);
+    padding: clamp(1rem, 4vw, 2rem);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    background: var(--srs-color-component-panel-background);
+}
+
+.srs-identity-panel form {
+    display: grid;
+    gap: 1rem;
+}
+
+.srs-identity-panel__intro {
+    margin-block-end: 1.5rem;
+}
+
+.srs-identity-shell__navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-block: 1.5rem;
+}
+
+.srs-identity-shell__navigation a {
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    display: inline-flex;
+    align-items: center;
+    color: var(--srs-color-semantic-link);
+}
+
+@media (max-width: 30rem) {
+    .srs-identity-shell__navigation {
+        flex-direction: column;
+    }
+}

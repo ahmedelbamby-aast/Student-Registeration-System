@@ -64,6 +64,34 @@ public sealed class FormFieldTests
     }
 
     [Fact]
+    public void Opt_in_secret_reveal_toggles_type_without_copying_the_value()
+    {
+        using var context = new BunitContext();
+
+        var cut = context.Render<FormField>(parameters => parameters
+            .Add(component => component.InputId, "password")
+            .Add(component => component.Name, "password")
+            .Add(component => component.Label, "Password")
+            .Add(component => component.Type, "password")
+            .Add(component => component.Value, "A long demo secret")
+            .Add(component => component.AllowSecretReveal, true));
+
+        var input = cut.Find("input");
+        var reveal = cut.Find("[data-action='secret-reveal']");
+        Assert.Equal("password", input.GetAttribute("type"));
+        Assert.Equal("A long demo secret", input.GetAttribute("value"));
+        Assert.Equal("false", reveal.GetAttribute("aria-pressed"));
+        Assert.Equal("Show Password", reveal.TextContent.Trim());
+
+        reveal.Click();
+
+        Assert.Equal("text", cut.Find("input").GetAttribute("type"));
+        Assert.Equal("A long demo secret", cut.Find("input").GetAttribute("value"));
+        Assert.Equal("true", cut.Find("[data-action='secret-reveal']").GetAttribute("aria-pressed"));
+        Assert.Equal("Hide Password", cut.Find("[data-action='secret-reveal']").TextContent.Trim());
+    }
+
+    [Fact]
     public void Interaction_and_state_styles_use_only_approved_tokens()
     {
         var css = RepositoryFiles.Read(CssPath);
@@ -75,6 +103,8 @@ public sealed class FormFieldTests
             ".srs-form-field.is-disabled",
             ".srs-form-field.is-loading",
             ".srs-form-field.has-error",
+            ".srs-form-field__reveal",
+            "min-block-size: var(--srs-sizing-interactive-minimum)",
             "var(--srs-");
     }
 }

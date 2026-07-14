@@ -31,6 +31,29 @@ interface IdentityImportBatchDto {
 }
 interface UserStatusRequest { enabled: boolean; expectedRowVersion: string; reason: string; }
 interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">; expectedRowVersion: string; reason: string; }
+interface IdentityUserSummaryDto {
+  id: string;
+  displayName: string;
+  loginIdentifier: string;
+  enabled: boolean;
+  roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
+  rowVersion: string;
+}
+interface IdentityImportRequest {
+  source: string;
+  contentHash: string;
+  clientRequestId: string;
+  users: Array<{
+    externalReference: string;
+    kind: "student" | "staff";
+    universityId?: string;
+    userName?: string;
+    staffNumber?: string;
+    displayName: string;
+    roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">;
+  }>;
+}
+interface IdentityImportPublishRequest { expectedRowVersion: string; clientRequestId: string; }
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
@@ -42,6 +65,165 @@ POST /api/auth/staff/login, POST /api/auth/logout, POST
 /api/admin/users/imports, GET /api/admin/users/imports/{importId}, POST
 /api/admin/users/imports/{importId}/publish, PATCH
 /api/admin/users/{userId}/status, and PUT /api/admin/users/{userId}/roles.
+
+## Endpoint Contracts
+
+Every response body mentioned below uses the shared SPEC006 deterministic JSON
+policy. Every error body is the shared privacy-safe `ApiError`. Antiforgery
+failure returns `400 ANTIFORGERY_INVALID` before credential, account, resource,
+or version evaluation.
+
+### POST /api/auth/student/login
+
+- Authorization: anonymous only; valid antiforgery token required.
+- Request: `StudentLoginRequest`; University ID is server-normalized.
+- Responses: `200 SessionDto`; `400 VALIDATION_FAILED`; generic
+  `401 AUTHENTICATION_FAILED`; `429 RATE_LIMITED`.
+- Disabled, locked, unknown, wrong-password, and non-student outcomes share the
+  same 401 shape and do not reveal which check failed.
+
+### POST /api/auth/student/activate
+
+- Authorization: anonymous only; valid antiforgery token required.
+- Request: `ActivateStudentRequest`; no confirmation or client-selected ID is
+  accepted beyond the pre-provisioned University ID claim.
+- Responses: `200 SessionDto`; `400 VALIDATION_FAILED`,
+  `PASSWORD_REJECTED`, or generic `ACTIVATION_FAILED`; `429 RATE_LIMITED`.
+- Unknown, already-used, expired/attempt-exhausted, and wrong-initial-password
+  outcomes share `ACTIVATION_FAILED`. One conditional transaction verifies the
+  initial hash, replaces it, rotates security state, and consumes activation.
+
+### POST /api/auth/staff/login
+
+- Authorization: anonymous only; valid antiforgery token required.
+- Request: `StaffLoginRequest`; there is no role or second-factor field.
+- Responses: `200 SessionDto`; `400 VALIDATION_FAILED`; generic
+  `401 AUTHENTICATION_FAILED`; `429 RATE_LIMITED`.
+- Roles and role-selection-required state are derived only after server-side
+  password, enabled/lockout, staff-link, and effective-assignment checks.
+
+### POST /api/auth/logout
+
+- Authorization: authenticated; valid antiforgery token required.
+- Request: no body. Responses: `204`; `401` when unauthenticated.
+- Only the current cookie is expired; no long-lived browser credential exists.
+
+### POST /api/auth/recovery/request
+
+- Authorization: anonymous only; valid antiforgery token required.
+- Request: `RecoveryRequest`. Response: always the same empty `202`, including
+  unknown, disabled, throttled, or temporarily undeliverable subjects.
+- No token, delivery reference, account fact, or retry classification appears
+  in the HTTP response. A usable challenge commits only after the configured
+  delivery port accepts the proof.
+
+### POST /api/auth/recovery/complete
+
+- Authorization: anonymous only; valid antiforgery token required.
+- Request: `RecoveryCompleteRequest`.
+- Responses: `204`; `400 VALIDATION_FAILED`, `PASSWORD_REJECTED`, or generic
+  `CHALLENGE_INVALID`; `429 RATE_LIMITED`.
+- Success conditionally consumes the hashed proof, replaces the password hash,
+  and rotates security state in one transaction. Expiry, replay, exhaustion,
+  mismatch, and concurrent loss share `CHALLENGE_INVALID`.
+
+### POST /api/auth/password/change
+
+- Authorization: authenticated; valid antiforgery token required.
+- Request: `ChangePasswordRequest`.
+- Responses: `204`; `400 VALIDATION_FAILED`, `PASSWORD_REJECTED`, or generic
+  `CURRENT_PASSWORD_INVALID`; `401`; `429 RATE_LIMITED`.
+- Success replaces the hash and rotates security state atomically.
+
+### POST /api/auth/sessions/revoke-all
+
+- Authorization: authenticated; valid antiforgery token required.
+- Request: no body. Responses: `204`; `401`.
+- Success rotates shared security state so every earlier cookie on every
+  replica becomes invalid, including the caller's current cookie.
+
+### GET /api/auth/session
+
+- Authorization: authenticated. Request: no body or query.
+- Responses: `200 SessionDto`; `401`.
+- The DTO is reconstructed from current shared user/role state and never
+  exposes a password hash, security stamp, recovery value, or EF entity.
+
+### PUT /api/auth/session/context
+
+- Authorization: authenticated staff; valid antiforgery token required.
+- Request: `SelectRoleContextRequest`.
+- Responses: `200 SessionDto`; `400 ROLE_NOT_AVAILABLE`; `401`; `403` for a
+  student or unsupported staff context.
+- The selected role must be a currently effective server-returned assignment;
+  success rotates the cookie and cannot add or union claims.
+
+### GET /api/admin/users
+
+- Authorization: authenticated `Admin` with identity-management permission.
+- Query: optional bounded `search`, `page`, `pageSize`, and allow-listed
+  `sort`; default is `displayName,id`, page 1, size 20, maximum 100.
+- Responses: `200 Page<IdentityUserSummaryDto>`; `400 PAGE_SIZE_INVALID`; `401`;
+  `403`. Search and ordering execute server-side with the ID tie-breaker.
+
+### POST /api/admin/users/imports
+
+- Authorization: identity Admin; valid antiforgery token required.
+- Request: `IdentityImportRequest`, maximum 500 rows and bounded string fields.
+  `(requestedByUserId, clientRequestId)` is the idempotency scope; the server
+  recomputes the canonical content hash and also rejects duplicate source
+  content. A valid upload persists only normalized batch-owned candidate rows;
+  raw upload bytes and credentials are never staged.
+- Responses: `202 IdentityImportBatchDto`; `400 IMPORT_INVALID`; `401`; `403`;
+  `409 IDEMPOTENCY_KEY_REUSED` or `IMPORT_CONTENT_EXISTS`.
+- Imports pre-provision identities only and never accept plaintext passwords.
+
+### GET /api/admin/users/imports/{importId}
+
+- Authorization: identity Admin; the requested batch must be in the caller's
+  authorized identity-management scope.
+- Responses: `200 IdentityImportBatchDto`; `401`; `403`; authorized `404`.
+- Row errors are bounded and safe; no generated credential or raw row payload
+  is returned.
+
+### POST /api/admin/users/imports/{importId}/publish
+
+- Authorization: identity Admin; valid antiforgery token required.
+- Request: `IdentityImportPublishRequest`; `clientRequestId` is owner/import
+  scoped and the server hashes the canonical request.
+- Responses: `200 IdentityImportBatchDto`; `400 IMPORT_NOT_VALIDATED`; `401`;
+  `403`; authorized `404`; `409 STALE_VERSION` or
+  `IDEMPOTENCY_KEY_REUSED`.
+- Publication is all-or-nothing. Same-key/same-payload retries replay the
+  committed bounded result; cancellation before commit leaves no partial user.
+  Development/Testing credentials cross only the server-side
+  `IProvisionedCredentialHandoff`: prepare a non-visible import-ID handoff,
+  commit SQL, then complete it; rollback aborts it and a published retry
+  idempotently completes any pending handoff. Production has no local adapter
+  and fails closed. Endpoint 14 never returns a credential, path, or handoff
+  reference.
+
+### PATCH /api/admin/users/{userId}/status
+
+- Authorization: identity Admin; valid antiforgery token required.
+- Request: `UserStatusRequest`; reason is required and bounded.
+- Responses: `200 IdentityUserSummaryDto`; `400 VALIDATION_FAILED`; `401`;
+  `403`; authorized `404`; `409 STALE_VERSION` or `FINAL_ADMIN_REQUIRED`.
+- A reducing change locks/rechecks `AdminSecurityGuard`; success advances the
+  ApplicationUser rowversion, rotates security state, and atomically appends
+  safe SecurityEvent and AuditEvent facts.
+
+### PUT /api/admin/users/{userId}/roles
+
+- Authorization: identity Admin; valid antiforgery token required.
+- Request: `UserRolesRequest`; roles are de-duplicated from the fixed allow-list
+  and reason is required and bounded.
+- Responses: `200 IdentityUserSummaryDto`; `400 VALIDATION_FAILED`; `401`;
+  `403`; authorized `404`; `409 STALE_VERSION` or `FINAL_ADMIN_REQUIRED`.
+- Replacement uses the one ApplicationUser `expectedRowVersion`. A reducing
+  change locks/rechecks `AdminSecurityGuard`; success replaces assignments,
+  advances the aggregate rowversion, rotates security state, and atomically
+  appends safe SecurityEvent and AuditEvent facts.
 
 ## Endpoint Semantics
 
@@ -56,11 +238,12 @@ POST /api/auth/staff/login, POST /api/auth/logout, POST
   injects an in-memory adapter and Development may use only the Git-ignored
   bounded local adapter. If delivery cannot complete, no usable challenge is
   committed. Production startup fails closed without an approved institutional
-  adapter.
+  adapter. The request response MUST NOT contain the proof.
 - Challenge expiry, attempt exhaustion, replay, or concurrent second use
   returns a generic `400 CHALLENGE_INVALID` without account disclosure.
 - Password change, recovery completion, and revoke-all atomically rotate the
   shared security stamp. Earlier cookies are rejected by every replica.
+  Correctness never depends on sticky sessions and in-memory-only security state.
 - Session-context selection accepts only a role already present in the
   effective server role set and rotates the cookie; it cannot add claims.
 - When a multi-role staff member has not selected an active context, protected
@@ -72,7 +255,9 @@ POST /api/auth/staff/login, POST /api/auth/logout, POST
   DEC-13 remains a production approval gate.
 - Admin lists default to 20 and reject page sizes above 100. Import creation
   binds source/content hash/clientRequestId; publication is all-or-nothing and
-  replay-safe. Status/role commands require reason and aggregate `expectedRowVersion`.
+  replay-safe over immutable normalized candidate rows. Provisioned credentials
+  use the prepare/commit/complete-or-abort handoff above and never cross the API.
+  Status/role commands require reason and aggregate `expectedRowVersion`.
   Account disable and role replacement paths that can reduce the enabled-Admin
   set lock the Identity-owned singleton AdminSecurityGuard,
   serialize/recheck that scope, write SecurityEvent plus the shared SPEC-004

@@ -17,7 +17,7 @@
 - [x] `StudentActivation` is canonically owned by SPEC-007 in entity-ownership
   manifest `2.0.2`, appears in specification and persistence manifests, and
   references ApplicationUser rather than downstream Student.
-- [x] `identity-persistence-owner-extension/1.0` and the canonical ERD freeze
+- [x] `identity-persistence-owner-extension/1.1` and the canonical ERD freeze
   the exact security/lockout, recovery, assignment, abuse, import, and singleton
   guard fields before EF mapping; no field is left as an unmodeled runtime add-on.
 - [x] Recovery delivery is provider-neutral and fail closed. The endpoint never

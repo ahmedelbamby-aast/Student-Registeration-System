@@ -1,6 +1,6 @@
 # SPEC-007 Identity Persistence Owner Extension
 
-**Contract version:** `identity-persistence-owner-extension/1.0`<br>
+**Contract version:** `identity-persistence-owner-extension/1.1`<br>
 **Approved:** 2026-07-14 by Ahmed ELbamby<br>
 **Upstream baseline:** SPEC-005 commit
 `d88892f97e2164fc3ee60b530187c1f4a658ceb4`
@@ -20,6 +20,7 @@ SPEC-005 invariant.
 | AccountRecoveryChallenge | unique token hash, hashed opaque delivery reference, expiry, failed-attempt count, consumed timestamp, and rowversion. |
 | AuthenticationAbuseState | `Operation`, failure/window/locked-until state, and rowversion. `SubjectKeyHash` is an HMAC over canonical `operation + subject scope + network scope`, so raw University ID, username, and network address are not stored and the existing unique key is operation-scoped. |
 | IdentityImportBatch | requesting user, `ClientRequestId`, source name, source/content hash, state, bounded row-error JSON, bounded final-result JSON, timestamps, and rowversion. `(RequestedByUserId, ClientRequestId)` is additionally unique for atomic idempotency; the source hash remains the approved duplicate-content guard. |
+| IdentityImportCandidateRow | immutable batch-owned normalized staging row with `Id`, batch FK, 1-based `Ordinal`, bounded external reference/kind/display name, mutually exclusive student University ID or staff username/number, and canonical comma-delimited allow-listed roles. Unique `(IdentityImportBatchId, Ordinal)`; cascade delete from the batch; no credential, password hash, raw upload, public DTO, or rowversion. |
 | SecurityEvent | append-only safe actor/subject references, event code, reason, redacted before/after JSON, bounded metadata, correlation, and server timestamp; no credential or public navigation. |
 | AdminSecurityGuard | singleton `Id = 1` plus rowversion. Every disable or role-removal path that could reduce the enabled-Admin set locks and rechecks this row. |
 
@@ -33,6 +34,12 @@ SPEC-005 invariant.
   or internal rowversion beyond an explicitly authorized `expectedRowVersion`.
 - `IdentityAccessModelConfiguration` is SPEC-007's only EF contribution. The
   existing Infrastructure.SqlServer DbContext composes it.
+- Import publication uses the server-only `IProvisionedCredentialHandoff`.
+  It idempotently prepares a non-visible Development/Testing handoff by import
+  ID before SQL commit, completes it after commit, and aborts it on rollback.
+  A published retry completes an existing pending handoff. Production has no
+  adapter and fails closed until institutional delivery is approved. No secret,
+  local path, or handoff reference crosses the public Endpoint 14 DTO.
 - SPEC-008 remains the sole writer of migration
   `S1IdentityAcademicFoundation` after SPEC-007 and SPEC-008 mappings exist.
   SPEC-007 tests may inspect its contributed relational model against real SQL

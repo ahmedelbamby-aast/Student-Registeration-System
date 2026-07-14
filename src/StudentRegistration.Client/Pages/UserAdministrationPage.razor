@@ -1,0 +1,290 @@
+@page "/admin/users"
+
+<PageTitle>User administration</PageTitle>
+
+<div class="srs-admin-users">
+    <a class="srs-skip-link" href="#admin-users-main">Skip to main content</a>
+    <header class="srs-admin-users__header">
+        <img src="brand/aastmt-logo.png"
+             alt="Arab Academy for Science, Technology and Maritime Transport" />
+        <nav aria-label="Administration">
+            <a href="/admin">Admin dashboard</a>
+            <a href="/admin/users" aria-current="page">Users</a>
+        </nav>
+    </header>
+
+    <main id="admin-users-main" tabindex="-1">
+        <h1>User administration</h1>
+        <p>Search pre-provisioned identities, review imports, and submit governed account changes.</p>
+
+        <IdentityFeedback IsBusy="@IsBusy"
+                          BusyMessage="Applying one identity operation."
+                          IsError="@_feedbackIsError"
+                          Heading="@_feedbackHeading"
+                          Message="@_feedbackMessage"
+                          State="@_feedbackState"
+                          Code="@_feedbackCode"
+                          CorrelationId="@_correlationId" />
+
+        <section class="srs-admin-users__section" aria-labelledby="user-search-heading">
+            <h2 id="user-search-heading">Find users</h2>
+            <form class="srs-admin-users__search"
+                  role="search"
+                  aria-label="Search users"
+                  @onsubmit="SearchAsync"
+                  @onsubmit:preventDefault>
+                <label for="admin-user-search">Name or login identifier</label>
+                <input id="admin-user-search"
+                       name="search"
+                       type="search"
+                       maxlength="200"
+                       disabled="@IsBusy"
+                       @bind="_search"
+                       @bind:event="oninput" />
+                <button type="submit" disabled="@IsBusy">Search</button>
+                <button type="button" disabled="@IsBusy" @onclick="ClearSearchAsync">Clear</button>
+            </form>
+
+            <div class="srs-admin-users__table-region"
+                 role="region"
+                 aria-label="User results"
+                 tabindex="0"
+                 aria-busy="@(_isLoadingUsers ? "true" : null)">
+                <table>
+                    <caption>@_totalCount user results; page @_currentPage of @TotalPages</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Login</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Roles</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (_isLoadingUsers)
+                        {
+                            <tr><td colspan="5"><span role="status">Loading users…</span></td></tr>
+                        }
+                        else if (_users.Count == 0)
+                        {
+                            <tr><td colspan="5">No authorized users match this search.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var user in _users)
+                            {
+                                <tr class="@(user.Id == _selectedUser?.Id ? "is-selected" : null)">
+                                    <td>@user.DisplayName</td>
+                                    <td>@user.LoginIdentifier</td>
+                                    <td>@(user.Enabled ? "Enabled" : "Disabled")</td>
+                                    <td>@DisplayRoles(user.Roles)</td>
+                                    <td>
+                                        <button type="button"
+                                                disabled="@IsBusy"
+                                                aria-pressed="@(user.Id == _selectedUser?.Id ? "true" : "false")"
+                                                @onclick="() => SelectUser(user)">
+                                            Review
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (_users.Count > 0)
+            {
+                <ul class="srs-admin-users__cards" aria-label="User results, compact view">
+                    @foreach (var user in _users)
+                    {
+                        <li>
+                            <strong>@user.DisplayName</strong>
+                            <span>@user.LoginIdentifier</span>
+                            <span>@(user.Enabled ? "Enabled" : "Disabled")</span>
+                            <span>@DisplayRoles(user.Roles)</span>
+                            <button type="button" disabled="@IsBusy" @onclick="() => SelectUser(user)">
+                                Review
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <nav class="srs-admin-users__pagination" aria-label="User result pages">
+                <button type="button"
+                        disabled="@(IsBusy || _currentPage <= 1)"
+                        @onclick="() => ChangePageAsync(_currentPage - 1)">
+                    Previous
+                </button>
+                <span aria-live="polite">Page @_currentPage of @TotalPages</span>
+                <button type="button"
+                        disabled="@(IsBusy || _currentPage >= TotalPages)"
+                        @onclick="() => ChangePageAsync(_currentPage + 1)">
+                    Next
+                </button>
+            </nav>
+        </section>
+
+        @if (_selectedUser is not null)
+        {
+            <section class="srs-admin-users__section"
+                     aria-labelledby="selected-user-heading"
+                     data-concurrency-token="expectedRowVersion">
+                <h2 id="selected-user-heading">Review @_selectedUser.DisplayName</h2>
+                <dl class="srs-admin-users__details">
+                    <div><dt>Login</dt><dd>@_selectedUser.LoginIdentifier</dd></div>
+                    <div><dt>Status</dt><dd>@(_selectedUser.Enabled ? "Enabled" : "Disabled")</dd></div>
+                    <div><dt>Roles</dt><dd>@DisplayRoles(_selectedUser.Roles)</dd></div>
+                </dl>
+
+                <AccessibleValidationSummary SummaryId="user-status-errors"
+                                             Heading="Review the account status change"
+                                             Errors="@_statusErrors" />
+                <div class="srs-admin-users__editor">
+                    <label for="status-change-reason">Reason for status change</label>
+                    <textarea id="status-change-reason"
+                              maxlength="1000"
+                              disabled="@IsBusy"
+                              @bind="_statusReason"
+                              @bind:event="oninput"></textarea>
+                    <button @ref="_statusChangeButton"
+                            type="button"
+                            disabled="@IsBusy"
+                            @onclick="OpenStatusConfirmation">
+                        @(_selectedUser.Enabled ? "Disable account" : "Enable account")
+                    </button>
+                </div>
+
+                @if (!IsStudentIdentity)
+                {
+                    <form class="srs-admin-users__editor"
+                          @onsubmit="ReplaceRolesAsync"
+                          @onsubmit:preventDefault>
+                        <h3>Replace staff roles</h3>
+                        <AccessibleValidationSummary SummaryId="user-role-errors"
+                                                     Heading="Review the role change"
+                                                     Errors="@_roleErrors" />
+                        <fieldset disabled="@IsBusy">
+                            <legend>Authorized roles</legend>
+                            @foreach (var role in AssignableRoles)
+                            {
+                                <label>
+                                    <input type="checkbox"
+                                           checked="@_selectedRoles.Contains(role)"
+                                           @onchange="args => ToggleRole(role, args)" />
+                                    @DisplayRole(role)
+                                </label>
+                            }
+                        </fieldset>
+                        <label for="role-change-reason">Reason for role change</label>
+                        <textarea id="role-change-reason"
+                                  maxlength="1000"
+                                  disabled="@IsBusy"
+                                  @bind="_roleReason"
+                                  @bind:event="oninput"></textarea>
+                        <button type="submit" disabled="@IsBusy">Replace roles</button>
+                    </form>
+                }
+
+                <button type="button" disabled="@IsBusy" @onclick="RefreshSelectedUserAsync">
+                    Refresh selected user
+                </button>
+            </section>
+        }
+
+        <section class="srs-admin-users__section" aria-labelledby="identity-import-heading">
+            <h2 id="identity-import-heading">Preview identity import</h2>
+            <p>Add only pre-provisioning data. Generated credentials are never accepted here.</p>
+
+            <AccessibleValidationSummary SummaryId="identity-import-errors"
+                                         Heading="Review the import"
+                                         Errors="@_importValidationErrors" />
+
+            <div class="srs-admin-users__editor">
+                <label for="identity-import-source">Source name</label>
+                <input id="identity-import-source"
+                       maxlength="255"
+                       disabled="@IsBusy"
+                       @bind="_importSource"
+                       @bind:event="oninput" />
+
+                <label for="identity-import-rows">Synthetic user rows (JSON array)</label>
+                <textarea id="identity-import-rows"
+                          class="srs-admin-users__import-json"
+                          spellcheck="false"
+                          disabled="@IsBusy"
+                          @bind="_importRowsJson"
+                          @bind:event="oninput"></textarea>
+
+                <button type="button" disabled="@IsBusy" @onclick="PreviewImport">
+                    Preview rows
+                </button>
+            </div>
+
+            @if (_importPreview.Count > 0)
+            {
+                <div class="srs-admin-users__import-preview" aria-live="polite">
+                    <p><strong>@_importPreview.Count</strong> rows ready for server validation.</p>
+                    <p class="srs-admin-users__hash">Content hash: @_importContentHash</p>
+                    <ul>
+                        @foreach (var row in _importPreview)
+                        {
+                            <li>@row.ExternalReference — @row.DisplayName — @row.Kind</li>
+                        }
+                    </ul>
+                    <button type="button" disabled="@IsBusy" @onclick="CreateImportAsync">
+                        Submit import for validation
+                    </button>
+                </div>
+            }
+
+            @if (_importBatch is not null)
+            {
+                <section class="srs-admin-users__import-result" aria-labelledby="import-result-heading">
+                    <h3 id="import-result-heading">Import status: @_importBatch.State</h3>
+                    <p>Source: @_importBatch.Source</p>
+                    @if (_importBatch.Errors.Count > 0)
+                    {
+                        <table>
+                            <caption>Import row errors</caption>
+                            <thead><tr><th scope="col">Row</th><th scope="col">Code</th><th scope="col">Message</th></tr></thead>
+                            <tbody>
+                                @foreach (var error in _importBatch.Errors)
+                                {
+                                    <tr><td>@(error.Row?.ToString() ?? "General")</td><td>@error.Code</td><td>@error.Message</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <div class="srs-admin-users__actions">
+                        <button type="button" disabled="@IsBusy" @onclick="RefreshImportAsync">
+                            Refresh import status
+                        </button>
+                        @if (CanPublishImport)
+                        {
+                            <button type="button" disabled="@IsBusy" @onclick="PublishImportAsync">
+                                Publish all rows
+                            </button>
+                        }
+                    </div>
+                </section>
+            }
+        </section>
+    </main>
+</div>
+
+<ConfirmationDialog IsOpen="@_showStatusConfirmation"
+                    DialogId="status-change-dialog"
+                    TitleId="status-change-dialog-title"
+                    DescriptionId="status-change-dialog-description"
+                    Title="@StatusConfirmationTitle"
+                    Message="@StatusConfirmationMessage"
+                    ConfirmLabel="Confirm status change"
+                    CancelLabel="Cancel"
+                    IsBusy="@_isChangingStatus"
+                    BusyLabel="Changing account status…"
+                    OnConfirm="ChangeStatusAsync"
+                    OnCancel="CloseStatusConfirmation"
+                    FocusRestoreRequested="RestoreStatusFocusAsync" />

@@ -50,13 +50,14 @@
   and relational invariants `1.0`.
 - Consumed boundary: SPEC-007 owns ApplicationUser, Staff, StudentActivation,
   AccountRecoveryChallenge, AuthenticationAbuseState, IdentityImportBatch,
+  IdentityImportCandidateRow,
   RoleAssignment, SecurityEvent, and AdminSecurityGuard. StudentActivation
   references the Identity-owned ApplicationUser, never SPEC-008's Student.
   University ID is filtered-unique, credentials are hash-only, and activation,
   recovery, role, guard, and mutable identity state use database-enforced
   uniqueness, conditional transitions, or rowversion as declared.
 - Additive owner reconciliation: approved contract
-  `identity-persistence-owner-extension/1.0` and the canonical ERD add the
+  `identity-persistence-owner-extension/1.1` and the canonical ERD add the
   identity security/lockout fields, recovery attempts/delivery reference,
   assigning actor, operation-scoped abuse HMAC, import idempotency/result
   fields, and singleton guard precision required by SPEC-007. These additions

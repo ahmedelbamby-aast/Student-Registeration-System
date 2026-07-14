@@ -15,6 +15,50 @@ public sealed class DemoCredentialStorageTests
         RegexOptions.CultureInvariant);
 
     [Fact]
+    public void Development_credential_sheet_is_reveal_once_bounded_ignored_and_expiring()
+    {
+        var writer = RepositoryFiles.Read(
+            "src/StudentRegistration.Api/Development/DemoCredentialSheetWriter.cs");
+        var gitIgnore = RepositoryFiles.Read(".gitignore");
+
+        RepositoryFiles.ContainsAll(
+            writer,
+            "DemoCredentialSheetWriter",
+            "IHostEnvironment",
+            "IsDevelopment()",
+            "throw new InvalidOperationException",
+            "FileMode.CreateNew",
+            "TimeSpan.FromDays(7)",
+            "DeleteExpiredAsync",
+            ".local",
+            "credentials");
+        RepositoryFiles.ContainsAll(gitIgnore, ".local/", "credentials/");
+        Assert.DoesNotContain("ILogger", writer, StringComparison.Ordinal);
+        Assert.DoesNotContain("IsProduction", writer, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Local_recovery_proof_delivery_is_development_only_bounded_and_never_logged()
+    {
+        var delivery = RepositoryFiles.Read(
+            "src/StudentRegistration.Api/Development/DevelopmentRecoveryProofDelivery.cs");
+
+        RepositoryFiles.ContainsAll(
+            delivery,
+            "DevelopmentRecoveryProofDelivery",
+            "IAccountRecoveryProofDelivery",
+            "IsDevelopment()",
+            "throw new InvalidOperationException",
+            "FileMode.CreateNew",
+            "TimeSpan.FromDays(7)",
+            "DeleteExpiredAsync",
+            ".local",
+            "recovery");
+        Assert.DoesNotContain("ILogger", delivery, StringComparison.Ordinal);
+        Assert.DoesNotContain("Console.", delivery, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Security_composition_has_no_generated_credential_storage_or_logging_path()
     {
         var securityConfiguration = RepositoryFiles.Read(
@@ -71,10 +115,48 @@ public sealed class DemoCredentialStorageTests
         Assert.DoesNotContain("InitialPin", dbContext, StringComparison.Ordinal);
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-007 must deliver ApplicationUser plus the Development/Testing bootstrap before SQL hash verification and plaintext-disposal behavior can execute.")]
-    public void Generated_demo_credential_verifies_through_canonical_identity_hasher_and_sql_contains_only_the_hash()
+    [Fact]
+    public async Task Generated_demo_credential_verifies_through_canonical_identity_hasher_and_sql_contains_only_the_hash()
     {
+        var startInfo = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = RepositoryFiles.Root,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        startInfo.ArgumentList.Add("test");
+        startInfo.ArgumentList.Add(
+            "tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj");
+        startInfo.ArgumentList.Add("--configuration");
+        startInfo.ArgumentList.Add("Release");
+        startInfo.ArgumentList.Add("--no-restore");
+        startInfo.ArgumentList.Add("--filter");
+        startInfo.ArgumentList.Add(
+            "FullyQualifiedName=StudentRegistration.IntegrationTests.Specs.Spec007.IdentityAccountStorePersistenceTests.Real_sql_enforces_unique_identity_and_single_use_lifecycle_transitions");
+        startInfo.ArgumentList.Add("--logger");
+        startInfo.ArgumentList.Add("console;verbosity=minimal");
+
+        using var process = new Process { StartInfo = startInfo };
+        Assert.True(process.Start(), "The focused real-SQL identity proof did not start.");
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            process.Kill(entireProcessTree: true);
+            throw new TimeoutException("The focused real-SQL identity proof exceeded five minutes.");
+        }
+
+        var output = string.Join(Environment.NewLine, await outputTask, await errorTask);
+        Assert.True(process.ExitCode == 0, output);
+        Assert.Matches(@"Failed:\s+0\b", output);
+        Assert.Matches(@"Passed:\s+1\b", output);
     }
 }
 

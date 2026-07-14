@@ -13,6 +13,7 @@ public sealed class ValidationSummaryTests
     public void Renders_a_focusable_named_error_summary_linked_to_invalid_controls()
     {
         using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
         var errors = new[]
         {
             new AccessibleValidationSummary.ValidationItem("university-id", "University ID is required"),
@@ -32,6 +33,20 @@ public sealed class ValidationSummaryTests
         Assert.Equal("#university-id", cut.FindAll("a")[0].GetAttribute("href"));
         Assert.Equal("#password", cut.FindAll("a")[1].GetAttribute("href"));
         Assert.Contains("University ID is required", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void First_submitted_error_render_focuses_the_summary_once()
+    {
+        var source = RepositoryFiles.Read(
+            "src/StudentRegistration.Client/Components/Forms/AccessibleValidationSummary.razor");
+
+        RepositoryFiles.ContainsAll(
+            source,
+            "@ref=\"_summary\"",
+            "OnAfterRenderAsync",
+            "_summary.FocusAsync()",
+            "_errorsFocused");
     }
 
     [Fact]

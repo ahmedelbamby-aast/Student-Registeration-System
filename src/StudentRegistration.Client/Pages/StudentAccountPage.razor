@@ -1,0 +1,335 @@
+@page "/student/account"
+@inject IdentityApiClient IdentityApi
+@inject NavigationManager Navigation
+
+<PageTitle>Student account</PageTitle>
+
+<div class="srs-account-page">
+    <a class="srs-skip-link" href="#student-account-main">Skip to main content</a>
+    <header class="srs-account-page__header">
+        <img src="brand/aastmt-logo.png"
+             alt="Arab Academy for Science, Technology and Maritime Transport" />
+        <a href="/student">Student dashboard</a>
+    </header>
+
+    <main id="student-account-main" tabindex="-1">
+        <h1>Student account</h1>
+
+        <IdentityFeedback IsBusy="@(_isLoading || _isChangingPassword || _isRevoking || _isLoggingOut)"
+                          BusyMessage="Updating your account securely."
+                          IsError="@_feedbackIsError"
+                          Heading="@_feedbackHeading"
+                          Message="@_feedbackMessage"
+                          State="@_feedbackState"
+                          Code="@_feedbackCode"
+                          CorrelationId="@_correlationId" />
+
+        @if (_session is not null)
+        {
+            <section class="srs-account-summary" aria-labelledby="institutional-identity-heading">
+                <h2 id="institutional-identity-heading">Institutional identity</h2>
+                <dl>
+                    <div><dt>Name</dt><dd>@_session.DisplayName</dd></div>
+                    <div><dt>Authorized role</dt><dd>@_session.ActiveRole</dd></div>
+                    <div><dt>Session state</dt><dd>@_session.SessionState</dd></div>
+                    <div><dt>Expires</dt><dd><time datetime="@_session.ExpiresAtUtc.ToString("O")">@_session.ExpiresAtUtc.ToLocalTime().ToString("g")</time></dd></div>
+                </dl>
+            </section>
+
+            <section class="srs-account-security" aria-labelledby="password-change-heading">
+                <h2 id="password-change-heading">Change password</h2>
+                <form @onsubmit="ChangePasswordAsync" @onsubmit:preventDefault data-testid="password-change-form">
+                    <AccessibleValidationSummary SummaryId="password-change-errors"
+                                                 Heading="Review the password details"
+                                                 Errors="@_validationErrors" />
+
+                    <FormField InputId="account-current-password"
+                               Name="currentPassword"
+                               Label="Current password"
+                               Type="password"
+                               autocomplete="current-password"
+                               AllowSecretReveal="true"
+                               Required="true"
+                               Disabled="@IsBusy"
+                               ErrorMessage="@ErrorFor("account-current-password")"
+                               @bind-Value="_currentPassword" />
+
+                    <FormField InputId="account-new-password"
+                               Name="newPassword"
+                               Label="New password"
+                               Description="Use 15 to 128 characters. Spaces and Unicode are allowed."
+                               Type="password"
+                               autocomplete="new-password"
+                               AllowSecretReveal="true"
+                               Required="true"
+                               Disabled="@IsBusy"
+                               ErrorMessage="@ErrorFor("account-new-password")"
+                               @bind-Value="_newPassword" />
+
+                    <FormField InputId="account-confirm-password"
+                               Name="confirmPassword"
+                               Label="Confirm new password"
+                               Type="password"
+                               autocomplete="new-password"
+                               AllowSecretReveal="true"
+                               Required="true"
+                               Disabled="@IsBusy"
+                               ErrorMessage="@ErrorFor("account-confirm-password")"
+                               @bind-Value="_confirmPassword" />
+
+                    <button class="srs-identity-command" type="submit" disabled="@IsBusy">
+                        @(_isChangingPassword ? "Changing…" : "Change password")
+                    </button>
+                </form>
+            </section>
+
+            <section class="srs-account-sessions" aria-labelledby="session-actions-heading">
+                <h2 id="session-actions-heading">Session actions</h2>
+                <p>Revoking all sessions signs this browser and every other earlier session out.</p>
+                <div class="srs-account-sessions__actions">
+                    <button id="revoke-all-sessions"
+                            type="button"
+                            disabled="@IsBusy"
+                            @onclick="OpenRevokeConfirmation">
+                        Revoke all sessions
+                    </button>
+                    <button type="button" disabled="@IsBusy" @onclick="LogoutAsync">
+                        Sign out
+                    </button>
+                </div>
+            </section>
+        }
+    </main>
+</div>
+
+<ConfirmationDialog IsOpen="@_showRevokeConfirmation"
+                    DialogId="revoke-all-dialog"
+                    TitleId="revoke-all-dialog-title"
+                    DescriptionId="revoke-all-dialog-description"
+                    Title="Revoke all sessions?"
+                    Message="You will need to sign in again on every device."
+                    ConfirmLabel="Revoke all sessions"
+                    CancelLabel="Cancel"
+                    IsBusy="@_isRevoking"
+                    BusyLabel="Revoking sessions…"
+                    IsDisabled="@_isLoggingOut"
+                    OnConfirm="RevokeAllSessionsAsync"
+                    OnCancel="CloseRevokeConfirmation" />
+
+@code {
+    private SessionDto? _session;
+    private string _currentPassword = string.Empty;
+    private string _newPassword = string.Empty;
+    private string _confirmPassword = string.Empty;
+    private string? _feedbackCode;
+    private string? _feedbackMessage;
+    private string _feedbackHeading = "Account status";
+    private string? _feedbackState;
+    private string? _correlationId;
+    private bool _feedbackIsError;
+    private bool _isLoading = true;
+    private bool _isChangingPassword;
+    private bool _isRevoking;
+    private bool _isLoggingOut;
+    private bool _showRevokeConfirmation;
+    private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
+
+    private bool IsBusy => _isLoading || _isChangingPassword || _isRevoking || _isLoggingOut;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSessionAsync();
+    }
+
+    private async Task LoadSessionAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await IdentityApi.GetSessionAsync();
+            if (result.IsSuccess &&
+                result.Value is not null &&
+                result.Value.Roles.Contains("Student", StringComparer.Ordinal) &&
+                string.Equals(result.Value.ActiveRole, "Student", StringComparison.Ordinal))
+            {
+                _session = result.Value;
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        if (IsBusy || !ValidatePasswordChange())
+        {
+            return;
+        }
+
+        ResetFeedback();
+        _isChangingPassword = true;
+        try
+        {
+            var result = await IdentityApi.ChangePasswordAsync(
+                new ChangePasswordRequest(_currentPassword, _newPassword));
+            ClearPasswords();
+            if (result.IsSuccess)
+            {
+                _feedbackHeading = "Password changed";
+                _feedbackMessage = "Your password changed and earlier sessions are no longer valid.";
+                _feedbackState = "success";
+                _feedbackIsError = false;
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ClearPasswords();
+            ApplyFailure(null);
+        }
+        finally
+        {
+            _isChangingPassword = false;
+        }
+    }
+
+    private void OpenRevokeConfirmation()
+    {
+        if (!IsBusy)
+        {
+            _showRevokeConfirmation = true;
+        }
+    }
+
+    private void CloseRevokeConfirmation()
+    {
+        _showRevokeConfirmation = false;
+    }
+
+    private async Task RevokeAllSessionsAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        _isRevoking = true;
+        try
+        {
+            var result = await IdentityApi.RevokeAllSessionsAsync();
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/student/login");
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+        }
+        finally
+        {
+            _showRevokeConfirmation = false;
+            _isRevoking = false;
+        }
+    }
+
+    private async Task LogoutAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        _isLoggingOut = true;
+        try
+        {
+            var result = await IdentityApi.LogoutAsync();
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/student/login");
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+        }
+        finally
+        {
+            _isLoggingOut = false;
+        }
+    }
+
+    private bool ValidatePasswordChange()
+    {
+        var errors = new List<AccessibleValidationSummary.ValidationItem>();
+        if (string.IsNullOrEmpty(_currentPassword))
+        {
+            errors.Add(new("account-current-password", "Enter your current password."));
+        }
+
+        if (_newPassword.Length is < 15 or > 128)
+        {
+            errors.Add(new("account-new-password", "Use a password from 15 to 128 characters."));
+        }
+
+        if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
+        {
+            errors.Add(new("account-confirm-password", "The new passwords must match."));
+        }
+
+        _validationErrors = errors;
+        return errors.Count == 0;
+    }
+
+    private string? ErrorFor(string controlId) =>
+        _validationErrors.FirstOrDefault(error => error.ControlId == controlId)?.Message;
+
+    private void ApplyFailure(ApiError? error)
+    {
+        _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
+        _feedbackHeading = _feedbackCode == "CURRENT_PASSWORD_INVALID"
+            ? "Password change not accepted"
+            : _feedbackCode is "SESSION_EXPIRED" or "UNAUTHORIZED"
+                ? "Session expired"
+                : "Account service unavailable";
+        _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
+        _feedbackState = IdentityPageFeedback.MapFailure(
+            IdentityRouteStateMapper.StudentAccountRecord,
+            _feedbackCode).ServiceState;
+        _correlationId = error?.CorrelationId;
+        _feedbackIsError = true;
+    }
+
+    private void ResetFeedback()
+    {
+        _feedbackCode = null;
+        _feedbackMessage = null;
+        _feedbackState = null;
+        _correlationId = null;
+        _feedbackIsError = false;
+    }
+
+    private void ClearPasswords()
+    {
+        _currentPassword = string.Empty;
+        _newPassword = string.Empty;
+        _confirmPassword = string.Empty;
+    }
+}

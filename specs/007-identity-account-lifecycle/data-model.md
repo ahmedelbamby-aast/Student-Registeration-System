@@ -4,8 +4,9 @@
 
 SPEC-007 owns `ApplicationUser`, `Staff`, `StudentActivation`,
 `AccountRecoveryChallenge`, `RoleAssignment`, and
-`AuthenticationAbuseState`, `IdentityImportBatch`, append-only `SecurityEvent`,
-and singleton `AdminSecurityGuard`. SPEC-017 consumes/queries SecurityEvent and
+`AuthenticationAbuseState`, `IdentityImportBatch`, its batch-owned immutable
+`IdentityImportCandidateRow` staging children, append-only `SecurityEvent`, and
+singleton `AdminSecurityGuard`. SPEC-017 consumes/queries SecurityEvent and
 the guard outcome through an upstream
   read contract. SPEC-007 consumes the SPEC-004 SQL-backed Data Protection
   foundation under SPEC-018 security/operations governance without redefining
@@ -21,6 +22,7 @@ the guard outcome through an upstream
 | RoleAssignment | user, role, effective dates, assigning actor reference, internal rowversion |
 | AuthenticationAbuseState | SubjectKeyHash HMAC over canonical operation + subject/network scope, operation, count, window, blocked-until, rowversion |
 | IdentityImportBatch | requesting user/clientRequestId, source, content hash, Uploaded/Invalid/Validated/Published/Failed state, rowversion, bounded row-error JSON, bounded idempotent publish-result JSON |
+| IdentityImportCandidateRow | immutable batch FK and 1-based ordinal, bounded normalized external reference/kind/display name, student University ID or staff username/number, and canonical allow-listed role codes; never a password, hash, raw upload, or public response |
 | SecurityEvent | immutable event ID, code, safe actor/subject references, reason, redacted before/after summaries for status/role commands, correlation ID, server time, bounded non-secret metadata |
 | AdminSecurityGuard | singleton integer Id = 1, rowversion; lock before any account-status or role-set mutation that could reduce enabled Admins |
 
@@ -42,5 +44,11 @@ the guard outcome through an upstream
   set lock AdminSecurityGuard, serialize that scope, recheck the
   final-enabled-Admin invariant, write SecurityEvent and shared AuditEvent
   through SPEC-004, and commit in one transaction.
+- A validated import durably owns at most 500 normalized candidate rows under
+  unique `(IdentityImportBatchId, Ordinal)`. Publication reads only those rows,
+  prepares the non-visible credential handoff, commits all users/hashes/roles,
+  activation records, batch result, SecurityEvent, and AuditEvent together,
+  then idempotently completes the handoff. Rollback aborts the pending handoff;
+  a published retry completes it by import ID without returning any credential.
 - Audit timestamps use server time; academic activity references an explicit academic term.
 - Deletion and retention behavior follow the project data-lifecycle specification.

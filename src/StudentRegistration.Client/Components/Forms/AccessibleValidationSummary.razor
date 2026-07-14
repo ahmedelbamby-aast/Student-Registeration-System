@@ -12,6 +12,7 @@
 else if (Errors.Count > 0)
 {
     <section class="srs-validation-summary has-error"
+             @ref="_summary"
              id="@SummaryId"
              role="alert"
              tabindex="-1"
@@ -27,6 +28,10 @@ else if (Errors.Count > 0)
 }
 
 @code {
+    private ElementReference _summary;
+    private bool _errorsFocused;
+    private IReadOnlyList<ValidationItem>? _previousErrors;
+
     [Parameter]
     public string SummaryId { get; set; } = "validation-summary";
 
@@ -43,6 +48,30 @@ else if (Errors.Count > 0)
     public string? LoadingAnnouncement { get; set; }
 
     private string HeadingId => $"{SummaryId}-heading";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Errors);
+        if (!ReferenceEquals(_previousErrors, Errors))
+        {
+            _previousErrors = Errors;
+            _errorsFocused = false;
+        }
+
+        if (Errors.Count == 0 || IsLoading)
+        {
+            _errorsFocused = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsLoading && Errors.Count > 0 && !_errorsFocused)
+        {
+            _errorsFocused = true;
+            await _summary.FocusAsync();
+        }
+    }
 
     public sealed record ValidationItem(string ControlId, string Message);
 }

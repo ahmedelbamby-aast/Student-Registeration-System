@@ -1,0 +1,54 @@
+@if (IsBusy)
+{
+    <section class="srs-identity-feedback is-loading"
+             role="status"
+             aria-live="polite"
+             aria-busy="true"
+             data-state="loading">
+        <h2>Request in progress</h2>
+        <p>@BusyMessage</p>
+    </section>
+}
+else if (!string.IsNullOrWhiteSpace(Message))
+{
+    <section class="srs-identity-feedback"
+             role="@(IsError ? "alert" : "status")"
+             aria-live="@(IsError ? "assertive" : "polite")"
+             data-state="@State"
+             data-code="@Code">
+        <h2>@Heading</h2>
+        <p>@Message</p>
+        @if (!string.IsNullOrWhiteSpace(CorrelationId))
+        {
+            <p class="srs-identity-feedback__reference">
+                Reference: @CorrelationId
+            </p>
+        }
+    </section>
+}
+
+@code {
+    [Parameter]
+    public bool IsBusy { get; set; }
+
+    [Parameter]
+    public string BusyMessage { get; set; } = "Please wait.";
+
+    [Parameter]
+    public bool IsError { get; set; }
+
+    [Parameter]
+    public string Heading { get; set; } = "Status";
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public string? State { get; set; }
+
+    [Parameter]
+    public string? Code { get; set; }
+
+    [Parameter]
+    public string? CorrelationId { get; set; }
+}

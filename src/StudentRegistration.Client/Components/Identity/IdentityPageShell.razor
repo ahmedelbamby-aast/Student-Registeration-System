@@ -1,0 +1,47 @@
+<div class="srs-identity-shell">
+    <a class="srs-skip-link" href="#identity-main">Skip to main content</a>
+
+    <header class="srs-identity-shell__header">
+        <img class="srs-identity-shell__logo"
+             src="brand/aastmt-logo.png"
+             alt="Arab Academy for Science, Technology and Maritime Transport" />
+        <p class="srs-identity-shell__product">Student Registration</p>
+    </header>
+
+    <main id="identity-main" class="srs-identity-shell__main" tabindex="-1">
+        <section class="srs-identity-panel" aria-labelledby="@HeadingId">
+            <h1 id="@HeadingId">@Heading</h1>
+            <p class="srs-identity-panel__intro">@Introduction</p>
+            @ChildContent
+        </section>
+    </main>
+
+    <nav class="srs-identity-shell__navigation" aria-label="Account access">
+        <a href="/student/login">Student login</a>
+        <a href="/student/activate">Activate Student account</a>
+        <a href="/staff/login">Staff login</a>
+        <a href="/account/recovery">Account recovery</a>
+    </nav>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Introduction { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(HeadingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Introduction);
+        ArgumentNullException.ThrowIfNull(ChildContent);
+    }
+}

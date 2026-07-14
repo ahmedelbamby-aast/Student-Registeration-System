@@ -11,7 +11,7 @@
            class="srs-form-field__input"
            id="@InputId"
            name="@Name"
-           type="@Type"
+           type="@EffectiveType"
            value="@Value"
            placeholder="@(string.IsNullOrWhiteSpace(Placeholder) ? null : Placeholder)"
            autocomplete="@(string.IsNullOrWhiteSpace(Autocomplete) ? null : Autocomplete)"
@@ -20,6 +20,19 @@
            aria-invalid="@(HasError ? "true" : null)"
            aria-describedby="@DescribedBy"
            @oninput="HandleInputAsync" />
+
+    @if (CanRevealSecret)
+    {
+        <button class="srs-form-field__reveal"
+                type="button"
+                data-action="secret-reveal"
+                aria-controls="@InputId"
+                aria-pressed="@(_secretRevealed ? "true" : "false")"
+                disabled="@IsUnavailable"
+                @onclick="ToggleSecretReveal">
+            @(_secretRevealed ? $"Hide {Label}" : $"Show {Label}")
+        </button>
+    }
 
     @if (HasError)
     {
@@ -33,6 +46,8 @@
 </div>
 
 @code {
+    private bool _secretRevealed;
+
     [Parameter]
     public string InputId { get; set; } = string.Empty;
 
@@ -44,6 +59,9 @@
 
     [Parameter]
     public string Type { get; set; } = "text";
+
+    [Parameter]
+    public bool AllowSecretReveal { get; set; }
 
     [Parameter]
     public string Value { get; set; } = string.Empty;
@@ -84,6 +102,11 @@
 
     private bool IsUnavailable => Disabled || IsLoading;
 
+    private bool CanRevealSecret =>
+        AllowSecretReveal && string.Equals(Type, "password", StringComparison.OrdinalIgnoreCase);
+
+    private string EffectiveType => CanRevealSecret && _secretRevealed ? "text" : Type;
+
     private string DescriptionId => $"{InputId}-description";
 
     private string ErrorId => $"{InputId}-error";
@@ -100,11 +123,27 @@
     private string CssClass =>
         $"srs-form-field{(Disabled ? " is-disabled" : string.Empty)}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
 
+    protected override void OnParametersSet()
+    {
+        if (!CanRevealSecret || IsUnavailable || string.IsNullOrEmpty(Value))
+        {
+            _secretRevealed = false;
+        }
+    }
+
     private async Task HandleInputAsync(ChangeEventArgs args)
     {
         if (!IsUnavailable)
         {
             await ValueChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+        }
+    }
+
+    private void ToggleSecretReveal()
+    {
+        if (!IsUnavailable && CanRevealSecret)
+        {
+            _secretRevealed = !_secretRevealed;
         }
     }
 }

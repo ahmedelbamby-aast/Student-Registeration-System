@@ -1,0 +1,149 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace StudentRegistration.IdentityAccess.Application.Authorization;
+
+/// <summary>
+/// Names and registers the IdentityAccess role and resource policies.
+/// </summary>
+public static class RolePolicies
+{
+    public const string Student = "Student";
+    public const string Admin = "Admin";
+    public const string Lecturer = "Lecturer";
+    public const string TeachingAssistant = "TeachingAssistant";
+
+    public const string IdentityManagement = "IdentityManagement";
+    public const string OwnStudentResource = "OwnStudentResource";
+    public const string AssignedTeachingResource = "AssignedTeachingResource";
+
+    public const string PermissionClaimType = "permission";
+
+    public static IServiceCollection AddIdentityAuthorization(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddAuthorization(Configure);
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IAuthorizationHandler, OwnStudentResourceHandler>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IAuthorizationHandler, AssignedTeachingResourceHandler>());
+        return services;
+    }
+
+    public static void Configure(AuthorizationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        AddRolePolicy(options, Student);
+        AddRolePolicy(options, Admin);
+        AddRolePolicy(options, Lecturer);
+        AddRolePolicy(options, TeachingAssistant);
+
+        options.AddPolicy(
+            IdentityManagement,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, IdentityManagement));
+
+        options.AddPolicy(
+            OwnStudentResource,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Student)
+                .AddRequirements(OwnStudentResourceRequirement.Instance));
+
+        options.AddPolicy(
+            AssignedTeachingResource,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Lecturer, TeachingAssistant)
+                .AddRequirements(AssignedTeachingResourceRequirement.Instance));
+    }
+
+    private static void AddRolePolicy(AuthorizationOptions options, string role) =>
+        options.AddPolicy(
+            role,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(role));
+}
+
+/// <summary>
+/// A resource whose student owner is expressed with the authenticated user ID.
+/// </summary>
+public interface IStudentOwnedResource
+{
+    Guid StudentUserId { get; }
+}
+
+/// <summary>
+/// A teaching resource that can answer whether a staff user is assigned.
+/// </summary>
+public interface ITeachingAssignedResource
+{
+    bool IsAssignedTo(Guid staffUserId);
+}
+
+public sealed class OwnStudentResourceRequirement : IAuthorizationRequirement
+{
+    public static OwnStudentResourceRequirement Instance { get; } = new();
+
+    private OwnStudentResourceRequirement()
+    {
+    }
+}
+
+public sealed class AssignedTeachingResourceRequirement : IAuthorizationRequirement
+{
+    public static AssignedTeachingResourceRequirement Instance { get; } = new();
+
+    private AssignedTeachingResourceRequirement()
+    {
+    }
+}
+
+internal sealed class OwnStudentResourceHandler
+    : AuthorizationHandler<OwnStudentResourceRequirement, IStudentOwnedResource>
+{
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        OwnStudentResourceRequirement requirement,
+        IStudentOwnedResource resource)
+    {
+        if (TryGetUserId(context.User, out var userId)
+            && resource.StudentUserId == userId)
+        {
+            context.Succeed(requirement);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static bool TryGetUserId(ClaimsPrincipal principal, out Guid userId) =>
+        Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
+}
+
+internal sealed class AssignedTeachingResourceHandler
+    : AuthorizationHandler<AssignedTeachingResourceRequirement, ITeachingAssignedResource>
+{
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        AssignedTeachingResourceRequirement requirement,
+        ITeachingAssignedResource resource)
+    {
+        if (Guid.TryParse(
+                context.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                out var userId)
+            && resource.IsAssignedTo(userId))
+        {
+            context.Succeed(requirement);
+        }
+
+        return Task.CompletedTask;
+    }
+}

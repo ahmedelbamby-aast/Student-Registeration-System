@@ -1,0 +1,143 @@
+@page "/student/login"
+@inject IdentityApiClient IdentityApi
+@inject NavigationManager Navigation
+
+<PageTitle>Student login</PageTitle>
+
+<IdentityPageShell HeadingId="student-login-heading"
+                   Heading="Student login"
+                   Introduction="Use your University ID and password. The server decides your account and access.">
+    <IdentityFeedback IsBusy="IsSubmitting"
+                      BusyMessage="Signing in once."
+                      IsError="@(!string.IsNullOrWhiteSpace(_feedbackCode))"
+                      Heading="@_feedbackHeading"
+                      Message="@_feedbackMessage"
+                      State="@_feedbackState"
+                      Code="@_feedbackCode"
+                      CorrelationId="@_correlationId" />
+
+    <form @onsubmit="SubmitAsync" @onsubmit:preventDefault data-testid="student-login-form">
+        <AccessibleValidationSummary SummaryId="student-login-errors"
+                                     Heading="Review the sign-in details"
+                                     Errors="@_validationErrors" />
+
+        <FormField InputId="student-university-id"
+                   Name="universityId"
+                   Label="University ID"
+                   Type="text"
+                   autocomplete="username"
+                   Required="true"
+                   Disabled="IsSubmitting"
+                   ErrorMessage="@ErrorFor("student-university-id")"
+                   @bind-Value="_universityId" />
+
+        <FormField InputId="student-password"
+                   Name="password"
+                   Label="Password"
+                   Type="password"
+                   autocomplete="current-password"
+                   AllowSecretReveal="true"
+                   Required="true"
+                   Disabled="IsSubmitting"
+                   ErrorMessage="@ErrorFor("student-password")"
+                   @bind-Value="_password" />
+
+        <button class="srs-identity-command"
+                type="submit"
+                disabled="@IsSubmitting">
+            @(IsSubmitting ? "Signing in…" : "Sign in")
+        </button>
+    </form>
+</IdentityPageShell>
+
+@code {
+    private string _universityId = string.Empty;
+    private string _password = string.Empty;
+    private string? _feedbackCode;
+    private string? _feedbackMessage;
+    private string _feedbackHeading = "Sign-in status";
+    private string? _feedbackState;
+    private string? _correlationId;
+    private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
+
+    private bool IsSubmitting { get; set; }
+
+    private async Task SubmitAsync()
+    {
+        if (IsSubmitting || !Validate())
+        {
+            return;
+        }
+
+        ClearFeedback();
+        IsSubmitting = true;
+        try
+        {
+            var result = await IdentityApi.LoginStudentAsync(
+                new StudentLoginRequest(_universityId, _password));
+            if (result.IsSuccess &&
+                result.Value is not null &&
+                result.Value.Roles.Contains("Student", StringComparer.Ordinal) &&
+                string.Equals(result.Value.ActiveRole, "Student", StringComparison.Ordinal))
+            {
+                Navigation.NavigateTo("/student");
+                return;
+            }
+
+            ApplyFailure(result.Error);
+            _password = string.Empty;
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+            _password = string.Empty;
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private bool Validate()
+    {
+        var errors = new List<AccessibleValidationSummary.ValidationItem>();
+        if (string.IsNullOrWhiteSpace(_universityId))
+        {
+            errors.Add(new("student-university-id", "Enter your University ID."));
+        }
+
+        if (string.IsNullOrEmpty(_password))
+        {
+            errors.Add(new("student-password", "Enter your password."));
+        }
+
+        _validationErrors = errors;
+        return errors.Count == 0;
+    }
+
+    private string? ErrorFor(string controlId) =>
+        _validationErrors.FirstOrDefault(error => error.ControlId == controlId)?.Message;
+
+    private void ApplyFailure(ApiError? error)
+    {
+        _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
+        _feedbackHeading = _feedbackCode == "RATE_LIMITED"
+            ? "Try again later"
+            : _feedbackCode == "SERVICE_UNAVAILABLE"
+                ? "Sign-in service unavailable"
+                : "Sign-in not accepted";
+        _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
+        _feedbackState = IdentityPageFeedback.MapFailure(
+            IdentityRouteStateMapper.StudentLoginRecord,
+            _feedbackCode).ServiceState;
+        _correlationId = error?.CorrelationId;
+    }
+
+    private void ClearFeedback()
+    {
+        _feedbackCode = null;
+        _feedbackMessage = null;
+        _feedbackState = null;
+        _correlationId = null;
+    }
+}

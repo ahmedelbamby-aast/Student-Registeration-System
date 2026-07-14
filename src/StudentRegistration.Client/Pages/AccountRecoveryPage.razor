@@ -1,0 +1,253 @@
+@page "/account/recovery"
+@inject IdentityApiClient IdentityApi
+
+<PageTitle>Account recovery</PageTitle>
+
+<IdentityPageShell HeadingId="account-recovery-heading"
+                   Heading="Account recovery"
+                   Introduction="Request recovery without revealing whether an account exists, or complete recovery with the code you received.">
+    <IdentityFeedback IsBusy="@(IsRequesting || IsCompleting)"
+                      BusyMessage="Submitting one recovery request."
+                      IsError="@_feedbackIsError"
+                      Heading="@_feedbackHeading"
+                      Message="@_feedbackMessage"
+                      State="@_feedbackState"
+                      Code="@_feedbackCode"
+                      CorrelationId="@_correlationId" />
+
+    <section class="srs-recovery-step" aria-labelledby="recovery-request-heading">
+        <h2 id="recovery-request-heading">Request recovery</h2>
+        <form @onsubmit="RequestAsync" @onsubmit:preventDefault data-testid="recovery-request-form">
+            <AccessibleValidationSummary SummaryId="recovery-request-errors"
+                                         Heading="Review the recovery request"
+                                         Errors="@_requestErrors" />
+
+            <FormField InputId="recovery-identifier"
+                       Name="universityIdOrUserName"
+                       Label="University ID or Staff username"
+                       Type="text"
+                       autocomplete="username"
+                       Required="true"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       ErrorMessage="@RequestErrorFor("recovery-identifier")"
+                       @bind-Value="_identifier" />
+
+            <button class="srs-identity-command"
+                    type="submit"
+                    disabled="@(IsRequesting || IsCompleting)">
+                @(IsRequesting ? "Requesting…" : "Request recovery")
+            </button>
+        </form>
+    </section>
+
+    <section class="srs-recovery-step" aria-labelledby="recovery-complete-heading">
+        <h2 id="recovery-complete-heading">Complete recovery</h2>
+        <form @onsubmit="CompleteAsync" @onsubmit:preventDefault data-testid="recovery-complete-form">
+            <AccessibleValidationSummary SummaryId="recovery-complete-errors"
+                                         Heading="Review the recovery details"
+                                         Errors="@_completeErrors" />
+
+            <FormField InputId="recovery-code"
+                       Name="challengeToken"
+                       Label="Recovery code"
+                       Type="password"
+                       autocomplete="one-time-code"
+                       AllowSecretReveal="true"
+                       Required="true"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       ErrorMessage="@CompleteErrorFor("recovery-code")"
+                       @bind-Value="_challengeToken" />
+
+            <FormField InputId="recovery-new-password"
+                       Name="newPassword"
+                       Label="New password"
+                       Description="Use 15 to 128 characters. Spaces and Unicode are allowed."
+                       Type="password"
+                       autocomplete="new-password"
+                       AllowSecretReveal="true"
+                       Required="true"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       ErrorMessage="@CompleteErrorFor("recovery-new-password")"
+                       @bind-Value="_newPassword" />
+
+            <FormField InputId="recovery-confirm-password"
+                       Name="confirmPassword"
+                       Label="Confirm new password"
+                       Type="password"
+                       autocomplete="new-password"
+                       AllowSecretReveal="true"
+                       Required="true"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       ErrorMessage="@CompleteErrorFor("recovery-confirm-password")"
+                       @bind-Value="_confirmPassword" />
+
+            <button class="srs-identity-command"
+                    type="submit"
+                    disabled="@(IsRequesting || IsCompleting)">
+                @(IsCompleting ? "Completing…" : "Complete recovery")
+            </button>
+        </form>
+    </section>
+</IdentityPageShell>
+
+@code {
+    private const string GenericRequestConfirmation =
+        "If an eligible account matches, recovery instructions have been sent.";
+
+    private string _identifier = string.Empty;
+    private string _challengeToken = string.Empty;
+    private string _newPassword = string.Empty;
+    private string _confirmPassword = string.Empty;
+    private string? _feedbackCode;
+    private string? _feedbackMessage;
+    private string _feedbackHeading = "Recovery status";
+    private string? _feedbackState;
+    private string? _correlationId;
+    private bool _feedbackIsError;
+    private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _requestErrors = [];
+    private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _completeErrors = [];
+
+    private bool IsRequesting { get; set; }
+
+    private bool IsCompleting { get; set; }
+
+    private async Task RequestAsync()
+    {
+        if (IsRequesting || IsCompleting || !ValidateRequest())
+        {
+            return;
+        }
+
+        ResetFeedback();
+        IsRequesting = true;
+        try
+        {
+            var result = await IdentityApi.RequestRecoveryAsync(
+                new RecoveryRequest(_identifier));
+            if (result.IsSuccess)
+            {
+                _feedbackHeading = "Check your recovery channel";
+                _feedbackMessage = GenericRequestConfirmation;
+                _feedbackState = "success";
+                _feedbackIsError = false;
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+        }
+        finally
+        {
+            IsRequesting = false;
+        }
+    }
+
+    private async Task CompleteAsync()
+    {
+        if (IsRequesting || IsCompleting || !ValidateCompletion())
+        {
+            return;
+        }
+
+        ResetFeedback();
+        IsCompleting = true;
+        try
+        {
+            var result = await IdentityApi.CompleteRecoveryAsync(
+                new RecoveryCompleteRequest(_challengeToken, _newPassword));
+            ClearSecrets();
+            if (result.IsSuccess)
+            {
+                _feedbackHeading = "Recovery complete";
+                _feedbackMessage = "Your password was changed. You can now sign in.";
+                _feedbackState = "success";
+                _feedbackIsError = false;
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ClearSecrets();
+            ApplyFailure(null);
+        }
+        finally
+        {
+            IsCompleting = false;
+        }
+    }
+
+    private bool ValidateRequest()
+    {
+        var errors = new List<AccessibleValidationSummary.ValidationItem>();
+        if (string.IsNullOrWhiteSpace(_identifier))
+        {
+            errors.Add(new("recovery-identifier", "Enter a University ID or Staff username."));
+        }
+
+        _requestErrors = errors;
+        return errors.Count == 0;
+    }
+
+    private bool ValidateCompletion()
+    {
+        var errors = new List<AccessibleValidationSummary.ValidationItem>();
+        if (string.IsNullOrWhiteSpace(_challengeToken))
+        {
+            errors.Add(new("recovery-code", "Enter the recovery code."));
+        }
+
+        if (_newPassword.Length is < 15 or > 128)
+        {
+            errors.Add(new("recovery-new-password", "Use a password from 15 to 128 characters."));
+        }
+
+        if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
+        {
+            errors.Add(new("recovery-confirm-password", "The new passwords must match."));
+        }
+
+        _completeErrors = errors;
+        return errors.Count == 0;
+    }
+
+    private string? RequestErrorFor(string controlId) =>
+        _requestErrors.FirstOrDefault(error => error.ControlId == controlId)?.Message;
+
+    private string? CompleteErrorFor(string controlId) =>
+        _completeErrors.FirstOrDefault(error => error.ControlId == controlId)?.Message;
+
+    private void ApplyFailure(ApiError? error)
+    {
+        _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
+        _feedbackHeading = _feedbackCode is "CHALLENGE_INVALID" or "PASSWORD_REJECTED"
+            ? "Recovery not accepted"
+            : "Recovery service unavailable";
+        _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
+        _feedbackState = IdentityPageFeedback.MapFailure(
+            IdentityRouteStateMapper.AccountRecoveryRecord,
+            _feedbackCode).ServiceState;
+        _correlationId = error?.CorrelationId;
+        _feedbackIsError = true;
+    }
+
+    private void ClearSecrets()
+    {
+        _challengeToken = string.Empty;
+        _newPassword = string.Empty;
+        _confirmPassword = string.Empty;
+    }
+
+    private void ResetFeedback()
+    {
+        _feedbackCode = null;
+        _feedbackMessage = null;
+        _feedbackState = null;
+        _correlationId = null;
+        _feedbackIsError = false;
+    }
+}

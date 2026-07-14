@@ -1,0 +1,240 @@
+@page "/staff/login"
+@inject IdentityApiClient IdentityApi
+@inject NavigationManager Navigation
+
+<PageTitle>Staff login</PageTitle>
+
+<IdentityPageShell HeadingId="staff-login-heading"
+                   Heading="Staff login"
+                   Introduction="Admin, Lecturer, and Teaching Assistant use this one password-only login. Roles come from the server after sign-in.">
+    <IdentityFeedback IsBusy="IsSubmitting"
+                      BusyMessage="Signing in once."
+                      IsError="@(!string.IsNullOrWhiteSpace(_feedbackCode))"
+                      Heading="@_feedbackHeading"
+                      Message="@_feedbackMessage"
+                      State="@_feedbackState"
+                      Code="@_feedbackCode"
+                      CorrelationId="@_correlationId" />
+
+    <form @onsubmit="SubmitAsync" @onsubmit:preventDefault data-testid="staff-login-form">
+        <AccessibleValidationSummary SummaryId="staff-login-errors"
+                                     Heading="Review the sign-in details"
+                                     Errors="@_validationErrors" />
+
+        <FormField InputId="staff-user-name"
+                   Name="userName"
+                   Label="Staff username"
+                   Type="text"
+                   autocomplete="username"
+                   Required="true"
+                   Disabled="IsSubmitting"
+                   ErrorMessage="@ErrorFor("staff-user-name")"
+                   @bind-Value="_userName" />
+
+        <FormField InputId="staff-password"
+                   Name="password"
+                   Label="Password"
+                   Type="password"
+                   autocomplete="current-password"
+                   AllowSecretReveal="true"
+                   Required="true"
+                   Disabled="IsSubmitting"
+                   ErrorMessage="@ErrorFor("staff-password")"
+                   @bind-Value="_password" />
+
+        <button class="srs-identity-command"
+                type="submit"
+                disabled="@IsSubmitting">
+            @(IsSubmitting ? "Signing in…" : "Sign in")
+        </button>
+    </form>
+
+    @if (_availableRoles.Count > 0)
+    {
+        <section class="srs-role-selection"
+                 aria-labelledby="staff-role-selection-heading"
+                 data-state="role-selection-required">
+            <h2 id="staff-role-selection-heading">Choose an authorized staff context</h2>
+            <p>The server returned these roles. Choose one to continue.</p>
+            <div class="srs-role-selection__actions">
+                @foreach (var role in _availableRoles)
+                {
+                    <button type="button"
+                            disabled="@IsSelectingRole"
+                            @onclick="() => SelectRoleAsync(role)">
+                        Continue as @DisplayRole(role)
+                    </button>
+                }
+            </div>
+        </section>
+    }
+</IdentityPageShell>
+
+@code {
+    private static readonly HashSet<string> StaffRoles =
+        new(StringComparer.Ordinal) { "Admin", "Lecturer", "TeachingAssistant" };
+
+    private string _userName = string.Empty;
+    private string _password = string.Empty;
+    private string? _feedbackCode;
+    private string? _feedbackMessage;
+    private string _feedbackHeading = "Sign-in status";
+    private string? _feedbackState;
+    private string? _correlationId;
+    private IReadOnlyList<string> _availableRoles = [];
+    private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
+
+    private bool IsSubmitting { get; set; }
+
+    private bool IsSelectingRole { get; set; }
+
+    private async Task SubmitAsync()
+    {
+        if (IsSubmitting || !Validate())
+        {
+            return;
+        }
+
+        ResetOutcome();
+        IsSubmitting = true;
+        try
+        {
+            var result = await IdentityApi.LoginStaffAsync(
+                new StaffLoginRequest(_userName, _password));
+            _password = string.Empty;
+            if (result.IsSuccess && result.Value is not null)
+            {
+                await HandleSessionAsync(result.Value);
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            _password = string.Empty;
+            ApplyFailure(null);
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task SelectRoleAsync(string role)
+    {
+        if (IsSelectingRole || !_availableRoles.Contains(role, StringComparer.Ordinal))
+        {
+            return;
+        }
+
+        IsSelectingRole = true;
+        try
+        {
+            var result = await IdentityApi.SelectRoleContextAsync(
+                new SelectRoleContextRequest(role));
+            if (result.IsSuccess && result.Value is not null)
+            {
+                await HandleSessionAsync(result.Value);
+                return;
+            }
+
+            ApplyFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyFailure(null);
+        }
+        finally
+        {
+            IsSelectingRole = false;
+        }
+    }
+
+    private Task HandleSessionAsync(SessionDto session)
+    {
+        if (string.Equals(session.SessionState, "role-selection-required", StringComparison.Ordinal))
+        {
+            _availableRoles = session.Roles
+                .Where(StaffRoles.Contains)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (_availableRoles.Count == 0)
+            {
+                ApplyFailure(null);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        if (!string.IsNullOrWhiteSpace(session.ActiveRole) &&
+            session.Roles.Contains(session.ActiveRole, StringComparer.Ordinal) &&
+            StaffRoles.Contains(session.ActiveRole))
+        {
+            NavigateForRole(session.ActiveRole);
+            return Task.CompletedTask;
+        }
+
+        ApplyFailure(null);
+        return Task.CompletedTask;
+    }
+
+    private void NavigateForRole(string role)
+    {
+        if (string.Equals(role, "Admin", StringComparison.Ordinal))
+        {
+            Navigation.NavigateTo("/admin");
+            return;
+        }
+
+        Navigation.NavigateTo("/staff");
+    }
+
+    private bool Validate()
+    {
+        var errors = new List<AccessibleValidationSummary.ValidationItem>();
+        if (string.IsNullOrWhiteSpace(_userName))
+        {
+            errors.Add(new("staff-user-name", "Enter your Staff username."));
+        }
+
+        if (string.IsNullOrEmpty(_password))
+        {
+            errors.Add(new("staff-password", "Enter your password."));
+        }
+
+        _validationErrors = errors;
+        return errors.Count == 0;
+    }
+
+    private string? ErrorFor(string controlId) =>
+        _validationErrors.FirstOrDefault(error => error.ControlId == controlId)?.Message;
+
+    private void ApplyFailure(ApiError? error)
+    {
+        _availableRoles = [];
+        _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
+        _feedbackHeading = _feedbackCode == "RATE_LIMITED"
+            ? "Try again later"
+            : _feedbackCode == "SERVICE_UNAVAILABLE"
+                ? "Staff sign-in unavailable"
+                : "Sign-in not accepted";
+        _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
+        _feedbackState = IdentityPageFeedback.MapFailure(
+            IdentityRouteStateMapper.StaffLoginRecord,
+            _feedbackCode).ServiceState;
+        _correlationId = error?.CorrelationId;
+    }
+
+    private void ResetOutcome()
+    {
+        _availableRoles = [];
+        _feedbackCode = null;
+        _feedbackMessage = null;
+        _feedbackState = null;
+        _correlationId = null;
+    }
+
+    private static string DisplayRole(string role) =>
+        role == "TeachingAssistant" ? "Teaching Assistant" : role;
+}

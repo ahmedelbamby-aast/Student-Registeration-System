@@ -60,3 +60,26 @@
 .srs-form-field__status {
     color: var(--srs-color-semantic-information-text);
 }
+
+.srs-form-field__reveal {
+    justify-self: start;
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-3);
+    color: var(--srs-color-component-button-secondary-text);
+    background: var(--srs-color-component-button-secondary-background);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font: inherit;
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-form-field__reveal[aria-pressed="true"] {
+    color: var(--srs-color-semantic-information-text);
+    border-color: var(--srs-color-semantic-information-text);
+    background: var(--srs-color-semantic-information-surface);
+}
+
+.srs-form-field__reveal:disabled {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+}

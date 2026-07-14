@@ -36,3 +36,38 @@ body {
     outline-style: var(--srs-focus-outline-style);
     outline-width: var(--srs-focus-outline-width);
 }
+
+.srs-identity-command,
+.srs-role-selection button,
+.srs-account-sessions button {
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-4);
+    color: var(--srs-color-component-button-primary-text);
+    background: var(--srs-color-component-button-primary-background);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font: inherit;
+    font-weight: var(--srs-typography-component-control-weight);
+}
+
+.srs-identity-command:disabled,
+.srs-role-selection button:disabled,
+.srs-account-sessions button:disabled {
+    color: var(--srs-color-semantic-disabled-text);
+    background: var(--srs-color-semantic-disabled-surface);
+    border-color: var(--srs-color-semantic-disabled-text);
+}
+
+.srs-role-selection,
+.srs-recovery-step {
+    margin-block-start: var(--srs-spacing-primitive-8);
+    padding-block-start: var(--srs-spacing-primitive-6);
+    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+}
+
+.srs-role-selection__actions,
+.srs-account-sessions__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-3);
+}
