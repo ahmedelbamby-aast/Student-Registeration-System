@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,10 +21,6 @@
   <ItemGroup>
     <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
              Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="../StudentRegistration.LoadTests/StudentRegistration.LoadTests.csproj" />
   </ItemGroup>
 
 </Project>

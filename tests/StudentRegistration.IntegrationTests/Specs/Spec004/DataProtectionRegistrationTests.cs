@@ -20,6 +20,8 @@ public sealed class DataProtectionRegistrationTests
             "src/StudentRegistration.Api/Composition/DataProtectionRegistration.cs");
         var composition = RepositoryFiles.Read(
             "src/StudentRegistration.Api/Composition/ModuleRegistration.cs");
+        var securityConfiguration = RepositoryFiles.Read(
+            "src/StudentRegistration.Api/Operations/SecurityConfiguration.cs");
         var repository = RepositoryFiles.Read(
             "src/StudentRegistration.Infrastructure.SqlServer/DataProtection/SqlDataProtectionKeyRepository.cs");
 
@@ -35,9 +37,13 @@ public sealed class DataProtectionRegistrationTests
             "InvalidOperationException");
         RepositoryFiles.ContainsAll(
             composition,
-            "AddStudentRegistrationDataProtection",
+            "AddStudentRegistrationSecurity",
             "builder.Configuration",
             "builder.Environment");
+        RepositoryFiles.ContainsAll(
+            securityConfiguration,
+            "AddStudentRegistrationDataProtection",
+            "return services.AddStudentRegistrationDataProtection(configuration, environment)");
         RepositoryFiles.ContainsAll(
             repository,
             "PersistKeysToDbContext<StudentRegistrationDbContext>",

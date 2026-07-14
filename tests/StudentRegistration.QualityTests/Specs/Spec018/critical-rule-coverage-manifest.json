@@ -1,0 +1,44 @@
+{
+  "version": "critical-rule-coverage/1.0",
+  "scope": "non-production-demo",
+  "minimumBranchRate": 0.90,
+  "coverageNeverReplacesBehaviorTests": true,
+  "productionAuthorized": false,
+  "owners": [
+    {
+      "ownerSpec": "SPEC-011",
+      "focus": "server-authoritative eligibility branches",
+      "sourceProject": "src/StudentRegistration.Registration/StudentRegistration.Registration.csproj",
+      "sourceAssembly": "StudentRegistration.Registration",
+      "classNamePattern": "Eligibility|OfferingSearch",
+      "testProject": "tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj",
+      "requiredTestPaths": [
+        "tests/StudentRegistration.IntegrationTests/Registration/OfferingSearchTests.cs"
+      ]
+    },
+    {
+      "ownerSpec": "SPEC-012",
+      "focus": "schedule-conflict and versioned-plan branches",
+      "sourceProject": "src/StudentRegistration.Registration/StudentRegistration.Registration.csproj",
+      "sourceAssembly": "StudentRegistration.Registration",
+      "classNamePattern": "ScheduleConflict|RegistrationPlan",
+      "testProject": "tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj",
+      "requiredTestPaths": [
+        "tests/StudentRegistration.IntegrationTests/Registration/RegistrationPlanConcurrencyTests.cs"
+      ]
+    },
+    {
+      "ownerSpec": "SPEC-014",
+      "focus": "capacity, idempotency, and reconciliation branches",
+      "sourceProject": "src/StudentRegistration.Infrastructure.SqlServer/StudentRegistration.Infrastructure.SqlServer.csproj",
+      "sourceAssembly": "StudentRegistration.Infrastructure.SqlServer",
+      "classNamePattern": "SqlSeatAllocator|RegistrationSubmissionStore|EnrollmentCounterReconciler",
+      "testProject": "tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj",
+      "requiredTestPaths": [
+        "tests/StudentRegistration.IntegrationTests/Registration/SqlSeatAllocatorConcurrencyTests.cs",
+        "tests/StudentRegistration.IntegrationTests/Registration/RegistrationIdempotencyFailureTests.cs",
+        "tests/StudentRegistration.IntegrationTests/Registration/EnrollmentCounterReconciliationTests.cs"
+      ]
+    }
+  ]
+}

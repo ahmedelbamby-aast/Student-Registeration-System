@@ -1,0 +1,428 @@
+name: SPEC-018 quality gates
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spec018-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  SRS_PRODUCTION_AUTHORIZED: "false"
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Use repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Gate 01 - Restore
+        shell: pwsh
+        run: |
+          dotnet restore StudentRegistration.slnx
+
+      - name: Gate 02 - Format
+        shell: pwsh
+        run: |
+          dotnet format StudentRegistration.slnx --verify-no-changes --no-restore
+
+      - name: Gate 03 - Warnings-as-errors build
+        shell: pwsh
+        run: |
+          dotnet build StudentRegistration.slnx --no-restore --configuration Release -warnaserror
+
+      - name: Gate 04 - Unit tests
+        shell: pwsh
+        run: |
+          $projects = @(
+            "tests/StudentRegistration.Client.UnitTests/StudentRegistration.Client.UnitTests.csproj",
+            "tests/StudentRegistration.ContractTests/StudentRegistration.ContractTests.csproj",
+            "tests/StudentRegistration.SpecificationTests/StudentRegistration.SpecificationTests.csproj",
+            "tests/StudentRegistration.AcceptanceTests/StudentRegistration.AcceptanceTests.csproj",
+            "tests/StudentRegistration.OperationsTests/StudentRegistration.OperationsTests.csproj",
+            "tests/StudentRegistration.RecoveryTests/StudentRegistration.RecoveryTests.csproj",
+            "tests/StudentRegistration.ReleaseTests/StudentRegistration.ReleaseTests.csproj"
+          )
+          foreach ($project in $projects) {
+            dotnet test $project --no-restore --configuration Release
+            if ($LASTEXITCODE -ne 0) { throw "Required test project failed: $project" }
+          }
+
+      - name: Gate 05 - Architecture tests
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.ArchitectureTests/StudentRegistration.ArchitectureTests.csproj --no-restore --configuration Release
+
+  sql-lifecycle:
+    needs: code-quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Use repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Prepare SQL gate projects
+        shell: pwsh
+        run: |
+          dotnet restore tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj
+          dotnet restore tests/StudentRegistration.MigrationTests/StudentRegistration.MigrationTests.csproj
+
+      - name: Gate 06 - SQL Server runtime
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj --no-restore --configuration Release --filter "FullyQualifiedName~SqlServerTestDatabaseFixtureTests.Pinned_testcontainers_runtime_creates_and_disposes_the_unique_database|FullyQualifiedName~SqlServerContainerRuntimeTests.Pinned_sql_2022_developer_runs_at_compatibility_160"
+
+      - name: Gate 07 - Migration readiness
+        shell: pwsh
+        run: |
+          $contractPath = "tests/StudentRegistration.IntegrationTests/Infrastructure/non-production-lifecycle.json"
+          $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
+          if ($contract.upstreamReadiness.status -ne 'ready') {
+            throw "The migration and seed owners are not executable; CI fails closed before SQL mutation."
+          }
+          foreach ($requiredPath in $contract.upstreamReadiness.requiredPaths) {
+            if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
+              throw "Required migration/seed lifecycle artifact is absent: $requiredPath"
+            }
+          }
+          dotnet test tests/StudentRegistration.MigrationTests/StudentRegistration.MigrationTests.csproj --no-restore --configuration Release
+
+      - name: Gate 08 - Versioned seed lifecycle
+        shell: pwsh
+        run: |
+          $contractPath = "tests/StudentRegistration.IntegrationTests/Infrastructure/non-production-lifecycle.json"
+          $contract = Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
+          $cutoff = [DateTimeOffset]::UtcNow.AddDays(-$contract.localArtifacts.maximumAgeDays)
+          foreach ($artifactRoot in $contract.localArtifacts.roots) {
+            $rootPath = Join-Path $PWD $artifactRoot
+            if (-not (Test-Path -LiteralPath $rootPath -PathType Container)) { continue }
+            $resolvedRoot = (Resolve-Path -LiteralPath $rootPath).Path
+            foreach ($file in Get-ChildItem -LiteralPath $resolvedRoot -File -Recurse) {
+              if (-not $file.FullName.StartsWith($resolvedRoot, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Artifact path escaped its governed root."
+              }
+              if ($file.LastWriteTimeUtc -le $cutoff.UtcDateTime) {
+                Remove-Item -LiteralPath $file.FullName -Force
+              }
+            }
+            $stale = Get-ChildItem -LiteralPath $resolvedRoot -File -Recurse |
+              Where-Object LastWriteTimeUtc -LE $cutoff.UtcDateTime
+            if ($stale) { throw "A stale local credential/log/export artifact remains after purge." }
+          }
+          dotnet test tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj --no-restore --configuration Release --filter "FullyQualifiedName~SqlServerTestDatabaseFixtureTests|FullyQualifiedName~NonProductionSeedLifecycleTests"
+
+      - name: Gate 09 - SQL integration tests
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj --no-restore --configuration Release
+
+  browser-accessibility:
+    needs: sql-lifecycle
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Use repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Prepare browser gate project
+        shell: pwsh
+        run: |
+          dotnet restore tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj
+          dotnet restore tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj
+          dotnet build tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-restore --configuration Release
+
+      - name: Gate 10 - E2E browser matrix
+        shell: pwsh
+        run: |
+          $matrixPath = "tests/StudentRegistration.E2ETests/browser-matrix.json"
+          $matrix = Get-Content -LiteralPath $matrixPath -Raw | ConvertFrom-Json
+          $requiredNames = @(
+            "Google Chrome",
+            "Microsoft Edge",
+            "Mozilla Firefox",
+            "Playwright WebKit"
+          )
+          $requiredTargets = @($matrix.targets | Where-Object status -EQ "required")
+          if ((@($requiredTargets.name) -join "|") -ne ($requiredNames -join "|")) {
+            throw "The required current-browser matrix changed or is incomplete."
+          }
+          $webkit = $requiredTargets | Where-Object name -EQ "Playwright WebKit"
+          if ($webkit.label -ne "Playwright WebKit (not Safari)" -or
+              [string]::IsNullOrWhiteSpace($webkit.playwrightVersion)) {
+            throw "Pinned WebKit must be labelled Playwright WebKit (not Safari)."
+          }
+          $safari = $matrix.targets | Where-Object name -EQ "Apple Safari"
+          if ($safari.status -ne "deferred" -or $safari.result -ne "not-passed") {
+            throw "Actual Safari/macOS must remain deferred and not passed."
+          }
+          $projectSource = (Get-ChildItem tests/StudentRegistration.E2ETests -Filter *.cs -Recurse |
+            ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join "`n"
+          if ($projectSource -notmatch "Microsoft\.Playwright" -or
+              $projectSource -notmatch "SRS_BROWSER_TARGET") {
+            throw "Executable browser journeys are absent; planned metadata cannot pass E2E."
+          }
+          $playwright = Get-ChildItem tests/StudentRegistration.E2ETests/bin/Release -Filter playwright.ps1 -Recurse |
+            Select-Object -First 1
+          if ($null -eq $playwright) { throw "The pinned Playwright installer is absent." }
+          & $playwright.FullName install chrome msedge firefox webkit
+          if ($LASTEXITCODE -ne 0) { throw "Pinned browser installation failed." }
+          foreach ($target in $requiredTargets) {
+            $env:SRS_BROWSER_TARGET = $target.name
+            dotnet test tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-build --configuration Release
+            if ($LASTEXITCODE -ne 0) { throw "E2E failed for $($target.label)." }
+          }
+
+      - name: Gate 11 - Automated and manual accessibility
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj --no-restore --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Accessibility evidence contract tests failed." }
+          dotnet test tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-build --configuration Release --filter "Category=Accessibility"
+          if ($LASTEXITCODE -ne 0) { throw "Automated accessibility checks failed." }
+          $manualPath = "docs/release-evidence/SPEC-018-screen-reader-manual.md"
+          if (-not (Test-Path -LiteralPath $manualPath -PathType Leaf)) {
+            throw "Signed manual keyboard and NVDA/Windows evidence is absent."
+          }
+          $manual = Get-Content -LiteralPath $manualPath -Raw
+          if ($manual -match "(?i)NOT EXECUTED|unsigned") {
+            throw "Manual accessibility evidence is not executed or remains unsigned."
+          }
+          $requiredFields = @(
+            "tester",
+            "date",
+            "assistiveTechnology",
+            "route",
+            "scenario",
+            "result",
+            "defectLinks",
+            "uxQaSignOff"
+          )
+          foreach ($field in $requiredFields) {
+            if ($manual -notmatch "(?im)^\s*$field\s*:\s*\S+") {
+              throw "Manual accessibility evidence field is absent or unsigned: $field"
+            }
+          }
+
+  security-release:
+    needs: browser-accessibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Use repository .NET SDK
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Prepare security and evidence projects
+        shell: pwsh
+        run: |
+          dotnet restore tests/StudentRegistration.SecurityTests/StudentRegistration.SecurityTests.csproj
+          dotnet restore tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj
+          dotnet restore tests/StudentRegistration.LoadTests/StudentRegistration.LoadTests.csproj
+          dotnet restore tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj
+
+      - name: Gate 12 - Security and threat model
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.SecurityTests/StudentRegistration.SecurityTests.csproj --no-restore --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Security tests failed." }
+          $threatPath = "docs/security/THREAT_MODEL.md"
+          if (-not (Test-Path -LiteralPath $threatPath -PathType Leaf)) {
+            throw "An unreviewed or stale threat model blocks release."
+          }
+          $threat = Get-Content -LiteralPath $threatPath -Raw
+          if ($threat -notmatch "(?im)^\*\*Status:\*\*\s+Reviewed\s*$" -or
+              $threat -notmatch "(?im)^\*\*Owner:\*\*\s+Ahmed ELbamby\s*$") {
+            throw "An unreviewed or stale threat model blocks release."
+          }
+          $dueMatch = [regex]::Match($threat, "(?im)^\*\*Next review due:\*\*\s+(\d{4}-\d{2}-\d{2})\s*$")
+          if (-not $dueMatch.Success -or [DateTime]::Parse($dueMatch.Groups[1].Value) -lt [DateTime]::UtcNow.Date) {
+            throw "An unreviewed or stale threat model blocks release."
+          }
+          if ($threat -match "\|\s*(Critical|High)\s+until") {
+            throw "An unresolved Critical or High security finding blocks release."
+          }
+
+      - name: Gate 13 - Critical-rule coverage
+        shell: pwsh
+        run: |
+          dotnet test tests/StudentRegistration.LoadTests/StudentRegistration.LoadTests.csproj --no-restore --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Required load-profile contract tests failed." }
+          dotnet test tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj --no-restore --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw "Required release-quality evidence tests failed." }
+          $manifestPath = "tests/StudentRegistration.QualityTests/Specs/Spec018/critical-rule-coverage-manifest.json"
+          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+          foreach ($owner in $manifest.owners) {
+            if (-not (Test-Path -LiteralPath $owner.sourceProject -PathType Leaf)) {
+              throw "Critical-rule owner source project is absent: $($owner.sourceProject)"
+            }
+            foreach ($testPath in $owner.requiredTestPaths) {
+              if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) {
+                throw "Critical-rule owner test is absent for $($owner.ownerSpec): $testPath"
+              }
+            }
+          }
+          $projects = @($manifest.owners.testProject | Sort-Object -Unique)
+          foreach ($project in $projects) {
+            dotnet test $project --configuration Release --collect:"XPlat Code Coverage" --results-directory TestResults/critical-rules
+            if ($LASTEXITCODE -ne 0) { throw "Critical-rule coverage execution failed." }
+          }
+          $reports = Get-ChildItem TestResults/critical-rules -Filter coverage.cobertura.xml -Recurse
+          if (-not $reports) { throw "Critical-rule branch coverage evidence is absent." }
+          $coverageDocuments = @($reports | ForEach-Object {
+            [xml](Get-Content -LiteralPath $_.FullName -Raw)
+          })
+          foreach ($owner in $manifest.owners) {
+            $classes = @($coverageDocuments.coverage.packages.package |
+              Where-Object name -EQ $owner.sourceAssembly |
+              ForEach-Object { $_.classes.class } |
+              Where-Object name -Match $owner.classNamePattern)
+            if (-not $classes) {
+              throw "Focused coverage classes are absent for $($owner.ownerSpec)."
+            }
+            foreach ($class in $classes) {
+              $branchRate = [double]::Parse(
+                $class.'branch-rate',
+                [Globalization.CultureInfo]::InvariantCulture)
+              if ($branchRate -lt $manifest.minimumBranchRate) {
+                throw "Critical-rule branch coverage is below 0.90 for $($class.name)."
+              }
+            }
+          }
+          Write-Host "Coverage passed; coverage never replaces behavior tests."
+
+      - name: Gate 14 - Correctness invariants
+        shell: pwsh
+        run: |
+          $requiredInvariantTests = @(
+            "tests/StudentRegistration.IntegrationTests/Registration/SqlSeatAllocatorConcurrencyTests.cs",
+            "tests/StudentRegistration.IntegrationTests/Registration/RegistrationIdempotencyFailureTests.cs",
+            "tests/StudentRegistration.IntegrationTests/Registration/EnrollmentCounterReconciliationTests.cs"
+          )
+          foreach ($testPath in $requiredInvariantTests) {
+            if (-not (Test-Path -LiteralPath $testPath -PathType Leaf)) {
+              throw "A capacity, duplicate-enrollment, or atomicity invariant failure/evidence gap blocks release: $testPath"
+            }
+          }
+          dotnet test tests/StudentRegistration.IntegrationTests/StudentRegistration.IntegrationTests.csproj --configuration Release --filter "FullyQualifiedName~SqlSeatAllocatorConcurrencyTests|FullyQualifiedName~RegistrationIdempotencyFailureTests|FullyQualifiedName~EnrollmentCounterReconciliationTests"
+
+      - name: Gate 15 - Release blockers
+        shell: pwsh
+        run: |
+          $blockingConditions = @(
+            "unreviewed or stale threat model",
+            "unresolved Critical or High security finding",
+            "capacity, duplicate-enrollment, or atomicity invariant failure",
+            "Critical or Major core-usability defect"
+          )
+          $requiredEvidence = @(
+            "docs/release-evidence/SPEC-018-screen-reader-manual.md",
+            "docs/release-evidence/SPEC-018-NFR-1.md",
+            "docs/release-evidence/SPEC-018-NFR-2.md",
+            "docs/release-evidence/SPEC-018-NFR-3.md",
+            "docs/release-evidence/SPEC-018-NFR-4.md",
+            "docs/release-evidence/SPEC-018-NFR-5.md",
+            "docs/release-evidence/SPEC-018-NFR-6.md",
+            "docs/release-evidence/SPEC-018-NFR-7.md",
+            "docs/release-evidence/SPEC-018-NFR-9.md",
+            "docs/release-evidence/SPEC-018-traceability.md",
+            "docs/release-evidence/SPEC-018-release-approval.md"
+          )
+          foreach ($evidencePath in $requiredEvidence) {
+            if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf)) {
+              throw "Release evidence is absent: $evidencePath"
+            }
+          }
+          $nfrEvidence = @(
+            "docs/release-evidence/SPEC-018-NFR-1.md",
+            "docs/release-evidence/SPEC-018-NFR-2.md",
+            "docs/release-evidence/SPEC-018-NFR-3.md",
+            "docs/release-evidence/SPEC-018-NFR-4.md",
+            "docs/release-evidence/SPEC-018-NFR-5.md",
+            "docs/release-evidence/SPEC-018-NFR-6.md",
+            "docs/release-evidence/SPEC-018-NFR-7.md",
+            "docs/release-evidence/SPEC-018-NFR-9.md"
+          )
+          foreach ($evidencePath in $nfrEvidence) {
+            $evidence = Get-Content -LiteralPath $evidencePath -Raw
+            if ($evidence -notmatch "(?im)^\*\*Release result:\*\*\s+PASS\s*$" -or
+                $evidence -notmatch "(?im)^Runtime execution result:\s+PASS\b") {
+              throw "Measured NFR evidence is pending or incomplete: $evidencePath"
+            }
+          }
+          $deferredTestRoots = @(
+            "tests/StudentRegistration.AcceptanceTests/Specs/Spec018",
+            "tests/StudentRegistration.AccessibilityTests/Specs/Spec018",
+            "tests/StudentRegistration.IntegrationTests/Specs/Spec018",
+            "tests/StudentRegistration.LoadTests/Specs/Spec018",
+            "tests/StudentRegistration.QualityTests/Specs/Spec018",
+            "tests/StudentRegistration.SecurityTests"
+          )
+          $deferredTests = @($deferredTestRoots |
+            Where-Object { Test-Path -LiteralPath $_ -PathType Container } |
+            ForEach-Object { Get-ChildItem -LiteralPath $_ -Filter *.cs -File -Recurse } |
+            Select-String -Pattern '\[(Fact|Theory)\s*\(\s*Skip\s*=')
+          if ($deferredTests.Count -gt 0) {
+            throw "Required SPEC-018 tests remain explicitly skipped."
+          }
+          $traceabilityPath = "docs/release-evidence/SPEC-018-traceability.md"
+          $traceability = Get-Content -LiteralPath $traceabilityPath -Raw
+          if ($traceability -match "(?im)\|\s*(PENDING|BLOCKED|MISSING|NOT EXECUTED)\s*\|") {
+            throw "SPEC-018 traceability contains a row without passing evidence."
+          }
+          $approvalPath = "docs/release-evidence/SPEC-018-release-approval.md"
+          $approval = Get-Content -LiteralPath $approvalPath -Raw
+          $requiredReleaseValues = [ordered]@{
+            releaseDecision = "approved"
+            productOwnerApproval = "approved"
+            domainOwnerApproval = "approved"
+            qaApproval = "approved"
+            securityApproval = "approved"
+            accessibilityApproval = "approved"
+            dataConcurrencyApproval = "approved"
+            operationsApproval = "approved"
+            unresolvedCriticalHighSecurityFindings = "0"
+            invariantFailures = "0"
+            criticalMajorUsabilityDefects = "0"
+            productionAuthorized = "false"
+            officialAastmtApproval = "false"
+          }
+          foreach ($entry in $requiredReleaseValues.GetEnumerator()) {
+            $pattern = "(?im)^\s*$([regex]::Escape($entry.Key))\s*:\s*$([regex]::Escape($entry.Value))\s*$"
+            if ($approval -notmatch $pattern) {
+              throw "Release approval is absent or still blocked: $($entry.Key)"
+            }
+          }
+          if ($env:SRS_PRODUCTION_AUTHORIZED -ne "false") {
+            throw "The non-production demo cannot authorize production."
+          }
+          Write-Host "Blocking conditions evaluated: $($blockingConditions -join '; ')"
+          Write-Host "productionAuthorized=false"
+          Write-Host "officialAastmtApproval=false"

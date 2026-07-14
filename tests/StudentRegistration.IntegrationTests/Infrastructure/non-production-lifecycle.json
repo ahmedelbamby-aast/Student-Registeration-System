@@ -1,0 +1,57 @@
+{
+  "version": "non-production-lifecycle/1.0",
+  "scope": "non-production-demo",
+  "productionAuthorized": false,
+  "sqlServer": {
+    "image": "mcr.microsoft.com/mssql/server:2022-CU25-ubuntu-22.04@sha256:e07b9699a2b749969f19d86563ceeea22bd3a69f7f1db85a8d1ac4bdaf0c6f56",
+    "edition": "Developer",
+    "compatibilityLevel": 160,
+    "provisioner": "Docker/Testcontainers"
+  },
+  "testing": {
+    "environment": "Testing",
+    "databasePattern": "StudentRegistration_Test_{runId}",
+    "uniquePerRun": true,
+    "migrationsBeforeSeed": true,
+    "readinessRequired": true,
+    "disposeAfterRun": true,
+    "sharedDevelopmentOrProductionConnectionAllowed": false
+  },
+  "development": {
+    "environment": "Development",
+    "databaseName": "StudentRegistration_Development",
+    "persistsUntilExplicitReset": true,
+    "resetRequiresEnvironmentAndTargetGuard": true,
+    "automaticResetAllowed": false
+  },
+  "seed": {
+    "profileVersion": "synthetic-fixture/1.0",
+    "dataClassification": "synthetic-only",
+    "deterministicLogicalData": true,
+    "idempotentReseed": true,
+    "contributorOwnerSpecs": ["SPEC-007", "SPEC-008"],
+    "durableCredentialMaterial": "ASP.NET Identity hash only"
+  },
+  "localArtifacts": {
+    "roots": [".local", "credentials", "logs", "exports"],
+    "gitIgnored": true,
+    "maximumAgeDays": 7
+  },
+  "browserMatrixPath": "tests/StudentRegistration.E2ETests/browser-matrix.json",
+  "upstreamReadiness": {
+    "status": "blocked",
+    "reason": "No migration, seed, reset, release, or production claim is made while the canonical migration chain, seed contributors, and executable adapter are absent.",
+    "requiredPaths": [
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713010000_IdentityAcademicFoundation.cs",
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713020000_CatalogueScheduling.cs",
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713040000_DiscoveryPlanning.cs",
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs",
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs",
+      "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "src/StudentRegistration.IdentityAccess/Application/DemoIdentitySeedContributor.cs",
+      "src/StudentRegistration.Academics/Application/DemoStudentProfileSeedContributor.cs",
+      "src/StudentRegistration.Api/Development/DemoDatabaseInitializer.cs",
+      "tests/StudentRegistration.IntegrationTests/Infrastructure/CanonicalSqlServerTestDatabaseBootstrapper.cs"
+    ]
+  }
+}

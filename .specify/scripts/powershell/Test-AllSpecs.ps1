@@ -79,7 +79,10 @@ function Get-ReferencedTaskIds([string]$Body) {
     return @($references | Select-Object -Unique)
 }
 function Get-TaskPaths([string]$Body) {
-    $paths = @([regex]::Matches($Body, '(?:src|tests|specs|docs|\.github)/[^\s,;()]+\.[A-Za-z0-9]+') | ForEach-Object {
+    # Repository file extensions are lower-case. Keeping this match
+    # case-sensitive prevents dotted project-directory names such as
+    # StudentRegistration.SecurityTests from being mistaken for files.
+    $paths = @([regex]::Matches($Body, '(?:src|tests|specs|docs|\.github)/[^\s,;()]+\.[a-z0-9]+') | ForEach-Object {
         $_.Value.TrimEnd('.', ':')
     })
     if ($Body -match '(?<![A-Za-z0-9_./-])global\.json(?![A-Za-z0-9_./-])') { $paths += 'global.json' }

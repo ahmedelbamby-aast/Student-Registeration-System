@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://student-registration.demo/schemas/backup-evidence/1.0",
+  "title": "SPEC-018 BackupEvidence",
+  "x-owner-spec": "SPEC-018",
+  "x-schema-version": "1.0",
+  "x-immutable-after-signoff": true,
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "ownerSpec",
+    "scope",
+    "evidenceId",
+    "evidenceVersion",
+    "sourceCommit",
+    "recordedAtUtc",
+    "backupId",
+    "backupCreatedAtUtc",
+    "restoreEnvironment",
+    "restoreStartedAtUtc",
+    "restoreCompletedAtUtc",
+    "rpoTargetSeconds",
+    "measuredRpoSeconds",
+    "rtoTargetSeconds",
+    "measuredRtoSeconds",
+    "integrityChecks",
+    "reconciliationStatus",
+    "status",
+    "approvedBy",
+    "productionAuthorized"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "ownerSpec": { "const": "SPEC-018" },
+    "scope": { "const": "non-production-demo" },
+    "evidenceId": {
+      "type": "string",
+      "pattern": "^backup-evidence-[a-z0-9-]+$",
+      "maxLength": 100
+    },
+    "evidenceVersion": { "type": "integer", "minimum": 1 },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "recordedAtUtc": { "type": "string", "format": "date-time" },
+    "backupId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "backupCreatedAtUtc": { "type": "string", "format": "date-time" },
+    "restoreEnvironment": {
+      "type": "string",
+      "enum": ["testing", "staging", "isolated-recovery"]
+    },
+    "restoreStartedAtUtc": { "type": "string", "format": "date-time" },
+    "restoreCompletedAtUtc": { "type": "string", "format": "date-time" },
+    "rpoTargetSeconds": { "const": 300 },
+    "measuredRpoSeconds": { "type": "integer", "minimum": 0 },
+    "rtoTargetSeconds": { "const": 3600 },
+    "measuredRtoSeconds": { "type": "integer", "minimum": 0 },
+    "integrityChecks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/integrityCheck" }
+    },
+    "reconciliationStatus": {
+      "type": "string",
+      "enum": ["pass", "fail", "blocked"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail", "blocked"]
+    },
+    "approvedBy": { "const": "Ahmed ELbamby" },
+    "productionAuthorized": { "const": false },
+    "supersedesEvidenceId": {
+      "type": "string",
+      "pattern": "^backup-evidence-[a-z0-9-]+$",
+      "maxLength": 100
+    },
+    "supersessionRationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  },
+  "$defs": {
+    "integrityCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkId", "status", "details"],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "maxLength": 80
+        },
+        "status": { "type": "string", "enum": ["pass", "fail"] },
+        "details": { "type": "string", "minLength": 1, "maxLength": 512 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["supersedesEvidenceId"] },
+      "then": { "required": ["supersessionRationale"] }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "pass" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "measuredRpoSeconds": { "maximum": 300 },
+          "measuredRtoSeconds": { "maximum": 3600 },
+          "reconciliationStatus": { "const": "pass" },
+          "integrityChecks": {
+            "items": {
+              "properties": {
+                "status": { "const": "pass" }
+              },
+              "required": ["status"]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "schemaVersion": "1.0",
+      "ownerSpec": "SPEC-018",
+      "scope": "non-production-demo",
+      "evidenceId": "backup-evidence-20260714-01",
+      "evidenceVersion": 1,
+      "sourceCommit": "0000000000000000000000000000000000000000",
+      "recordedAtUtc": "2026-07-14T02:00:00Z",
+      "backupId": "student-registration-testing-20260714-0100",
+      "backupCreatedAtUtc": "2026-07-14T01:00:00Z",
+      "restoreEnvironment": "isolated-recovery",
+      "restoreStartedAtUtc": "2026-07-14T01:05:00Z",
+      "restoreCompletedAtUtc": "2026-07-14T01:28:00Z",
+      "rpoTargetSeconds": 300,
+      "measuredRpoSeconds": 180,
+      "rtoTargetSeconds": 3600,
+      "measuredRtoSeconds": 1380,
+      "integrityChecks": [
+        {
+          "checkId": "migration-history",
+          "status": "pass",
+          "details": "Migration history and expected schema version match."
+        },
+        {
+          "checkId": "registration-counts",
+          "status": "pass",
+          "details": "Registration aggregates reconcile with the backup snapshot."
+        }
+      ],
+      "reconciliationStatus": "pass",
+      "status": "pass",
+      "approvedBy": "Ahmed ELbamby",
+      "productionAuthorized": false
+    }
+  ]
+}

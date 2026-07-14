@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -19,12 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
-             Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
+    <ProjectReference Include="../../src/StudentRegistration.Api/StudentRegistration.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../StudentRegistration.LoadTests/StudentRegistration.LoadTests.csproj" />
+    <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
+             Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
