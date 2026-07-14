@@ -1,5 +1,5 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.2",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -30,6 +30,7 @@
     "SectionGroup": "010",
     "ScheduleImpactAlert": "010",
     "Staff": "007",
+    "StudentActivation": "007",
     "StaffTermAvailability": "010",
     "StaffAvailability": "010",
     "StudentTermRegistrationGuard": "014",

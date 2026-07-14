@@ -11,9 +11,10 @@
 ## Context
 
 Students require University-ID login and controlled first-time activation.
-Admin, Lecturer, and TA need one staff login without a role selector. Blazor
-client state is not a security boundary, so identity and authorization are
-enforced by ASP.NET Core.
+Admin, Lecturer, and TA need one staff login without a pre-authentication or
+self-asserted role selector. A multi-role user may choose only among roles the
+server returns after authentication. Blazor client state is not a security
+boundary, so identity and authorization are enforced by ASP.NET Core.
 
 Development and Testing database bootstrap generates wholly synthetic,
 pre-provisioned accounts, unique University IDs, and initial PIN/password
@@ -26,9 +27,11 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
   student identity (`ApplicationUser` with normalized unique University ID).
   In Development and Testing, a guarded bootstrap MUST generate the synthetic
   University ID and initial PIN/password, persist only its ASP.NET Core
-  Identity hash, and allow first use to atomically activate that existing
-  identity after password verification. The browser MUST NOT create an
-  identity, choose a University ID, or persist plaintext credentials.
+  Identity hash, and allow first use to supply that initial credential plus a
+  replacement password. The server MUST verify the initial hash, replace it
+  with the new-password hash, and activate the existing identity in one atomic
+  transition. Password confirmation is client-only. The browser MUST NOT
+  create an identity, choose a University ID, or persist plaintext credentials.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
@@ -36,13 +39,24 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
   change, current-session logout, and revoke-all-sessions. Recovery request
   responses MUST be indistinguishable for existing and unknown accounts;
   completion MUST rotate the security stamp and invalidate every earlier
-  session on every replica.
+  session on every replica. Recovery proof delivery MUST cross the narrow
+  Identity-owned `IAccountRecoveryProofDelivery` port and the request response
+  MUST NOT contain the proof. Testing uses an injected in-memory adapter;
+  Development may use only a Git-ignored local adapter whose artifacts are
+  purged within seven days. Production MUST fail closed until an approved
+  institutional adapter is configured.
 - FR-6: Demo staff MUST use the shared staff login with a pre-provisioned local
   username and generated password. No MFA or other second factor is required;
-  no role selector or public staff registration is allowed, and the server
-  MUST derive the effective roles after password and account-state checks.
+  no pre-authentication role selector, self-asserted role, or public staff
+  registration is allowed. The server MUST derive effective roles after
+  password and account-state checks; any post-authentication context choice
+  MUST be a member of that returned role set.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
-  plus antiforgery for mutations.
+  plus antiforgery for every state-changing endpoint, including anonymous
+  login, activation, and recovery commands. The host issues the ASP.NET Core
+  antiforgery request token through a Secure, SameSite `XSRF-TOKEN` cookie that
+  is not an authentication credential; the client echoes it only in the
+  `X-XSRF-TOKEN` header. The framework antiforgery cookie remains HttpOnly.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
 - FR-10: First-use activation and recovery proofs MUST be attempt-bounded and
@@ -61,8 +75,8 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
 - FR-14: An Admin with the explicit identity-management permission MUST be able
   to submit and inspect a provenance-bearing, idempotent pre-provisioned-user
   import; page/search users; enable or disable an account; and replace
-  effective role assignments. Status/role commands require reason and expected
-  user/role versions, emit audit facts, and lock the Identity-owned singleton
+  effective role assignments. Status/role commands require reason and the
+  aggregate `expectedRowVersion`, emit audit facts, and lock the Identity-owned singleton
   `AdminSecurityGuard` before serializing the enabled-Admin role scope so two
   concurrent removals cannot eliminate the final enabled Admin. IdentityAccess
   is the sole role-mutation owner; SPEC-017 may delegate to it but MUST NOT
@@ -70,11 +84,23 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
 
 ## Non-Functional Requirements
 
-- NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load.
+- NFR-1: Login SHOULD respond within 500 ms p95 during a 10-minute profile at
+  25 password-login attempts/second across at least two stateless replicas and
+  25,000 synthetic accounts: 80% valid, 15% invalid-credential, and 5%
+  already-locked requests. Expected generic denials are not errors; unexpected
+  errors MUST remain below 1%, with no account-enumeration or shared-state
+  inconsistency.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
-- NFR-3: Password/credential configuration MUST follow current ASP.NET Core
-  Identity and AASTMT security policy.
+- NFR-3: The demo MUST explicitly configure ASP.NET Core Identity 10 with
+  PasswordHasherCompatibilityMode.IdentityV3, at least 100,000 PBKDF2
+  iterations, password length 15-128, no character-class composition rule, and
+  a versioned common/context-specific password blocklist. Password managers,
+  paste, spaces, and Unicode MUST be allowed; arbitrary periodic password
+  changes MUST NOT be required. Password login locks after five failures for
+  five minutes. Activation and recovery proofs expire after 15 minutes and
+  permit at most five failed verifications. The official AASTMT credential
+  policy is not source-approved; Production MUST fail closed until an approved,
+  versioned institutional policy reconciles or supersedes this demo baseline.
 - NFR-4: Every protected endpoint MUST have positive/negative authorization
   tests.
 
@@ -113,12 +139,14 @@ And no long-lived credential is written to browser local storage<br>
 And recovery request responses do not disclose whether the account exists.
 
 ### AC-6: Parallel activation is single-use (FR-2, FR-10, FR-11)
-Given one pre-provisioned inactive University ID and its generated password<br>
-When ten first-use activation requests use those credentials concurrently through two
-application replicas<br>
-Then exactly one account link is created<br>
+Given one pre-provisioned inactive University ID and its generated initial
+password<br>
+When ten first-use requests submit that credential and one new password
+concurrently through two application replicas<br>
+Then exactly one conditional transition verifies the initial credential,
+replaces its hash, marks activation complete, and rotates security state<br>
 And every other request receives the same safe already-used result<br>
-And no duplicate University ID claim exists.
+And no duplicate University ID claim or second identity exists.
 
 ### AC-7: Replica-wide invalidation (FR-5, FR-12)
 Given a user has sessions routed to two application replicas<br>
@@ -133,17 +161,17 @@ reviewed<br>
 Then every route/state maps to SPEC-003 and the owning identity FR/AC IDs.
 
 ### AC-9: Authentication quality gate (NFR-1, NFR-2, NFR-3, NFR-4)
-Given the SPEC-018 approved load and positive/negative role matrix<br>
+Given the SPEC-007 pinned login profile and positive/negative role matrix<br>
 When authentication performance, enumeration, configuration, and authorization
 tests execute<br>
 Then login is at most 500 ms p95<br>
 And errors do not reveal account existence<br>
-And credential configuration passes the current approved ASP.NET Core security
-baseline<br>
+And credential configuration passes the pinned NFR-3 demo baseline while the
+unverified AASTMT production boundary stays fail closed<br>
 And every protected endpoint permits and denies exactly the documented roles.
 
 ### AC-10: Governed Admin user lifecycle (FR-3, FR-4, FR-12, FR-14)
-Given an authorized identity Admin has current user/role versions, reason, and
+Given an authorized identity Admin has the current aggregate `expectedRowVersion`, reason, and
 a validated pre-provisioned import or user change<br>
 When the Admin imports users, pages users/import status, disables an account,
 or replaces roles<br>
@@ -171,7 +199,8 @@ interface StudentLoginRequest { universityId: string; password: string; }
 interface StaffLoginRequest { userName: string; password: string; }
 interface ActivateStudentRequest {
   universityId: string;
-  password: string;
+  initialPassword: string;
+  newPassword: string;
 }
 interface SessionDto {
   displayName: string;
@@ -179,7 +208,6 @@ interface SessionDto {
   activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant" | null;
   sessionState: "active" | "expiring" | "role-selection-required";
   expiresAtUtc: string;
-  securityStampVersion: string;
 }
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
@@ -195,8 +223,8 @@ interface IdentityImportBatchDto {
   rowVersion: string;
   errors: Array<{ row?: number; code: string; message: string }>;
 }
-interface UserStatusRequest { enabled: boolean; expectedUserRowVersion: string; reason: string; }
-interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">; expectedUserRowVersion: string; expectedRoleSetVersion: string; reason: string; }
+interface UserStatusRequest { enabled: boolean; expectedRowVersion: string; reason: string; }
+interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">; expectedRowVersion: string; reason: string; }
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
@@ -216,11 +244,11 @@ all account mutations use antiforgery and server-side rate limits.
 | Entity | Key fields |
 |---|---|
 | ApplicationUser | Identity fields, normalized unique University ID for student identities, enabled state, optional academic/staff link |
-| StudentActivation | ApplicationUser ID, provisioned timestamp, activated timestamp, rowversion; no plaintext PIN/password field |
+| StudentActivation | unique FK ApplicationUserId -> Identity-owned ApplicationUser.Id, provisioned timestamp, activated timestamp, rowversion; never references Student and has no plaintext PIN/password field |
 | AccountRecoveryChallenge | hashed token, subject, expiry, attempts, used timestamp |
 | RoleAssignment | user, role, effective dates, assigning actor |
-| AuthenticationAbuseState | normalized privacy-safe key, counters, lockout/rate-limit windows, rowversion |
-| IdentityImportBatch | source/hash, lifecycle, rowversion, row errors, idempotent publication result |
+| AuthenticationAbuseState | SubjectKeyHash HMAC over canonical operation + subject/network scope, operation, counters, lockout/rate-limit windows, rowversion |
+| IdentityImportBatch | requesting user/clientRequestId, source/content hash, lifecycle, rowversion, bounded row-error JSON, bounded idempotent publication-result JSON |
 | SecurityEvent | append-only identity/abuse fact with safe actor/subject references, code, reason and redacted before/after facts for status/role commands, correlation, server time, and bounded non-secret metadata; SPEC-017 may consume/query it |
 | AdminSecurityGuard | singleton Admin-role serialization row with rowversion; owned and locked by IdentityAccess role commands |
 

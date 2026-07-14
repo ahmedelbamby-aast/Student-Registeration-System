@@ -14,7 +14,8 @@ public sealed class ApplicationUserErdContractTests
                 [
                     "uniqueidentifier Id PK", "string UserName UK",
                     "string NormalizedUserName UK", "string UniversityId UK",
-                    "string PasswordHash", "bool IsEnabled", "rowversion Version"
+                    "string PasswordHash", "string SecurityStamp", "bool IsEnabled",
+                    "int AccessFailedCount", "datetime2 LockoutEndUtc", "rowversion Version"
                 ],
                 [
                     "APPLICATION_USER ||--o| STUDENT : has_academic_profile",

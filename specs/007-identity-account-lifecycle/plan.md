@@ -14,7 +14,8 @@ Deliver Identity and Account Lifecycle inside the modular monolith while keeping
 **Storage**: SQL Server with Code First migrations
 **Testing**: xUnit plus API, integration, concurrency, accessibility, and browser tests as applicable
 **Project Type**: Web application with hosted WebAssembly client and server API
-**Performance Goals**: Governed by SPEC-018 and feature NFRs
+**Performance Goals**: NFR-1's 10-minute 25-login/s two-replica profile plus
+SPEC-018's cross-feature load and correctness gates
 **Constraints**: Atomic writes, WCAG 2.2 AA, stateless APIs, no client-authoritative decisions
 **Scale/Scope**: Registration-peak horizontal scaling; bounded and paginated queries
 
@@ -45,25 +46,42 @@ in `src/StudentRegistration.Client`, and SQL mappings are implemented by
 `src/StudentRegistration.Infrastructure.SqlServer`. No business handler is
 placed in a generic Server or Domain project.
 
+Browser/API identity DTOs are shared through only two bounded files in
+`StudentRegistration.Contracts.Identity`: `AuthenticationContracts.cs` and
+`AdministrationContracts.cs`. They contain transport shapes only, never EF or
+security internals.
+
 ## Feature Design
 
 1. `ApplicationUser` is the security-stamp root; role assignments and
    challenge/abuse state are shared durable Identity data.
 2. A Development/Testing-only bootstrap generates pre-provisioned identities,
    unique synthetic University IDs, and initial PIN/passwords, persisting only
-   ASP.NET Core Identity hashes; first use atomically activates the student.
+   ASP.NET Core Identity hashes; first use verifies the issued credential,
+   replaces it with the student's new-password hash, and atomically activates
+   the student.
 3. Staff authentication directly verifies the pre-provisioned local password
    and account state, derives roles on the server, and issues a session without
-   MFA, 2FA, or a role selector.
+   MFA, 2FA, or a pre-authentication/self-asserted role selector. A multi-role
+   user may later choose only from the server-returned authorized role set.
+   The shared host configures one `__Host-StudentRegistration.Session` cookie
+   (Secure, HttpOnly, SameSite=Strict, Path=/, no Domain, non-persistent
+   60-minute absolute lifetime) and ASP.NET Core antiforgery using the
+   `XSRF-TOKEN` cookie/`X-XSRF-TOKEN` header pattern for every mutation.
 4. Recovery, password change, and revoke-all rotate the security stamp;
-   protected APIs validate it on every replica.
-5. Identity owns Admin pre-provisioned import/list/status/role commands and
-   locks its singleton AdminSecurityGuard to serialize the final-enabled-Admin
-   invariant; SPEC-017 delegates to Identity and consumes the resulting audit
-   facts and monitoring projections.
+   protected APIs validate it on every replica. Recovery proof delivery uses
+   `Application/Ports/IAccountRecoveryProofDelivery.cs`: Testing injects an
+   in-memory adapter, Development may use a bounded Git-ignored local adapter,
+   and Production fails closed until its institutional adapter is approved.
+5. Identity owns Admin pre-provisioned import/list/status/role commands. Every
+   status or role command that could reduce the enabled-Admin set locks the
+   singleton AdminSecurityGuard, rechecks that set, and serializes the
+   final-enabled-Admin invariant; SPEC-017 delegates to Identity and consumes
+   the resulting audit facts and monitoring projections.
 6. Identity owns append-only SecurityEvent facts and writes the shared
    SPEC-004 AuditEvent in the same role transaction; downstream SPEC-017 may
-   query both. SPEC-018 owns key-ring operations.
+   query both. SPEC-004 owns the SQL-backed Data Protection foundation;
+   SPEC-018 governs its security and operational use.
 
 ## Execution and Gate Order
 
@@ -88,11 +106,16 @@ official AASTMT go-live approvals remain separate.
 
 ## Non-Functional Requirements
 
-- NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load.
+- NFR-1: Login SHOULD respond within 500 ms p95 for 10 minutes at 25
+  attempts/second across two replicas and 25,000 synthetic accounts using the
+  80% valid, 15% invalid, and 5% already-locked mix; unexpected errors remain
+  below 1% and identity invariants remain intact.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
-- NFR-3: Password/credential configuration MUST follow current ASP.NET Core
-  Identity and AASTMT security policy.
+- NFR-3: Demo configuration pins IdentityV3/PBKDF2 at 100,000 or more
+  iterations, 15-128 characters without composition rules, a versioned
+  blocked-password list, five-attempt/five-minute password lockout, and
+  five-attempt/15-minute activation/recovery proofs. Official AASTMT credential
+  policy remains unverified and therefore fail-closed for Production.
 - NFR-4: Every protected endpoint MUST have positive/negative authorization
   tests.
 

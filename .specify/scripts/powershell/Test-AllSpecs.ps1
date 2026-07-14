@@ -1186,7 +1186,7 @@ foreach ($staleIdentityTerm in @(
 
 $contractTermChecks = @{
     '006-domain-class-api-contracts' = @('TermSummaryDto','serviceState','role-selection-required','supportReferencePath','PAGE_SIZE_INVALID','expectedRowVersion','STALE_VERSION','If-Match','OpenAPI','semantic diff')
-    '007-identity-account-lifecycle' = @('StaffLoginRequest','IdentityImportBatchDto','SessionDto','sessionState','activeRole','recovery/complete','revoke-all','expectedRoleSetVersion','role-selection-required','AdminSecurityGuard','FINAL_ADMIN_REQUIRED')
+    '007-identity-account-lifecycle' = @('StaffLoginRequest','IdentityImportBatchDto','SessionDto','sessionState','activeRole','recovery/complete','revoke-all','expectedRowVersion','role-selection-required','AdminSecurityGuard','FINAL_ADMIN_REQUIRED')
     '008-academic-term-student-profile' = @('TermSummaryDto','PublicContextDto','AcademicProfileCorrectionOperation','set-gpa','upsert-transcript-attempt','transcript','blocksRegistration','supportReferencePath','expectedStudentRowVersion','WINDOW_OVERLAP')
     '009-catalog-prerequisites-policy-admin' = @('CatalogueDraftDto','CatalogueDraftOperation','PolicyRuleAdminDto','PolicySetMutationRequest','PolicyPublishRequest','PolicySimulationResult','CatalogueVersionSummaryDto','ImportBatchDto','expectedDraftRowVersion','previewToken','clientRequestId','STALE_PREVIEW','IDEMPOTENCY_KEY_REUSED')
     '010-offerings-groups-resources' = @('registrationPaused','expectedGroupRowVersions','expectedRoomRowVersions','expectedStaffTermAvailabilityRowVersions','StaffTermAvailabilityDto','ScheduleImpactAlert','previewToken','clientRequestId','GROUP_CHANGED')

@@ -9,9 +9,10 @@
 ## Context
 
 Students require University-ID login and controlled first-time activation.
-Admin, Lecturer, and TA need one staff login without a role selector. Blazor
-client state is not a security boundary, so identity and authorization are
-enforced by ASP.NET Core.
+Admin, Lecturer, and TA need one staff login without a pre-authentication or
+self-asserted role selector. A multi-role user may choose only among roles the
+server returns after authentication. Blazor client state is not a security
+boundary, so identity and authorization are enforced by ASP.NET Core.
 
 For this non-production demo, explicit Development and Testing database
 bootstrap generates synthetic pre-provisioned users, unique University IDs,
@@ -89,12 +90,14 @@ As a Student or staff user, I need the Parallel activation is single-use (FR-2, 
 
 **Acceptance Scenario (AC-6)**
 
-Given one pre-provisioned inactive University ID and its generated password<br>
-When ten first-use activation requests use those credentials concurrently through two
-application replicas<br>
-Then exactly one account link is created<br>
+Given one pre-provisioned inactive University ID and its generated initial
+password<br>
+When ten first-use requests submit that credential and one new password
+concurrently through two application replicas<br>
+Then exactly one conditional transition verifies the initial credential,
+replaces its hash, marks activation complete, and rotates security state<br>
 And every other request receives the same safe already-used result<br>
-And no duplicate University ID claim exists.
+And no duplicate University ID claim or second identity exists.
 ### User Story 7 - Replica-wide invalidation (FR-5, FR-12) (P3)
 
 As a Student or staff user, I need the Replica-wide invalidation (FR-5, FR-12) behavior so that Identity and Account Lifecycle produces a verifiable outcome.
@@ -127,13 +130,13 @@ As a Student or staff user, I need the Authentication quality gate (NFR-1, NFR-2
 
 **Acceptance Scenario (AC-9)**
 
-Given the SPEC-018 approved load and positive/negative role matrix<br>
+Given the SPEC-007 pinned login profile and positive/negative role matrix<br>
 When authentication performance, enumeration, configuration, and authorization
 tests execute<br>
 Then login is at most 500 ms p95<br>
 And errors do not reveal account existence<br>
-And credential configuration passes the current approved ASP.NET Core security
-baseline<br>
+And credential configuration passes the pinned NFR-3 demo baseline while the
+unverified AASTMT production boundary stays fail closed<br>
 And every protected endpoint permits and denies exactly the documented roles.
 
 ### User Story 10 - Governed Admin user lifecycle (FR-3, FR-4, FR-12, FR-14) (P2)
@@ -171,22 +174,35 @@ or final-enabled-Admin removal attempts change nothing.
 - FR-1: Student login MUST accept normalized University ID and password.
 - FR-2: Student activation MUST only claim a pre-imported Identity-owned
   ApplicationUser identity with normalized unique University ID. For the demo,
-  first use verifies the system-generated initial PIN/password against its
-  ASP.NET Core Identity hash and atomically marks the pre-provisioned identity
-  active; the browser cannot create an identity, choose a University ID, or
-  write a plaintext credential to SQL.
+  the request supplies the system-generated initial PIN/password and a new
+  password. First use verifies the initial credential against its ASP.NET Core
+  Identity hash, replaces that hash with the new-password hash, and atomically
+  marks the pre-provisioned identity active; password confirmation remains a
+  client-only validation field. The browser cannot create an identity, choose
+  a University ID, or write a plaintext credential to SQL.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
 - FR-4: The server MUST issue role claims and enforce endpoint/resource
   policies for Student/Admin/Lecturer/TeachingAssistant.
 - FR-5: The system MUST support generic request-and-complete recovery,
   password change, logout, and revoke-all-sessions with security-stamp
-  rotation across replicas.
+  rotation across replicas. Recovery proof delivery MUST use the narrow
+  Identity-owned `IAccountRecoveryProofDelivery` port and MUST NOT return the
+  proof from the request endpoint. Testing uses an injected in-memory adapter;
+  Development may use only a Git-ignored, seven-day-bounded local adapter.
+  Production remains unavailable until an approved institutional adapter is
+  configured and MUST fail closed without one.
 - FR-6: Demo staff MUST authenticate on the shared staff page with their
   pre-provisioned local username and generated password. No MFA, 2FA, role
-  selector, or public staff registration is used; the server derives roles and
-  issues the session only after password verification and account-state checks.
+  selector before authentication, self-asserted role, or public staff
+  registration is used; the server derives roles and issues the session only
+  after password verification and account-state checks. A post-authentication
+  context choice is allowed only from that server-returned role set.
 - FR-7: Authentication MUST use a same-origin Secure, HttpOnly, SameSite cookie
-  plus antiforgery for mutations.
+  plus antiforgery for every state-changing endpoint, including anonymous
+  login, activation, and recovery commands. The host issues a Secure, SameSite
+  `XSRF-TOKEN` request-token cookie for echo only in `X-XSRF-TOKEN`; it is not
+  an authentication credential, while the framework antiforgery cookie remains
+  HttpOnly.
 - FR-8: Long-lived tokens MUST NOT be stored in browser local storage.
 - FR-9: Login/activation/recovery MUST be rate-limited and safely audited.
 - FR-10: First-use activation and recovery proofs MUST be attempt-bounded and
@@ -205,11 +221,22 @@ or final-enabled-Admin removal attempts change nothing.
 
 ### Non-Functional Requirements
 
-- NFR-1: Login SHOULD respond within 500 ms p95 under the SPEC-018
-  production-like authenticated-session load.
+- NFR-1: Login SHOULD respond within 500 ms p95 during a 10-minute profile at
+  25 password-login attempts/second across at least two stateless replicas and
+  25,000 synthetic accounts: 80% valid, 15% invalid-credential, and 5%
+  already-locked requests. Expected generic denials are not errors; unexpected
+  errors MUST remain below 1%, with no account-enumeration or shared-state
+  inconsistency.
 - NFR-2: Authentication errors MUST NOT reveal whether an account exists.
-- NFR-3: Password/credential configuration MUST follow current ASP.NET Core
-  Identity and AASTMT security policy.
+- NFR-3: The demo MUST pin ASP.NET Core Identity 10 password hashing to
+  IdentityV3/PBKDF2 with at least 100,000 iterations; require 15-128 character
+  passwords with no character-class composition rule; reject versioned common
+  and context-specific blocked values; allow password managers, paste, spaces,
+  and Unicode; and lock password authentication after five failed attempts for
+  five minutes. Activation/recovery proofs expire after 15 minutes and allow at
+  most five failed verifications. An official AASTMT credential policy remains
+  unverified, so Production MUST fail closed until an approved, versioned
+  policy reconciles or supersedes this demo baseline.
 - NFR-4: Every protected endpoint MUST have positive/negative authorization
   tests.
 
@@ -221,8 +248,8 @@ or final-enabled-Admin removal attempts change nothing.
   **AdminSecurityGuard** are owned by SPEC-007.
 - SPEC-017 may consume/query append-only SecurityEvent records because it
   depends on SPEC-007; Identity does not depend on downstream SPEC-017.
-- The shared Data Protection key ring is operational infrastructure governed
-  by SPEC-018, not an Identity domain entity.
+- The shared Data Protection key ring is SPEC-004 infrastructure governed in
+  security/operations by SPEC-018, not an Identity domain entity.
 
 ## Success Criteria
 

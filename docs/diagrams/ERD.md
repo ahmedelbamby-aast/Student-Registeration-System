@@ -70,7 +70,10 @@ erDiagram
     string NormalizedUserName UK
     string UniversityId UK
     string PasswordHash
+    string SecurityStamp
     bool IsEnabled
+    int AccessFailedCount
+    datetime2 LockoutEndUtc
     rowversion Version
   }
   ROLE_ASSIGNMENT {
@@ -79,6 +82,7 @@ erDiagram
     string RoleCode
     datetime2 EffectiveFromUtc
     datetime2 EffectiveToUtc
+    string AssignedByReference
     rowversion Version
   }
   STUDENT_ACTIVATION {
@@ -93,13 +97,16 @@ erDiagram
     uniqueidentifier Id PK
     uniqueidentifier UserId FK
     string TokenHash UK
+    string DeliveryReferenceHash
     datetime2 ExpiresAtUtc
+    int FailedAttemptCount
     datetime2 ConsumedAtUtc
     rowversion Version
   }
   AUTHENTICATION_ABUSE_STATE {
     uniqueidentifier Id PK
     string SubjectKeyHash UK
+    string Operation
     int FailureCount
     datetime2 WindowStartedAtUtc
     datetime2 LockedUntilUtc
@@ -108,10 +115,12 @@ erDiagram
   IDENTITY_IMPORT_BATCH {
     uniqueidentifier Id PK
     uniqueidentifier RequestedByUserId FK
+    string ClientRequestId
     string SourceName
     string SourceHash UK
     string State
     string ErrorSummaryJson
+    string ResultSummaryJson
     datetime2 ImportedAtUtc
     rowversion Version
   }
@@ -437,6 +446,12 @@ Required constraints/indexes:
 - Unique RoleAssignment(UserId, RoleCode, EffectiveFromUtc),
   StudentActivation(UserId), AccountRecoveryChallenge(TokenHash),
   AuthenticationAbuseState(SubjectKeyHash), and IdentityImportBatch(SourceHash).
+- AuthenticationAbuseState.SubjectKeyHash is the server HMAC of canonical
+  operation, subject scope, and network scope; the existing unique key therefore
+  separates operations without persisting raw identifiers. IdentityImportBatch
+  also has unique (RequestedByUserId, ClientRequestId) for atomic idempotency.
+- AdminSecurityGuard is the singleton row Id = 1. Any account-status or role
+  mutation that can reduce the enabled-Admin set locks it before rechecking.
 - Unique CourseOffering(TermId, CourseId).
 - Unique SectionGroup(OfferingId, GroupCode).
 - Alternate key SectionGroup(Id, OfferingId), referenced by Enrollment, so a
