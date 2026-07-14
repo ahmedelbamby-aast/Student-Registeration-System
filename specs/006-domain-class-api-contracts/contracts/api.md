@@ -28,12 +28,21 @@ interface TermSummaryDto {
   rowVersion: string;
 }
 
+interface RegistrationWindowSummaryDto {
+  id: string;
+  state: "open" | "upcoming" | "closed";
+  opensAtUtc: string;
+  closesAtUtc: string;
+  rowVersion: string;
+}
+
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
   teachingTerm: TermSummaryDto | null;
   registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  registrationWindow: RegistrationWindowSummaryDto | null;
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
   authorizedRoles: string[];
@@ -61,6 +70,13 @@ A term field is null only when the authoritative academic-term contributor
 successfully reports that no applicable term exists. A missing or failed
 required contributor returns 503 `CONTEXT_UNAVAILABLE` as `ApiError`; the API
 does not return a partial context or use null to hide composition failure.
+
+`registrationWindow` is present only for the single matched window and its
+state must equal `registrationWindowState`. It is null exactly when
+`registrationWindowState` is `none`; its UTC interval and row version are
+server-authored and cannot be supplied or inferred by the browser. The public
+context remains the six-field `PublicContextDto` and does not expose the
+window identifier, interval, or row version.
 
 Feature endpoints are defined and owned in SPEC-007 through SPEC-017. SPEC-008
 owns `GET /api/public/context` and `GET /api/context`. SPEC-006 owns the shared

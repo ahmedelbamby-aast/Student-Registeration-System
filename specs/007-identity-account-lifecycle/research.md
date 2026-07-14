@@ -12,6 +12,18 @@
 **Rationale**: Browser state is stale and untrusted during registration peaks.
 **Alternatives rejected**: Client-only validation and check-then-write capacity logic.
 
+### Effective-role permission claims
+**Decision**: Identity owns one explicit allow-list from the effective active
+role to governed permission tokens. Student receives `Context.Read` and
+`AcademicProfile.ReadOwn`; Admin receives `IdentityAccess.Manage`,
+`Context.Read`, `AcademicTerms.Manage`, and `AcademicProfiles.Manage`;
+Lecturer and TeachingAssistant receive only `Context.Read`. Context switching
+rebuilds the cookie claims from the selected effective role.
+**Rationale**: The permission claim remains independently enforceable, while
+the demo avoids a second permission database or client-asserted grants.
+**Alternatives rejected**: Treating Admin as an implicit superuser, unioning
+claims across available roles, and accepting permissions from request data.
+
 ### Feature contract
 ```typescript
 interface StudentLoginRequest { universityId: string; password: string; }

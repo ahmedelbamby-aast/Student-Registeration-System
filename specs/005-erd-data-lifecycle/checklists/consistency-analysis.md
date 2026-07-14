@@ -44,3 +44,26 @@
 - [x] Gate A approval by Ahmed ELbamby is present and the corrected planning
   baseline adds no route, endpoint, database, distributed component, or
   production claim.
+
+## 2026-07-14 amendment revalidation
+
+**Result:** PASS FOR THE APPROVED NON-PRODUCTION DESIGN AMENDMENT<br>
+**Reviewed and approved:** 2026-07-14 by Ahmed ELbamby
+
+- [x] SPEC-008 still owns exactly AcademicTerm, RegistrationWindow, Student,
+  StudentTermAcademicState, TranscriptAttempt, and StudentHold; no seventh
+  idempotency entity or second writer is introduced.
+- [x] AcademicTerm owns globally unique CreationClientRequestId plus required
+  CreationPayloadHash for payload-bound POST create replay. Publication and
+  profile correction remain expected-version commands.
+- [x] Transcript correction targets the current leaf, retains StudentId,
+  TermId, and CourseCode, uses a filtered unique non-null successor key, and is
+  acyclic under the immutable backward-reference rule.
+- [x] Academics owns RegistrationWindow overlap enforcement under term/window
+  locks; Scheduling owns meeting, staff, and room overlap enforcement.
+- [x] Entity-ownership manifest `2.0.5`, ERD, class diagram, entity references,
+  relational invariants, requirements, and data model are synchronized.
+- [x] The 70-task baseline preserves its existing state: T001-T038 and
+  T043-T060 remain recorded verified; every other task remains pending/gated.
+- [x] Runtime models/mappings, migrations, SQL execution evidence, production
+  data/configuration, Gates B-D, and release authority remain excluded.

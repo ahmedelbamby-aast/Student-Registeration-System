@@ -33,6 +33,15 @@ public sealed class ApprovedStackTests
             "10.0.9",
             PackageVersion(infrastructure, "Microsoft.EntityFrameworkCore.SqlServer"));
         Assert.Equal(
+            "10.0.9",
+            PackageVersion(infrastructure, "Microsoft.EntityFrameworkCore.Design"));
+        var designTooling = infrastructure.Descendants("PackageReference")
+            .Single(reference => string.Equals(
+                reference.Attribute("Include")?.Value,
+                "Microsoft.EntityFrameworkCore.Design",
+                StringComparison.Ordinal));
+        Assert.Equal("all", designTooling.Attribute("PrivateAssets")?.Value);
+        Assert.Equal(
             "enable",
             infrastructure.Descendants("ImplicitUsings").Single().Value);
         Assert.DoesNotContain(

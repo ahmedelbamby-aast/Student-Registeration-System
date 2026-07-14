@@ -455,11 +455,11 @@ public static class Spec007Endpoints
         if (result.ActiveRole is not null)
         {
             claims.Add(new Claim(ClaimTypes.Role, result.ActiveRole));
-            if (string.Equals(result.ActiveRole, RolePolicies.Admin, StringComparison.Ordinal))
+            foreach (var permission in RolePolicies.PermissionsForRole(result.ActiveRole))
             {
                 claims.Add(new Claim(
                     RolePolicies.PermissionClaimType,
-                    RolePolicies.IdentityManagement));
+                    permission));
             }
 
             claims.Add(new Claim(IdentityAuthenticationDefaults.ActiveRoleClaim, result.ActiveRole));

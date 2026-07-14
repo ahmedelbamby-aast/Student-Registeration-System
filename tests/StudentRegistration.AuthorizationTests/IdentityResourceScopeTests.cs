@@ -84,18 +84,17 @@ public sealed class IdentityResourceScopeTests
     }
 
     [Fact]
-    public void Identity_management_permission_is_issued_only_from_the_effective_admin_role()
+    public void Permission_claims_are_issued_only_from_the_effective_server_role()
     {
         var endpoints = RepositoryFiles.Read(
             "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs");
 
         RepositoryFiles.ContainsAll(
             endpoints,
-            "string.Equals(result.ActiveRole, RolePolicies.Admin",
             "RolePolicies.AvailableRoleClaimType",
             "new Claim(ClaimTypes.Role, result.ActiveRole)",
             "RolePolicies.PermissionClaimType",
-            "RolePolicies.IdentityManagement");
+            "RolePolicies.PermissionsForRole");
         Assert.DoesNotContain("request.Permission", endpoints, StringComparison.Ordinal);
         Assert.DoesNotContain("request.RoleClaims", endpoints, StringComparison.Ordinal);
     }
@@ -114,7 +113,7 @@ public sealed class IdentityResourceScopeTests
         {
             claims.Add(new Claim(
                 RolePolicies.PermissionClaimType,
-                RolePolicies.IdentityManagement));
+                RolePolicies.IdentityAccessManage));
         }
 
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));

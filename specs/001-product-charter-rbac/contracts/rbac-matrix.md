@@ -13,7 +13,7 @@ them further and may never widen them from browser input.
 | Role | Workspace | Governed permission grants | Data-scope rule | Explicit denials |
 |---|---|---|---|---|
 | `Student` | student workspace | `Context.Read`, `AcademicProfile.ReadOwn`, `Catalogue.ReadAvailable`, `RegistrationPlan.ManageOwn`, `Registration.SubmitOwn`, `RegistrationRecords.ReadOwn` | self and server-filtered published catalogue | Staff context, another student's data, unpublished data, and every academic/capacity override |
-| `Admin` | admin workspace | `Context.Read`, `IdentityAccess.Manage`, `AcademicTerms.Manage`, `CataloguePolicy.Manage`, `Offerings.Manage`, `RegistrationRecords.Read`, `Audit.Read`, `Reports.Export` | institutional-admin, narrowed by each named permission and requested resource | Implicit superuser access, own-role escalation, final-Admin removal, staff availability mutation, service reconciliation, and policy/invariant bypass |
+| `Admin` | admin workspace | `Context.Read`, `IdentityAccess.Manage`, `AcademicTerms.Manage`, `AcademicProfiles.Manage`, `CataloguePolicy.Manage`, `Offerings.Manage`, `RegistrationRecords.Read`, `Audit.Read`, `Reports.Export` | institutional-admin, narrowed by each named permission and requested resource; academic-profile location requires AcademicTermId plus a bounded University ID/name query and returns minimal locator fields, while detail/correction requires named StudentId plus AcademicTermId | Implicit superuser access, permission inference from the Admin role, unrestricted student listing, own-role escalation, final-Admin removal, staff availability mutation, service reconciliation, and policy/invariant bypass |
 | `Lecturer` | lecturer workspace | `Context.Read`, `TeachingAssignments.ReadOwn`, `AssignedRosters.Read`, `Availability.ManageOwn` | self and assigned-groups where a Lecturer assignment is effective | Admin mutations, unrelated groups/students, capacity change, grade/attendance scope, and TA context without an effective TA role |
 | `TeachingAssistant` | teaching-assistant workspace | `Context.Read`, `TeachingAssignments.ReadOwn`, `AssignedRosters.Read`, `Availability.ManageOwn` | self and assigned-groups where a TA assignment is effective | Admin mutations, unrelated groups/students, capacity change, grade/attendance scope, and Lecturer context without an effective Lecturer role |
 
@@ -25,6 +25,7 @@ them further and may never widen them from browser input.
 | No supported staff role | deny staff workspace access with a safe no-role message and support reference |
 | Direct route or client role change | deny the unauthorized API request; route state never grants a role or permission |
 | Missing permission or resource scope | deny without disclosing protected resource existence |
+| Admin has `AcademicTerms.Manage` but not `AcademicProfiles.Manage`, or the reverse | authorize only the independently granted capability; never infer the missing permission from the Admin role or the other grant |
 | Service reconciliation request | `Registration.Reconcile` is never granted to a human role; only the restricted operations service identity may satisfy it |
 
 ## Implementation boundary

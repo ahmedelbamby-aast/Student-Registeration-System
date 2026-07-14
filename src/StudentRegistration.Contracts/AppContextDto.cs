@@ -52,6 +52,7 @@ public sealed record AppContextDto
         TermSummaryDto? teachingTerm,
         TermSummaryDto? registrationTerm,
         RegistrationWindowState registrationWindowState,
+        RegistrationWindowSummaryDto? registrationWindow,
         ServiceState serviceState,
         string displayName,
         IReadOnlyList<string> authorizedRoles,
@@ -69,18 +70,17 @@ public sealed record AppContextDto
         var roles = CopyAuthorizedRoles(authorizedRoles);
         ActiveRole = ValidateActiveRole(activeRole, sessionState, roles);
 
-        if (registrationTerm is null && registrationWindowState is not RegistrationWindowState.None)
-        {
-            throw new ArgumentException(
-                "A missing registration term requires the none window state.",
-                nameof(registrationWindowState));
-        }
+        ValidateRegistrationWindow(
+            registrationTerm,
+            registrationWindowState,
+            registrationWindow);
 
         ServerTimeUtc = serverTimeUtc;
         TimeZoneId = Required(timeZoneId, nameof(timeZoneId));
         TeachingTerm = teachingTerm;
         RegistrationTerm = registrationTerm;
         RegistrationWindowState = registrationWindowState;
+        RegistrationWindow = registrationWindow;
         ServiceState = serviceState;
         DisplayName = Required(displayName, nameof(displayName));
         AuthorizedRoles = Array.AsReadOnly(roles);
@@ -101,6 +101,8 @@ public sealed record AppContextDto
 
     public RegistrationWindowState RegistrationWindowState { get; }
 
+    public RegistrationWindowSummaryDto? RegistrationWindow { get; }
+
     public ServiceState ServiceState { get; }
 
     public string DisplayName { get; }
@@ -114,6 +116,45 @@ public sealed record AppContextDto
     public DateTime ExpiresAtUtc { get; }
 
     public string SupportReferencePath { get; }
+
+    private static void ValidateRegistrationWindow(
+        TermSummaryDto? registrationTerm,
+        RegistrationWindowState state,
+        RegistrationWindowSummaryDto? window)
+    {
+        if (registrationTerm is null && state is not RegistrationWindowState.None)
+        {
+            throw new ArgumentException(
+                "A missing registration term requires the none window state.",
+                nameof(state));
+        }
+
+        if (registrationTerm is null && window is not null)
+        {
+            throw new ArgumentException(
+                "A registration window requires a registration term.",
+                nameof(window));
+        }
+
+        if (state is RegistrationWindowState.None)
+        {
+            if (window is not null)
+            {
+                throw new ArgumentException(
+                    "The none window state requires a null window summary.",
+                    nameof(window));
+            }
+
+            return;
+        }
+
+        if (window is null || window.State != state)
+        {
+            throw new ArgumentException(
+                "A concrete window state requires a matching window summary.",
+                nameof(window));
+        }
+    }
 
     private static string[] CopyAuthorizedRoles(IReadOnlyList<string> authorizedRoles)
     {

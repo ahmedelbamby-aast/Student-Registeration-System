@@ -12,8 +12,16 @@ retention or deletion schedule.
 
 ## Historical records
 
-- No transcript attempt is overwritten; a later result is another historical
-  attempt or an explicitly governed correction record.
+- No transcript attempt is overwritten.
+- No transcript attempt is updated or deleted by a correction. An initial
+  attempt is appended once; a correction appends a new sourced
+  `TranscriptAttempt` whose nullable `SupersedesAttemptId` identifies the
+  prior row. The target must be the current leaf and the new row must retain
+  the same `StudentId`, `TermId`, and `CourseCode`. A filtered unique successor
+  key prevents branching. Because the self-reference targets an already
+  existing immutable row and updates/deletes are forbidden, the chain is
+  acyclic. The superseded row remains unchanged and queryable, and the current
+  projection follows the unique leaf in that valid chain.
 - Enrollments retain successful registration history. Unapproved drop,
   withdrawal, and correction commands do not rewrite it.
 - Published policy sets are immutable and superseded by new effective-dated

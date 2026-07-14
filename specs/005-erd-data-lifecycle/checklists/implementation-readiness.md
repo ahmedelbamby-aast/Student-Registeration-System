@@ -32,3 +32,22 @@
 Implementation may proceed from T006 only after T001-T005 are checked. A
 requirement, ownership, persistence, dependency, or production-authority
 change requires renewed analysis and Ahmed ELbamby's approval.
+
+## 2026-07-14 amendment revalidation
+
+**State:** APPROVED FOR DEPENDENCY-ORDERED NON-PRODUCTION DESIGN WORK<br>
+**Approved by:** Ahmed ELbamby
+
+- [x] The six SPEC-008 academic entity references and entity-ownership
+  manifest `2.0.5` are synchronized with the ERD and class diagram.
+- [x] AcademicTerm creation replay uses embedded globally unique request ID and
+  payload hash fields; no seventh entity is authorized, and later publish or
+  profile-correction commands require expected versions.
+- [x] Transcript successor uniqueness, current-leaf and lineage checks, and
+  acyclic immutable history are explicit in every governing invariant view.
+- [x] RegistrationWindow and meeting/resource overlap responsibilities are
+  assigned to Academics and Scheduling respectively.
+- [x] T001-T070 and all current completion markers are preserved; no runtime
+  delivery or evidence task is marked complete by this design amendment.
+- [x] Production schema execution, migrations, real data, Gates B-D, and
+  release approval remain fail closed.

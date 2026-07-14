@@ -56,9 +56,18 @@ public sealed class Endpoint11ContractTests
 
         RepositoryFiles.ContainsAll(
             Spec007ContractAssertions.EndpointSource(),
-            "string.Equals(result.ActiveRole, RolePolicies.Admin",
+            "RolePolicies.PermissionsForRole(result.ActiveRole)",
             "RolePolicies.AvailableRoleClaimType",
             "RolePolicies.PermissionClaimType",
-            "RolePolicies.IdentityManagement");
+            "claims.Add(new Claim(",
+            "RolePolicies.PermissionClaimType,",
+            "permission));");
+
+        RepositoryFiles.ContainsAll(
+            RepositoryFiles.Read(
+                "src/StudentRegistration.IdentityAccess/Application/Authorization/RolePolicies.cs"),
+            "IdentityAccessManage = \"IdentityAccess.Manage\"",
+            "PermissionsForRole",
+            "Admin =>");
     }
 }

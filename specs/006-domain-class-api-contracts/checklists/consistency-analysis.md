@@ -71,3 +71,22 @@
 - [x] T054-T063 measurable NFR, scope, traceability, and release approvals,
   Gates B-D, production configuration, and production release remain
   incomplete and fail closed.
+
+## 2026-07-14 amendment revalidation
+
+**Result:** PASS FOR THE APPROVED NON-PRODUCTION CONTRACT AMENDMENT<br>
+**Reviewed and approved:** 2026-07-14 by Ahmed ELbamby
+
+- [x] The canonical shared inventory now includes
+  `RegistrationWindowSummaryDto`, and its artifact path is uniquely declared
+  in specification manifest `2.0.4` and entity-ownership manifest `2.0.5`.
+- [x] Research, requirements, API/composition contracts, and workstream
+  manifest `2.0.3` agree on the five-field matched-window summary, nullable
+  AppContext property, state consistency, and unchanged six-field public DTO.
+- [x] T010/T011 remain the test/source pair; T011 is the sole shared writer.
+  T047/T048 verify/publish composition only, while SPEC-008 alone owns both
+  context handlers.
+- [x] T001-T063 and the recorded 46 completed tasks are unchanged; amended
+  test-first source evidence is required before claiming runtime completeness.
+- [x] No entity, EF mapping, migration, route/handler ownership, production
+  configuration, Gates B-D, or release authority is added.

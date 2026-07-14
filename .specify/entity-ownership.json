@@ -1,5 +1,5 @@
 {
-  "version": "2.0.3",
+  "version": "2.0.5",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -36,7 +36,9 @@
     "StaffAvailability": "010",
     "StudentTermRegistrationGuard": "014",
     "Student": "008",
-    "StudentTermAcademicState": "008"
+    "StudentTermAcademicState": "008",
+    "StudentHold": "008",
+    "TranscriptAttempt": "008"
   },
   "artifactOverrides": {
     "001:RoleDefinition": "specs/001-product-charter-rbac/contracts/roles.md",
@@ -58,6 +60,7 @@
     "006:Page": "src/StudentRegistration.Contracts/Page.cs",
     "006:AppContext": "src/StudentRegistration.Contracts/AppContextDto.cs",
     "006:TermSummaryDto": "src/StudentRegistration.Contracts/TermSummaryDto.cs",
+    "006:RegistrationWindowSummaryDto": "src/StudentRegistration.Contracts/RegistrationWindowSummaryDto.cs",
     "006:PublicContextDto": "src/StudentRegistration.Contracts/PublicContextDto.cs",
     "018:StructuredLog": "docs/operations/telemetry-contract.md",
     "018:Trace": "docs/operations/telemetry-contract.md",

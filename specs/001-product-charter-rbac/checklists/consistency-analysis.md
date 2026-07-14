@@ -23,3 +23,20 @@
 No inconsistency or unresolved clarification blocks the governed-contract
 implementation slice. End-to-end Gate C and production-like quality evidence
 remain downstream and must not be reported as complete early.
+
+## 2026-07-14 amendment revalidation
+
+**Result:** PASS FOR THE APPROVED NON-PRODUCTION AMENDMENT<br>
+**Reviewed and approved:** 2026-07-14 by Ahmed ELbamby
+
+- [x] `AcademicProfiles.Manage` uses a two-stage scope: required term plus a
+  bounded University ID/name query returning minimal locator fields, then
+  named StudentId plus AcademicTermId for detail or correction.
+- [x] Permissions, RBAC matrix, plan, requirements, and specification use the
+  same scope and preserve the independent `AcademicTerms.Manage` grant.
+- [x] No unrestricted student listing, implicit Admin superuser behavior,
+  runtime endpoint/policy ownership, or registration-policy bypass is added.
+- [x] The 42-task baseline and recorded 27 completed tasks remain unchanged;
+  downstream policy and endpoint owners still supply runtime evidence.
+- [x] Gates B-D, production data access, institutional authorization, and
+  production release remain excluded and fail closed.

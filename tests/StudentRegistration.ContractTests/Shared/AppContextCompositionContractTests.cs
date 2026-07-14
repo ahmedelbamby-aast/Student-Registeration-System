@@ -15,6 +15,7 @@ public sealed class AppContextCompositionContractTests
             "SPEC-006 owns the response schemas",
             "SPEC-007 owns identity, session, and authorized-role contribution",
             "SPEC-008 owns authoritative time, term, window, and service contribution",
+            "RegistrationWindowSummaryDto",
             "SPEC-008 owns both context handlers",
             "503 `CONTEXT_UNAVAILABLE`",
             "no partial success",
@@ -75,6 +76,14 @@ public sealed class AppContextCompositionContractTests
             teachingTerm: null,
             registrationTerm,
             registrationWindowState,
+            registrationWindowState is RegistrationWindowState.None
+                ? null
+                : new RegistrationWindowSummaryDto(
+                    "window-summer-all",
+                    registrationWindowState,
+                    new DateTime(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc),
+                    new DateTime(2026, 7, 13, 18, 0, 0, DateTimeKind.Utc),
+                    "CQoLDA=="),
             ServiceState.Available,
             "Ahmed Student",
             authorizedRoles ?? ["Student"],

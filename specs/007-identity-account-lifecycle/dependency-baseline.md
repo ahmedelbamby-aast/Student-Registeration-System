@@ -132,3 +132,15 @@
 - The dependency graph `003/004/005/006/018 -> 007` is acyclic. No dependency
   grants production deployment, official AASTMT authority, initial migration
   ownership, downstream route completion, or Gate B-D/release approval.
+
+## 2026-07-14 downstream permission amendment
+
+- SPEC-001's governed tokens are consumed as exact claim values. Identity owns
+  the effective-role allow-list and cookie claim issuance for
+  `IdentityAccess.Manage`, `Context.Read`, `AcademicProfile.ReadOwn`,
+  `AcademicTerms.Manage`, and `AcademicProfiles.Manage`.
+- Independent policies require the exact role and permission claim. Selecting
+  a role context replaces claims from that effective role and never unions
+  privileges from other available roles.
+- This additive demo amendment does not authorize production grant sources,
+  institutional identity integration, Gate B-D, or official AASTMT go-live.

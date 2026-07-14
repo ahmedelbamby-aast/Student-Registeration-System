@@ -98,7 +98,7 @@ public sealed class StaffContextAuthorizationTests
         {
             claims.Add(new Claim(
                 RolePolicies.PermissionClaimType,
-                RolePolicies.IdentityManagement));
+                RolePolicies.IdentityAccessManage));
         }
 
         return new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));

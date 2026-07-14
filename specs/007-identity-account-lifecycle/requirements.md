@@ -33,8 +33,15 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
   transition. Password confirmation is client-only. The browser MUST NOT
   create an identity, choose a University ID, or persist plaintext credentials.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
-- FR-4: The server MUST issue role claims and enforce endpoint/resource
-  policies for Student/Admin/Lecturer/TeachingAssistant.
+- FR-4: The server MUST issue role and exact governed permission claims and
+  enforce endpoint/resource policies for
+  Student/Admin/Lecturer/TeachingAssistant. For the approved demo, the
+  effective active role maps through one server allow-list: Student receives
+  `Context.Read` and `AcademicProfile.ReadOwn`; Admin receives
+  `IdentityAccess.Manage`, `Context.Read`, `AcademicTerms.Manage`, and
+  `AcademicProfiles.Manage`; Lecturer and TeachingAssistant receive only
+  `Context.Read`. Role membership alone never satisfies a permission policy,
+  and changing active role rebuilds rather than unions permission claims.
 - FR-5: The system MUST support request-and-complete recovery, password
   change, current-session logout, and revoke-all-sessions. Recovery request
   responses MUST be indistinguishable for existing and unknown accounts;

@@ -22,3 +22,17 @@ Changes to a normative requirement, ownership boundary, role token, or task
 dependency require a reviewed specification amendment. Additional governed
 permission definitions may be versioned without transferring runtime policy
 ownership away from SPEC-007.
+
+## 2026-07-14 amendment revalidation
+
+**State:** APPROVED FOR THE BOUNDED NON-PRODUCTION DEMO AMENDMENT<br>
+**Approved by:** Ahmed ELbamby
+
+- [x] `AcademicProfiles.Manage` now records the bounded term/query locator and
+  named student/term detail-correction scopes without granting a broad dump.
+- [x] SPEC-001 still owns permission vocabulary only; SPEC-007 owns executable
+  policy and the downstream academic feature owns its endpoints/data access.
+- [x] T001-T042 and the current 27/42 completion truth are preserved; no new
+  task or checked completion is invented by this amendment.
+- [x] Gates B-D, release evidence, real institutional data, and production
+  authorization remain outside this approval.

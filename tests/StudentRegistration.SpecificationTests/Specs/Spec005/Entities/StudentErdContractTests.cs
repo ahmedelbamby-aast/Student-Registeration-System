@@ -13,8 +13,10 @@ public sealed class StudentErdContractTests
                 "src/StudentRegistration.Academics/Domain/Student.cs",
                 [
                     "uniqueidentifier Id PK", "uniqueidentifier ApplicationUserId FK,UK",
-                    "string ProgramCode", "decimal CurrentGpa", "decimal EarnedCredits",
-                    "string Standing", "rowversion Version"
+                    "string ProgramCode", "string Cohort", "decimal CurrentGpa",
+                    "decimal EarnedCredits", "string Standing", "bool IsActive",
+                    "string Source", "string SourceReference", "string DataVersion",
+                    "datetime2 DataAsOfUtc", "datetime2 ImportedAtUtc", "rowversion Version"
                 ],
                 [
                     "STUDENT ||--o{ TRANSCRIPT_ATTEMPT : has",

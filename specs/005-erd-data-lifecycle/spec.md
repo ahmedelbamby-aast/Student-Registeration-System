@@ -135,11 +135,17 @@ And sensitive fields are absent from unsafe logs.
   migrations. This demo runtime does not approve a production edition or
   topology.
 - FR-2: Student University ID, course/program/term codes, group codes, active
-  enrollment, and submission idempotency MUST have database uniqueness guards.
+  enrollment, submission idempotency, AcademicTerm creation request IDs, and
+  non-null transcript successor references MUST have database uniqueness
+  guards. `AcademicTerm.CreationClientRequestId` is globally unique and its
+  required `CreationPayloadHash` binds POST create replay to one canonical
+  payload; this adds no idempotency entity.
 - FR-3: Capacity and time/date bounds MUST have database check constraints.
 - FR-4: Mutable aggregate roots MUST use SQL Server rowversion where specified.
 - FR-5: Transcript attempts, published policies, decision snapshots, and audit
-  events MUST preserve historical meaning.
+  events MUST preserve historical meaning. A transcript correction MUST append
+  against the current leaf, retain the predecessor's StudentId, TermId, and
+  CourseCode, and form a unique-successor acyclic chain.
 - FR-6: Enrollment/group references MUST guarantee the group belongs to the
   selected offering.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
@@ -152,7 +158,8 @@ And sensitive fields are absent from unsafe logs.
   version; destructive reset is a separate explicit operation guarded to
   Development/Testing and MUST reject every other environment.
 - FR-9: The ERD MUST model a unique student-term registration guard and MUST
-  use `RegistrationSubmission` as the single idempotency record containing
+  use `RegistrationSubmission` as the single registration-submission
+  idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
   deterministic result, `ReceivedAtUtc` as its creation instant,
   `UpdatedAtUtc`, nullable `CompletedAtUtc`, and uniqueness on owner/scope/key.
@@ -183,7 +190,8 @@ And sensitive fields are absent from unsafe logs.
 ### Key Entities
 
 - **SPEC-007 owned**: ApplicationUser, Staff.
-- **SPEC-008 owned**: Student, AcademicTerm.
+- **SPEC-008 owned**: AcademicTerm, RegistrationWindow, Student,
+  StudentTermAcademicState, TranscriptAttempt, and StudentHold.
 - **SPEC-009 owned**: Program, Course, PolicySet.
 - **SPEC-010 owned**: CourseOffering, SectionGroup.
 - **SPEC-012 owned**: RegistrationPlan.

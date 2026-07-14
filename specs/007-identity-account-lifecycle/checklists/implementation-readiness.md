@@ -62,3 +62,15 @@ complete. Every model, service, handler, and page delivery still follows its
 designated failing test. Any requirement, ownership, endpoint/route,
 dependency, persistence, production-authority, or deployment-shape change
 requires renewed analysis and Ahmed ELbamby's approval.
+
+## 2026-07-14 Permission-Contract Amendment
+
+- [x] The governed tokens `IdentityAccess.Manage`, `Context.Read`,
+  `AcademicProfile.ReadOwn`, `AcademicTerms.Manage`, and
+  `AcademicProfiles.Manage` are exact runtime claim values.
+- [x] Independent policies deny role-only and wrong-role principals.
+- [x] Login and role-context selection derive claims only from the effective
+  server role and replace rather than union claims.
+- [x] Authorization and real cookie-sign-in tests cover the amendment.
+- [x] Ahmed ELbamby revalidated the non-production demo amendment; production,
+  Gate B-D, and official AASTMT authority remain excluded.

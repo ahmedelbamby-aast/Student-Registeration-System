@@ -588,7 +588,7 @@ public sealed class IdentityHttpSessionEvidenceTests
                         RolePolicies.Admin));
                     claims.Add(new Claim(
                         RolePolicies.PermissionClaimType,
-                        RolePolicies.IdentityManagement));
+                        RolePolicies.IdentityAccessManage));
                     break;
 
                 default:

@@ -14,3 +14,11 @@ This approval does not authorize production deployment, official AASTMT
 go-live, Gate B-D or release sign-off. DEC-13 and other production-only
 identity, secret-custody, or institutional integration decisions remain
 separate and fail closed.
+
+## 2026-07-14 Permission-Contract Revalidation
+
+Ahmed ELbamby approved the bounded Identity-owned effective-role permission
+allow-list and its exact-claim enforcement for this non-production demo.
+Contract, authorization, and real sign-in/context-switch tests passed before
+the amendment was recorded. This does not authorize production identity
+integration, production grants, Gate B-D, or official AASTMT go-live.

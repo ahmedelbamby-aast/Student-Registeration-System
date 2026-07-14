@@ -116,6 +116,12 @@ public sealed class IdentityRuntimeCompositionTests
             lecturerPrincipal,
             resource: null,
             RolePolicies.IdentityManagement)).Succeeded);
+        Assert.Equal(
+            [RolePolicies.ContextRead],
+            lecturerPrincipal.FindAll(RolePolicies.PermissionClaimType)
+                .Select(claim => claim.Value)
+                .Order(StringComparer.Ordinal)
+                .ToArray());
 
         capture.Principal = null;
         using var adminRequest = ContextRequest(
@@ -140,6 +146,18 @@ public sealed class IdentityRuntimeCompositionTests
             adminPrincipal,
             resource: null,
             RolePolicies.IdentityManagement)).Succeeded);
+        Assert.Equal(
+            new[]
+            {
+                RolePolicies.AcademicProfilesManage,
+                RolePolicies.AcademicTermsManage,
+                RolePolicies.ContextRead,
+                RolePolicies.IdentityAccessManage
+            },
+            adminPrincipal.FindAll(RolePolicies.PermissionClaimType)
+                .Select(claim => claim.Value)
+                .Order(StringComparer.Ordinal)
+                .ToArray());
     }
 
     [Fact]

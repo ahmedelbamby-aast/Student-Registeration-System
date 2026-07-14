@@ -25,7 +25,13 @@ specs do not invent scope or permission rules.
 - FR-2: Students MUST use a student entry point; Admin/Lecturer/TA MUST share a
   staff entry point.
 - FR-3: The server MUST derive role and data scope and MUST NOT trust a
-  client-selected role.
+  client-selected role. Admin is not an implicit superuser:
+  `AcademicTerms.Manage` and `AcademicProfiles.Manage` are distinct Admin-only
+  permissions, and neither the Admin role nor either permission implies the
+  other or any unlisted capability. `AcademicProfiles.Manage` permits only a
+  required-term, bounded University ID/name locator returning minimal fields,
+  followed by named StudentId plus AcademicTermId scope for detail or
+  correction.
 - FR-4: The system MUST support the end-to-end student flow from login through
   an atomic registration receipt.
 - FR-5: The system MUST expose role-scoped staff/admin workspaces.

@@ -20,6 +20,12 @@ public static class RolePolicies
     public const string OwnStudentResource = "OwnStudentResource";
     public const string AssignedTeachingResource = "AssignedTeachingResource";
 
+    public const string IdentityAccessManage = "IdentityAccess.Manage";
+    public const string ContextRead = "Context.Read";
+    public const string AcademicProfileReadOwn = "AcademicProfile.ReadOwn";
+    public const string AcademicTermsManage = "AcademicTerms.Manage";
+    public const string AcademicProfilesManage = "AcademicProfiles.Manage";
+
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
 
@@ -60,7 +66,35 @@ public static class RolePolicies
             policy => policy
                 .RequireAuthenticatedUser()
                 .RequireRole(Admin)
-                .RequireClaim(PermissionClaimType, IdentityManagement));
+                .RequireClaim(PermissionClaimType, IdentityAccessManage));
+
+        options.AddPolicy(
+            ContextRead,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireClaim(PermissionClaimType, ContextRead));
+
+        options.AddPolicy(
+            AcademicProfileReadOwn,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Student)
+                .RequireClaim(PermissionClaimType, AcademicProfileReadOwn)
+                .AddRequirements(OwnStudentResourceRequirement.Instance));
+
+        options.AddPolicy(
+            AcademicTermsManage,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, AcademicTermsManage));
+
+        options.AddPolicy(
+            AcademicProfilesManage,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, AcademicProfilesManage));
 
         options.AddPolicy(
             OwnStudentResource,
@@ -76,6 +110,20 @@ public static class RolePolicies
                 .RequireRole(Lecturer, TeachingAssistant)
                 .AddRequirements(AssignedTeachingResourceRequirement.Instance));
     }
+
+    public static IReadOnlyList<string> PermissionsForRole(string role) => role switch
+    {
+        Student => [ContextRead, AcademicProfileReadOwn],
+        Admin =>
+        [
+            IdentityAccessManage,
+            ContextRead,
+            AcademicTermsManage,
+            AcademicProfilesManage
+        ],
+        Lecturer or TeachingAssistant => [ContextRead],
+        _ => []
+    };
 
     private static void AddRolePolicy(AuthorizationOptions options, string role) =>
         options.AddPolicy(

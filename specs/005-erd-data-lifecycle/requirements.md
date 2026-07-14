@@ -26,11 +26,17 @@ proposed model is in docs/diagrams/ERD.md.
   migrations. This demo runtime does not approve a production edition or
   topology.
 - FR-2: Student University ID, course/program/term codes, group codes, active
-  enrollment, and submission idempotency MUST have database uniqueness guards.
+  enrollment, submission idempotency, AcademicTerm creation request IDs, and
+  non-null transcript successor references MUST have database uniqueness
+  guards. `AcademicTerm.CreationClientRequestId` is globally unique and its
+  required `CreationPayloadHash` binds POST create replay to one canonical
+  payload; this adds no idempotency entity.
 - FR-3: Capacity and time/date bounds MUST have database check constraints.
 - FR-4: Mutable aggregate roots MUST use SQL Server rowversion where specified.
 - FR-5: Transcript attempts, published policies, decision snapshots, and audit
-  events MUST preserve historical meaning.
+  events MUST preserve historical meaning. A transcript correction MUST append
+  against the current leaf, retain the predecessor's StudentId, TermId, and
+  CourseCode, and form a unique-successor acyclic chain.
 - FR-6: Enrollment/group references MUST guarantee the group belongs to the
   selected offering.
 - FR-7: Production migrations MUST be reviewed scripts/bundles, not automatic
@@ -43,7 +49,8 @@ proposed model is in docs/diagrams/ERD.md.
   version; destructive reset is a separate explicit operation guarded to
   Development/Testing and MUST reject every other environment.
 - FR-9: The ERD MUST model a unique student-term registration guard and MUST
-  use `RegistrationSubmission` as the single idempotency record containing
+  use `RegistrationSubmission` as the single registration-submission
+  idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
   deterministic result, `ReceivedAtUtc` as its creation instant,
   `UpdatedAtUtc`, nullable `CompletedAtUtc`, and uniqueness on owner/scope/key.
@@ -167,6 +174,12 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 |---|---|---|---|
 | ApplicationUser.UniversityId | SPEC-007 | string | normalized, filtered unique for pre-provisioned student identities |
 | Student.ApplicationUserId | SPEC-008 | uniqueidentifier | unique FK to Identity-owned ApplicationUser |
+| AcademicTerm lifecycle | SPEC-008 | Draft, RegistrationOpen, RegistrationClosed, Teaching, Completed, Archived | explicit server-controlled lifecycle with rowversion |
+| AcademicTerm creation replay | SPEC-008 | globally unique CreationClientRequestId plus CreationPayloadHash | payload-bound POST create replay on the AcademicTerm row; no separate idempotency entity |
+| RegistrationWindow lifecycle | SPEC-008 | Draft, Published, EmergencyClosed, Superseded | persisted lifecycle; Upcoming/Open/Closed is computed from authoritative time, never stored as lifecycle |
+| Student academic profile | SPEC-008 | ProgramCode, Cohort, CurrentGpa, EarnedCredits, Standing, IsActive, provenance/data version/as-of time | complete sourced profile linked uniquely to ApplicationUser |
+| TranscriptAttempt | SPEC-008 | immutable sourced attempt | correction targets the current leaf, retains StudentId/TermId/CourseCode, and appends through a filtered-unique non-null SupersedesAttemptId; no branch, cycle, or in-place rewrite |
+| StudentHold | SPEC-008 | term-scoped sourced effective interval | code/message, blocking flag, provenance, and active-period checks |
 | SectionGroup.Version | SPEC-010 | rowversion | concurrency token |
 | Enrollment offering/group | SPEC-014 | composite FK | group must belong to offering |
 | ImportedRecord.Source | owning import feature | string | required provenance |

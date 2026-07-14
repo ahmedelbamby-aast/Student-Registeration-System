@@ -2,8 +2,9 @@
 
 ## Ownership
 
-- SPEC-006 owns the response schemas `AppContextDto`, `TermSummaryDto`, and
-  `PublicContextDto`; it owns no handler or contributor runtime.
+- SPEC-006 owns the response schemas `AppContextDto`, `TermSummaryDto`,
+  `RegistrationWindowSummaryDto`, and `PublicContextDto`; it owns no handler
+  or contributor runtime.
 - SPEC-007 owns identity, session, and authorized-role contribution for the
   authenticated response.
 - SPEC-008 owns authoritative time, term, window, and service contribution.
@@ -24,7 +25,8 @@ session. When multiple roles require a choice, the session state is
 separate server-validated identity workflow owned by SPEC-007.
 
 The response includes authoritative UTC server time, timezone ID, teaching and
-registration terms, registration-window state, service state, display name,
+registration terms, registration-window state, the matched window's ID, UTC
+opening/closing instants and row version, service state, display name,
 authorized roles, active role/session state, expiry, and the canonical safe
 support path. A missing or failed contributor returns 503
 `CONTEXT_UNAVAILABLE` as `ApiError` with no partial success response.
@@ -33,8 +35,11 @@ support path. A missing or failed contributor returns 503
 
 A successful SPEC-008 contribution may return an authoritative null teaching
 term or registration term when no applicable term exists. An authoritative
-null registration term requires `registrationWindowState = none`. The public
-term labels follow the same rule.
+null registration term requires `registrationWindowState = none` and a null
+`registrationWindow`. A present `registrationWindow` requires a non-null
+registration term and its `state` must equal `registrationWindowState`; a null
+window is allowed only for the `none` state. The public term labels follow the
+same authoritative-absence rule.
 
 A missing or failed contributor is not an authoritative null. The handler must
 not use null to hide a contributor failure, reuse stale browser state, or
@@ -47,8 +52,9 @@ and its correlation ID.
 contributor. It returns exactly the six fields in `PublicContextDto`: server
 time, timezone ID, nullable public teaching and registration term labels,
 registration-window state, and service state. It contains no display name,
-user or student identifier, role, session, capacity, internal health, or
-diagnostic detail.
+user or student identifier, role, session, matched-window identifier,
+opening/closing interval, row version, capacity, internal health, or diagnostic
+detail.
 
 ## Activation boundary
 

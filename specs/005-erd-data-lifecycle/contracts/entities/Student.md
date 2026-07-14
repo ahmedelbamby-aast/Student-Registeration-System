@@ -2,8 +2,8 @@
 
 - Runtime source dependency: None
 - ERD source: `docs/diagrams/ERD.md`
-- Ownership source: `.specify/entity-ownership.json` version `2.0.0`
-- Persistence source: `.specify/persistence-manifest.json` version `2.1.0`
+- Ownership source: `.specify/entity-ownership.json` version `2.0.5`
+- Persistence source: `.specify/persistence-manifest.json` version `2.1.1`
 
 ### Student
 
@@ -17,9 +17,16 @@
 - `uniqueidentifier Id PK`
 - `uniqueidentifier ApplicationUserId FK,UK`
 - `string ProgramCode`
+- `string Cohort`
 - `decimal CurrentGpa`
 - `decimal EarnedCredits`
 - `string Standing`
+- `bool IsActive`
+- `string Source`
+- `string SourceReference`
+- `string DataVersion`
+- `datetime2 DataAsOfUtc`
+- `datetime2 ImportedAtUtc`
 - `rowversion Version`
 
 #### Relationships and invariants
@@ -28,6 +35,10 @@
 - `STUDENT ||--o{ REGISTRATION_PLAN : prepares`
 - Student also relates to term academic state, holds, submissions, the student-term guard, and enrollments.
 - ApplicationUserId is unique, allowing at most one academic profile per identity.
+- ProgramCode is a stable imported source code and has no FK to the downstream
+  SPEC-009 Program definition.
+- Source, source reference, data version, as-of time, and import time are
+  required; an incomplete profile fails closed.
 - `Unique StudentTermAcademicState(StudentId, TermId)`.
 - `No transcript attempt is overwritten`; historical attempts are retained.
 - The rowversion protects mutable student-profile state.

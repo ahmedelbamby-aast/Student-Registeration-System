@@ -11,6 +11,11 @@
   schema owned by SPEC-006 and composed from SPEC-008 AcademicTerm data;
   lifecycle state is Draft, RegistrationOpen, RegistrationClosed, Teaching,
   Completed, or Archived.
+- **RegistrationWindowSummaryDto** is the shared authenticated-context
+  `{ id, state, opensAtUtc, closesAtUtc, rowVersion }` value composed from the
+  single matched SPEC-008 RegistrationWindow. Its state is Upcoming, Open, or
+  Closed and is computed from authoritative server time and persisted
+  lifecycle, not stored as the window lifecycle itself.
 - **PublicContextDto** is the privacy-safe unauthenticated response schema owned
   by SPEC-006; SPEC-008 supplies its values and owns the endpoint handler.
 - No concept in this document is a SQL entity or aggregate root.
@@ -23,6 +28,7 @@
 | Page&lt;T&gt; | Bounded items with page, pageSize, totalCount, and applied deterministic sort |
 | AppContextDto | Complete server-authoritative authenticated identity, session, role, term, time, window, service, and support context |
 | TermSummaryDto | Minimal versioned authoritative term reference used only inside context DTOs |
+| RegistrationWindowSummaryDto | Authenticated matched-window identifier, computed state, UTC interval, and row version |
 | PublicContextDto | Public server time/timezone, nullable authoritative term labels, window state, and service state only |
 
 ## Contract Rules
@@ -42,8 +48,12 @@
   safe unavailable error with no partial success DTO.
 - A present SPEC-008 contributor may authoritatively report no applicable
   teaching or registration term. That valid null is not contributor failure;
-  null `registrationTerm` requires `registrationWindowState = "none"`.
+  null `registrationTerm` requires `registrationWindowState = "none"` and a
+  null `registrationWindow`. A present window requires a registration term and
+  a state equal to `registrationWindowState`.
   Nullable `PublicContextDto` term labels use the same rule.
+- `PublicContextDto` remains exactly six fields and never exposes a matched
+  window ID, opening/closing interval, or row version.
 - `activeRole` is null only for a dual-role `role-selection-required` state;
   `serviceState` and canonical `supportReferencePath` are always present.
 - Each endpoint contract records success, validation,

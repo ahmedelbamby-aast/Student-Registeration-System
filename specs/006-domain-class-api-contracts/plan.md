@@ -55,12 +55,16 @@ reference is permitted.
 ## Feature Design
 
 - Own only the stable shared serialized/value types `ApiError`, `Page<T>`,
-  `AppContextDto`, `TermSummaryDto`, and `PublicContextDto`, plus the narrow
-  expected-rowversion and idempotency-key metadata required by FR-4/FR-8.
+  `AppContextDto`, `TermSummaryDto`, `RegistrationWindowSummaryDto`, and
+  `PublicContextDto`, plus the narrow expected-rowversion and idempotency-key
+  metadata required by FR-4/FR-8.
 - SPEC-007 contributes session/user/authorized-role fields; SPEC-008 contributes
   authoritative time, teaching/registration term, and window fields and owns
   the context endpoint handlers. SPEC-006 owns neither feature state nor those
   endpoint implementations.
+- Expose matched-window ID, computed state, UTC interval, and row version only
+  in authenticated `AppContextDto`; keep `PublicContextDto` at exactly its six
+  privacy-safe fields.
 - An authoritative SPEC-008 response may report no applicable teaching or
   registration term; null `registrationTerm` then requires window state
   `none`. A missing/failed contributor produces a safe unavailable response

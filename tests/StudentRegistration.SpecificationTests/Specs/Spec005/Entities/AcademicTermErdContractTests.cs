@@ -12,14 +12,18 @@ public sealed class AcademicTermErdContractTests
                 "SPEC-008",
                 "src/StudentRegistration.Academics/Domain/AcademicTerm.cs",
                 [
-                    "uniqueidentifier Id PK", "string Code UK", "date TeachingStarts",
-                    "date TeachingEnds", "string TimeZoneId", "string State",
-                    "rowversion Version"
+                    "uniqueidentifier Id PK", "string Code UK",
+                    "uniqueidentifier CreationClientRequestId UK", "string CreationPayloadHash",
+                    "string DisplayName",
+                    "date TeachingStartsOn", "date TeachingEndsOn", "string TimeZoneId",
+                    "string State", "rowversion Version"
                 ],
                 [
                     "ACADEMIC_TERM ||--o{ REGISTRATION_WINDOW : exposes",
                     "ACADEMIC_TERM ||--o{ COURSE_OFFERING : contains",
                     "AcademicTerm.Code",
-                    "registration/term end > start"
+                    "AcademicTerm.CreationClientRequestId",
+                    "CreationPayloadHash",
+                    "TeachingEndsOn > TeachingStartsOn"
                 ]));
 }

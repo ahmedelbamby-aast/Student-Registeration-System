@@ -48,7 +48,9 @@ in docs/diagrams/CLASS_DIAGRAM.md.
   maintenance state, and no user, role, student, capacity, or internal-health
   data.
 - FR-10: The shared `AppContextDto` contract MUST contain server time/timezone,
-  teaching term, registration term/window, authenticated display name,
+  teaching term, registration term, `registrationWindowState`, and a nullable
+  `RegistrationWindowSummaryDto` containing the single matched window's ID,
+  computed state, UTC opening/closing instants, and row version; authenticated display name,
   authorized roles, the active authorized role context, session state and
   expiry, service state, and canonical `supportReferencePath`. `activeRole` MAY
   be null only while a dual-role user is in the explicitly modeled
@@ -59,7 +61,9 @@ in docs/diagrams/CLASS_DIAGRAM.md.
   partial context. A present SPEC-008 contribution MAY authoritatively report
   no applicable teaching term or no applicable registration term. That valid
   absence is distinct from a missing contributor: a null `registrationTerm`
-  requires `registrationWindowState = "none"`, while contributor failure
+  requires `registrationWindowState = "none"` and a null
+  `registrationWindow`. A present window requires a non-null registration term
+  and a state equal to `registrationWindowState`, while contributor failure
   returns a safe unavailable error instead of `AppContextDto`.
 
 ## Non-Functional Requirements
@@ -153,10 +157,13 @@ than a partial or browser-derived context.
   SPEC-007/SPEC-008 supply its values and SPEC-008 owns the handler.
 - **TermSummaryDto**: Shared `{ id, code, label, state, rowVersion }` response
   type owned by SPEC-006 and composed from SPEC-008 AcademicTerm data.
+- **RegistrationWindowSummaryDto**: Shared authenticated-context value
+  `{ id, state, opensAtUtc, closesAtUtc, rowVersion }` owned by SPEC-006 and
+  composed from the single matched SPEC-008 RegistrationWindow.
 - **PublicContextDto**: Privacy-safe unauthenticated response schema owned by
   SPEC-006; SPEC-008 supplies its values and owns the handler.
 
-These five concepts are serialized/value contracts, not SQL entities or
+These six concepts are serialized/value contracts, not SQL entities or
 aggregate roots.
 
 ## Success Criteria
@@ -199,12 +206,21 @@ interface TermSummaryDto {
   rowVersion: string;
 }
 
+interface RegistrationWindowSummaryDto {
+  id: string;
+  state: "open" | "upcoming" | "closed";
+  opensAtUtc: string;
+  closesAtUtc: string;
+  rowVersion: string;
+}
+
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
   teachingTerm: TermSummaryDto | null;
   registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  registrationWindow: RegistrationWindowSummaryDto | null;
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
   authorizedRoles: string[];
@@ -231,7 +247,9 @@ shared response schemas and protocol rules.
 Nullable teaching/registration term fields represent an authoritative
 SPEC-008 result that no applicable term exists. They do not represent a failed
 or absent contributor. A null `registrationTerm` requires
-`registrationWindowState = "none"`; a missing or failed required contributor
+`registrationWindowState = "none"` and a null `registrationWindow`. A present
+window requires a non-null registration term and its state must equal
+`registrationWindowState`; a missing or failed required contributor
 returns a safe unavailable error and no partial context DTO. The nullable
 public term labels follow the same authoritative-absence rule.
 
@@ -255,6 +273,7 @@ ignored; operation/schema/status/security drift requires explicit approval.
 | Page&lt;T&gt; | Shared schema, SPEC-006 | Bounded items, page metadata, total, and applied sort |
 | AppContextDto | Composed schema, SPEC-006; contributors SPEC-007/SPEC-008; handler SPEC-008 | Complete authenticated context or no success body |
 | TermSummaryDto | Shared schema, SPEC-006; composed from SPEC-008 AcademicTerm | Minimal versioned authoritative term reference |
+| RegistrationWindowSummaryDto | Shared schema, SPEC-006; composed from the matched SPEC-008 RegistrationWindow | Authenticated matched-window ID, computed state, UTC interval, and row version |
 | PublicContextDto | Shared schema, SPEC-006; contributor/handler SPEC-008 | Public time, term labels, window, and service state only |
 
 ## Out of Scope

@@ -121,4 +121,8 @@ official AASTMT go-live approvals remain separate.
 
 ## Complexity Tracking
 
+The effective-role permission map remains one small Identity-owned allow-list.
+It adds no second identity store, dynamic policy engine, or cross-module
+dependency; independent ASP.NET Core policies still require the exact claim.
+
 No constitution violation or distributed component is proposed. Additional infrastructure requires measured evidence and an approved amendment.

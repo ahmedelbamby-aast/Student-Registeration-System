@@ -20,6 +20,7 @@ enforce them from authenticated server claims and resource scope.
 | `RegistrationRecords.ReadOwn` | Student | self | Read own receipts, timetable, and history | No other student's records |
 | `IdentityAccess.Manage` | Admin | institutional-admin | Provision supported staff accounts and replace effective staff roles with reason and concurrency tokens | No student-role grant, self-escalation, final-Admin removal, or plaintext credential read |
 | `AcademicTerms.Manage` | Admin | institutional-admin | Configure and publish terms and registration windows | No invalid or overlapping published state |
+| `AcademicProfiles.Manage` | Admin | required AcademicTermId plus a bounded University ID/name query for minimal locator rows; named StudentId plus AcademicTermId for detail or correction | Locate students through bounded minimal-field search; read named sourced academic context; submit reasoned, versioned profile, transcript, and hold corrections | No unrestricted student dump, implicit access from Admin role alone, broad-field locator response, in-place transcript rewrite, or registration-policy bypass |
 | `CataloguePolicy.Manage` | Admin | institutional-admin | Manage versioned curricula, prerequisites, and approved policy configuration | No silent unapproved policy claim |
 | `Offerings.Manage` | Admin | institutional-admin | Manage and publish offerings, activity groups, assignments, rooms, times, and capacities | No invalid staffing, room, time, or capacity publication |
 | `RegistrationRecords.Read` | Admin | named StudentId plus TermId | Read an explicitly selected student's term registration list or detail with audit | No unrestricted dump or Lecturer/TA inheritance |
@@ -39,5 +40,8 @@ enforce them from authenticated server claims and resource scope.
 - Multiple effective roles form a set of allowed contexts, not a union into an
   all-powerful client session. The selected context must already exist in the
   server-derived role set.
+- `Admin` is not an implicit superuser. `AcademicTerms.Manage` and
+  `AcademicProfiles.Manage` are separate named grants; possessing either one
+  never grants the other or an unlisted capability.
 - A missing policy, unsupported role, stale scope, or failed contributor denies
   the protected operation safely.

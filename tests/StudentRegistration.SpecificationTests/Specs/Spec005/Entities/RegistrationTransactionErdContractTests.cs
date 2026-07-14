@@ -25,7 +25,7 @@ public sealed class RegistrationTransactionErdContractTests
                     "CompletedAtUtc is nullable until a final outcome",
                     "Unique non-null RegistrationSubmission.Reference",
                     "RegistrationSubmission idempotency claim, final result, decision snapshot, audit event, and any successful counters/enrollments commit in one SQL transaction",
-                    "A separate IdempotencyRecord table is prohibited"
+                    "A separate IdempotencyRecord table and a seventh SPEC-008 idempotency entity are prohibited"
                 ]),
             new(
                 "StudentTermRegistrationGuard",

@@ -26,13 +26,66 @@ public sealed class AppContextModelTests
         Assert.Equal(
             "src/StudentRegistration.Contracts/TermSummaryDto.cs",
             overrides.GetProperty("006:TermSummaryDto").GetString());
+        Assert.Equal(
+            "src/StudentRegistration.Contracts/RegistrationWindowSummaryDto.cs",
+            overrides.GetProperty("006:RegistrationWindowSummaryDto").GetString());
         Assert.Same(typeof(AppContextDto).Assembly, typeof(TermSummaryDto).Assembly);
+        Assert.Same(typeof(AppContextDto).Assembly, typeof(RegistrationWindowSummaryDto).Assembly);
         Assert.DoesNotContain(
             typeof(AppContextDto).Assembly.GetReferencedAssemblies(),
             reference =>
                 reference.Name?.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal) is true ||
                 reference.Name?.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) is true ||
                 reference.Name?.StartsWith("Microsoft.Data.SqlClient", StringComparison.Ordinal) is true);
+    }
+
+    [Fact]
+    public void Registration_window_summary_is_bounded_versioned_and_matches_context_state()
+    {
+        var window = CreateWindow(RegistrationWindowState.Open);
+
+        Assert.Equal("window-summer-all", window.Id);
+        Assert.Equal(RegistrationWindowState.Open, window.State);
+        Assert.Equal(new DateTime(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc), window.OpensAtUtc);
+        Assert.Equal(new DateTime(2026, 7, 13, 18, 0, 0, DateTimeKind.Utc), window.ClosesAtUtc);
+        Assert.Equal("CQoLDA==", window.RowVersion);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateWindow(RegistrationWindowState.None));
+        Assert.Throws<ArgumentException>(() => new RegistrationWindowSummaryDto(
+            "window-summer-all",
+            RegistrationWindowState.Open,
+            DateTime.SpecifyKind(window.OpensAtUtc, DateTimeKind.Local),
+            window.ClosesAtUtc,
+            window.RowVersion));
+
+        Assert.Throws<ArgumentException>(() => new AppContextDto(
+            ServerTimeUtc,
+            "Africa/Cairo",
+            teachingTerm: null,
+            CreateTerm(TermState.RegistrationOpen),
+            RegistrationWindowState.Open,
+            registrationWindow: null,
+            ServiceState.Available,
+            "Ahmed Student",
+            ["Student"],
+            "Student",
+            SessionState.Active,
+            ExpiresAtUtc,
+            "/support/reference"));
+        Assert.Throws<ArgumentException>(() => new AppContextDto(
+            ServerTimeUtc,
+            "Africa/Cairo",
+            teachingTerm: null,
+            CreateTerm(TermState.RegistrationOpen),
+            RegistrationWindowState.Open,
+            CreateWindow(RegistrationWindowState.Upcoming),
+            ServiceState.Available,
+            "Ahmed Student",
+            ["Student"],
+            "Student",
+            SessionState.Active,
+            ExpiresAtUtc,
+            "/support/reference"));
     }
 
     [Fact]
@@ -141,6 +194,12 @@ public sealed class AppContextModelTests
             "registrationOpen",
             root.GetProperty("registrationTerm").GetProperty("state").GetString());
         Assert.Equal("open", root.GetProperty("registrationWindowState").GetString());
+        Assert.Equal(
+            "window-summer-all",
+            root.GetProperty("registrationWindow").GetProperty("id").GetString());
+        Assert.Equal(
+            "open",
+            root.GetProperty("registrationWindow").GetProperty("state").GetString());
         Assert.Equal("available", root.GetProperty("serviceState").GetString());
         Assert.Equal(
             "role-selection-required",
@@ -158,6 +217,15 @@ public sealed class AppContextModelTests
             state,
             "AQIDBA==");
 
+    private static RegistrationWindowSummaryDto CreateWindow(
+        RegistrationWindowState state) =>
+        new(
+            "window-summer-all",
+            state,
+            new DateTime(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 7, 13, 18, 0, 0, DateTimeKind.Utc),
+            "CQoLDA==");
+
     private static AppContextDto CreateContext(
         TermSummaryDto? teachingTerm = null,
         TermSummaryDto? registrationTerm = null,
@@ -172,6 +240,9 @@ public sealed class AppContextModelTests
             teachingTerm,
             registrationTerm,
             registrationWindowState,
+            registrationWindowState is RegistrationWindowState.None
+                ? null
+                : CreateWindow(registrationWindowState),
             serviceState,
             "Ahmed Student",
             authorizedRoles ?? ["Student"],

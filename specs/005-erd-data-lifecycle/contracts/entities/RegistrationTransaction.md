@@ -38,7 +38,7 @@
 - `RegistrationSubmission idempotency claim, final result, decision snapshot, audit event, and any successful counters/enrollments commit in one SQL transaction`.
 - A rejected allocation rolls seat and enrollment mutations back to a savepoint before its final rejected result commits.
 - A Processing claim cannot be committed as a standalone durable row; HTTP 202 is transport-only and persists no SubmissionId.
-- `A separate IdempotencyRecord table is prohibited`.
+- `A separate IdempotencyRecord table and a seventh SPEC-008 idempotency entity are prohibited`.
 
 ### StudentTermRegistrationGuard
 

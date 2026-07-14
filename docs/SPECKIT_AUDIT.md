@@ -11,11 +11,11 @@
 | SPEC-002 | 26 | 11 | 5 | 4 | 43 | 100 | PASS | APPROVED |
 | SPEC-003 | 59 | 24 | 17 | 10 | 276 | 100 | PASS | APPROVED |
 | SPEC-004 | 18 | 13 | 7 | 3 | 50 | 100 | PASS | APPROVED |
-| SPEC-005 | 32 | 13 | 7 | 4 | 70 | 100 | PASS | APPROVED |
+| SPEC-005 | 36 | 13 | 7 | 4 | 70 | 100 | PASS | APPROVED |
 | SPEC-006 | 20 | 14 | 9 | 4 | 63 | 100 | PASS | APPROVED |
 | SPEC-018 | 14 | 18 | 7 | 5 | 74 | 100 | PASS | APPROVED |
 | SPEC-007 | 17 | 18 | 10 | 6 | 133 | 100 | PASS | APPROVED |
-| SPEC-008 | 12 | 15 | 9 | 5 | 91 | 100 | PASS | APPROVED |
+| SPEC-008 | 13 | 15 | 9 | 7 | 91 | 100 | PASS | APPROVED |
 | SPEC-009 | 12 | 14 | 7 | 5 | 100 | 100 | PASS | APPROVED |
 | SPEC-010 | 12 | 14 | 9 | 5 | 110 | 100 | PASS | APPROVED |
 | SPEC-011 | 12 | 12 | 5 | 4 | 51 | 100 | PASS | APPROVED |

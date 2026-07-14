@@ -55,6 +55,11 @@ role assignments, authorization policies, and staff/student login behavior.
 
 - Maintain one normative role/permission matrix for Student, Admin, Lecturer,
   and TeachingAssistant, including dual-role and no-supported-role outcomes.
+- Keep Admin authorization capability-based: `AcademicTerms.Manage` and
+  `AcademicProfiles.Manage` are independent named grants, with no implicit
+  superuser or permission-inference behavior. Bound academic-profile location
+  to a required term plus University ID/name query and minimal locator fields;
+  require named StudentId plus AcademicTermId for detail and correction.
 - Treat `Role` and `Permission` as governed vocabulary in this charter, not
   runtime persistence entities. `RoleAssignment` is referenced from SPEC-007.
 - Prove product scope through conformance and release-evidence tests; do not

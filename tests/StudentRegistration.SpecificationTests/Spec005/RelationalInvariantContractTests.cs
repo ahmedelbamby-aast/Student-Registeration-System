@@ -56,18 +56,19 @@ public sealed class RelationalInvariantContractTests
             "0 <= SectionGroup.EnrolledCount <= SectionGroup.Capacity",
             "MeetingSlot.EndLocal > MeetingSlot.StartLocal",
             "StaffAvailability.EndLocal > StaffAvailability.StartLocal",
-            "AcademicTerm.TeachingEnds > AcademicTerm.TeachingStarts",
-            "RegistrationWindow.ClosesUtc > RegistrationWindow.OpensUtc",
+            "AcademicTerm.TeachingEndsOn > AcademicTerm.TeachingStartsOn",
+            "RegistrationWindow.ClosesAtUtc > RegistrationWindow.OpensAtUtc",
+            "StudentHold.EffectiveToUtc IS NULL OR StudentHold.EffectiveToUtc > StudentHold.EffectiveFromUtc",
             "Reducing capacity below EnrolledCount is rejected",
             "RegistrationPaused = false is an atomic allocation predicate, not a check constraint",
-            "Invalid capacity or temporal values are rejected, never clamped or auto-corrected");
+            "Invalid capacity, temporal, or normalized scope values are rejected, never clamped or auto-corrected");
         Spec005ContractTestSupport.AssertMirrorsErd(
             contract,
             "Check Capacity >= 0 and 0 <= EnrolledCount <= Capacity",
             "SectionGroup.RegistrationPaused = false",
-            "Check EndLocal > StartLocal and registration/term end > start",
+            "Check EndLocal > StartLocal",
             "SQL constraints cannot express arbitrary overlapping time ranges",
-            "Scheduling publication validates them transactionally");
+            "Scheduling separately validates meeting, staff, and room overlaps before");
     }
 
     [Fact]

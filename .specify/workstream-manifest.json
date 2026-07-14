@@ -1,5 +1,5 @@
 {
-  "version": "2.0.2",
+  "version": "2.0.3",
   "specs": {
     "001": [
       { "name": "Role and authorization boundaries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-5"], "deliveryPath": "specs/001-product-charter-rbac/contracts/rbac-matrix.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs", "testFocus": "student/staff entry separation, server-derived claims, direct-route denials, dual-role and no-role contexts without pre-implementing SPEC-007" },
@@ -41,7 +41,7 @@
       { "name": "API version governance", "requirements": ["FR-6"], "deliveryPath": "docs/API_VERSIONING.md", "testPath": "tests/StudentRegistration.ContractTests/Shared/ApiVersionPolicyTests.cs", "testFocus": "breaking-change detection and approved version process" },
       { "name": "Authoritative time contract", "requirements": ["FR-7"], "deliveryPath": "src/StudentRegistration.Api/Composition/TimeProviderRegistration.cs", "testPath": "tests/StudentRegistration.ArchitectureTests/TimeProviderUsageTests.cs", "testFocus": "all module application/domain time comes from injected TimeProvider" },
       { "name": "Public context DTO", "requirements": ["FR-9"], "deliveryPath": "src/StudentRegistration.Contracts/PublicContextDto.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/PublicContextPrivacyTests.cs", "testFocus": "only public time, term labels, window and service state; no personal/internal data" },
-      { "name": "Composed application context", "requirements": ["FR-10"], "deliveryPath": "src/StudentRegistration.Contracts/AppContextDto.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/AppContextModelTests.cs", "testFocus": "complete AppContextDto and TermSummaryDto fields, contributor ownership, authorized role selection and fail-safe composition" }
+      { "name": "Composed application context", "requirements": ["FR-10"], "deliveryPath": "src/StudentRegistration.Contracts/AppContextDto.cs", "testPath": "tests/StudentRegistration.ContractTests/Shared/AppContextModelTests.cs", "testFocus": "complete AppContextDto, TermSummaryDto and RegistrationWindowSummaryDto fields, matched-window state consistency and privacy, contributor ownership, authorized role selection and fail-safe composition" }
     ],
     "007": [
       { "name": "Student authentication", "requirements": ["FR-1"], "deliveryPath": "src/StudentRegistration.IdentityAccess/Application/StudentAuthenticationService.cs", "testPath": "tests/StudentRegistration.IntegrationTests/Identity/StudentLoginTests.cs", "testFocus": "normalized University ID, generic failures, own context and performance" },

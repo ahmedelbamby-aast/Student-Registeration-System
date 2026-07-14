@@ -103,6 +103,30 @@
   specs own their command payload/results; SPEC-006 governs only the explicit
   shared protocol metadata and concrete contract types listed above.
 
+## 2026-07-14 additive context-contract amendment
+
+- Ahmed ELbamby approved the additive non-production demo amendment that makes
+  `RegistrationWindowSummaryDto` a canonical SPEC-006 shared contract. It does
+  not create an entity, handler, route, EF mapping, migration, or production
+  authority.
+- The governed inventory is now `ApiError`, `Page`, `AppContext`,
+  `TermSummaryDto`, `RegistrationWindowSummaryDto`, and `PublicContextDto` in
+  specification manifest `2.0.4`. Entity-ownership manifest `2.0.5` declares
+  `src/StudentRegistration.Contracts/RegistrationWindowSummaryDto.cs` as the
+  canonical artifact path, and workstream manifest `2.0.3` records its
+  matched-window consistency/privacy focus.
+- T010 owns the failing shared model checks and T011 remains the sole shared
+  source-delivery writer for `AppContextDto`, `TermSummaryDto`, and
+  `RegistrationWindowSummaryDto`. T047 owns composition-contract checks; T048
+  publishes only the composition contract and creates no second source writer.
+  SPEC-008 consumes these shared contracts and remains the sole owner of both
+  context handlers.
+- This amendment supersedes only the earlier five-item SPEC-006 manifest
+  intent. The accepted upstream dependency commits and design-contract pins
+  remain unchanged. Runtime completion still requires the amended test-first
+  T010/T011 evidence; Gates B-D and all production/release authority remain
+  fail closed.
+
 ## Dependency conclusion
 
 The direct consumed edges are `SPEC-004 -> SPEC-006` and

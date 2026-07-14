@@ -39,12 +39,21 @@ interface TermSummaryDto {
   rowVersion: string;
 }
 
+interface RegistrationWindowSummaryDto {
+  id: string;
+  state: "open" | "upcoming" | "closed";
+  opensAtUtc: string;
+  closesAtUtc: string;
+  rowVersion: string;
+}
+
 interface AppContextDto {
   serverTimeUtc: string;
   timeZoneId: string;
   teachingTerm: TermSummaryDto | null;
   registrationTerm: TermSummaryDto | null;
   registrationWindowState: "open" | "upcoming" | "closed" | "none";
+  registrationWindow: RegistrationWindowSummaryDto | null;
   serviceState: "available" | "maintenance" | "unavailable";
   displayName: string;
   authorizedRoles: string[];
@@ -73,6 +82,15 @@ Null term values mean the authoritative contributor reported that no applicable
 term exists. Missing or failed required contributors produce 503
 `CONTEXT_UNAVAILABLE`; partial context responses are rejected so clients cannot
 confuse an outage with a valid absence.
+
+A null registration term requires `registrationWindowState = "none"` and a
+null `registrationWindow`. A present window is the single matched window,
+requires a non-null registration term, and has a state equal to
+`registrationWindowState`. The public contract remains exactly six fields and
+does not expose the matched-window ID, UTC interval, row version, or any
+personal/session data. T011 is the sole shared source writer for
+`AppContextDto`, `TermSummaryDto`, and `RegistrationWindowSummaryDto`; SPEC-008
+consumes those contracts and remains the sole owner of both context handlers.
 
 ### Pagination and concurrency protocol
 **Decision**: Page-number pagination uses default 20, maximum 100, invalid-value

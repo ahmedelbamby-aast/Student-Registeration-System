@@ -38,3 +38,21 @@ as complete. Each source-delivery task still depends on its designated failing
 test for the expected reason. Any requirement, ownership, manifest,
 dependency, endpoint/route, or production-authority change requires renewed
 analysis and Ahmed ELbamby's approval.
+
+## 2026-07-14 amendment revalidation
+
+**State:** APPROVED FOR DEPENDENCY-ORDERED NON-PRODUCTION CONTRACT WORK<br>
+**Approved by:** Ahmed ELbamby
+
+- [x] Specification manifest `2.0.4`, entity-ownership manifest `2.0.5`, and
+  workstream manifest `2.0.3` include the canonical
+  RegistrationWindowSummaryDto inventory, path, and test focus.
+- [x] T010/T011 govern the single test-first shared source delivery, while
+  T047/T048 govern composition validation/publication without a writer
+  collision; SPEC-008 remains the only context-handler owner.
+- [x] Authoritative-null, matched-window state consistency/privacy, and the
+  unchanged six-field public DTO are synchronized across planning artifacts.
+- [x] The 63-task baseline and current 46/63 completion truth are preserved;
+  no additional checked task or runtime success claim is inferred.
+- [x] Runtime completion, downstream exact pins, OpenAPI/NFR evidence, Gates
+  B-D, production configuration, and release approval remain fail closed.

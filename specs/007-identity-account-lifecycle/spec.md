@@ -181,8 +181,15 @@ or final-enabled-Admin removal attempts change nothing.
   client-only validation field. The browser cannot create an identity, choose
   a University ID, or write a plaintext credential to SQL.
 - FR-3: Staff MUST use one login and MUST NOT self-register.
-- FR-4: The server MUST issue role claims and enforce endpoint/resource
-  policies for Student/Admin/Lecturer/TeachingAssistant.
+- FR-4: The server MUST issue role and exact governed permission claims and
+  enforce endpoint/resource policies for
+  Student/Admin/Lecturer/TeachingAssistant. For the approved demo, one
+  server-side allow-list maps the effective active role to permissions:
+  Student receives `Context.Read` and `AcademicProfile.ReadOwn`; Admin receives
+  `IdentityAccess.Manage`, `Context.Read`, `AcademicTerms.Manage`, and
+  `AcademicProfiles.Manage`; Lecturer and TeachingAssistant receive only
+  `Context.Read`. A role without its exact claim is denied, and a context
+  switch rebuilds rather than unions claims.
 - FR-5: The system MUST support generic request-and-complete recovery,
   password change, logout, and revoke-all-sessions with security-stamp
   rotation across replicas. Recovery proof delivery MUST use the narrow

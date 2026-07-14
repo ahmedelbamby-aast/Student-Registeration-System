@@ -23,8 +23,15 @@ public sealed class PermissionDefinitionTests
             "Explicit denial");
 
         Assert.Equal(
-            17,
+            18,
             catalogue.Split('\n').Count(line => line.StartsWith("| `", StringComparison.Ordinal)));
+
+        RepositoryFiles.ContainsAll(
+            catalogue,
+            "`AcademicTerms.Manage`",
+            "`AcademicProfiles.Manage`",
+            "No unrestricted student dump",
+            "implicit access from Admin role alone");
     }
 
     [Fact]

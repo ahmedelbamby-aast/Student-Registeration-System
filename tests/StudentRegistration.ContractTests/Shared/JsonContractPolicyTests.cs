@@ -64,6 +64,7 @@ public sealed class JsonContractPolicyTests
             teachingTerm: null,
             registrationTerm: null,
             RegistrationWindowState.None,
+            registrationWindow: null,
             ServiceState.Available,
             "Ahmed Student",
             ["Student"],
@@ -81,6 +82,7 @@ public sealed class JsonContractPolicyTests
 
         Assert.Equal(JsonValueKind.Null, contextJson.RootElement.GetProperty("teachingTerm").ValueKind);
         Assert.Equal(JsonValueKind.Null, contextJson.RootElement.GetProperty("registrationTerm").ValueKind);
+        Assert.Equal(JsonValueKind.Null, contextJson.RootElement.GetProperty("registrationWindow").ValueKind);
         Assert.False(errorJson.RootElement.TryGetProperty("fieldErrors", out _));
         Assert.False(errorJson.RootElement.TryGetProperty("currentVersion", out _));
     }
@@ -106,6 +108,12 @@ public sealed class JsonContractPolicyTests
             teachingTerm,
             registrationTerm,
             RegistrationWindowState.Open,
+            new RegistrationWindowSummaryDto(
+                "window-fall-all",
+                RegistrationWindowState.Open,
+                new DateTime(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 7, 13, 18, 0, 0, DateTimeKind.Utc),
+                "CQoLDA=="),
             ServiceState.Available,
             "Ahmed Student",
             ["Lecturer", "TeachingAssistant"],
@@ -123,6 +131,7 @@ public sealed class JsonContractPolicyTests
         Assert.Equal(TermState.Teaching, clientContext.TeachingTerm!.State);
         Assert.Equal(TermState.RegistrationOpen, clientContext.RegistrationTerm!.State);
         Assert.Equal(RegistrationWindowState.Open, clientContext.RegistrationWindowState);
+        Assert.Equal("window-fall-all", clientContext.RegistrationWindow!.Id);
         Assert.Equal(ServiceState.Available, clientContext.ServiceState);
         Assert.Equal(SessionState.RoleSelectionRequired, clientContext.SessionState);
     }

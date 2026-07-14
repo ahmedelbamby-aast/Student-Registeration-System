@@ -5,7 +5,7 @@
 | Canonical owner | Runtime entities referenced by the ERD |
 |---|---|
 | SPEC-007 | ApplicationUser, Staff |
-| SPEC-008 | Student, AcademicTerm |
+| SPEC-008 | AcademicTerm, RegistrationWindow, Student, StudentTermAcademicState, TranscriptAttempt, StudentHold |
 | SPEC-009 | Program, Course, PolicySet |
 | SPEC-010 | CourseOffering, SectionGroup |
 | SPEC-012 | RegistrationPlan |
@@ -25,6 +25,12 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 |---|---|---|---|
 | ApplicationUser.UniversityId | SPEC-007 | string | normalized, filtered unique for pre-provisioned student identities |
 | Student.ApplicationUserId | SPEC-008 | uniqueidentifier | unique FK to Identity-owned ApplicationUser |
+| AcademicTerm lifecycle | SPEC-008 | Draft, RegistrationOpen, RegistrationClosed, Teaching, Completed, Archived | explicit server-controlled lifecycle with rowversion |
+| AcademicTerm creation replay | SPEC-008 | globally unique CreationClientRequestId plus CreationPayloadHash | payload-bound POST create replay on the AcademicTerm row; no separate idempotency entity |
+| RegistrationWindow lifecycle | SPEC-008 | Draft, Published, EmergencyClosed, Superseded | persisted lifecycle; Upcoming/Open/Closed is an authoritative computed state |
+| Student academic profile | SPEC-008 | ProgramCode, Cohort, CurrentGpa, EarnedCredits, Standing, IsActive, provenance/data version/as-of time | complete sourced profile linked uniquely to ApplicationUser |
+| TranscriptAttempt | SPEC-008 | immutable sourced attempt | correction targets the current leaf, retains StudentId/TermId/CourseCode, and appends through a filtered-unique non-null SupersedesAttemptId; no branch, cycle, or in-place rewrite |
+| StudentHold | SPEC-008 | term-scoped sourced effective interval | code/message, blocking flag, provenance, and active-period checks |
 | SectionGroup.Version | SPEC-010 | rowversion | concurrency token |
 | Enrollment offering/group | SPEC-014 | composite FK | group must belong to offering |
 | ImportedRecord.Source | owning import feature | string | required provenance |
@@ -38,6 +44,13 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 - Foreign keys and unique constraints enforce durable identity and relationship rules.
 - Concurrency-sensitive aggregates use database-checked versioning or atomic conditional writes.
 - Audit timestamps use server time; academic activity references an explicit academic term.
+- Registration-window lifecycle is stored as Draft, Published,
+  EmergencyClosed, or Superseded. Upcoming/Open/Closed is computed from that
+  lifecycle and authoritative server time; browser time never mutates it.
+- Transcript corrections append a sourced superseding TranscriptAttempt only
+  from the current leaf and retain StudentId, TermId, and CourseCode. The
+  filtered unique successor key plus immutable backward FK produces one
+  acyclic chain; every earlier row remains unchanged and queryable.
 - Deletion and retention behavior follow the project data-lifecycle specification.
 - Development and per-run Testing databases use the same composed Code First
   model at SQL Server compatibility level 160. Docker-provisioned Development
@@ -54,4 +67,8 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
   artifacts, logs, and exports are Git-ignored and removed within seven days;
   no cleanup rule alters immutable repository history or production data.
 - A separate `IdempotencyRecord` table is prohibited; RegistrationSubmission
-  is the canonical claim, processing-state, and deterministic-result record.
+  is the canonical registration claim, processing-state, and deterministic
+  result record. AcademicTerm creation uses its own globally unique
+  CreationClientRequestId and CreationPayloadHash fields, not a seventh
+  SPEC-008 entity. Term/window publication and profile corrections use
+  expected versions instead of the creation key.

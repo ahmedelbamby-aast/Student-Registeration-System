@@ -289,6 +289,12 @@ or version evaluation.
 ## Shared Rules
 
 - All protected operations require server-validated authentication and role/data-scope authorization.
+- Permission-protected operations require the exact governed permission claim;
+  role membership alone is insufficient. The effective-role allow-list issues
+  Student `Context.Read`/`AcademicProfile.ReadOwn`, Admin
+  `IdentityAccess.Manage`/`Context.Read`/`AcademicTerms.Manage`/
+  `AcademicProfiles.Manage`, and Lecturer/TeachingAssistant only
+  `Context.Read`. Role-context selection replaces rather than unions claims.
 - Every POST, PUT, PATCH, or DELETE identity endpoint requires a valid
   same-origin antiforgery token, including anonymous login, activation, and
   recovery requests. The host issues the request token through a Secure,

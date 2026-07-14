@@ -14,8 +14,11 @@ inspection result, or production approval.
 
 - Unique filtered normalized `ApplicationUser.UniversityId` for student
   identities; a null staff value is outside that filtered key.
-- `Staff.StaffNumber`, `CatalogueVersion.VersionCode`, `AcademicTerm.Code`, and
-  `Room.Code` are unique.
+- `Staff.StaffNumber`, `CatalogueVersion.VersionCode`, `AcademicTerm.Code`,
+  `AcademicTerm.CreationClientRequestId`, and `Room.Code` are unique. The
+  globally unique term-creation request ID is bound to the canonical create
+  payload through required `AcademicTerm.CreationPayloadHash`; a replay with a
+  different hash is rejected rather than creating or changing a term.
 - Unique `Program(CatalogueVersionId, Code)` and
   `Course(CatalogueVersionId, Code)` preserve version-scoped codes.
 - `RoleAssignment(UserId, RoleCode, EffectiveFromUtc)`,
@@ -42,6 +45,13 @@ inspection result, or production approval.
 - `StudentTermAcademicState(StudentId, TermId)`,
   `StaffTermAvailability(StaffId, TermId)`, and
   `RegistrationPlanItem(PlanId, OfferingId)` are unique.
+- `TranscriptAttempt.SupersedesAttemptId` has a filtered unique index when
+  non-null, so an immutable attempt can have at most one direct successor.
+
+No seventh SPEC-008 entity or generic idempotency table is introduced.
+Term creation uses the two AcademicTerm creation fields above. Term/window
+publication and academic-profile corrections instead require their governed
+`expectedRowVersion` tokens.
 
 Canonical owner specifications implement these persistence mappings and future
 real-SQL tests verify the resulting indexes, alternate keys, and duplicate-key

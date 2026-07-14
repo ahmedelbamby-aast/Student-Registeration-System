@@ -29,6 +29,7 @@ erDiagram
   ACADEMIC_TERM ||--o{ STUDENT_TERM_ACADEMIC_STATE : scopes
   ACADEMIC_TERM ||--o{ TRANSCRIPT_ATTEMPT : attempted_in
   STUDENT ||--o{ STUDENT_HOLD : may_have
+  ACADEMIC_TERM ||--o{ STUDENT_HOLD : scopes
 
   ACADEMIC_TERM ||--o{ REGISTRATION_WINDOW : exposes
   ACADEMIC_TERM ||--o{ POLICY_SET : governed_by
@@ -154,9 +155,16 @@ erDiagram
     uniqueidentifier Id PK
     uniqueidentifier ApplicationUserId FK,UK
     string ProgramCode
+    string Cohort
     decimal CurrentGpa
     decimal EarnedCredits
     string Standing
+    bool IsActive
+    string Source
+    string SourceReference
+    string DataVersion
+    datetime2 DataAsOfUtc
+    datetime2 ImportedAtUtc
     rowversion Version
   }
   STAFF {
@@ -224,12 +232,15 @@ erDiagram
   TRANSCRIPT_ATTEMPT {
     uniqueidentifier Id PK
     uniqueidentifier StudentId FK
-    string CourseCode
-    string SourceReference
     uniqueidentifier TermId FK
-    string GradeCode
-    decimal GradePoints
+    uniqueidentifier SupersedesAttemptId FK "nullable"
+    string CourseCode
+    decimal Credits
+    string GradeCode "nullable"
     string Status
+    string Source
+    string SourceReference
+    datetime2 ImportedAtUtc
   }
   STUDENT_TERM_ACADEMIC_STATE {
     uniqueidentifier Id PK
@@ -238,23 +249,33 @@ erDiagram
     decimal GpaAtStart
     decimal EarnedCreditsAtStart
     string StandingAtStart
+    string Source
     string SourceReference
+    string DataVersion
     datetime2 DataAsOfUtc
     rowversion Version
   }
   STUDENT_HOLD {
     uniqueidentifier Id PK
     uniqueidentifier StudentId FK
-    string Type
+    uniqueidentifier TermId FK
+    string Code
+    string Message
     bool BlocksRegistration
     datetime2 EffectiveFromUtc
-    datetime2 EffectiveToUtc
+    datetime2 EffectiveToUtc "nullable"
+    string Source
+    string SourceReference
+    datetime2 ImportedAtUtc
   }
   ACADEMIC_TERM {
     uniqueidentifier Id PK
     string Code UK
-    date TeachingStarts
-    date TeachingEnds
+    uniqueidentifier CreationClientRequestId UK
+    string CreationPayloadHash
+    string DisplayName
+    date TeachingStartsOn
+    date TeachingEndsOn
     string TimeZoneId
     string State
     rowversion Version
@@ -262,9 +283,10 @@ erDiagram
   REGISTRATION_WINDOW {
     uniqueidentifier Id PK
     uniqueidentifier TermId FK
-    datetime2 OpensUtc
-    datetime2 ClosesUtc
-    string Audience
+    string ScopeType
+    string ScopeValue "nullable"
+    datetime2 OpensAtUtc
+    datetime2 ClosesAtUtc
     string State
     rowversion Version
   }
@@ -447,7 +469,12 @@ Required constraints/indexes:
 
 - Unique filtered normalized ApplicationUser.UniversityId for student
   identities, unique Staff.StaffNumber,
-  CatalogueVersion.VersionCode, AcademicTerm.Code, and Room.Code.
+  CatalogueVersion.VersionCode, AcademicTerm.Code,
+  AcademicTerm.CreationClientRequestId, and Room.Code.
+- AcademicTerm.CreationPayloadHash is required and binds the globally unique
+  CreationClientRequestId to one canonical POST create payload. Same-key,
+  different-payload replay is rejected; no term-create idempotency entity is
+  added.
 - Unique Program(CatalogueVersionId, Code) and
   Course(CatalogueVersionId, Code); a published catalogue version and all of
   its program/course/curriculum rows are immutable.
@@ -484,6 +511,8 @@ Required constraints/indexes:
   ReceiptSnapshotJson exist only for an accepted final submission.
 - Unique StudentTermRegistrationGuard(StudentId, TermId).
 - Unique StudentTermAcademicState(StudentId, TermId).
+- Unique filtered non-null TranscriptAttempt.SupersedesAttemptId, so an
+  immutable attempt has at most one direct successor.
 - Unique StaffTermAvailability(StaffId, TermId).
 - Unique RegistrationPlanItem(PlanId, OfferingId).
 - Composite keys for curriculum, prerequisite, and staff assignment bridges.
@@ -496,9 +525,19 @@ Required constraints/indexes:
   the savepoint, then commits the final Rejected state and payload-bound result.
 - The bounded HTTP 202 response is transport retry guidance, not a persisted
   RegistrationSubmission row, and contains no SubmissionId.
-- Check EndLocal > StartLocal and registration/term end > start.
-- RegistrationWindow.State is Draft, Open, Closed, or Cancelled and only one
-  applicable Open window may govern a student at an instant.
+- Check EndLocal > StartLocal, TeachingEndsOn > TeachingStartsOn,
+  ClosesAtUtc > OpensAtUtc, and a non-null StudentHold.EffectiveToUtc >
+  EffectiveFromUtc.
+- AcademicTerm.State is Draft, RegistrationOpen, RegistrationClosed, Teaching,
+  Completed, or Archived.
+- RegistrationWindow.State persists only Draft, Published, EmergencyClosed, or
+  Superseded. Upcoming, Open, and Closed are computed response states from the
+  lifecycle plus authoritative server time; browser time is never authoritative.
+- RegistrationWindow scope is normalized as all-students, program, or cohort;
+  a scoped window requires ScopeValue and all-students forbids it. Publication
+  locks the term and affected windows, rejects overlapping Published windows,
+  and therefore permits at most one matched published context for a student at
+  an instant.
 - Index active enrollment by GroupId and State.
 - Index transcript by StudentId/CourseCode and holds by StudentId/active dates.
 - Index meeting slots by GroupId/DayOfWeek/StartLocal.
@@ -519,21 +558,31 @@ Required constraints/indexes:
 - RegistrationReceipt is projected from the accepted submission's atomic
   Reference and ReceiptSnapshotJson. It has no second table or write path;
   rejections have neither field.
-- RegistrationSubmission is the sole durable idempotency record. A separate
-  IdempotencyRecord table is prohibited.
+- RegistrationSubmission is the sole durable registration-submission
+  idempotency record. AcademicTerm creation keeps its payload-bound key/hash on
+  AcademicTerm itself; term/window publication and profile corrections use
+  expected versions. A separate IdempotencyRecord table and a seventh
+  SPEC-008 idempotency entity are prohibited.
 - ExportJob claims use a compare-and-set rowversion plus expiring lease so only
   one replica produces a result. Lease recovery is idempotent.
 - Every final-Admin role mutation is owned by SPEC-007 IdentityAccess, locks
   the singleton AdminSecurityGuard, rechecks the enabled-Admin count, and
   writes SecurityEvent plus the shared AuditEvent inside the same transaction.
 
-SQL constraints cannot express arbitrary overlapping time ranges. Scheduling
-publication validates them transactionally and stores only a fully valid
-published state.
+SQL constraints cannot express arbitrary overlapping time ranges. Academics
+validates RegistrationWindow overlaps within the affected term under stable
+term/window locks. Scheduling separately validates meeting, staff, and room
+overlaps before it stores a fully valid published offering.
 
 ## Data lifecycle
 
-- No transcript attempt is overwritten.
+- No transcript attempt is overwritten. A governed correction appends a new
+  sourced TranscriptAttempt with nullable SupersedesAttemptId pointing to the
+  current immutable leaf and retains the same StudentId, TermId, and
+  CourseCode. The filtered unique successor key prevents branching; the FK to
+  an already-existing immutable row plus the no-update/no-delete rule keeps the
+  chain acyclic. The prior row remains queryable and the current projection
+  follows the unique valid leaf.
 - Enrollments retain successful registration history. Drop/withdraw/correction
   transitions are not exposed until a separate approved workflow spec exists.
 - RegistrationSubmission idempotency claim, final result, decision snapshot,

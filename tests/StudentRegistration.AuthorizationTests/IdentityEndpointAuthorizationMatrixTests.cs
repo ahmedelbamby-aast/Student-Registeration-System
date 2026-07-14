@@ -90,14 +90,14 @@ public sealed class IdentityEndpointAuthorizationMatrixTests
                         new Claim(ClaimTypes.Role, RolePolicies.Admin),
                         new Claim(
                             RolePolicies.PermissionClaimType,
-                            RolePolicies.IdentityManagement)
+                            RolePolicies.IdentityAccessManage)
                     ]),
                 Principal(
                     [
                         new Claim(ClaimTypes.Role, RolePolicies.Lecturer),
                         new Claim(
                             RolePolicies.PermissionClaimType,
-                            RolePolicies.IdentityManagement)
+                            RolePolicies.IdentityAccessManage)
                     ]));
         }
 

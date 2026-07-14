@@ -54,7 +54,7 @@ classDiagram
   ScheduleOptimizer --> ISchedulingReader
   ScheduleRecommendationEndpoint --> RecommendationApplicationService
   AppContextEndpoint --> AcademicContextResolver
-  AcademicContextResolver --> ISessionContextReader
+  AppContextEndpoint --> ISessionContextReader
   AcademicContextResolver --> IAcademicContextReader
 ```
 
@@ -120,24 +120,80 @@ classDiagram
     +StudentId Id
     +ApplicationUserId ApplicationUserId
     +string ProgramCode
+    +string Cohort
     +Gpa CurrentGpa
     +Credits EarnedCredits
     +AcademicStanding Standing
+    +bool IsActive
+    +string Source
+    +string SourceReference
+    +string DataVersion
+    +Instant DataAsOfUtc
+    +Instant ImportedAtUtc
     +RowVersion Version
   }
   class AcademicTerm {
     +AcademicTermId Id
     +TermCode Code
+    +Guid CreationClientRequestId
+    +string CreationPayloadHash
+    +string DisplayName
+    +LocalDate TeachingStartsOn
+    +LocalDate TeachingEndsOn
     +TimeZoneId TimeZone
     +TermState State
+    +RowVersion Version
   }
   class RegistrationWindow {
     +RegistrationWindowId Id
+    +AcademicTermId TermId
+    +WindowScopeType ScopeType
+    +string ScopeValue
     +WindowState State
     +Instant OpensAtUtc
     +Instant ClosesAtUtc
     +RowVersion Version
     +Allows(Instant now, Student student) bool
+  }
+  class StudentTermAcademicState {
+    +StudentTermAcademicStateId Id
+    +StudentId StudentId
+    +AcademicTermId TermId
+    +Gpa GpaAtStart
+    +Credits EarnedCreditsAtStart
+    +AcademicStanding StandingAtStart
+    +string Source
+    +string SourceReference
+    +string DataVersion
+    +Instant DataAsOfUtc
+    +RowVersion Version
+  }
+  class TranscriptAttempt {
+    +TranscriptAttemptId Id
+    +StudentId StudentId
+    +AcademicTermId TermId
+    +TranscriptAttemptId SupersedesAttemptId
+    +string CourseCode
+    +Credits Credits
+    +string GradeCode
+    +AttemptStatus Status
+    +string Source
+    +string SourceReference
+    +Instant ImportedAtUtc
+    +SupersedesCurrentLeaf(TranscriptAttempt prior) bool
+  }
+  class StudentHold {
+    +StudentHoldId Id
+    +StudentId StudentId
+    +AcademicTermId TermId
+    +string Code
+    +string Message
+    +bool BlocksRegistration
+    +Instant EffectiveFromUtc
+    +Instant EffectiveToUtc
+    +string Source
+    +string SourceReference
+    +Instant ImportedAtUtc
   }
   class CourseOffering {
     +CourseOfferingId Id
@@ -220,6 +276,13 @@ classDiagram
 
   AcademicTerm "1" --> "*" RegistrationWindow
   AcademicTerm "1" --> "*" CourseOffering
+  AcademicTerm "1" --> "*" StudentTermAcademicState
+  AcademicTerm "1" --> "*" TranscriptAttempt
+  AcademicTerm "1" --> "*" StudentHold
+  Student "1" --> "*" StudentTermAcademicState
+  Student "1" --> "*" TranscriptAttempt
+  Student "1" --> "*" StudentHold
+  TranscriptAttempt "0..1" --> "0..1" TranscriptAttempt : supersedes
   CourseOffering "1" *-- "*" SectionGroup
   SectionGroup "1" *-- "*" MeetingSlot
   StaffTermAvailability "1" *-- "*" StaffAvailability
@@ -229,6 +292,63 @@ classDiagram
   RegistrationSubmission "1" --> "*" Enrollment
   EligibilityDecision "1" *-- "*" RuleResult
 ```
+
+AcademicTerm creation replay is bound by globally unique
+`CreationClientRequestId` plus `CreationPayloadHash`; it does not add an
+idempotency entity. Transcript supersession is filtered-unique when non-null,
+targets only the current leaf with the same student/course/term, and remains
+acyclic because historical rows are immutable. Term/window publication and
+profile corrections use expected versions.
+
+## Shared context contracts
+
+```mermaid
+classDiagram
+  class AppContextDto {
+    +Instant serverTimeUtc
+    +string timeZoneId
+    +TermSummaryDto teachingTerm
+    +TermSummaryDto registrationTerm
+    +RegistrationWindowState registrationWindowState
+    +RegistrationWindowSummaryDto registrationWindow
+    +ServiceState serviceState
+    +string displayName
+    +string[] authorizedRoles
+    +string activeRole
+    +SessionState sessionState
+    +Instant expiresAtUtc
+    +string supportReferencePath
+  }
+  class TermSummaryDto {
+    +Guid id
+    +string code
+    +string label
+    +TermState state
+    +string rowVersion
+  }
+  class RegistrationWindowSummaryDto {
+    +Guid id
+    +RegistrationWindowState state
+    +Instant opensAtUtc
+    +Instant closesAtUtc
+    +string rowVersion
+  }
+  class PublicContextDto {
+    +Instant serverTimeUtc
+    +string timeZoneId
+    +string teachingTermLabel
+    +string registrationTermLabel
+    +RegistrationWindowState registrationWindowState
+    +ServiceState serviceState
+  }
+
+  AppContextDto --> TermSummaryDto : nullable terms
+  AppContextDto --> RegistrationWindowSummaryDto : nullable matched window
+```
+
+`RegistrationWindowSummaryDto` is authenticated-context-only. The public DTO
+remains exactly six fields and does not expose the matched window's ID,
+interval, row version, or personal/session data.
 
 ## Core interfaces
 
