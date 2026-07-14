@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.1.1",
   "dbContext": {
     "owner": "004",
     "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
@@ -14,7 +14,7 @@
     },
     "007": {
       "mode": "writable",
-      "entities": ["ApplicationUser", "Staff", "StudentActivation", "AccountRecoveryChallenge", "AuthenticationAbuseState", "IdentityImportBatch", "RoleAssignment", "SecurityEvent", "AdminSecurityGuard"],
+      "entities": ["ApplicationUser", "Staff", "StudentActivation", "AccountRecoveryChallenge", "AuthenticationAbuseState", "IdentityImportBatch", "IdentityImportCandidateRow", "RoleAssignment", "SecurityEvent", "AdminSecurityGuard"],
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/IdentityAccessModelConfiguration.cs",
       "testPath": "tests/StudentRegistration.IntegrationTests/Specs/Spec007/IdentityAccessModelConfigurationTests.cs"
     },

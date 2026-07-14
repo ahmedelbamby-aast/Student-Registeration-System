@@ -13,6 +13,13 @@ public sealed class IdentityApiClient
     private const string AntiforgeryInterop =
         "StudentRegistration.antiforgery.getRequestToken";
 
+    private static readonly JsonSerializerOptions ResponseJsonOptions =
+        new(JsonSerializerDefaults.Web)
+        {
+            RespectNullableAnnotations = true,
+            RespectRequiredConstructorParameters = true
+        };
+
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _javascript;
 
@@ -264,11 +271,31 @@ public sealed class IdentityApiClient
     {
         if (response.IsSuccessStatusCode)
         {
-            var value = await response.Content.ReadFromJsonAsync<T>(
-                cancellationToken: cancellationToken);
-            return value is null
-                ? IdentityApiResult<T>.Failure(null, response.StatusCode)
-                : IdentityApiResult<T>.Success(value);
+            try
+            {
+                var value = await response.Content.ReadFromJsonAsync<T>(
+                    ResponseJsonOptions,
+                    cancellationToken: cancellationToken);
+                return value is null
+                    ? IdentityApiResult<T>.Failure(null, response.StatusCode)
+                    : IdentityApiResult<T>.Success(value);
+            }
+            catch (HttpRequestException)
+            {
+                return IdentityApiResult<T>.Failure(null, response.StatusCode);
+            }
+            catch (NotSupportedException)
+            {
+                return IdentityApiResult<T>.Failure(null, response.StatusCode);
+            }
+            catch (JsonException)
+            {
+                return IdentityApiResult<T>.Failure(null, response.StatusCode);
+            }
+            catch (ArgumentException)
+            {
+                return IdentityApiResult<T>.Failure(null, response.StatusCode);
+            }
         }
 
         return IdentityApiResult<T>.Failure(

@@ -165,7 +165,10 @@ public sealed class SessionLifecycleService
         }
 
         var user = await _store.FindByIdAsync(challenge.ApplicationUserId, cancellationToken);
-        var validation = _passwordValidator.Validate(newPassword);
+        var passwordContext = user is null
+            ? IdentityPasswordContext.Empty
+            : await CreatePasswordContextAsync(user, cancellationToken);
+        var validation = _passwordValidator.Validate(newPassword, passwordContext);
         if (user is null || !user.IsEnabled || !validation.IsValid)
         {
             await _store.RecordRecoveryFailureAsync(
@@ -271,7 +274,8 @@ public sealed class SessionLifecycleService
             return new SessionLifecycleResult(SessionLifecycleOutcome.CurrentPasswordInvalid);
         }
 
-        var validation = _passwordValidator.Validate(newPassword);
+        var passwordContext = await CreatePasswordContextAsync(user, cancellationToken);
+        var validation = _passwordValidator.Validate(newPassword, passwordContext);
         if (!validation.IsValid)
         {
             return new SessionLifecycleResult(SessionLifecycleOutcome.PasswordRejected);
@@ -330,6 +334,7 @@ public sealed class SessionLifecycleService
             return AuthenticationResult.AuthenticationFailed();
         }
 
+        var sessionSecurityStamp = user.SecurityStamp;
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var roles = await _store.GetEffectiveRolesAsync(user.Id, utcNow, cancellationToken);
         var selectedRole = activeRole is not null && roles.Contains(activeRole, StringComparer.Ordinal)
@@ -338,6 +343,7 @@ public sealed class SessionLifecycleService
         return AuthenticationResult.Success(
             user.Id,
             user.UserName,
+            sessionSecurityStamp,
             roles,
             selectedRole,
             utcNow.Add(SessionLifetime));
@@ -348,9 +354,16 @@ public sealed class SessionLifecycleService
         string requestedRole,
         CancellationToken cancellationToken = default)
     {
+        var user = await _store.FindByIdAsync(applicationUserId, cancellationToken);
+        if (user is null || !user.IsEnabled)
+        {
+            return new SessionLifecycleResult(SessionLifecycleOutcome.AuthenticationFailed);
+        }
+
+        var sessionSecurityStamp = user.SecurityStamp;
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var roles = await _store.GetEffectiveRolesAsync(
-            applicationUserId,
+            user.Id,
             utcNow,
             cancellationToken);
         if (!roles.Contains(requestedRole, StringComparer.Ordinal))
@@ -358,12 +371,29 @@ public sealed class SessionLifecycleService
             return new SessionLifecycleResult(SessionLifecycleOutcome.RoleNotAvailable);
         }
 
-        var session = await GetSessionAsync(applicationUserId, requestedRole, cancellationToken);
-        return SessionLifecycleResult.Completed(session);
+        return SessionLifecycleResult.Completed(
+            AuthenticationResult.Success(
+                user.Id,
+                user.UserName,
+                sessionSecurityStamp,
+                roles,
+                requestedRole,
+                utcNow.Add(SessionLifetime)));
     }
 
     private static string HashOpaque(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+
+    private async Task<IdentityPasswordContext> CreatePasswordContextAsync(
+        ApplicationUser user,
+        CancellationToken cancellationToken)
+    {
+        var staff = await _store.FindStaffAsync(user.Id, cancellationToken);
+        return new IdentityPasswordContext(
+            user.UniversityId,
+            user.UserName,
+            staff?.DisplayName);
+    }
 
     private static string CreateSecurityStamp() =>
         Convert.ToHexString(RandomNumberGenerator.GetBytes(32));

@@ -53,7 +53,12 @@ public sealed class AuthenticationAbuseState
             throw new ArgumentOutOfRangeException(nameof(window));
         }
 
-        if (utcNow - WindowStartedAtUtc >= window)
+        if (IsLockedAt(utcNow))
+        {
+            return true;
+        }
+
+        if (LockedUntilUtc is not null || utcNow - WindowStartedAtUtc >= window)
         {
             FailureCount = 0;
             WindowStartedAtUtc = utcNow;

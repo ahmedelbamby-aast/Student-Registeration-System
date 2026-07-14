@@ -50,6 +50,19 @@ rules. The recovery request HTTP response never contains the proof. Production
 startup fails closed until an approved institutional delivery adapter is
 configured.
 
+## Admin-import credential handoff
+
+Admin import publication crosses only the server-side
+`IProvisionedCredentialHandoff`. In Development and Testing, `PrepareAsync`
+creates or reuses a non-visible pending handoff keyed by import ID. The SQL
+publisher then commits every user, password hash, role, activation record, and
+bounded import result atomically before `CompleteAsync` makes that handoff
+available. A rollback calls `AbortAsync`; a retry of an already-published import
+idempotently completes its pending handoff. No secret, local artifact path, or
+handoff reference is returned by the HTTP API or stored in SQL. Production has
+no local adapter and fails closed until an institutional delivery mechanism is
+approved.
+
 ## Prohibited persistence and disclosure
 
 Plaintext passwords, PINs, recovery proofs, and full personal profiles must not

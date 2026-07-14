@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using StudentRegistration.IdentityAccess.Application;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.IntegrationTests.Identity;
@@ -50,10 +51,44 @@ public sealed class StudentActivationConcurrencyTests
             "HashPassword",
             "TryActivateAsync",
             "newSecurityStamp",
+            "_dummyHash",
             "ActivationFailed",
             "CancellationToken");
-        Assert.DoesNotContain("new ApplicationUser", source, StringComparison.Ordinal);
         Assert.DoesNotContain("SaveChanges", source, StringComparison.Ordinal);
         Assert.DoesNotContain("DateTime.UtcNow", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Unknown_activation_executes_the_generic_verification_path_without_creating_an_identity()
+    {
+        var fixture = new IdentityServiceTestFixture();
+        var service = fixture.CreateStudentActivation();
+
+        var result = await service.ActivateAsync(
+            "209999999",
+            "unrecognized initial credential",
+            "replacement credential value");
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(0, fixture.Store.UserCount);
+    }
+
+    [Fact]
+    public async Task Activation_rejects_a_new_password_containing_the_university_id()
+    {
+        var fixture = new IdentityServiceTestFixture();
+        var user = fixture.AddStudent(
+            "202600009",
+            "issued initial credential",
+            activated: false);
+        var service = fixture.CreateStudentActivation();
+
+        var result = await service.ActivateAsync(
+            "202600009",
+            "issued initial credential",
+            "safe-202600009-credential");
+
+        Assert.Equal(AuthenticationOutcome.PasswordRejected, result.Outcome);
+        Assert.False(await fixture.Store.IsStudentActivatedAsync(user.Id, default));
     }
 }

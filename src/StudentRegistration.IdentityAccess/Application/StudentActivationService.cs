@@ -13,6 +13,8 @@ public sealed class StudentActivationService
     private readonly IIdentityPasswordValidator _passwordValidator;
     private readonly TimeProvider _timeProvider;
     private readonly IdentityAbuseControl? _abuseControl;
+    private readonly ApplicationUser _dummyUser;
+    private readonly string _dummyHash;
 
     public StudentActivationService(
         IIdentityAccountStore store,
@@ -26,6 +28,17 @@ public sealed class StudentActivationService
         _passwordValidator = passwordValidator ?? throw new ArgumentNullException(nameof(passwordValidator));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _abuseControl = abuseControl;
+        _dummyUser = new ApplicationUser(
+            Guid.NewGuid(),
+            "unknown.activation",
+            "UNKNOWN.ACTIVATION",
+            null,
+            "TRANSIENT",
+            Convert.ToHexString(RandomNumberGenerator.GetBytes(32)),
+            false);
+        _dummyHash = _passwordHasher.HashPassword(
+            _dummyUser,
+            Convert.ToBase64String(RandomNumberGenerator.GetBytes(24)));
     }
 
     public Task<AuthenticationResult> ActivateAsync(
@@ -57,30 +70,28 @@ public sealed class StudentActivationService
         var user = await _store.FindStudentByUniversityIdAsync(
             normalizedUniversityId,
             cancellationToken);
-        if (user is null ||
-            await _store.IsStudentActivatedAsync(user.Id, cancellationToken) ||
-            !user.IsEnabled ||
-            sharedBlocked)
-        {
-            if (_abuseControl is not null)
-            {
-                await _abuseControl.RecordFailureAsync(
-                    "activation",
-                    normalizedUniversityId,
-                    networkScope,
-                    cancellationToken);
-            }
-
-            return AuthenticationResult.ActivationFailed();
-        }
-
         var verification = _passwordHasher.VerifyHashedPassword(
-            user,
-            user.PasswordHash,
+            user ?? _dummyUser,
+            user?.PasswordHash ?? _dummyHash,
             initialPassword ?? string.Empty);
-        if (verification == PasswordVerificationResult.Failed)
+        var alreadyActivated = await _store.IsStudentActivatedAsync(
+            user?.Id ?? Guid.Empty,
+            cancellationToken);
+        if (user is null ||
+            alreadyActivated ||
+            !user.IsEnabled ||
+            sharedBlocked ||
+            verification == PasswordVerificationResult.Failed)
         {
-            await _store.RecordActivationFailureAsync(user.Id, cancellationToken);
+            if (user is not null &&
+                !alreadyActivated &&
+                user.IsEnabled &&
+                !sharedBlocked &&
+                verification == PasswordVerificationResult.Failed)
+            {
+                await _store.RecordActivationFailureAsync(user.Id, cancellationToken);
+            }
+
             if (_abuseControl is not null)
             {
                 await _abuseControl.RecordFailureAsync(
@@ -93,7 +104,12 @@ public sealed class StudentActivationService
             return AuthenticationResult.ActivationFailed();
         }
 
-        var validation = _passwordValidator.Validate(newPassword);
+        var validation = _passwordValidator.Validate(
+            newPassword,
+            new IdentityPasswordContext(
+                user.UniversityId,
+                user.UserName,
+                DisplayName: null));
         if (!validation.IsValid)
         {
             return AuthenticationResult.Failure(AuthenticationOutcome.PasswordRejected);
@@ -135,6 +151,7 @@ public sealed class StudentActivationService
         return AuthenticationResult.Success(
             user.Id,
             user.UserName,
+            newSecurityStamp,
             ["Student"],
             "Student",
             utcNow.Add(SessionLifetime));

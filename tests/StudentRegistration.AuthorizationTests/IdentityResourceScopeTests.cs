@@ -91,7 +91,9 @@ public sealed class IdentityResourceScopeTests
 
         RepositoryFiles.ContainsAll(
             endpoints,
-            "result.AuthorizedRoles.Contains(RolePolicies.Admin",
+            "string.Equals(result.ActiveRole, RolePolicies.Admin",
+            "RolePolicies.AvailableRoleClaimType",
+            "new Claim(ClaimTypes.Role, result.ActiveRole)",
             "RolePolicies.PermissionClaimType",
             "RolePolicies.IdentityManagement");
         Assert.DoesNotContain("request.Permission", endpoints, StringComparison.Ordinal);

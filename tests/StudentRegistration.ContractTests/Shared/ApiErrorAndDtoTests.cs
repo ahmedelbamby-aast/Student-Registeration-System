@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using StudentRegistration.Api.Composition;
 using StudentRegistration.Contracts;
+using StudentRegistration.Contracts.Identity;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.ContractTests.Shared;
@@ -11,7 +12,7 @@ namespace StudentRegistration.ContractTests.Shared;
 public sealed class ApiErrorAndDtoTests
 {
     [Fact]
-    public void Public_contracts_are_framework_free_and_exclude_persistence_and_credentials()
+    public void Public_contracts_are_framework_free_and_limit_secrets_to_transient_inputs()
     {
         var isolation = RepositoryFiles.Read(
             "specs/006-domain-class-api-contracts/contracts/dto-isolation.md");
@@ -36,20 +37,52 @@ public sealed class ApiErrorAndDtoTests
 
         string[] forbiddenPublicMembers =
         [
-            "Password",
             "PasswordHash",
             "SecurityStamp",
             "ConcurrencyStamp",
             "Navigation",
-            "DbContext"
+            "DbContext",
+            "ConnectionString",
+            "ConnectionValue",
+            "InternalIdentityKey"
         ];
-        var publicMembers = typeof(ApiError).Assembly.ExportedTypes
-            .SelectMany(type => type.GetProperties())
-            .Select(property => property.Name)
+        var publicProperties = typeof(ApiError).Assembly.ExportedTypes
+            .SelectMany(type => type.GetProperties().Select(property => (Type: type, Property: property)))
             .ToArray();
         Assert.All(
             forbiddenPublicMembers,
-            forbidden => Assert.DoesNotContain(forbidden, publicMembers));
+            forbidden => Assert.DoesNotContain(
+                publicProperties,
+                item => string.Equals(item.Property.Name, forbidden, StringComparison.Ordinal)));
+
+        var approvedTransientSecretInputs = new HashSet<(Type Type, string Property)>
+        {
+            (typeof(StudentLoginRequest), nameof(StudentLoginRequest.Password)),
+            (typeof(StaffLoginRequest), nameof(StaffLoginRequest.Password)),
+            (typeof(ActivateStudentRequest), nameof(ActivateStudentRequest.InitialPassword)),
+            (typeof(ActivateStudentRequest), nameof(ActivateStudentRequest.NewPassword)),
+            (typeof(RecoveryCompleteRequest), nameof(RecoveryCompleteRequest.ChallengeToken)),
+            (typeof(RecoveryCompleteRequest), nameof(RecoveryCompleteRequest.NewPassword)),
+            (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.CurrentPassword)),
+            (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.NewPassword))
+        };
+        var actualSecretInputs = publicProperties
+            .Where(item =>
+                item.Property.Name.Contains("Password", StringComparison.OrdinalIgnoreCase) ||
+                item.Property.Name.Contains("Pin", StringComparison.OrdinalIgnoreCase) ||
+                item.Property.Name.Contains("Secret", StringComparison.OrdinalIgnoreCase) ||
+                item.Property.Name.Contains("Token", StringComparison.OrdinalIgnoreCase) ||
+                item.Property.Name.Contains("Proof", StringComparison.OrdinalIgnoreCase) ||
+                item.Property.Name.Contains("Credential", StringComparison.OrdinalIgnoreCase))
+            .Select(item => (Type: item.Type, Property: item.Property.Name))
+            .ToHashSet();
+
+        Assert.True(
+            approvedTransientSecretInputs.SetEquals(actualSecretInputs),
+            $"Unexpected secret-bearing public contract members: {string.Join(", ", actualSecretInputs.Except(approvedTransientSecretInputs).Select(item => $"{item.Type.Name}.{item.Property}"))}");
+        Assert.All(
+            publicProperties.Where(item => approvedTransientSecretInputs.Contains((item.Type, item.Property.Name))),
+            item => Assert.Equal(typeof(string), item.Property.PropertyType));
     }
 
     [Fact]

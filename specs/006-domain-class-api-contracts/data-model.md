@@ -32,8 +32,11 @@
 - The `StudentRegistration.Contracts` project is framework- and
   persistence-free. It references no ASP.NET Core, Blazor, EF Core, SQL Server,
   or business-module implementation type.
-- Contract types never contain EF navigation properties, password/security
-  internals, or unauthorized identifiers.
+- Contract types never contain EF navigation properties, persisted
+  password/security internals, secret-bearing response fields, or unauthorized
+  identifiers. The explicitly tested authentication and account-lifecycle
+  request DTOs may carry only operation-required transient credentials or
+  recovery proofs.
 - `AppContextDto` composition must be complete, server-authoritative, and
   authorization-filtered. A missing or failed required contributor returns a
   safe unavailable error with no partial success DTO.

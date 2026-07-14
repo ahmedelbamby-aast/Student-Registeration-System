@@ -1,5 +1,5 @@
 {
-  "version": "2.0.2",
+  "version": "2.0.3",
   "specs": [
     {
       "id": "001",
@@ -144,7 +144,7 @@
       ],
       "successCriteria": [
         "Every declared endpoint interface records success, validation, authorization, conflict, and unexpected-error outcomes, or marks an inapplicable category with a reason.",
-        "No persistence-internal or credential field is part of a public contract.",
+        "No persistence-internal field or credential is part of a response contract; secret-bearing request fields are limited to the explicitly tested transient authentication and account-lifecycle inputs.",
         "All externally visible dates, identifiers, pagination, and error formats are consistent."
       ]
     },
@@ -198,6 +198,7 @@
         "AccountRecoveryChallenge",
         "AuthenticationAbuseState",
         "IdentityImportBatch",
+        "IdentityImportCandidateRow",
         "RoleAssignment",
         "SecurityEvent",
         "AdminSecurityGuard"

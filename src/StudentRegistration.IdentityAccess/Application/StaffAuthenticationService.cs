@@ -65,6 +65,7 @@ public sealed class StaffAuthenticationService
             cancellationToken);
         var verificationUser = user ?? _dummyUser;
         var verificationHash = user?.PasswordHash ?? _dummyHash;
+        var verifiedSecurityStamp = user?.SecurityStamp;
         var verification = _passwordHasher.VerifyHashedPassword(
             verificationUser,
             verificationHash,
@@ -123,6 +124,7 @@ public sealed class StaffAuthenticationService
         return AuthenticationResult.Success(
             user.Id,
             staff.DisplayName,
+            verifiedSecurityStamp!,
             effectiveRoles,
             activeRole,
             utcNow.Add(SessionLifetime));

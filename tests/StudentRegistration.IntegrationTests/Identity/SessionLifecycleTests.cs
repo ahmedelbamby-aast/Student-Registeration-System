@@ -59,4 +59,44 @@ public sealed class SessionLifecycleTests
         Assert.DoesNotContain("return challengeToken", service, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("DateTime.UtcNow", service, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task Recovery_rejects_a_new_password_containing_the_username()
+    {
+        var fixture = new IdentityServiceTestFixture();
+        fixture.AddStaff(
+            "lecturer.nadia",
+            "current credential value",
+            ["Lecturer"],
+            displayName: "Dr Nadia Hassan");
+        var service = fixture.CreateSessionLifecycle();
+
+        await service.RequestRecoveryAsync("lecturer.nadia");
+        var proof = Assert.IsType<RecoveryProofDeliveryRequest>(
+            fixture.Delivery.LastRequest).Proof;
+        var result = await service.CompleteRecoveryAsync(
+            proof,
+            "safe lecturer.nadia credential");
+
+        Assert.Equal(SessionLifecycleOutcome.PasswordRejected, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Password_change_rejects_a_new_password_containing_the_display_name()
+    {
+        var fixture = new IdentityServiceTestFixture();
+        var (user, _) = fixture.AddStaff(
+            "ta.ibrahim",
+            "current credential value",
+            ["TeachingAssistant"],
+            displayName: "Hassan Ibrahim");
+        var service = fixture.CreateSessionLifecycle();
+
+        var result = await service.ChangePasswordAsync(
+            user.Id,
+            "current credential value",
+            "secure Hassan Ibrahim credential");
+
+        Assert.Equal(SessionLifecycleOutcome.PasswordRejected, result.Outcome);
+    }
 }

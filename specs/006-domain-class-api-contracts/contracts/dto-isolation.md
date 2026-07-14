@@ -11,11 +11,24 @@ not exposed.
 
 ## Credential and identity safety
 
-No public DTO contains a password, PIN, password hash, security stamp,
-concurrency stamp, reset secret, token, connection value, or internal identity
-key. Public identifiers are the minimum opaque values required by the owning
-feature contract. Logs and support correlation never become response
-diagnostics.
+No response DTO contains a password, PIN, recovery proof, password hash,
+security stamp, concurrency stamp, reset secret, connection value, or internal
+identity key. The complete secret-bearing request allow-list is:
+
+- `StudentLoginRequest.Password`
+- `StaffLoginRequest.Password`
+- `ActivateStudentRequest.InitialPassword`
+- `ActivateStudentRequest.NewPassword`
+- `RecoveryCompleteRequest.ChallengeToken`
+- `RecoveryCompleteRequest.NewPassword`
+- `ChangePasswordRequest.CurrentPassword`
+- `ChangePasswordRequest.NewPassword`
+
+These values are transient input: they are never echoed in a response,
+persisted raw, written to logs, audit payloads, or support diagnostics. Adding
+another secret-bearing contract member requires an approved contract revision
+and an update to the executable allow-list. Public identifiers are the minimum
+opaque values required by the owning feature contract.
 
 ## Authorization before disclosure
 

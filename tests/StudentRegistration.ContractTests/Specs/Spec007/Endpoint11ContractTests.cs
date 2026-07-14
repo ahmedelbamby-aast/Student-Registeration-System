@@ -56,7 +56,8 @@ public sealed class Endpoint11ContractTests
 
         RepositoryFiles.ContainsAll(
             Spec007ContractAssertions.EndpointSource(),
-            "result.AuthorizedRoles.Contains(RolePolicies.Admin",
+            "string.Equals(result.ActiveRole, RolePolicies.Admin",
+            "RolePolicies.AvailableRoleClaimType",
             "RolePolicies.PermissionClaimType",
             "RolePolicies.IdentityManagement");
     }

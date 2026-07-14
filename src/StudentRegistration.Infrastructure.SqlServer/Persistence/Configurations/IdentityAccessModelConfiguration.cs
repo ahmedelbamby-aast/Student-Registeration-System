@@ -159,11 +159,11 @@ public sealed class IdentityAccessModelConfiguration :
         ConfigureRowVersion(builder.Property(assignment => assignment.Version));
 
         builder.HasIndex(assignment => new
-            {
-                assignment.ApplicationUserId,
-                assignment.RoleCode,
-                assignment.EffectiveFromUtc
-            })
+        {
+            assignment.ApplicationUserId,
+            assignment.RoleCode,
+            assignment.EffectiveFromUtc
+        })
             .IsUnique();
         builder.HasIndex(assignment => new
         {
@@ -237,10 +237,10 @@ public sealed class IdentityAccessModelConfiguration :
         builder.HasIndex(batch => batch.SourceHash)
             .IsUnique();
         builder.HasIndex(batch => new
-            {
-                batch.RequestedByUserId,
-                batch.ClientRequestId
-            })
+        {
+            batch.RequestedByUserId,
+            batch.ClientRequestId
+        })
             .IsUnique();
         builder.HasIndex(batch => new { batch.State, batch.ImportedAtUtc });
         builder.HasOne<ApplicationUser>()

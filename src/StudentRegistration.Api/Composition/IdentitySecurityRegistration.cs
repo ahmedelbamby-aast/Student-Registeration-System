@@ -5,10 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StudentRegistration.Api.Development;
+using StudentRegistration.Contracts;
+using StudentRegistration.Contracts.Auditing;
 using StudentRegistration.IdentityAccess.Application;
 using StudentRegistration.IdentityAccess.Application.Authorization;
 using StudentRegistration.IdentityAccess.Application.Ports;
 using StudentRegistration.IdentityAccess.Domain;
+using StudentRegistration.Infrastructure.SqlServer.Audit;
+using StudentRegistration.Infrastructure.SqlServer.Persistence;
 
 namespace StudentRegistration.Api.Composition;
 
@@ -62,14 +66,21 @@ public static class IdentitySecurityRegistration
         services.TryAddScoped<StaffAuthenticationService>();
         services.TryAddScoped<SessionLifecycleService>();
         services.TryAddScoped<DemoIdentitySeedContributor>();
+        services.TryAddScoped<AdminUserLifecycleService>();
         services.TryAddScoped<IdentityCookieAuthenticationEvents>();
         services.TryAddScoped<IdentityAbuseControl>();
+        services.TryAddScoped<IIdentityAccountStore, IdentityAccountStore>();
+        services.TryAddScoped<IIdentitySeedStore, IdentitySeedStore>();
+        services.TryAddScoped<IAdminUserLifecycleStore, AdminUserLifecycleStore>();
+        services.TryAddScoped<IIdentityAbuseStateStore, IdentityAbuseStateStore>();
+        services.TryAddScoped<IAuditEventWriter, AuditTransactionWriter>();
 
         if (environment.IsDevelopment())
         {
             services.TryAddSingleton<IIdentityAbuseKeyProvider, DevelopmentIdentityAbuseKeyProvider>();
             services.TryAddSingleton<DemoCredentialSheetWriter>();
             services.TryAddSingleton<IAccountRecoveryProofDelivery, DevelopmentRecoveryProofDelivery>();
+            services.TryAddSingleton<IProvisionedCredentialHandoff, DevelopmentProvisionedCredentialHandoff>();
         }
         else if (environment.IsEnvironment("Testing"))
         {
@@ -77,6 +88,9 @@ public static class IdentitySecurityRegistration
             services.TryAddSingleton<TestingRecoveryProofDelivery>();
             services.TryAddSingleton<IAccountRecoveryProofDelivery>(serviceProvider =>
                 serviceProvider.GetRequiredService<TestingRecoveryProofDelivery>());
+            services.TryAddSingleton<TestingProvisionedCredentialHandoff>();
+            services.TryAddSingleton<IProvisionedCredentialHandoff>(serviceProvider =>
+                serviceProvider.GetRequiredService<TestingProvisionedCredentialHandoff>());
         }
         else if (environment.IsProduction())
         {
@@ -139,6 +153,7 @@ public static class IdentitySecurityRegistration
         application.UseAuthorization();
         application.UseRateLimiter();
         application.UseAntiforgery();
+        application.UseMiddleware<AntiforgeryValidationEnforcementMiddleware>();
         application.UseMiddleware<AntiforgeryRequestCookieMiddleware>();
         return application;
     }
@@ -189,6 +204,29 @@ public static class IdentitySecurityRegistration
                         }));
             }
         });
+    }
+}
+
+internal sealed class AntiforgeryValidationEnforcementMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var validation = context.Features.Get<IAntiforgeryValidationFeature>();
+        if (validation is { IsValid: false })
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(
+                new ApiError(
+                    "ANTIFORGERY_INVALID",
+                    "The request could not be completed.",
+                    context.TraceIdentifier),
+                context.RequestAborted);
+            return;
+        }
+
+        await next(context);
     }
 }
 
@@ -250,12 +288,22 @@ internal sealed class ProductionIdentitySecurityGuard(
 
         using var scope = serviceProvider.CreateScope();
         var delivery = scope.ServiceProvider.GetService<IAccountRecoveryProofDelivery>();
+        var credentialHandoff = scope.ServiceProvider.GetService<IProvisionedCredentialHandoff>();
         var abuseKey = scope.ServiceProvider.GetService<IIdentityAbuseKeyProvider>();
         var approvedProvider = configuration["Identity:Recovery:ApprovedProvider"];
         if (delivery is null || string.IsNullOrWhiteSpace(approvedProvider))
         {
             throw new InvalidOperationException(
                 "IDENTITY_RECOVERY_PROVIDER_NOT_APPROVED: Production requires an approved institutional recovery provider.");
+        }
+
+        var approvedProvisioningProvider =
+            configuration["Identity:Provisioning:ApprovedProvider"];
+        if (credentialHandoff is null
+            || string.IsNullOrWhiteSpace(approvedProvisioningProvider))
+        {
+            throw new InvalidOperationException(
+                "IDENTITY_PROVISIONING_HANDOFF_NOT_APPROVED: Production requires an approved institutional credential handoff.");
         }
 
         if (abuseKey is null || abuseKey.GetKey().Length < 32)

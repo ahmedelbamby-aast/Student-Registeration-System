@@ -1,5 +1,5 @@
 {
-  "version": "2.0.2",
+  "version": "2.0.3",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -17,6 +17,7 @@
     "GroupSummary": "011",
     "ImportBatch": "009",
     "IdentityImportBatch": "007",
+    "IdentityImportCandidateRow": "007",
     "OperationalMetric": "018",
     "PolicyRule": "009",
     "PolicySet": "009",

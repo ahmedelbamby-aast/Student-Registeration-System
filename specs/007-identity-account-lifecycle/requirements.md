@@ -81,6 +81,13 @@ credentials. Only ASP.NET Core Identity password hashes are persisted.
   concurrent removals cannot eliminate the final enabled Admin. IdentityAccess
   is the sole role-mutation owner; SPEC-017 may delegate to it but MUST NOT
   implement a second role writer or guard.
+  A validated import MUST stage only bounded normalized
+  `IdentityImportCandidateRow` children, never credentials or raw upload bytes.
+  Publication MUST prepare a non-visible Development/Testing credential handoff
+  by import ID, atomically commit all SQL identity changes, then complete the
+  handoff; rollback aborts it and a published retry completes it idempotently.
+  Endpoint 14 MUST NOT return a credential, local path, or handoff reference,
+  and Production MUST fail closed without approved institutional delivery.
 
 ## Non-Functional Requirements
 
@@ -212,9 +219,7 @@ interface SessionDto {
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
 interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
-interface SelectRoleContextRequest {
-  role: "Admin" | "Lecturer" | "TeachingAssistant";
-}
+interface SelectRoleContextRequest { role: "Admin" | "Lecturer" | "TeachingAssistant"; }
 interface IdentityImportBatchDto {
   id: string;
   source: string;
@@ -225,6 +230,29 @@ interface IdentityImportBatchDto {
 }
 interface UserStatusRequest { enabled: boolean; expectedRowVersion: string; reason: string; }
 interface UserRolesRequest { roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">; expectedRowVersion: string; reason: string; }
+interface IdentityUserSummaryDto {
+  id: string;
+  displayName: string;
+  loginIdentifier: string;
+  enabled: boolean;
+  roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
+  rowVersion: string;
+}
+interface IdentityImportRequest {
+  source: string;
+  contentHash: string;
+  clientRequestId: string;
+  users: Array<{
+    externalReference: string;
+    kind: "student" | "staff";
+    universityId?: string;
+    userName?: string;
+    staffNumber?: string;
+    displayName: string;
+    roles: Array<"Admin" | "Lecturer" | "TeachingAssistant">;
+  }>;
+}
+interface IdentityImportPublishRequest { expectedRowVersion: string; clientRequestId: string; }
 ```
 
 Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
@@ -249,6 +277,7 @@ all account mutations use antiforgery and server-side rate limits.
 | RoleAssignment | user, role, effective dates, assigning actor |
 | AuthenticationAbuseState | SubjectKeyHash HMAC over canonical operation + subject/network scope, operation, counters, lockout/rate-limit windows, rowversion |
 | IdentityImportBatch | requesting user/clientRequestId, source/content hash, lifecycle, rowversion, bounded row-error JSON, bounded idempotent publication-result JSON |
+| IdentityImportCandidateRow | batch-owned immutable normalized pre-provision row keyed by batch/ordinal, with mutually exclusive student or staff identifiers and canonical role codes; no credential, hash, raw upload, DTO exposure, or rowversion |
 | SecurityEvent | append-only identity/abuse fact with safe actor/subject references, code, reason and redacted before/after facts for status/role commands, correlation, server time, and bounded non-secret metadata; SPEC-017 may consume/query it |
 | AdminSecurityGuard | singleton Admin-role serialization row with rowversion; owned and locked by IdentityAccess role commands |
 

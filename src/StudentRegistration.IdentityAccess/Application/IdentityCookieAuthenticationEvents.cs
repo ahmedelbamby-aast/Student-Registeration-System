@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using StudentRegistration.IdentityAccess.Application.Ports;
 
 namespace StudentRegistration.IdentityAccess.Application;
@@ -9,6 +10,20 @@ namespace StudentRegistration.IdentityAccess.Application;
 public sealed class IdentityCookieAuthenticationEvents(
     IIdentityAccountStore store) : CookieAuthenticationEvents
 {
+    public override Task RedirectToLogin(
+        RedirectContext<CookieAuthenticationOptions> context)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    }
+
+    public override Task RedirectToAccessDenied(
+        RedirectContext<CookieAuthenticationOptions> context)
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    }
+
     public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
         var userIdValue = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);

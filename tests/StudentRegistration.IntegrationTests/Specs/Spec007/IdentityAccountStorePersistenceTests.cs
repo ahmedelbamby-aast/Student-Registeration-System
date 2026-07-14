@@ -143,6 +143,52 @@ public sealed class IdentityAccountStorePersistenceTests
                 .SingleAsync(candidate => candidate.Id == challenge.Id);
             Assert.NotNull(consumedChallenge.ConsumedAtUtc);
             Assert.False(storedChallenge.Version.SequenceEqual(consumedChallenge.Version));
+
+            var abuseKey = IdentityRateLimitPolicies.CreateSubjectKeyHash(
+                "login",
+                "AI2600001",
+                "192.0.2.25",
+                Enumerable.Range(1, 32).Select(value => (byte)value).ToArray());
+            var observedAt = new DateTimeOffset(
+                2026,
+                7,
+                14,
+                10,
+                10,
+                0,
+                TimeSpan.Zero);
+            var abuseAttempts = Enumerable.Range(0, 10)
+                .Select(_ => RecordAbuseFailureAsync(
+                    connectionString,
+                    new IdentityAbuseFailure(
+                        abuseKey,
+                        "login",
+                        observedAt,
+                        5,
+                        TimeSpan.FromMinutes(5))))
+                .ToArray();
+            await Task.WhenAll(abuseAttempts);
+
+            await using var abuseContext = CreateContext(connectionString);
+            var abuseStore = new IdentityAbuseStateStore(abuseContext, TimeProvider.System);
+            var sharedAbuseState = await abuseStore.FindAsync(abuseKey, "login", default);
+            Assert.NotNull(sharedAbuseState);
+            Assert.Equal(5, sharedAbuseState.FailureCount);
+            Assert.True(sharedAbuseState.BlockedUntilUtc > observedAt);
+            var durableAbuseRow = await abuseContext.Set<AuthenticationAbuseState>()
+                .AsNoTracking()
+                .SingleAsync();
+            Assert.Equal(abuseKey.Value, durableAbuseRow.SubjectKeyHash);
+            Assert.DoesNotContain("AI2600001", durableAbuseRow.SubjectKeyHash, StringComparison.Ordinal);
+            Assert.DoesNotContain("192.0.2.25", durableAbuseRow.SubjectKeyHash, StringComparison.Ordinal);
+            Assert.Equal(10, await abuseContext.Set<SecurityEvent>()
+                .CountAsync(row => row.EventType == "IdentityLoginFailure"));
+
+            await abuseStore.ResetAsync(abuseKey, "login", default);
+            var resetAbuseState = await abuseStore.FindAsync(abuseKey, "login", default);
+            Assert.NotNull(resetAbuseState);
+            Assert.Equal(0, resetAbuseState.FailureCount);
+            Assert.Null(resetAbuseState.BlockedUntilUtc);
         }
         finally
         {
@@ -194,6 +240,15 @@ public sealed class IdentityAccountStorePersistenceTests
             new DateTime(2026, 7, 14, 10, 0, 0, DateTimeKind.Utc),
             maximumAttempts: 5,
             default);
+    }
+
+    private static async Task<IdentityAbuseStateSnapshot> RecordAbuseFailureAsync(
+        string connectionString,
+        IdentityAbuseFailure failure)
+    {
+        await using var context = CreateContext(connectionString);
+        var store = new IdentityAbuseStateStore(context, TimeProvider.System);
+        return await store.RecordFailureAsync(failure, default);
     }
 
     private static IdentityAccountStore CreateStore(StudentRegistrationDbContext context) =>

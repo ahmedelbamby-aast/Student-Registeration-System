@@ -15,6 +15,7 @@ public sealed record AuthenticationResult(
     AuthenticationOutcome Outcome,
     Guid? UserId,
     string? DisplayName,
+    string? SecurityStamp,
     IReadOnlyList<string> AuthorizedRoles,
     string? ActiveRole,
     DateTime? ExpiresAtUtc)
@@ -31,19 +32,27 @@ public sealed record AuthenticationResult(
         Failure(AuthenticationOutcome.ActivationFailed);
 
     public static AuthenticationResult Failure(AuthenticationOutcome outcome) =>
-        new(outcome, null, null, [], null, null);
+        new(outcome, null, null, null, [], null, null);
 
     public static AuthenticationResult Success(
         Guid userId,
         string displayName,
+        string securityStamp,
         IReadOnlyList<string> authorizedRoles,
         string? activeRole,
-        DateTime expiresAtUtc) =>
-        new(
+        DateTime expiresAtUtc)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(securityStamp);
+        ArgumentNullException.ThrowIfNull(authorizedRoles);
+
+        return new(
             AuthenticationOutcome.AuthenticationSucceeded,
             userId,
             displayName,
-            authorizedRoles,
+            securityStamp,
+            authorizedRoles.ToArray(),
             activeRole,
             expiresAtUtc);
+    }
 }

@@ -218,6 +218,10 @@ or final-enabled-Admin removal attempts change nothing.
   import/status, bounded user/import reads, versioned account status and role
   commands, audit, and an Identity-owned AdminSecurityGuard that makes
   IdentityAccess the sole concurrency-safe final-enabled-Admin mutation owner.
+  Validated imports stage only bounded normalized candidate rows. Publication
+  prepares an import-ID credential handoff, commits SQL, then completes it;
+  rollback aborts it, retry is idempotent, Production fails closed without an
+  approved delivery adapter, and Endpoint 14 exposes no credential or path.
 
 ### Non-Functional Requirements
 
@@ -244,8 +248,10 @@ or final-enabled-Admin removal attempts change nothing.
 
 - **ApplicationUser**, **Staff**, **StudentActivation**,
   **AccountRecoveryChallenge**, **RoleAssignment**, and
-  **AuthenticationAbuseState**, **IdentityImportBatch**, **SecurityEvent**, and
-  **AdminSecurityGuard** are owned by SPEC-007.
+  **AuthenticationAbuseState**, **IdentityImportBatch**,
+  **IdentityImportCandidateRow**, **SecurityEvent**, and **AdminSecurityGuard**
+  are owned by SPEC-007. Candidate rows are immutable batch-owned normalized
+  staging data and contain no credential or raw upload.
 - SPEC-017 may consume/query append-only SecurityEvent records because it
   depends on SPEC-007; Identity does not depend on downstream SPEC-017.
 - The shared Data Protection key ring is SPEC-004 infrastructure governed in

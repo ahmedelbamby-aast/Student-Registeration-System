@@ -91,4 +91,32 @@ public sealed class IdentitySecurityBoundaryTests
             Assert.DoesNotContain("Authorization: Bearer", source, StringComparison.OrdinalIgnoreCase);
         }
     }
+
+    [Fact]
+    public void Abuse_subject_hmac_key_is_shared_locally_ignored_and_external_in_production()
+    {
+        var providers = RepositoryFiles.Read(
+            "src/StudentRegistration.Api/Composition/IdentityAbuseKeyProviders.cs");
+        var registration = RepositoryFiles.Read(
+            "src/StudentRegistration.Api/Composition/IdentitySecurityRegistration.cs");
+        var gitIgnore = RepositoryFiles.Read(".gitignore");
+
+        RepositoryFiles.ContainsAll(
+            providers,
+            "RandomNumberGenerator.GetBytes",
+            ".local",
+            "identity-abuse-hmac.key",
+            "FileMode.CreateNew",
+            "AbuseSubjectHmacKey",
+            "environment.IsProduction()",
+            "IDENTITY_ABUSE_KEY_REQUIRED");
+        RepositoryFiles.ContainsAll(
+            registration,
+            "DevelopmentIdentityAbuseKeyProvider",
+            "TestingIdentityAbuseKeyProvider",
+            "ConfiguredIdentityAbuseKeyProvider",
+            "abuseKey.GetKey().Length < 32");
+        Assert.Contains(".local/", gitIgnore, StringComparison.Ordinal);
+        Assert.DoesNotContain("ILogger", providers, StringComparison.Ordinal);
+    }
 }

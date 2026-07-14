@@ -1,7 +1,7 @@
 # SPEC-007 NFR-1 Login-Profile Evidence
 
 **Profile:** `SPEC007-IDENTITY-LOGIN-1.0.0`  
-**Run window:** 2026-07-14 11:04:39Z–11:14:39Z  
+**Run window:** 2026-07-14 12:13:16Z–12:23:16Z
 **Scope:** SPEC-007 application-service demo gate  
 **Result: PASS.**
 
@@ -21,12 +21,15 @@ invalid credential, and 5% already locked distribution:
 | Pre-locked identity | 5% already locked | 750 |
 | Total | 100% | 15,000 |
 
-Both service replicas shared one concurrency-safe account-state fixture. Every
-request executed the configured ASP.NET Core IdentityV3 password verifier at
-100,000 PBKDF2 iterations. The timer includes scheduler delay and service
-execution from each exact 40 ms target. A mismatched public outcome, duplicate
-success classification, or thrown request increments a blocking invariant or
-unexpected-error counter.
+The profile used two independently constructed, stateless
+`StudentAuthenticationService` replicas. Each replica had its own store adapter;
+the adapters crossed one concurrency-safe shared-state boundary containing the
+25,000 accounts. A separate always-on test rejects a profile fixture that
+collapses those adapters into one replica-local object. Every request executed
+the configured ASP.NET Core IdentityV3 password verifier at 100,000 PBKDF2
+iterations. The timer includes scheduler delay and service execution from each
+exact 40 ms target. A mismatched public outcome or thrown request increments a
+blocking invariant or unexpected-error counter.
 
 ## Measured result
 
@@ -34,7 +37,7 @@ unexpected-error counter.
 |---|---:|
 | Duration (seconds) | 600 |
 | Scheduled/completed requests | 15,000 / 15,000 |
-| Measured login p95 (ms) | 114.087 |
+| Measured login p95 (ms) | 106.573 |
 | Maximum permitted p95 (ms) | 500 |
 | Unexpected errors | 0 |
 | Unexpected error rate (%) | 0.0000 |
@@ -56,9 +59,10 @@ evidence without repeating the 10-minute measurement.
 ## Boundary retained
 
 This measurement proves the SPEC-007 authentication service, configured
-password hasher, exact account cardinality/mix, stateless service instances,
-and outcome invariants. It is not a claim of Production network, reverse-proxy,
-SQL topology, or institutional identity-provider performance. The migrated
+password hasher, exact account cardinality/mix, two independently composed
+stateless service/store-adapter replicas over shared state, and outcome
+invariants. It is not a claim of Production network, reverse-proxy, SQL
+topology, or institutional identity-provider performance. The migrated
 end-to-end HTTP/SQL two-host profile remains part of the complete-system
 SPEC-018 release gate after downstream migrations and deployment topology
 exist; Production remains not approved.

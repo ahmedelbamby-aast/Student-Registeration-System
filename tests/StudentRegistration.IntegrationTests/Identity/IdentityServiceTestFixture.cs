@@ -49,14 +49,15 @@ internal sealed class IdentityServiceTestFixture
         string password,
         IReadOnlyCollection<string> roles,
         bool enabled = true,
-        bool active = true)
+        bool active = true,
+        string? displayName = null)
     {
         var user = CreateUser(userName, null, password, enabled);
         var staff = new Staff(
             Guid.NewGuid(),
             user.Id,
             $"STAFF-{userName}",
-            $"Display {userName}",
+            displayName ?? $"Display {userName}",
             active);
         Store.AddUser(user, activated: true, roles);
         Store.AddStaff(staff);
@@ -137,6 +138,8 @@ internal sealed class InMemoryIdentityAccountStore : IIdentityAccountStore
     private readonly ConcurrentDictionary<string, AccountRecoveryChallenge> _challenges =
         new(StringComparer.Ordinal);
     private readonly object _transitionLock = new();
+
+    public int UserCount => _users.Count;
 
     public void AddUser(
         ApplicationUser user,

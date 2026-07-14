@@ -63,6 +63,9 @@
   fields, and singleton guard precision required by SPEC-007. These additions
   preserve the accepted SPEC-005 design invariants and do not create a
   migration or second owner.
+- Current manifest reconciliation: persistence manifest `2.1.1` adds the
+  batch-owned `IdentityImportCandidateRow` to SPEC-007's writable mapping
+  contribution without changing the accepted migration owner or sequence.
 - Data lifecycle: Development and Testing are synthetic-only. Development
   persists until guarded reset; Testing is isolated per run. Plaintext
   credentials, proofs, profiles, and secrets are excluded from SQL,
@@ -77,14 +80,18 @@
   `df6774ce57157b05b4af21380ce8afd2412ce422`.
 - Accepted versions: ApiError schema `1.0`, Page schema `1.0`, specification
   manifest `2.0.2`, and workstream manifest `2.0.1`. SPEC-007 reconciles the
-  current entity-ownership manifest to `2.0.2` by adding the missing canonical
-  `StudentActivation -> 007` ownership and the current workstream manifest to
-  `2.0.2` for the approved activation/recovery/security refinements, without
-  changing earlier immutable dependency pins.
+  current specification and entity-ownership manifests to `2.0.3` by adding
+  the canonical `IdentityImportCandidateRow -> 007` declaration while
+  retaining `StudentActivation -> 007`; the current workstream manifest is
+  `2.0.2` for the approved activation/recovery/security refinements. Earlier
+  immutable dependency pins remain unchanged.
 - Consumed boundary: privacy-safe `ApiError`, DTO/credential isolation,
   deterministic JSON, default page size `20` and maximum `100`, deterministic
   sorting, request-body concurrency, owner-scoped idempotency, injected
-  TimeProvider, and complete AppContext composition.
+  TimeProvider, and complete AppContext composition. SPEC-007 refines the DTO
+  rule only for the eight explicitly tested transient authentication and
+  account-lifecycle request members; responses, raw persistence, logs, audit
+  payloads, and diagnostics remain secret-free.
 - Context boundary: SPEC-007 supplies authenticated identity/session/authorized
   roles; SPEC-008 supplies authoritative time/term/window/service and owns the
   public/authenticated context handlers. Missing contributors return

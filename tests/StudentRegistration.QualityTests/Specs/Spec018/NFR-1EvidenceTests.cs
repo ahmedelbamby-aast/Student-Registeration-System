@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using StudentRegistration.IdentityAccess.Application;
+using StudentRegistration.IdentityAccess.Application.Ports;
+using StudentRegistration.IdentityAccess.Domain;
 using StudentRegistration.LoadTesting.Spec018;
 
 namespace StudentRegistration.QualityTests.Specs.Spec018;
@@ -66,9 +71,70 @@ public sealed class Nfr1EvidenceTests
         Assert.Contains("hashes are never byte-compared", evidence, StringComparison.Ordinal);
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-007 must deliver the canonical Development/Testing bootstrap, ApplicationUser persistence, and ASP.NET Identity hasher before 5,000 authenticated sessions and hash verification can be measured.")]
-    public void Canonical_identity_hasher_verifies_generated_credentials_without_hash_byte_comparison()
+    [Fact]
+    public async Task Canonical_identity_hasher_verifies_generated_credentials_without_hash_byte_comparison()
     {
+        var logicalFixture = SyntheticLoadFixtureGenerator.Build();
+        Assert.Equal(5_000, logicalFixture.Sessions.Count);
+
+        var identityOptions = new IdentitySecurityOptions();
+        var hasher = new PasswordHasher<ApplicationUser>(
+            Options.Create(new PasswordHasherOptions
+            {
+                CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3,
+                IterationCount = identityOptions.PasswordHashIterations
+            }));
+        var store = new CapturingIdentitySeedStore();
+        var contributor = new DemoIdentitySeedContributor(
+            store,
+            hasher,
+            TimeProvider.System);
+
+        var credentials = await contributor.SeedAsync(
+            "Testing",
+            studentCount: 1);
+
+        Assert.Equal(5, credentials.Count);
+        Assert.Equal(credentials.Count, store.Identities.Count);
+        foreach (var credential in credentials)
+        {
+            var identity = Assert.Single(
+                store.Identities,
+                candidate => string.Equals(
+                    candidate.UserName,
+                    credential.LoginIdentifier,
+                    StringComparison.Ordinal));
+            var user = new ApplicationUser(
+                identity.UserId,
+                identity.UserName,
+                identity.NormalizedUserName,
+                identity.UniversityId,
+                identity.PasswordHash,
+                identity.SecurityStamp);
+
+            Assert.NotEqual(credential.Secret, identity.PasswordHash);
+            Assert.NotEqual(
+                PasswordVerificationResult.Failed,
+                hasher.VerifyHashedPassword(
+                    user,
+                    identity.PasswordHash,
+                    credential.Secret));
+        }
+    }
+
+    private sealed class CapturingIdentitySeedStore : IIdentitySeedStore
+    {
+        public IReadOnlyList<DemoSeedIdentity> Identities { get; private set; } = [];
+
+        public Task<IReadOnlySet<Guid>> ReconcileAsync(
+            IReadOnlyList<DemoSeedIdentity> identities,
+            string clientRequestId,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Identities = identities.ToArray();
+            return Task.FromResult<IReadOnlySet<Guid>>(
+                identities.Select(identity => identity.UserId).ToHashSet());
+        }
     }
 }

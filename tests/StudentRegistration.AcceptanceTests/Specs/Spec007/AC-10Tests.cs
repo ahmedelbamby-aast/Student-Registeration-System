@@ -20,6 +20,18 @@ public sealed class AC_10Tests
             "all-or-nothing",
             "FINAL_ADMIN_REQUIRED");
         Spec007AcceptanceAssertions.Source(
+            "src/StudentRegistration.IdentityAccess/Domain/IdentityImportCandidateRow.cs",
+            "IdentityImportBatchId",
+            "Ordinal",
+            "ExternalReference",
+            "Roles");
+        Spec007AcceptanceAssertions.Source(
+            "src/StudentRegistration.IdentityAccess/Application/Ports/IProvisionedCredentialHandoff.cs",
+            "PrepareAsync",
+            "CompleteAsync",
+            "AbortAsync",
+            "Production");
+        Spec007AcceptanceAssertions.Source(
             "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs",
             "/api/admin/users",
             "/api/admin/users/imports",

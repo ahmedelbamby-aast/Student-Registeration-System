@@ -9,6 +9,7 @@ public static class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddStudentRegistrationSqlServer(builder.Configuration);
         // The SPEC-018 security gate validates inputs, then delegates once to
         // AddStudentRegistrationDataProtection for the canonical key setup.
         builder.Services.AddStudentRegistrationSecurity(
@@ -21,11 +22,13 @@ public static class Program
 
         var app = builder.Build();
         app.UseSafeApiErrors();
+        app.UseStudentRegistrationWebApp();
         app.UseStudentRegistrationObservability();
         app.UseRouting();
         app.UseStudentRegistrationIdentitySecurity();
         app.MapSpec018Endpoints();
         app.MapSpec007Endpoints();
+        app.MapStudentRegistrationWebAppFallback();
         app.Run();
     }
 }

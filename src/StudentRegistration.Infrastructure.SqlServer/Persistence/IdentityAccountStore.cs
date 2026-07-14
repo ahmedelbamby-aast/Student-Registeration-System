@@ -118,14 +118,22 @@ public sealed class IdentityAccountStore : IIdentityAccountStore
                 setters => setters
                     .SetProperty(
                         user => user.AccessFailedCount,
-                        user => user.AccessFailedCount < maximumFailures
-                            ? user.AccessFailedCount + 1
-                            : user.AccessFailedCount)
+                        user => user.LockoutEndUtc != null
+                            && user.LockoutEndUtc <= utcNow
+                                ? 1
+                                : user.AccessFailedCount < maximumFailures
+                                    ? user.AccessFailedCount + 1
+                                    : user.AccessFailedCount)
                     .SetProperty(
                         user => user.LockoutEndUtc,
-                        user => user.AccessFailedCount + 1 >= maximumFailures
-                            ? lockoutEndUtc
-                            : user.LockoutEndUtc),
+                        user => user.LockoutEndUtc != null
+                            && user.LockoutEndUtc <= utcNow
+                                ? maximumFailures == 1
+                                    ? lockoutEndUtc
+                                    : (DateTime?)null
+                                : user.AccessFailedCount + 1 >= maximumFailures
+                                    ? lockoutEndUtc
+                                    : user.LockoutEndUtc),
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -384,9 +392,43 @@ public sealed class IdentityAccountStore : IIdentityAccountStore
         Func<Task<bool>> operation,
         CancellationToken cancellationToken)
     {
-        if (_dbContext.Database.CurrentTransaction is not null)
+        var currentTransaction = _dbContext.Database.CurrentTransaction;
+        if (currentTransaction is not null)
         {
-            return await operation().ConfigureAwait(false);
+            if (!currentTransaction.SupportsSavepoints)
+            {
+                throw new InvalidOperationException(
+                    "IDENTITY_SAVEPOINT_REQUIRED: The active transaction does not support safe nested lifecycle transitions.");
+            }
+
+            var savepointName = $"Identity_{Guid.NewGuid():N}"[..30];
+            await currentTransaction.CreateSavepointAsync(savepointName, cancellationToken)
+                .ConfigureAwait(false);
+            try
+            {
+                var succeeded = await operation().ConfigureAwait(false);
+                if (!succeeded)
+                {
+                    await currentTransaction.RollbackToSavepointAsync(
+                            savepointName,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+
+                await currentTransaction.ReleaseSavepointAsync(
+                        savepointName,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+                return succeeded;
+            }
+            catch
+            {
+                await currentTransaction.RollbackToSavepointAsync(
+                        savepointName,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+                throw;
+            }
         }
 
         var strategy = _dbContext.Database.CreateExecutionStrategy();

@@ -15,11 +15,13 @@ public static class RolePolicies
     public const string Lecturer = "Lecturer";
     public const string TeachingAssistant = "TeachingAssistant";
 
+    public const string StaffContext = "StaffContext";
     public const string IdentityManagement = "IdentityManagement";
     public const string OwnStudentResource = "OwnStudentResource";
     public const string AssignedTeachingResource = "AssignedTeachingResource";
 
     public const string PermissionClaimType = "permission";
+    public const string AvailableRoleClaimType = "available_role";
 
     public static IServiceCollection AddIdentityAuthorization(
         this IServiceCollection services)
@@ -42,6 +44,16 @@ public static class RolePolicies
         AddRolePolicy(options, Admin);
         AddRolePolicy(options, Lecturer);
         AddRolePolicy(options, TeachingAssistant);
+
+        options.AddPolicy(
+            StaffContext,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireClaim(
+                    AvailableRoleClaimType,
+                    Admin,
+                    Lecturer,
+                    TeachingAssistant));
 
         options.AddPolicy(
             IdentityManagement,

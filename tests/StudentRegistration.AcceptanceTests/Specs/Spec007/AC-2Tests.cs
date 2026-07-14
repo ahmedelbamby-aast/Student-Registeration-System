@@ -9,7 +9,11 @@ public sealed class AC_2Tests
             "src/StudentRegistration.IdentityAccess/Application/StudentActivationService.cs",
             "ActivationFailed",
             "NormalizeUniversityId",
-            "TryActivateAsync");
-        Assert.DoesNotContain("new ApplicationUser", source, StringComparison.Ordinal);
+            "TryActivateAsync",
+            "user ?? _dummyUser",
+            "user?.PasswordHash ?? _dummyHash",
+            "user?.Id ?? Guid.Empty");
+        Assert.DoesNotContain("_store.Add", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("_store.Create", source, StringComparison.Ordinal);
     }
 }

@@ -35,7 +35,7 @@ public sealed class PaginationContractTests
 
         var result = new Page<string>(
             suppliedItems,
-            page: 1,
+            pageNumber: 1,
             pageSize: 20,
             totalCount: 2,
             sort: "code,id");
@@ -58,6 +58,24 @@ public sealed class PaginationContractTests
         Assert.Equal(1, document.RootElement.GetProperty("page").GetInt32());
         Assert.Equal(20, document.RootElement.GetProperty("pageSize").GetInt32());
         Assert.Equal("code,id", document.RootElement.GetProperty("sort").GetString());
+    }
+
+    [Fact]
+    public void Page_round_trips_through_the_canonical_web_json_contract()
+    {
+        var original = new Page<string>(["AI101"], 1, 20, 1, "code,id");
+
+        var json = JsonSerializer.Serialize(original, JsonSerializerOptions.Web);
+        var roundTrip = JsonSerializer.Deserialize<Page<string>>(
+            json,
+            JsonSerializerOptions.Web);
+
+        Assert.NotNull(roundTrip);
+        Assert.Equal(original.Items, roundTrip.Items);
+        Assert.Equal(original.PageNumber, roundTrip.PageNumber);
+        Assert.Equal(original.PageSize, roundTrip.PageSize);
+        Assert.Equal(original.TotalCount, roundTrip.TotalCount);
+        Assert.Equal(original.Sort, roundTrip.Sort);
     }
 
     [Fact]

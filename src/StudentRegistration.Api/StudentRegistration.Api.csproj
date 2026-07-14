@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\StudentRegistration.Academics\StudentRegistration.Academics.csproj" />
     <ProjectReference Include="..\StudentRegistration.Client\StudentRegistration.Client.csproj" />
     <ProjectReference Include="..\StudentRegistration.Contracts\StudentRegistration.Contracts.csproj" />

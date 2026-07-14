@@ -62,6 +62,7 @@ public sealed class StudentAuthenticationService
             cancellationToken);
         var verificationUser = user ?? _dummyUser;
         var verificationHash = user?.PasswordHash ?? _dummyHash;
+        var verifiedSecurityStamp = user?.SecurityStamp;
         var verification = _passwordHasher.VerifyHashedPassword(
             verificationUser,
             verificationHash,
@@ -108,6 +109,7 @@ public sealed class StudentAuthenticationService
         return AuthenticationResult.Success(
             user.Id,
             user.UserName,
+            verifiedSecurityStamp!,
             ["Student"],
             "Student",
             utcNow.Add(SessionLifetime));

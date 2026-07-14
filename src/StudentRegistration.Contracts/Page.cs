@@ -5,8 +5,8 @@ namespace StudentRegistration.Contracts;
 public sealed record Page<T>
 {
     public Page(
-        IEnumerable<T> items,
-        int page,
+        IReadOnlyList<T> items,
+        int pageNumber,
         int pageSize,
         int totalCount,
         string sort)
@@ -14,11 +14,11 @@ public sealed record Page<T>
         ArgumentNullException.ThrowIfNull(items);
         var snapshot = items.ToArray();
 
-        if (page < 1)
+        if (pageNumber < 1)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(page),
-                page,
+                nameof(pageNumber),
+                pageNumber,
                 "Page must be at least 1.");
         }
 
@@ -53,7 +53,7 @@ public sealed record Page<T>
         }
 
         Items = Array.AsReadOnly(snapshot);
-        PageNumber = page;
+        PageNumber = pageNumber;
         PageSize = pageSize;
         TotalCount = totalCount;
         Sort = Required(sort, nameof(sort));

@@ -78,6 +78,41 @@ public sealed class ApplicationUser
         return AccessFailedCount;
     }
 
+    public bool RecordFailedAccess(
+        DateTime utcNow,
+        int maximumFailures,
+        TimeSpan lockoutDuration)
+    {
+        if (maximumFailures < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumFailures));
+        }
+
+        if (lockoutDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lockoutDuration));
+        }
+
+        if (IsLockedAt(utcNow))
+        {
+            return true;
+        }
+
+        if (LockoutEndUtc is not null)
+        {
+            AccessFailedCount = 0;
+            LockoutEndUtc = null;
+        }
+
+        AccessFailedCount = checked(AccessFailedCount + 1);
+        if (AccessFailedCount >= maximumFailures)
+        {
+            LockoutEndUtc = utcNow.Add(lockoutDuration);
+        }
+
+        return IsLockedAt(utcNow);
+    }
+
     public void ResetAccessFailures()
     {
         AccessFailedCount = 0;

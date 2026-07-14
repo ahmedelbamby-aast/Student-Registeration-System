@@ -21,6 +21,7 @@ public sealed class IdentitySecurityOptions
             "letmein",
             "password",
             "password123",
+            "passwordpassword",
             "qwerty",
             "student",
             "welcome"

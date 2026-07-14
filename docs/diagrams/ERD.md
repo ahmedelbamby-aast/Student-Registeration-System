@@ -10,6 +10,7 @@ erDiagram
   APPLICATION_USER ||--o{ ACCOUNT_RECOVERY_CHALLENGE : requests
   APPLICATION_USER ||--o{ SECURITY_EVENT : produces
   APPLICATION_USER ||--o{ IDENTITY_IMPORT_BATCH : requests
+  IDENTITY_IMPORT_BATCH ||--o{ IDENTITY_IMPORT_CANDIDATE_ROW : stages
   APPLICATION_USER ||--o| STUDENT_ACTIVATION : is_claimed_through
 
   CATALOGUE_DRAFT ||--o{ IMPORT_BATCH : receives
@@ -123,6 +124,18 @@ erDiagram
     string ResultSummaryJson
     datetime2 ImportedAtUtc
     rowversion Version
+  }
+  IDENTITY_IMPORT_CANDIDATE_ROW {
+    uniqueidentifier Id PK
+    uniqueidentifier IdentityImportBatchId FK
+    int Ordinal
+    string ExternalReference
+    string Kind
+    string UniversityId
+    string UserName
+    string StaffNumber
+    string DisplayName
+    string Roles
   }
   SECURITY_EVENT {
     uniqueidentifier Id PK
@@ -414,6 +427,7 @@ erDiagram
 ## Ownership and constraints
 
 - auth: ApplicationUser, Staff, role/activation/recovery/security records,
+  IdentityImportBatch and its immutable normalized candidate rows,
   AdminSecurityGuard, and ASP.NET Core Identity tables.
 - academics: AcademicTerm, RegistrationWindow, Student and term academic state,
   Program, Course, catalogue drafts/versions/imports, curriculum,
@@ -450,6 +464,10 @@ Required constraints/indexes:
   operation, subject scope, and network scope; the existing unique key therefore
   separates operations without persisting raw identifiers. IdentityImportBatch
   also has unique (RequestedByUserId, ClientRequestId) for atomic idempotency.
+- IdentityImportCandidateRow is cascade-owned by IdentityImportBatch and unique
+  on (IdentityImportBatchId, Ordinal). Ordinals are 1 through 500. Rows contain
+  only normalized pre-provision fields and canonical role codes; credentials,
+  password hashes, and raw upload bytes are prohibited.
 - AdminSecurityGuard is the singleton row Id = 1. Any account-status or role
   mutation that can reduce the enabled-Admin set locks it before rechecking.
 - Unique CourseOffering(TermId, CourseId).
@@ -532,6 +550,11 @@ published state.
 - Audit events are append-only for sensitive administrative actions.
 - Account recovery challenges store only a token hash and are atomically
   consumed once; expired challenge material is removed by the demo lifecycle.
+- Identity import publication prepares a non-visible Development/Testing
+  credential handoff by import ID, commits the users/hashes/roles/activation and
+  final batch result in one SQL transaction, then completes the handoff.
+  Rollback aborts the pending handoff and a published retry completes it
+  idempotently. Production has no local handoff adapter and fails closed.
 - Git-ignored local export, log, and generated-credential artifacts expire and
   are deleted within seven days. Per-run Testing databases are disposed after
   use; Development academic/audit/idempotency rows persist until explicit

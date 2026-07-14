@@ -14,9 +14,11 @@
   `initialPassword`, and `newPassword`; confirmation is client-only. Initial
   verification, password-hash replacement, and activation consumption are one
   atomic server transition.
-- [x] `StudentActivation` is canonically owned by SPEC-007 in entity-ownership
-  manifest `2.0.2`, appears in specification and persistence manifests, and
-  references ApplicationUser rather than downstream Student.
+- [x] `StudentActivation` and `IdentityImportCandidateRow` are canonically
+  owned by SPEC-007 in entity-ownership manifest `2.0.3`, appear in
+  specification manifest `2.0.3` and persistence manifest `2.1.1`, and
+  `StudentActivation` references ApplicationUser rather than downstream
+  Student.
 - [x] `identity-persistence-owner-extension/1.1` and the canonical ERD freeze
   the exact security/lockout, recovery, assignment, abuse, import, and singleton
   guard fields before EF mapping; no field is left as an unmodeled runtime add-on.
@@ -25,7 +27,7 @@
   adapter, a bounded Git-ignored Development adapter, and only an explicitly
   approved future production adapter.
 - [x] The 14 FR, 4 NFR, 10 AC, 6 EC, 3 SC, four exclusions, 16 endpoints,
-  seven route responsibilities, nine owned entities, eight workstreams, and
+  seven route responsibilities, ten owned entities, eight workstreams, and
   T001-T133 execution trace are internally consistent.
 - [x] IdentityAccess remains one bounded module in the nine-project modular
   monolith. It exposes narrow ports/endpoints, uses the single shared DbContext,

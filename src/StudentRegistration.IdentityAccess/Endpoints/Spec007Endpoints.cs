@@ -9,7 +9,6 @@ using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Identity;
 using StudentRegistration.IdentityAccess.Application;
 using StudentRegistration.IdentityAccess.Application.Authorization;
-using StudentRegistration.IdentityAccess.Application.Ports;
 
 namespace StudentRegistration.IdentityAccess.Endpoints;
 
@@ -76,7 +75,7 @@ public static class Spec007Endpoints
             .Produces<SessionDto>(StatusCodes.Status200OK);
 
         endpoints.MapPut("/api/auth/session/context", SelectRoleContextAsync)
-            .RequireAuthorization()
+            .RequireAuthorization(RolePolicies.StaffContext)
             .WithMetadata(new RequireAntiforgeryTokenAttribute(true))
             .Produces<SessionDto>(StatusCodes.Status200OK)
             .Produces<ApiError>(StatusCodes.Status400BadRequest);
@@ -128,7 +127,6 @@ public static class Spec007Endpoints
     private static async Task<IResult> LoginStudentAsync(
         StudentLoginRequest request,
         [FromServices] StudentAuthenticationService service,
-        [FromServices] IIdentityAccountStore store,
         HttpContext context,
         CancellationToken cancellationToken)
     {
@@ -137,13 +135,12 @@ public static class Spec007Endpoints
             request.Password,
             NetworkScope(context),
             cancellationToken);
-        return await SignInOrFailAsync(result, store, context, cancellationToken);
+        return await SignInOrFailAsync(result, context);
     }
 
     private static async Task<IResult> ActivateStudentAsync(
         ActivateStudentRequest request,
         [FromServices] StudentActivationService service,
-        [FromServices] IIdentityAccountStore store,
         HttpContext context,
         CancellationToken cancellationToken)
     {
@@ -160,9 +157,7 @@ public static class Spec007Endpoints
 
         return await SignInOrFailAsync(
             result,
-            store,
             context,
-            cancellationToken,
             "ACTIVATION_FAILED",
             StatusCodes.Status400BadRequest);
     }
@@ -170,7 +165,6 @@ public static class Spec007Endpoints
     private static async Task<IResult> LoginStaffAsync(
         StaffLoginRequest request,
         [FromServices] StaffAuthenticationService service,
-        [FromServices] IIdentityAccountStore store,
         HttpContext context,
         CancellationToken cancellationToken)
     {
@@ -179,7 +173,7 @@ public static class Spec007Endpoints
             request.Password,
             NetworkScope(context),
             cancellationToken);
-        return await SignInOrFailAsync(result, store, context, cancellationToken);
+        return await SignInOrFailAsync(result, context);
     }
 
     private static async Task<IResult> LogoutAsync(
@@ -292,7 +286,6 @@ public static class Spec007Endpoints
     private static async Task<IResult> SelectRoleContextAsync(
         SelectRoleContextRequest request,
         [FromServices] SessionLifecycleService service,
-        [FromServices] IIdentityAccountStore store,
         HttpContext context,
         CancellationToken cancellationToken)
     {
@@ -312,9 +305,7 @@ public static class Spec007Endpoints
 
         return await SignInOrFailAsync(
             result.Session,
-            store,
-            context,
-            cancellationToken);
+            context);
     }
 
     private static async Task<IResult> ListUsersAsync(
@@ -434,39 +425,43 @@ public static class Spec007Endpoints
 
     private static async Task<IResult> SignInOrFailAsync(
         AuthenticationResult result,
-        IIdentityAccountStore store,
         HttpContext context,
-        CancellationToken cancellationToken,
         string errorCode = "AUTHENTICATION_FAILED",
         int errorStatus = StatusCodes.Status401Unauthorized)
     {
-        if (!result.Succeeded || result.UserId is null || result.ExpiresAtUtc is null)
+        if (!result.Succeeded
+            || result.UserId is null
+            || result.ExpiresAtUtc is null
+            || string.IsNullOrWhiteSpace(result.DisplayName)
+            || string.IsNullOrWhiteSpace(result.SecurityStamp))
         {
             return Error(context, errorStatus, errorCode);
         }
 
-        var user = await store.FindByIdAsync(result.UserId.Value, cancellationToken);
-        if (user is null || !user.IsEnabled)
+        if (result.ActiveRole is not null
+            && !result.AuthorizedRoles.Contains(result.ActiveRole, StringComparer.Ordinal))
         {
             return Error(context, errorStatus, errorCode);
         }
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, result.DisplayName ?? user.UserName),
-            new(IdentityAuthenticationDefaults.SecurityStampClaim, user.SecurityStamp)
+            new(ClaimTypes.NameIdentifier, result.UserId.Value.ToString()),
+            new(ClaimTypes.Name, result.DisplayName),
+            new(IdentityAuthenticationDefaults.SecurityStampClaim, result.SecurityStamp)
         };
-        claims.AddRange(result.AuthorizedRoles.Select(role => new Claim(ClaimTypes.Role, role)));
-        if (result.AuthorizedRoles.Contains(RolePolicies.Admin, StringComparer.Ordinal))
-        {
-            claims.Add(new Claim(
-                RolePolicies.PermissionClaimType,
-                RolePolicies.IdentityManagement));
-        }
-
+        claims.AddRange(result.AuthorizedRoles.Select(role =>
+            new Claim(RolePolicies.AvailableRoleClaimType, role)));
         if (result.ActiveRole is not null)
         {
+            claims.Add(new Claim(ClaimTypes.Role, result.ActiveRole));
+            if (string.Equals(result.ActiveRole, RolePolicies.Admin, StringComparison.Ordinal))
+            {
+                claims.Add(new Claim(
+                    RolePolicies.PermissionClaimType,
+                    RolePolicies.IdentityManagement));
+            }
+
             claims.Add(new Claim(IdentityAuthenticationDefaults.ActiveRoleClaim, result.ActiveRole));
         }
 

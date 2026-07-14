@@ -11,9 +11,13 @@ public sealed class IdentityPasswordValidator : IIdentityPasswordValidator
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public IdentityPasswordValidationResult Validate(string password)
+    public IdentityPasswordValidationResult Validate(
+        string password,
+        IdentityPasswordContext context)
     {
-        var result = _options.ValidatePassword(password);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var result = _options.ValidatePassword(password, context.ContextualTerms);
         return result.IsAccepted
             ? IdentityPasswordValidationResult.Valid
             : IdentityPasswordValidationResult.Invalid(

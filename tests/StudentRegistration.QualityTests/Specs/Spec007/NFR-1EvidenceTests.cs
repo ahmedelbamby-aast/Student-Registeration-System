@@ -93,20 +93,39 @@ public sealed class NFR_1EvidenceTests(ITestOutputHelper output)
         Assert.Equal(0, result.InvariantViolations);
     }
 
+    [Fact]
+    public async Task Replica_fixture_uses_independent_store_adapters_over_one_shared_state_boundary()
+    {
+        var hasher = CreateHasher();
+        var state = CreateSharedState(hasher, TimeProvider.System);
+        var firstAdapter = new LoadIdentityStore(state);
+        var secondAdapter = new LoadIdentityStore(state);
+
+        Assert.NotSame(firstAdapter, secondAdapter);
+        var fromFirst = await firstAdapter.FindStudentByUniversityIdAsync(
+            "202600000",
+            default);
+        var fromSecond = await secondAdapter.FindStudentByUniversityIdAsync(
+            "202600000",
+            default);
+        Assert.NotNull(fromFirst);
+        Assert.Same(fromFirst, fromSecond);
+    }
+
     private static async Task<LoadEvidence> RunExactProfileAsync()
     {
         var timeProvider = TimeProvider.System;
-        var hasher = new PasswordHasher<ApplicationUser>(
-            Options.Create(new PasswordHasherOptions
-            {
-                CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3,
-                IterationCount = 100_000
-            }));
-        var store = CreateStore(hasher, timeProvider);
+        var hasher = CreateHasher();
+        var sharedState = CreateSharedState(hasher, timeProvider);
+        var replicaStores = new[]
+        {
+            new LoadIdentityStore(sharedState),
+            new LoadIdentityStore(sharedState)
+        };
         var replicas = new[]
         {
-            new StudentAuthenticationService(store, hasher, timeProvider),
-            new StudentAuthenticationService(store, hasher, timeProvider)
+            new StudentAuthenticationService(replicaStores[0], hasher, timeProvider),
+            new StudentAuthenticationService(replicaStores[1], hasher, timeProvider)
         };
         var samples = new double[TotalRequests];
         var unexpectedErrors = 0;
@@ -179,7 +198,15 @@ public sealed class NFR_1EvidenceTests(ITestOutputHelper output)
             invariantViolations);
     }
 
-    private static LoadIdentityStore CreateStore(
+    private static IPasswordHasher<ApplicationUser> CreateHasher() =>
+        new PasswordHasher<ApplicationUser>(
+            Options.Create(new PasswordHasherOptions
+            {
+                CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3,
+                IterationCount = 100_000
+            }));
+
+    private static SharedLoadIdentityState CreateSharedState(
         IPasswordHasher<ApplicationUser> hasher,
         TimeProvider timeProvider)
     {
@@ -209,7 +236,7 @@ public sealed class NFR_1EvidenceTests(ITestOutputHelper output)
             }
         }
 
-        return new LoadIdentityStore(users);
+        return new SharedLoadIdentityState(users);
     }
 
     private static Guid CreateDeterministicGuid(int index)
@@ -248,13 +275,19 @@ public sealed class NFR_1EvidenceTests(ITestOutputHelper output)
         double UnexpectedErrorRatePercent,
         int InvariantViolations);
 
-    private sealed class LoadIdentityStore(IEnumerable<ApplicationUser> users) : IIdentityAccountStore
+    private sealed class SharedLoadIdentityState(IEnumerable<ApplicationUser> users)
     {
-        private readonly ConcurrentDictionary<string, ApplicationUser> _users = new(
+        public ConcurrentDictionary<string, ApplicationUser> Users { get; } = new(
             users.ToDictionary(
                 user => user.UniversityId!,
                 user => user,
                 StringComparer.Ordinal));
+    }
+
+    private sealed class LoadIdentityStore(SharedLoadIdentityState state) : IIdentityAccountStore
+    {
+        private readonly ConcurrentDictionary<string, ApplicationUser> _users =
+            state.Users;
 
         public Task<ApplicationUser?> FindStudentByUniversityIdAsync(
             string normalizedUniversityId,

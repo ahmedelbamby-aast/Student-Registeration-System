@@ -19,7 +19,11 @@ in docs/diagrams/CLASS_DIAGRAM.md.
 - FR-1: Endpoints MUST delegate business decisions to focused application
   services.
 - FR-2: Contracts MUST use DTOs/value identifiers and MUST NOT serialize EF
-  entities or password/security internals. `StudentRegistration.Contracts`
+  entities, persistence/security internals, or secrets in responses.
+  Authentication and account-lifecycle request DTOs MAY carry only the
+  operation-required plaintext credential or recovery proof; those values MUST
+  remain transient and MUST NOT be returned, persisted raw, or logged.
+  `StudentRegistration.Contracts`
   MUST remain framework- and persistence-free: it references no ASP.NET Core,
   Blazor, EF Core, SQL Server, or business-module implementation type.
 - FR-3: Errors MUST use stable machine code, safe message, correlation ID, and
@@ -161,8 +165,9 @@ aggregate roots.
   validation, authentication/authorization, conflict/concurrency, and
   unexpected-error outcomes. A category the operation cannot produce MUST be
   marked `not applicable` with a reason rather than omitted.
-- **SC-2**: No persistence-internal or credential field is part of a public
-  contract.
+- **SC-2**: No persistence-internal field or credential is part of a response
+  contract. Secret-bearing request fields are limited to the explicitly tested
+  authentication and account-lifecycle inputs and are handled transiently.
 - **SC-3**: All externally visible dates, identifiers, pagination, and error
   formats are consistent.
 
