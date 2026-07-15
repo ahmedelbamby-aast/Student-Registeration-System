@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "STU-01",
+  "routeTemplate": "/student",
+  "pageName": "StudentDashboardPage.razor",
+  "apis": [
+    {
+      "name": "appContext",
+      "method": "GET",
+      "path": "/api/context",
+      "successType": "AppContextDto",
+      "owner": "SPEC-008"
+    },
+    {
+      "name": "academicContext",
+      "method": "GET",
+      "path": "/api/students/me/academic-context",
+      "successType": "StudentAcademicContextDto",
+      "owner": "SPEC-008"
+    },
+    {
+      "name": "currentTimetable",
+      "method": "GET",
+      "path": "/api/student/registrations/current/timetable",
+      "successType": "not-pinned",
+      "owner": "SPEC-015",
+      "contributorState": "unavailable-until-SPEC-015"
+    }
+  ],
+  "requiredStates": [
+    "loading",
+    "empty",
+    "success",
+    "validation-error",
+    "service-error",
+    "unauthorized",
+    "session-expired",
+    "stale",
+    "offline"
+  ],
+  "reasonMappings": {
+    "REGISTRATION_HOLD": "validation-error",
+    "PROFILE_NOT_READY": "validation-error",
+    "WINDOW_CLOSED": "stale",
+    "STALE_VERSION": "stale",
+    "WINDOW_CHANGED": "stale",
+    "UNAUTHORIZED": "unauthorized",
+    "FORBIDDEN": "unauthorized",
+    "SESSION_EXPIRED": "session-expired",
+    "CONTEXT_UNAVAILABLE": "service-error",
+    "SERVICE_UNAVAILABLE": "service-error",
+    "MAINTENANCE": "service-error"
+  },
+  "unknownReasonFallback": "service-error",
+  "journeys": [
+    {
+      "fixture": "STU-01-open-v1",
+      "windowState": "open",
+      "expectedState": "success",
+      "primaryAction": "start",
+      "enabled": true
+    },
+    {
+      "fixture": "STU-01-upcoming-v1",
+      "windowState": "upcoming",
+      "expectedState": "success",
+      "primaryAction": "start",
+      "enabled": false
+    },
+    {
+      "fixture": "STU-01-closed-v1",
+      "windowState": "closed",
+      "expectedState": "stale",
+      "primaryAction": "none",
+      "enabled": false
+    },
+    {
+      "fixture": "STU-01-no-term-v1",
+      "windowState": "none",
+      "expectedState": "empty",
+      "primaryAction": "none",
+      "enabled": false
+    },
+    {
+      "fixture": "STU-01-hold-v1",
+      "windowState": "open",
+      "expectedState": "validation-error",
+      "primaryAction": "start",
+      "enabled": false
+    },
+    {
+      "fixture": "STU-01-incomplete-profile-v1",
+      "windowState": "open",
+      "expectedState": "validation-error",
+      "primaryAction": "start",
+      "enabled": false
+    }
+  ],
+  "destinations": {
+    "start": "/student/subjects",
+    "resume": "/student/schedule",
+    "registrations": "/student/registrations",
+    "account": "/student/account"
+  },
+  "downstreamTimetable": {
+    "regionState": "unavailable",
+    "message": "Current timetable is unavailable until SPEC-015 is delivered.",
+    "mustNotClaimLiveSuccess": true
+  },
+  "testIds": [
+    "STU-01-CONTRACT-T148",
+    "STU-01-COMP-T149",
+    "STU-01-E2E-PRIMARY",
+    "STU-01-E2E-FAILURE",
+    "STU-01-A11Y-T150",
+    "STU-01-VIS-T151"
+  ]
+}

@@ -1,3 +1,5 @@
+using StudentRegistration.Contracts;
+
 namespace StudentRegistration.Client.Features.Frontend.Models;
 
 /// <summary>
@@ -8,10 +10,10 @@ public sealed class FrontendAppContextView
     public FrontendAppContextView(
         DateTimeOffset serverDateTime,
         string timeZone,
-        string teachingTerm,
-        string registrationTerm,
-        DateTimeOffset registrationWindowOpensAt,
-        DateTimeOffset registrationWindowClosesAt,
+        string? teachingTerm,
+        string? registrationTerm,
+        RegistrationWindowState registrationWindowState,
+        RegistrationWindowSummaryDto? registrationWindow,
         string displayName,
         IReadOnlyList<string> authorizedRoles,
         string? activeRole,
@@ -22,20 +24,34 @@ public sealed class FrontendAppContextView
         string supportReferencePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(timeZone);
-        ArgumentException.ThrowIfNullOrWhiteSpace(teachingTerm);
-        ArgumentException.ThrowIfNullOrWhiteSpace(registrationTerm);
+        if (teachingTerm is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(teachingTerm);
+        }
+
+        if (registrationTerm is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(registrationTerm);
+        }
+
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         ArgumentNullException.ThrowIfNull(authorizedRoles);
         ArgumentException.ThrowIfNullOrWhiteSpace(sessionState);
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceState);
         ArgumentException.ThrowIfNullOrWhiteSpace(supportReferencePath);
 
-        if (registrationWindowClosesAt <= registrationWindowOpensAt)
+        if (!Enum.IsDefined(registrationWindowState))
         {
             throw new ArgumentOutOfRangeException(
-                nameof(registrationWindowClosesAt),
-                "The registration window must close after it opens.");
+                nameof(registrationWindowState),
+                registrationWindowState,
+                "A declared registration-window state is required.");
         }
+
+        ValidateRegistrationWindow(
+            registrationTerm,
+            registrationWindowState,
+            registrationWindow);
 
         if (authorizedRoles.Count == 0 || authorizedRoles.Any(string.IsNullOrWhiteSpace))
         {
@@ -70,8 +86,8 @@ public sealed class FrontendAppContextView
         TimeZone = timeZone;
         TeachingTerm = teachingTerm;
         RegistrationTerm = registrationTerm;
-        RegistrationWindowOpensAt = registrationWindowOpensAt;
-        RegistrationWindowClosesAt = registrationWindowClosesAt;
+        RegistrationWindowState = registrationWindowState;
+        RegistrationWindow = registrationWindow;
         DisplayName = displayName;
         AuthorizedRoles = authorizedRoles.ToArray();
         ActiveRole = activeRole;
@@ -86,13 +102,13 @@ public sealed class FrontendAppContextView
 
     public string TimeZone { get; }
 
-    public string TeachingTerm { get; }
+    public string? TeachingTerm { get; }
 
-    public string RegistrationTerm { get; }
+    public string? RegistrationTerm { get; }
 
-    public DateTimeOffset RegistrationWindowOpensAt { get; }
+    public RegistrationWindowState RegistrationWindowState { get; }
 
-    public DateTimeOffset RegistrationWindowClosesAt { get; }
+    public RegistrationWindowSummaryDto? RegistrationWindow { get; }
 
     public string DisplayName { get; }
 
@@ -109,4 +125,45 @@ public sealed class FrontendAppContextView
     public string ServiceState { get; }
 
     public string SupportReferencePath { get; }
+
+    private static void ValidateRegistrationWindow(
+        string? registrationTerm,
+        RegistrationWindowState registrationWindowState,
+        RegistrationWindowSummaryDto? registrationWindow)
+    {
+        if (registrationTerm is null
+            && registrationWindowState is not RegistrationWindowState.None)
+        {
+            throw new ArgumentException(
+                "A missing registration term requires the none window state.",
+                nameof(registrationWindowState));
+        }
+
+        if (registrationTerm is null && registrationWindow is not null)
+        {
+            throw new ArgumentException(
+                "A registration window requires a registration term.",
+                nameof(registrationWindow));
+        }
+
+        if (registrationWindowState is RegistrationWindowState.None)
+        {
+            if (registrationWindow is not null)
+            {
+                throw new ArgumentException(
+                    "The none window state requires no window summary.",
+                    nameof(registrationWindow));
+            }
+
+            return;
+        }
+
+        if (registrationWindow is null
+            || registrationWindow.State != registrationWindowState)
+        {
+            throw new ArgumentException(
+                "A concrete window state requires a matching server summary.",
+                nameof(registrationWindow));
+        }
+    }
 }

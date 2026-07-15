@@ -1,4 +1,5 @@
 @using System.Globalization
+@using StudentRegistration.Contracts
 @using StudentRegistration.Client.Features.Frontend.Models
 
 <div class="srs-app-shell">
@@ -28,22 +29,37 @@
                 </div>
                 <div>
                     <dt>@TeachingTermLabel</dt>
-                    <dd>@Context.TeachingTerm</dd>
+                    <dd data-context="teaching-term">
+                        @(Context.TeachingTerm ?? NoTeachingTermLabel)
+                    </dd>
                 </div>
                 <div>
                     <dt>@RegistrationTermLabel</dt>
-                    <dd>@Context.RegistrationTerm</dd>
+                    <dd data-context="registration-term">
+                        @(Context.RegistrationTerm ?? NoRegistrationTermLabel)
+                    </dd>
                 </div>
                 <div>
                     <dt>@RegistrationWindowLabel</dt>
-                    <dd>
-                        <time datetime="@Context.RegistrationWindowOpensAt.ToString("O")">
-                            @Context.RegistrationWindowOpensAt.ToString("g", CultureInfo.CurrentCulture)
-                        </time>
-                        <span aria-hidden="true">–</span>
-                        <time datetime="@Context.RegistrationWindowClosesAt.ToString("O")">
-                            @Context.RegistrationWindowClosesAt.ToString("g", CultureInfo.CurrentCulture)
-                        </time>
+                    <dd data-context="registration-window"
+                        data-window-state="@WindowStateValue(Context.RegistrationWindowState)">
+                        <span data-context="registration-window-state">
+                            @WindowStateValue(Context.RegistrationWindowState)
+                        </span>
+                        @if (Context.RegistrationWindow is { } window)
+                        {
+                            <time datetime="@window.OpensAtUtc.ToString("O")">
+                                @window.OpensAtUtc.ToString("g", CultureInfo.CurrentCulture)
+                            </time>
+                            <span aria-hidden="true">–</span>
+                            <time datetime="@window.ClosesAtUtc.ToString("O")">
+                                @window.ClosesAtUtc.ToString("g", CultureInfo.CurrentCulture)
+                            </time>
+                        }
+                        else
+                        {
+                            <span>@NoRegistrationWindowLabel</span>
+                        }
                     </dd>
                 </div>
                 <div>
@@ -151,6 +167,15 @@
     public string RegistrationWindowLabel { get; set; } = string.Empty;
 
     [Parameter]
+    public string NoTeachingTermLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string NoRegistrationTermLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string NoRegistrationWindowLabel { get; set; } = string.Empty;
+
+    [Parameter]
     public string AuthorizedRolesLabel { get; set; } = string.Empty;
 
     [Parameter]
@@ -180,5 +205,14 @@
         UiStatusSeverity.Warning => "warning",
         UiStatusSeverity.Success => "success",
         _ => "information"
+    };
+
+    private static string WindowStateValue(RegistrationWindowState state) => state switch
+    {
+        RegistrationWindowState.Open => "open",
+        RegistrationWindowState.Upcoming => "upcoming",
+        RegistrationWindowState.Closed => "closed",
+        RegistrationWindowState.None => "none",
+        _ => "none"
     };
 }

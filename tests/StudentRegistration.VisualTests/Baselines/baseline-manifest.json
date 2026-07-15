@@ -1,6 +1,6 @@
 {
   "version": "visual-baselines/1.0.0",
-  "status": "not-collected-routes-design-only",
+  "status": "partially-approved-routes",
   "automaticReplacementAllowed": false,
   "approvalAuthority": "Ahmed ELbamby",
   "visualViewports": [
@@ -23,5 +23,70 @@
     "approvedBy",
     "approvedOn"
   ],
-  "baselines": []
+  "baselines": [
+    {
+      "routeId": "AUTH-01",
+      "state": "success",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "3521d944c1ca61125e8f37544b249ae621e778697ecdd0f87d94662d3ab78b39",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-14",
+      "targetManifest": "Spec008/AUTH-01/baseline-targets.json",
+      "targetCount": 16
+    },
+    {
+      "routeId": "STU-01",
+      "state": "success",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "89c913e0780e88d91aa7e55b34c70d0cdb363824e2641c90405eedef9cff0d12",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-14",
+      "targetManifest": "Spec008/STU-01/baseline-targets.json",
+      "targetCount": 16
+    },
+    {
+      "routeId": "ADM-02",
+      "state": "success",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "65432a3af5a0629cd44bc3afed763e52f770804e855cc121d1b714421300ad72",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-14",
+      "targetManifest": "Spec008/ADM-02/baseline-targets.json",
+      "targetCount": 16
+    },
+    {
+      "routeId": "ADM-04",
+      "state": "success",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "a328536996ac8631ee7d5e713e4a60eb3dc581fbc5ce471d8daa521f132f6f82",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-14",
+      "targetManifest": "Spec008/ADM-04/baseline-targets.json",
+      "targetCount": 16
+    }
+  ]
 }

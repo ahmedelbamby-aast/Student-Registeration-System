@@ -10,6 +10,11 @@ SPEC-006 owns `ApiError`, `Page<T>`, `TermSummaryDto`, `PublicContextDto`,
 `AppContextDto`, and `RegistrationWindowSummaryDto`. SPEC-008 supplies their
 academic values and MUST NOT define competing shared types.
 
+The C# equivalents of the SPEC-008-specific transport declarations below are
+logically owned by SPEC-008 and defined once in the dependency-neutral
+`StudentRegistration.Contracts.Academics` namespace. The Contracts assembly
+contains shapes and validation only; Academics retains all business behavior.
+
 ```typescript
 type AcademicTermState =
   | "draft"
@@ -223,8 +228,8 @@ support route containing no student identifier or diagnostic secret.
 - `reason` is 10 through 500 trimmed characters. `source` and every
   `sourceReference` are nonblank and at most 200 trimmed characters.
 - A supplied search query is 3 through 50 trimmed characters. The Admin student
-  locator always requires both `termId` and a nonblank query; it is not an
-  unrestricted student dump.
+  locator always requires both `termId` and a nonblank query; it is term-scoped,
+  and it is not an unrestricted student dump.
 - Feature-produced `ApiError.fieldErrors` contains at most 20 field keys, at
   most 5 messages per key, and at most 256 characters per message. Conflict
   diagnostics never contain an unbounded window, profile, or version collection.
@@ -275,6 +280,9 @@ Term and profile commands require reason, source, expected versions where an
 aggregate already exists, atomic privacy-safe audit, and server time. No client
 role, browser clock, arbitrary property name, navigation property, credential,
 or generic bulk overwrite is accepted.
+Term commands require `AcademicTerms.Manage`; profile commands require the separately governed `AcademicProfiles.Manage` permission.
+An Admin role without the exact permission claim is denied, and neither
+permission substitutes for the other.
 
 Student self-access and a named, permitted Admin request are allowed. Lecturer
 and TeachingAssistant are denied academic-profile endpoints; their later roster

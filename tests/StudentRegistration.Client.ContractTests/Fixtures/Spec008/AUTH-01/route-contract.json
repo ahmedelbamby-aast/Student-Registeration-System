@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "AUTH-01",
+  "routeTemplate": "/",
+  "pageName": "RoleGatewayPage.razor",
+  "api": {
+    "method": "GET",
+    "path": "/api/public/context",
+    "successType": "PublicContextDto"
+  },
+  "requiredStates": [
+    "loading",
+    "success",
+    "service-error",
+    "stale",
+    "offline"
+  ],
+  "notApplicableStates": [
+    "empty",
+    "validation-error",
+    "unauthorized",
+    "session-expired"
+  ],
+  "reasonCodes": [
+    "SERVICE_UNAVAILABLE",
+    "MAINTENANCE",
+    "WINDOW_CHANGED"
+  ],
+  "unknownReasonFallback": "service-error",
+  "destinations": {
+    "studentLogin": "/student/login",
+    "studentActivation": "/student/activate",
+    "staffLogin": "/staff/login"
+  },
+  "testIds": [
+    "AUTH-01-CONTRACT-T123",
+    "AUTH-01-COMP-T124",
+    "AUTH-01-E2E-PRIMARY",
+    "AUTH-01-E2E-FAILURE",
+    "AUTH-01-A11Y-T125",
+    "AUTH-01-VIS-T126"
+  ]
+}

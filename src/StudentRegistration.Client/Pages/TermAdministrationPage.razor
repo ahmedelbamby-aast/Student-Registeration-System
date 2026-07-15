@@ -1,0 +1,1787 @@
+@page "/admin/terms"
+@using System.Globalization
+@using System.Net
+@using System.Text
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Overlay
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Contracts.Academics
+@inject AcademicApiClient AcademicApi
+
+<PageTitle>Term administration | Student Registration</PageTitle>
+
+<div class="srs-term-admin"
+     data-route-id="ADM-02"
+     data-state="@_state"
+     data-contract-state="@CurrentStateFixture">
+    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="srs-term-admin__header" role="banner">
+        <a class="srs-term-admin__brand" href="/admin" aria-label="Administration home">
+            <img src="/brand/aastmt-logo.png"
+                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+            <span>
+                <strong>AASTMT</strong>
+                <small>Student Registration</small>
+            </span>
+        </a>
+        <RoleNavigation AccessibleName="Administration navigation"
+                        Items="@AdministrationNavigation" />
+    </header>
+
+    <main id="main-content"
+          data-testid="term-administration-page"
+          tabindex="-1">
+        <section class="srs-term-admin__intro" aria-labelledby="term-administration-heading">
+            <p class="srs-term-admin__eyebrow">Academic context administration</p>
+            <h1 id="term-administration-heading" tabindex="-1">Term administration</h1>
+            <p>
+                Create explicit teaching terms, maintain versioned registration windows,
+                and publish only after the owner service accepts the command.
+            </p>
+        </section>
+
+        @if (_isLoadingTerms && !_hasLoadedTerms)
+        {
+            <section class="srs-term-admin__state srs-term-admin__state--loading"
+                     data-testid="term-administration-loading"
+                     role="status"
+                     aria-live="polite"
+                     aria-busy="true">
+                <h2>Loading terms and registration windows</h2>
+                <p>The current bounded term page is being requested once.</p>
+            </section>
+        }
+        else if (_state is UnauthorizedState)
+        {
+            <section class="srs-term-admin__state srs-term-admin__state--error"
+                     aria-labelledby="term-access-denied-heading"
+                     role="alert"
+                     aria-live="assertive">
+                <h2 id="term-access-denied-heading" @ref="_stateHeading" tabindex="-1">
+                    Term administration access denied
+                </h2>
+                <p class="srs-term-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <a class="srs-term-admin__action-link" href="/admin">Return to authorized home</a>
+            </section>
+        }
+        else if (_state is SessionExpiredState)
+        {
+            <section class="srs-term-admin__state srs-term-admin__state--error"
+                     aria-labelledby="term-session-expired-heading"
+                     role="alert"
+                     aria-live="assertive">
+                <h2 id="term-session-expired-heading" @ref="_stateHeading" tabindex="-1">
+                    Session expired
+                </h2>
+                <p class="srs-term-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <a class="srs-term-admin__action-link" href="/staff/login">Sign in again</a>
+            </section>
+        }
+        else if (!_hasLoadedTerms)
+        {
+            <section class="srs-term-admin__state @FailureStateCss"
+                     aria-labelledby="term-load-failure-heading"
+                     role="status"
+                     aria-live="polite">
+                <h2 id="term-load-failure-heading" @ref="_stateHeading" tabindex="-1">
+                    @FailureHeading
+                </h2>
+                <p class="srs-term-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                @ReferenceContent()
+                <div class="srs-term-admin__actions">
+                    <button type="button"
+                            disabled="@_isLoadingTerms"
+                            @onclick="RetryTermsAsync">
+                        @(_isLoadingTerms ? "Retrying…" : "Retry term list")
+                    </button>
+                    <a href="/status/support">Open safe support path</a>
+                </div>
+            </section>
+        }
+        else
+        {
+            @if (_state is EmptyState)
+            {
+                <section class="srs-term-admin__state"
+                         data-testid="term-administration-empty"
+                         aria-labelledby="term-empty-heading">
+                    <h2 id="term-empty-heading" @ref="_stateHeading" tabindex="-1">
+                        No academic terms have been created
+                    </h2>
+                    <p>Create the first explicit term without inferring dates or lifecycle values.</p>
+                </section>
+            }
+
+            @if (_state is ServiceErrorState or OfflineState)
+            {
+                <section class="srs-term-admin__state @FailureStateCss"
+                         aria-labelledby="term-background-failure-heading"
+                         role="status"
+                         aria-live="polite">
+                    <h2 id="term-background-failure-heading">@FailureHeading</h2>
+                    <p class="srs-term-admin__code">@_reasonCode</p>
+                    <p>@_safeMessage</p>
+                    @ReferenceContent()
+                    <button type="button"
+                            disabled="@_isLoadingTerms"
+                            @onclick="RetryTermsAsync">
+                        Retry term list
+                    </button>
+                </section>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_successAnnouncement))
+            {
+                <section class="srs-term-admin__success"
+                         role="status"
+                         aria-live="polite">
+                    <h2>Server-confirmed result</h2>
+                    <p>@_successAnnouncement</p>
+                </section>
+            }
+
+            @if (_state is StaleState)
+            {
+                <section class="srs-term-admin__state srs-term-admin__state--warning"
+                         aria-labelledby="term-stale-heading"
+                         aria-live="polite">
+                    <h2 id="term-stale-heading" @ref="_stateHeading" tabindex="-1">
+                        Concurrent term change requires review
+                    </h2>
+                    <p class="srs-term-admin__code">STALE_VERSION</p>
+                    <p>@_safeMessage</p>
+                    @ReferenceContent()
+                    <div data-testid="stale-changed-fields">
+                        <h3>Changed server fields</h3>
+                        @if (_staleChangedFields.Count == 0)
+                        {
+                            <p>The aggregate version changed. Review the refreshed server version.</p>
+                        }
+                        else
+                        {
+                            <ul>
+                                @foreach (var field in _staleChangedFields)
+                                {
+                                    <li><strong>@field.Label:</strong> <span>@field.ServerValue</span></li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                    <button type="button"
+                            data-testid="refresh-stale-term"
+                            @onclick="AdoptRefetchedVersions">
+                        Use current versions and review draft
+                    </button>
+                </section>
+            }
+
+            @if (_conflictingWindows.Count > 0)
+            {
+                <section class="srs-term-admin__state srs-term-admin__state--error"
+                         data-testid="conflicting-registration-windows"
+                         aria-labelledby="conflicting-window-heading"
+                         role="alert">
+                    <h2 id="conflicting-window-heading">Conflicting registration windows</h2>
+                    <ul>
+                        @foreach (var conflict in _conflictingWindows)
+                        {
+                            <li>@conflict</li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            @if (_validationErrors.Count > 0)
+            {
+                <section class="srs-term-admin__validation"
+                         id="term-validation-summary"
+                         data-testid="term-validation-summary"
+                         @ref="_validationSummary"
+                         role="alert"
+                         aria-live="assertive"
+                         tabindex="-1">
+                    <h2>Review the term command</h2>
+                    <p class="srs-term-admin__code">@_reasonCode</p>
+                    <ul>
+                        @foreach (var error in _validationErrors)
+                        {
+                            <li><a href="#@error.ControlId">@error.Message</a></li>
+                        }
+                    </ul>
+                    @ReferenceContent()
+                </section>
+            }
+
+            <section class="srs-term-admin__search" aria-labelledby="term-search-heading">
+                <div>
+                    <p class="srs-term-admin__eyebrow">Bounded owner query</p>
+                    <h2 id="term-search-heading">Terms and windows</h2>
+                </div>
+                <form role="search"
+                      aria-label="Search academic terms"
+                      @onsubmit="SearchTermsAsync"
+                      @onsubmit:preventDefault>
+                    <label for="term-search">Term code or display name</label>
+                    <input id="term-search"
+                           type="search"
+                           minlength="3"
+                           maxlength="50"
+                           placeholder="At least 3 characters"
+                           @bind="_searchQuery"
+                           @bind:event="oninput" />
+                    <button type="submit" disabled="@_isLoadingTerms">Search</button>
+                    <button type="button" disabled="@_isLoadingTerms" @onclick="ClearSearchAsync">
+                        Clear
+                    </button>
+                    <button type="button" disabled="@AnyCommandPending" @onclick="StartNewTerm">
+                        Create another term
+                    </button>
+                </form>
+            </section>
+
+            <div class="srs-term-admin__workspace @(_editor is null ? "srs-term-admin__workspace--list-only" : null)">
+                <section class="srs-term-admin__list"
+                         data-testid="term-list"
+                         aria-labelledby="term-list-heading">
+                    <h2 id="term-list-heading">Versioned term list</h2>
+
+                    <div class="srs-term-admin__table-region"
+                         role="region"
+                         aria-label="Academic term results"
+                         tabindex="0">
+                        <table>
+                            <caption>
+                                @_totalCount academic terms; page @_currentPage of @TotalPages
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Term</th>
+                                    <th scope="col">Teaching dates</th>
+                                    <th scope="col">Lifecycle</th>
+                                    <th scope="col">Registration windows</th>
+                                    <th scope="col">Version</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (_terms.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="6">No terms match the current bounded query.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var term in _terms)
+                                    {
+                                        <tr class="@(term.Id == _selectedTerm?.Id ? "is-selected" : null)">
+                                            <td>
+                                                <strong>@term.DisplayName</strong>
+                                                <span>@term.Code</span>
+                                                <span>@term.TimeZoneId</span>
+                                            </td>
+                                            <td>@DateLabel(term.TeachingStartsOn) – @DateLabel(term.TeachingEndsOn)</td>
+                                            <td>@TermStateLabel(term.State)</td>
+                                            <td>
+                                                @if (term.Windows.Count == 0)
+                                                {
+                                                    <span>No windows</span>
+                                                }
+                                                else
+                                                {
+                                                    <ul class="srs-term-admin__window-summary">
+                                                        @foreach (var window in term.Windows)
+                                                        {
+                                                            <li>
+                                                                <span>@WindowLifecycleToken(window.LifecycleState)</span>
+                                                                <span>@WindowScopeLabel(window)</span>
+                                                                <span>@UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc)</span>
+                                                                <code>@window.RowVersion</code>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </td>
+                                            <td><code>@term.RowVersion</code></td>
+                                            <td>
+                                                <button type="button"
+                                                        aria-label="Review @term.DisplayName"
+                                                        aria-pressed="@(term.Id == _selectedTerm?.Id ? "true" : "false")"
+                                                        disabled="@AnyCommandPending"
+                                                        @onclick="() => SelectTerm(term)">
+                                                    Review
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <section class="srs-term-admin__semantic-alternative"
+                             data-testid="term-table-semantic-alternative"
+                             aria-label="Academic term results, compact semantic alternative">
+                        <ul data-testid="term-card-list">
+                            @if (_terms.Count == 0)
+                            {
+                                <li>No terms match the current bounded query.</li>
+                            }
+                            else
+                            {
+                                @foreach (var term in _terms)
+                                {
+                                    <li>
+                                        <h3>@term.DisplayName</h3>
+                                        <dl>
+                                            <div><dt>Code</dt><dd>@term.Code</dd></div>
+                                            <div><dt>Time zone</dt><dd>@term.TimeZoneId</dd></div>
+                                            <div><dt>Teaching dates</dt><dd>@DateLabel(term.TeachingStartsOn) – @DateLabel(term.TeachingEndsOn)</dd></div>
+                                            <div><dt>Lifecycle</dt><dd>@TermStateLabel(term.State)</dd></div>
+                                            <div><dt>Term version</dt><dd>Version @term.RowVersion</dd></div>
+                                        </dl>
+                                        @if (term.Windows.Count > 0)
+                                        {
+                                            <h4>Registration windows</h4>
+                                            <ul>
+                                                @foreach (var window in term.Windows)
+                                                {
+                                                    <li>
+                                                        @WindowLifecycleLabel(window.LifecycleState),
+                                                        @WindowScopeLabel(window),
+                                                        @UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc),
+                                                        version @window.RowVersion
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                        <button type="button"
+                                                aria-label="Review @term.DisplayName"
+                                                disabled="@AnyCommandPending"
+                                                @onclick="() => SelectTerm(term)">
+                                            Review
+                                        </button>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </section>
+
+                    <nav class="srs-term-admin__pagination" aria-label="Academic term pages">
+                        <button type="button"
+                                disabled="@(_isLoadingTerms || _currentPage <= 1)"
+                                @onclick="() => ChangePageAsync(_currentPage - 1)">
+                            Previous
+                        </button>
+                        <span aria-live="polite">Page @_currentPage of @TotalPages</span>
+                        <button type="button"
+                                disabled="@(_isLoadingTerms || _currentPage >= TotalPages)"
+                                @onclick="() => ChangePageAsync(_currentPage + 1)">
+                            Next
+                        </button>
+                    </nav>
+                </section>
+
+                @if (_editor is not null)
+                {
+                    <section class="srs-term-admin__editor-panel" aria-labelledby="term-editor-heading">
+                        <div class="srs-term-admin__editor-heading">
+                            <div>
+                                <p class="srs-term-admin__eyebrow">
+                                    @(_isCreateMode ? "New explicit aggregate" : "Versioned aggregate editor")
+                                </p>
+                                <h2 id="term-editor-heading">
+                                    @(_isCreateMode ? "Create term" : $"Review {_selectedTerm?.DisplayName}")
+                                </h2>
+                            </div>
+                            @if (_selectedTerm is not null)
+                            {
+                                <span class="srs-term-admin__version">
+                                    Current term version: @_selectedTerm.RowVersion
+                                </span>
+                            }
+                        </div>
+
+                        <form id="term-editor"
+                              data-testid="term-editor"
+                              @onsubmit="SubmitEditorAsync"
+                              @onsubmit:preventDefault>
+                            <div class="srs-term-admin__field-grid">
+                                <div class="srs-term-admin__field">
+                                    <label for="term-code">Term code</label>
+                                    <input id="term-code"
+                                           maxlength="50"
+                                           aria-invalid="@InvalidAria("term-code")"
+                                           aria-describedby="@DescribedBy("term-code")"
+                                           @bind="_editor.Code"
+                                           @bind:event="oninput" />
+                                    @FieldError("term-code")
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-display-name">Display name</label>
+                                    <input id="term-display-name"
+                                           maxlength="200"
+                                           aria-invalid="@InvalidAria("term-display-name")"
+                                           aria-describedby="@DescribedBy("term-display-name")"
+                                           @bind="_editor.DisplayName"
+                                           @bind:event="oninput" />
+                                    @FieldError("term-display-name")
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-time-zone">Institutional time zone</label>
+                                    <input id="term-time-zone"
+                                           maxlength="100"
+                                           aria-invalid="@InvalidAria("term-time-zone")"
+                                           aria-describedby="@DescribedBy("term-time-zone")"
+                                           @bind="_editor.TimeZoneId"
+                                           @bind:event="oninput" />
+                                    @FieldError("term-time-zone")
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-state">Term lifecycle</label>
+                                    <select id="term-state" @bind="_editor.State">
+                                        @foreach (var state in Enum.GetValues<TermState>())
+                                        {
+                                            <option value="@state">@TermStateLabel(state)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-teaching-start">Teaching start date</label>
+                                     <input id="term-teaching-start"
+                                            type="date"
+                                            aria-invalid="@DateRangeInvalidAria"
+                                            aria-describedby="@DateRangeDescribedBy"
+                                            value="@_editor.TeachingStartsOn"
+                                            @oninput="eventArgs => _editor.TeachingStartsOn = eventArgs.Value?.ToString() ?? string.Empty" />
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-teaching-end">Teaching end date</label>
+                                     <input id="term-teaching-end"
+                                            type="date"
+                                            aria-invalid="@DateRangeInvalidAria"
+                                            aria-describedby="@DateRangeDescribedBy"
+                                            value="@_editor.TeachingEndsOn"
+                                            @oninput="eventArgs => _editor.TeachingEndsOn = eventArgs.Value?.ToString() ?? string.Empty" />
+                                    @if (DateRangeError is not null)
+                                    {
+                                        <p class="srs-term-admin__field-error" id="term-teaching-end-error">
+                                            @DateRangeError
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+
+                            <fieldset class="srs-term-admin__windows"
+                                      id="registration-window-editor"
+                                      data-testid="registration-window-editor">
+                                <legend>Registration windows</legend>
+                                <p>
+                                    Enter local institutional times. The request converts them to
+                                    explicit UTC instants; the server computes availability.
+                                </p>
+
+                                @if (_editor.Windows.Count == 0)
+                                {
+                                    <p>No registration windows are included in this draft.</p>
+                                }
+                                else
+                                {
+                                    @for (var index = 0; index < _editor.Windows.Count; index++)
+                                    {
+                                        var window = _editor.Windows[index];
+                                        var windowKey = window.ClientKey;
+                                        <section class="srs-term-admin__window-editor"
+                                                 aria-labelledby="@WindowHeadingId(index)">
+                                            <div class="srs-term-admin__window-heading">
+                                                <h3 id="@WindowHeadingId(index)">Window @(index + 1)</h3>
+                                                <span>@WindowLifecycleLabel(window.LifecycleState)</span>
+                                            </div>
+                                            <div class="srs-term-admin__field-grid">
+                                                <div class="srs-term-admin__field">
+                                                    <label for="@WindowControlId("window-scope", index)">Scope</label>
+                                                    <select id="@WindowControlId("window-scope", index)"
+                                                            disabled="@window.HasImmutablePublishedValues"
+                                                            @bind="window.ScopeType">
+                                                        @foreach (var scope in Enum.GetValues<RegistrationWindowScope>())
+                                                        {
+                                                            <option value="@scope">@ScopeLabel(scope)</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                @if (window.ScopeType is not RegistrationWindowScope.AllStudents)
+                                                {
+                                                    <div class="srs-term-admin__field">
+                                                        <label for="@WindowControlId("window-scope-value", index)">Scope value</label>
+                                                        <input id="@WindowControlId("window-scope-value", index)"
+                                                               maxlength="100"
+                                                               disabled="@window.HasImmutablePublishedValues"
+                                                               @bind="window.ScopeValue"
+                                                               @bind:event="oninput" />
+                                                    </div>
+                                                }
+                                                <div class="srs-term-admin__field">
+                                                    <label for="@WindowControlId("window-opens-at", index)">Registration opens</label>
+                                                     <input id="@WindowControlId("window-opens-at", index)"
+                                                            type="datetime-local"
+                                                            disabled="@window.HasImmutablePublishedValues"
+                                                            value="@window.OpensAtLocal"
+                                                            @onchange="eventArgs => SetWindowLocalValue(windowKey, opensAt: true, eventArgs.Value)" />
+                                                </div>
+                                                <div class="srs-term-admin__field">
+                                                    <label for="@WindowControlId("window-closes-at", index)">Registration closes</label>
+                                                     <input id="@WindowControlId("window-closes-at", index)"
+                                                            type="datetime-local"
+                                                            disabled="@window.HasImmutablePublishedValues"
+                                                            value="@window.ClosesAtLocal"
+                                                            @onchange="eventArgs => SetWindowLocalValue(windowKey, opensAt: false, eventArgs.Value)" />
+                                                </div>
+                                            </div>
+                                            @if (!window.HasImmutablePublishedValues)
+                                            {
+                                                <button type="button"
+                                                        class="srs-term-admin__secondary-button"
+                                                        disabled="@AnyCommandPending"
+                                                        @onclick="() => RemoveWindow(window.ClientKey)">
+                                                    Remove window
+                                                </button>
+                                            }
+                                        </section>
+                                    }
+                                }
+
+                                <button type="button"
+                                        data-testid="add-registration-window"
+                                        disabled="@(AnyCommandPending || _editor.Windows.Count >= 20)"
+                                        @onclick="AddWindow">
+                                    Add registration window
+                                </button>
+                            </fieldset>
+
+                            <div class="srs-term-admin__field-grid">
+                                <div class="srs-term-admin__field srs-term-admin__field--wide">
+                                    <label for="term-change-reason">Reason</label>
+                                    <textarea id="term-change-reason"
+                                              minlength="10"
+                                              maxlength="500"
+                                              aria-invalid="@InvalidAria("term-change-reason")"
+                                              aria-describedby="@DescribedBy("term-change-reason")"
+                                              @bind="_editor.Reason"
+                                              @bind:event="oninput"></textarea>
+                                    @FieldError("term-change-reason")
+                                </div>
+                                <div class="srs-term-admin__field">
+                                    <label for="term-change-source">Source</label>
+                                    <input id="term-change-source"
+                                           maxlength="200"
+                                           aria-invalid="@InvalidAria("term-change-source")"
+                                           aria-describedby="@DescribedBy("term-change-source")"
+                                           @bind="_editor.Source"
+                                           @bind:event="oninput" />
+                                    @FieldError("term-change-source")
+                                </div>
+                            </div>
+
+                            <div class="srs-term-admin__editor-actions">
+                                @if (_isCreateMode)
+                                {
+                                    <button type="submit"
+                                            data-testid="create-term-submit"
+                                            disabled="@_isCreating">
+                                        @(_isCreating ? "Creating term…" : "Create term")
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit"
+                                            data-testid="save-term-submit"
+                                            disabled="@_isSaving">
+                                        @(_isSaving ? "Saving changes…" : "Save changes")
+                                    </button>
+
+                                    @if (PublishableWindows.Count > 0)
+                                    {
+                                        <label for="window-to-publish">Window to publish</label>
+                                        <select id="window-to-publish" @bind="_selectedWindowId">
+                                            @foreach (var window in PublishableWindows)
+                                            {
+                                                <option value="@window.Id">@PublishWindowLabel(window)</option>
+                                            }
+                                        </select>
+                                        <button @ref="_publishTrigger"
+                                                type="button"
+                                                data-testid="publish-registration-window"
+                                                disabled="@_isPublishing"
+                                                @onclick="OpenPublishConfirmation">
+                                            @(_isPublishing ? "Publishing registration window…" : "Publish registration window")
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </form>
+                    </section>
+                }
+            </div>
+        }
+    </main>
+
+    <footer class="srs-term-admin__footer" role="contentinfo">
+        <p>Academic term owner: SPEC-008</p>
+        <a href="/status/support">System status and support</a>
+    </footer>
+</div>
+
+@if (_showPublishConfirmation)
+{
+    <div class="srs-term-admin__dialog-host"
+         data-testid="publish-registration-window-dialog">
+        @* ConfirmationDialog renders the governed dialog with aria-modal="true". *@
+        <ConfirmationDialog IsOpen="true"
+                            DialogId="publish-registration-window-dialog"
+                            TitleId="publish-registration-window-dialog-title"
+                            DescriptionId="publish-registration-window-dialog-description"
+                            Title="Publish registration window"
+                            Message="Publish this explicit window using the current term and window versions? The server will recheck overlap and lifecycle rules."
+                            ConfirmLabel="Confirm publish"
+                            CancelLabel="Cancel"
+                            IsBusy="@_isPublishing"
+                            BusyLabel="Publishing registration window…"
+                            OnConfirm="PublishWindowAsync"
+                            OnCancel="ClosePublishConfirmation"
+                            FocusRestoreRequested="RestorePublishFocusAsync" />
+    </div>
+}
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private const string LoadingFixture = "ADM-02-COMP-STATE-LOADING";
+    private const string EmptyFixture = "ADM-02-COMP-STATE-EMPTY";
+    private const string SuccessFixture = "ADM-02-COMP-STATE-SUCCESS";
+    private const string ValidationFixture = "ADM-02-COMP-STATE-VALIDATION-ERROR";
+    private const string ServiceErrorFixture = "ADM-02-COMP-STATE-SERVICE-ERROR";
+    private const string UnauthorizedFixture = "ADM-02-COMP-STATE-UNAUTHORIZED";
+    private const string SessionExpiredFixture = "ADM-02-COMP-STATE-SESSION-EXPIRED";
+    private const string StaleFixture = "ADM-02-COMP-STATE-STALE";
+    private const string OfflineFixture = "ADM-02-COMP-STATE-OFFLINE";
+
+    private const string ValidationError = "VALIDATION_ERROR";
+    private const string TermCodeExists = "TERM_CODE_EXISTS";
+    private const string TermStateConflict = "TERM_STATE_CONFLICT";
+    private const string IdempotencyKeyReused = "IDEMPOTENCY_KEY_REUSED";
+    private const string StaleVersion = "STALE_VERSION";
+    private const string WindowOverlap = "WINDOW_OVERLAP";
+    private const string SessionExpired = "SESSION_EXPIRED";
+    private const string ServiceUnavailable = "SERVICE_UNAVAILABLE";
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdministrationNavigation =
+    [
+        new("Dashboard", "/admin"),
+        new("Terms", "/admin/terms", IsActive: true),
+        new("Registrations", "/admin/registrations")
+    ];
+
+    private readonly List<AdminTermDto> _terms = [];
+    private readonly List<ValidationIssue> _validationErrors = [];
+    private readonly List<string> _conflictingWindows = [];
+    private readonly List<ChangedField> _staleChangedFields = [];
+
+    private ElementReference _validationSummary;
+    private ElementReference _stateHeading;
+    private ElementReference _publishTrigger;
+    private string _state = LoadingState;
+    private bool _isLoadingTerms;
+    private bool _hasLoadedTerms;
+    private bool _isCreating;
+    private bool _isSaving;
+    private bool _isPublishing;
+    private bool _isCreateMode;
+    private bool _showPublishConfirmation;
+    private bool _focusValidationSummary;
+    private bool _focusStateHeading;
+    private string _searchQuery = string.Empty;
+    private int _currentPage = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+    private string _sort = "code,id";
+    private string _reasonCode = ServiceUnavailable;
+    private string _safeMessage = "Term administration could not be loaded.";
+    private string? _referenceId;
+    private string? _successAnnouncement;
+    private string? _selectedWindowId;
+    private Guid _createClientRequestId;
+    private string? _lastCreatePayloadFingerprint;
+    private AdminTermDto? _selectedTerm;
+    private AdminTermDto? _staleServerTerm;
+    private TermEditorModel? _editor;
+
+    private bool AnyCommandPending => _isCreating || _isSaving || _isPublishing;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(_totalCount / (double)_pageSize));
+
+    private string CurrentStateFixture => _state switch
+    {
+        LoadingState => LoadingFixture,
+        EmptyState => EmptyFixture,
+        SuccessState => SuccessFixture,
+        ValidationErrorState => ValidationFixture,
+        ServiceErrorState => ServiceErrorFixture,
+        UnauthorizedState => UnauthorizedFixture,
+        SessionExpiredState => SessionExpiredFixture,
+        StaleState => StaleFixture,
+        OfflineState => OfflineFixture,
+        _ => ServiceErrorFixture
+    };
+
+    private string FailureHeading => _state is OfflineState
+        ? "Term administration is offline"
+        : "Term administration service unavailable";
+
+    private string FailureStateCss => _state is OfflineState
+        ? "srs-term-admin__state--warning"
+        : "srs-term-admin__state--error";
+
+    private string? DateRangeError => _validationErrors
+        .FirstOrDefault(error => error.ControlId is "term-teaching-start" or "term-teaching-end")
+        ?.Message;
+
+    private string? DateRangeDescribedBy => DateRangeError is null
+        ? null
+        : "term-teaching-end-error";
+
+    private string? DateRangeInvalidAria => DateRangeError is null ? null : "true";
+
+    private IReadOnlyList<AdminRegistrationWindowDto> PublishableWindows =>
+        _selectedTerm?.Windows
+            .Where(window => window.LifecycleState is RegistrationWindowLifecycle.Draft)
+            .ToArray()
+        ?? [];
+
+    protected override Task OnInitializedAsync() => LoadTermsAsync(initialNavigation: true);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusValidationSummary)
+        {
+            _focusValidationSummary = false;
+            await _validationSummary.FocusAsync();
+        }
+
+        if (_focusStateHeading)
+        {
+            _focusStateHeading = false;
+            await _stateHeading.FocusAsync();
+        }
+    }
+
+    private async Task LoadTermsAsync(bool initialNavigation)
+    {
+        if (_isLoadingTerms)
+        {
+            return;
+        }
+
+        _isLoadingTerms = true;
+        if (initialNavigation || !_hasLoadedTerms)
+        {
+            _state = LoadingState;
+        }
+
+        try
+        {
+            var result = await AcademicApi.ListAdminTermsAsync(
+                string.IsNullOrWhiteSpace(_searchQuery) ? null : _searchQuery,
+                _currentPage,
+                _pageSize,
+                state: null,
+                _sort);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyTermPage(result.Value, initialNavigation);
+                return;
+            }
+
+            ApplyReadFailure(result.StatusCode, result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOfflineFailure();
+        }
+        finally
+        {
+            _isLoadingTerms = false;
+        }
+    }
+
+    private void ApplyTermPage(Page<AdminTermDto> page, bool initialNavigation)
+    {
+        _terms.Clear();
+        _terms.AddRange(page.Items);
+        _currentPage = page.PageNumber;
+        _pageSize = page.PageSize;
+        _totalCount = page.TotalCount;
+        _hasLoadedTerms = true;
+        ResetFeedback();
+
+        if (_terms.Count == 0)
+        {
+            _state = EmptyState;
+            if (initialNavigation || _editor is null)
+            {
+                StartNewTerm();
+            }
+
+            _focusStateHeading = initialNavigation;
+            return;
+        }
+
+        _state = SuccessState;
+        if (_selectedTerm is not null)
+        {
+            var replacement = _terms.FirstOrDefault(term => term.Id == _selectedTerm.Id);
+            if (replacement is not null)
+            {
+                SelectTerm(replacement);
+            }
+        }
+    }
+
+    private void ApplyReadFailure(HttpStatusCode statusCode, ApiError? error)
+    {
+        _reasonCode = error?.Code ?? ServiceUnavailable;
+        _safeMessage = error?.Message ?? "Term administration could not be loaded.";
+        _referenceId = error?.CorrelationId;
+        _successAnnouncement = null;
+
+        if (_reasonCode == SessionExpired)
+        {
+            ClearProtectedContent();
+            _state = SessionExpiredState;
+            _focusStateHeading = true;
+        }
+        else if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            ClearProtectedContent();
+            _state = UnauthorizedState;
+            _focusStateHeading = true;
+        }
+        else
+        {
+            _state = ServiceErrorState;
+            _focusStateHeading = !_hasLoadedTerms;
+        }
+    }
+
+    private void ApplyOfflineFailure()
+    {
+        _state = OfflineState;
+        _reasonCode = "OFFLINE";
+        _safeMessage = "The browser cannot reach the service. Reconnect and retry the authoritative term list.";
+        _referenceId = null;
+        _successAnnouncement = null;
+        _focusStateHeading = !_hasLoadedTerms;
+    }
+
+    private Task RetryTermsAsync() => LoadTermsAsync(initialNavigation: !_hasLoadedTerms);
+
+    private async Task SearchTermsAsync()
+    {
+        var query = _searchQuery.Trim();
+        if (query.Length is > 0 and < 3 || query.Length > 50)
+        {
+            SetValidation(
+                ValidationError,
+                "Enter between 3 and 50 characters, or clear the search.",
+                [new("term-search", "Search must contain between 3 and 50 characters.")]);
+            return;
+        }
+
+        _searchQuery = query;
+        _currentPage = 1;
+        await LoadTermsAsync(initialNavigation: false);
+    }
+
+    private async Task ClearSearchAsync()
+    {
+        _searchQuery = string.Empty;
+        _currentPage = 1;
+        await LoadTermsAsync(initialNavigation: false);
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        if (page < 1 || page > TotalPages || _isLoadingTerms)
+        {
+            return;
+        }
+
+        _currentPage = page;
+        await LoadTermsAsync(initialNavigation: false);
+    }
+
+    private void StartNewTerm()
+    {
+        if (AnyCommandPending)
+        {
+            return;
+        }
+
+        _selectedTerm = null;
+        _staleServerTerm = null;
+        _selectedWindowId = null;
+        _isCreateMode = true;
+        _createClientRequestId = Guid.NewGuid();
+        _lastCreatePayloadFingerprint = null;
+        _editor = TermEditorModel.New();
+        ResetFeedback();
+        _state = _terms.Count == 0 ? EmptyState : SuccessState;
+    }
+
+    private void SelectTerm(AdminTermDto term)
+    {
+        if (AnyCommandPending)
+        {
+            return;
+        }
+
+        _selectedTerm = term;
+        _staleServerTerm = null;
+        _isCreateMode = false;
+        _editor = TermEditorModel.From(term);
+        _selectedWindowId = term.Windows
+            .FirstOrDefault(window => window.LifecycleState is RegistrationWindowLifecycle.Draft)
+            ?.Id;
+        ResetFeedback();
+        _state = SuccessState;
+    }
+
+    private void AddWindow()
+    {
+        if (_editor is null || AnyCommandPending || _editor.Windows.Count >= 20)
+        {
+            return;
+        }
+
+        _editor.Windows.Add(WindowEditorModel.New());
+    }
+
+    private void RemoveWindow(Guid clientKey)
+    {
+        if (_editor is null || AnyCommandPending)
+        {
+            return;
+        }
+
+        _editor.Windows.RemoveAll(window => window.ClientKey == clientKey);
+    }
+
+    private void SetWindowLocalValue(Guid clientKey, bool opensAt, object? value)
+    {
+        var window = _editor?.Windows.FirstOrDefault(candidate => candidate.ClientKey == clientKey);
+        if (window is null)
+        {
+            return;
+        }
+
+        var localValue = value?.ToString() ?? string.Empty;
+        if (opensAt)
+        {
+            window.OpensAtLocal = localValue;
+        }
+        else
+        {
+            window.ClosesAtLocal = localValue;
+        }
+    }
+
+    private Task SubmitEditorAsync() => _isCreateMode
+        ? CreateTermAsync()
+        : SaveTermAsync();
+
+    private async Task CreateTermAsync()
+    {
+        if (_isCreating)
+        {
+            return;
+        }
+
+        if (!TryBuildInputs(out var term, out var windows))
+        {
+            return;
+        }
+
+        var fingerprint = CreatePayloadFingerprint(term!, windows!);
+        if (_lastCreatePayloadFingerprint is not null &&
+            !string.Equals(_lastCreatePayloadFingerprint, fingerprint, StringComparison.Ordinal))
+        {
+            _createClientRequestId = Guid.NewGuid();
+        }
+
+        _lastCreatePayloadFingerprint = fingerprint;
+        _isCreating = true;
+        _successAnnouncement = null;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            var request = new CreateTermRequest(
+                _createClientRequestId,
+                _editor!.Reason.Trim(),
+                _editor.Source.Trim(),
+                term!,
+                windows!);
+            var result = await AcademicApi.CreateAdminTermAsync(request);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyServerAcceptedTerm(result.Value, "Term created after server confirmation.");
+                _lastCreatePayloadFingerprint = null;
+                return;
+            }
+
+            await ApplyCommandFailureAsync(result.StatusCode, result.Error, previousServerTerm: null);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOfflineFailure();
+        }
+        finally
+        {
+            _isCreating = false;
+        }
+    }
+
+    private async Task SaveTermAsync()
+    {
+        if (_isSaving)
+        {
+            return;
+        }
+
+        if (_selectedTerm is null || !TryBuildInputs(out var term, out var windows))
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _successAnnouncement = null;
+        await InvokeAsync(StateHasChanged);
+        var previousServerTerm = _selectedTerm;
+        try
+        {
+            var expectedWindowVersions = _selectedTerm.Windows.ToDictionary(
+                window => window.Id,
+                window => window.RowVersion,
+                StringComparer.Ordinal);
+            var request = new UpdateTermRequest(
+                _selectedTerm.RowVersion,
+                expectedWindowVersions,
+                _editor!.Reason.Trim(),
+                _editor.Source.Trim(),
+                term!,
+                windows!);
+            var result = await AcademicApi.UpdateAdminTermAsync(_selectedTerm.Id, request);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyServerAcceptedTerm(result.Value, "Term changes saved after server confirmation.");
+                return;
+            }
+
+            await ApplyCommandFailureAsync(result.StatusCode, result.Error, previousServerTerm);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOfflineFailure();
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void OpenPublishConfirmation()
+    {
+        if (_isPublishing)
+        {
+            return;
+        }
+
+        if (_selectedTerm is null || SelectedPublishWindow() is null)
+        {
+            SetValidation(
+                ValidationError,
+                "Select one draft registration window to publish.",
+                [new("window-to-publish", "Select one draft registration window to publish.")]);
+            return;
+        }
+
+        _showPublishConfirmation = true;
+    }
+
+    private void ClosePublishConfirmation() => _showPublishConfirmation = false;
+
+    private async Task RestorePublishFocusAsync() => await _publishTrigger.FocusAsync();
+
+    private async Task PublishWindowAsync()
+    {
+        if (_isPublishing)
+        {
+            return;
+        }
+
+        var window = SelectedPublishWindow();
+        if (_selectedTerm is null || window is null || _editor is null)
+        {
+            _showPublishConfirmation = false;
+            return;
+        }
+
+        var provenanceErrors = ValidateProvenance();
+        if (provenanceErrors.Count > 0)
+        {
+            _showPublishConfirmation = false;
+            SetValidation(ValidationError, "Reason and source are required.", provenanceErrors);
+            return;
+        }
+
+        _isPublishing = true;
+        _successAnnouncement = null;
+        await InvokeAsync(StateHasChanged);
+        var previousServerTerm = _selectedTerm;
+        try
+        {
+            var request = new PublishRegistrationWindowRequest(
+                _selectedTerm.RowVersion,
+                window.RowVersion,
+                _editor.Reason.Trim(),
+                _editor.Source.Trim());
+            var result = await AcademicApi.PublishAdminRegistrationWindowAsync(
+                _selectedTerm.Id,
+                window.Id,
+                request);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyServerAcceptedTerm(
+                    result.Value,
+                    "Registration window published after server confirmation. " +
+                    "The immutable versions are shown below; actor and timestamp remain in server audit.");
+                return;
+            }
+
+            await ApplyCommandFailureAsync(result.StatusCode, result.Error, previousServerTerm);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOfflineFailure();
+        }
+        finally
+        {
+            _isPublishing = false;
+            _showPublishConfirmation = false;
+        }
+    }
+
+    private async Task ApplyCommandFailureAsync(
+        HttpStatusCode statusCode,
+        ApiError? error,
+        AdminTermDto? previousServerTerm)
+    {
+        _reasonCode = error?.Code ?? ServiceUnavailable;
+        _safeMessage = error?.Message ?? "The server did not accept the term command.";
+        _referenceId = error?.CorrelationId;
+        _successAnnouncement = null;
+        _validationErrors.Clear();
+        _conflictingWindows.Clear();
+
+        if (_reasonCode == SessionExpired)
+        {
+            ClearProtectedContent();
+            _state = SessionExpiredState;
+            _focusStateHeading = true;
+            return;
+        }
+
+        if (statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            ClearProtectedContent();
+            _state = UnauthorizedState;
+            _focusStateHeading = true;
+            return;
+        }
+
+        if (_reasonCode == StaleVersion)
+        {
+            _state = StaleState;
+            await RefetchContestedTermAsync(previousServerTerm);
+            _focusStateHeading = true;
+            return;
+        }
+
+        if (_reasonCode == WindowOverlap)
+        {
+            _state = ValidationErrorState;
+            _validationErrors.Add(new("registration-window-editor", _safeMessage));
+            _conflictingWindows.AddRange(
+                error?.FieldErrors?.Values.SelectMany(messages => messages)
+                ?? ["The server reported an overlapping registration window."]);
+            await RefetchContestedTermAsync(previousServerTerm);
+            _focusValidationSummary = true;
+            return;
+        }
+
+        if (_reasonCode is ValidationError or TermCodeExists or TermStateConflict or IdempotencyKeyReused ||
+            statusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict)
+        {
+            _state = ValidationErrorState;
+            AddServerValidation(error, "term-editor");
+            _focusValidationSummary = true;
+            return;
+        }
+
+        _state = ServiceErrorState;
+    }
+
+    private async Task RefetchContestedTermAsync(AdminTermDto? previousServerTerm)
+    {
+        if (previousServerTerm is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await AcademicApi.ListAdminTermsAsync(
+                string.IsNullOrWhiteSpace(_searchQuery) ? null : _searchQuery,
+                _currentPage,
+                _pageSize,
+                state: null,
+                _sort);
+            if (!result.IsSuccess || result.Value is null)
+            {
+                return;
+            }
+
+            _staleServerTerm = result.Value.Items
+                .FirstOrDefault(term => term.Id == previousServerTerm.Id);
+            if (_staleServerTerm is not null)
+            {
+                CaptureChangedFields(previousServerTerm, _staleServerTerm);
+            }
+        }
+        catch (HttpRequestException)
+        {
+            // Preserve the safe draft and original conflict. Retry remains explicit.
+        }
+    }
+
+    private void CaptureChangedFields(AdminTermDto previous, AdminTermDto current)
+    {
+        _staleChangedFields.Clear();
+        AddChangedField("Display name", previous.DisplayName, current.DisplayName);
+        AddChangedField("Teaching start date", DateValue(previous.TeachingStartsOn), DateValue(current.TeachingStartsOn));
+        AddChangedField("Teaching end date", DateValue(previous.TeachingEndsOn), DateValue(current.TeachingEndsOn));
+        AddChangedField("Term lifecycle", TermStateLabel(previous.State), TermStateLabel(current.State));
+        AddChangedField("Term row version", previous.RowVersion, current.RowVersion);
+    }
+
+    private void AddChangedField(string label, string previous, string current)
+    {
+        if (!string.Equals(previous, current, StringComparison.Ordinal))
+        {
+            _staleChangedFields.Add(new(label, current));
+        }
+    }
+
+    private void AdoptRefetchedVersions()
+    {
+        if (_staleServerTerm is null)
+        {
+            return;
+        }
+
+        _selectedTerm = _staleServerTerm;
+        _staleServerTerm = null;
+        _state = SuccessState;
+        _reasonCode = "CURRENT_VERSION_REVIEWED";
+        _safeMessage = "Current server versions loaded. Review the preserved draft before saving.";
+        _successAnnouncement = "Current versions loaded; no draft value was submitted or overwritten.";
+        _staleChangedFields.Clear();
+        _selectedWindowId = _selectedTerm.Windows
+            .FirstOrDefault(window => window.LifecycleState is RegistrationWindowLifecycle.Draft)
+            ?.Id;
+    }
+
+    private void ApplyServerAcceptedTerm(AdminTermDto accepted, string announcement)
+    {
+        var index = _terms.FindIndex(term => term.Id == accepted.Id);
+        if (index >= 0)
+        {
+            _terms[index] = accepted;
+        }
+        else
+        {
+            _terms.Add(accepted);
+            _terms.Sort((left, right) =>
+            {
+                var code = string.Compare(left.Code, right.Code, StringComparison.Ordinal);
+                return code != 0 ? code : string.Compare(left.Id, right.Id, StringComparison.Ordinal);
+            });
+            _totalCount++;
+        }
+
+        _selectedTerm = accepted;
+        _editor = TermEditorModel.From(accepted);
+        _isCreateMode = false;
+        _selectedWindowId = accepted.Windows
+            .FirstOrDefault(window => window.LifecycleState is RegistrationWindowLifecycle.Draft)
+            ?.Id;
+        ResetFeedback();
+        _state = SuccessState;
+        _successAnnouncement = announcement;
+    }
+
+    private bool TryBuildInputs(
+        out TermInput? term,
+        out IReadOnlyList<TermWindowInput>? windows)
+    {
+        term = null;
+        windows = null;
+        if (_editor is null)
+        {
+            return false;
+        }
+
+        var errors = ValidateEditor();
+        if (errors.Count > 0)
+        {
+            SetValidation(ValidationError, "Correct the highlighted term values.", errors);
+            return false;
+        }
+
+        try
+        {
+            var teachingStartsOn = DateOnly.ParseExact(
+                _editor.TeachingStartsOn,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture);
+            var teachingEndsOn = DateOnly.ParseExact(
+                _editor.TeachingEndsOn,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture);
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(_editor.TimeZoneId.Trim());
+            term = new TermInput(
+                _editor.Code.Trim(),
+                _editor.DisplayName.Trim(),
+                timeZone.Id,
+                teachingStartsOn,
+                teachingEndsOn,
+                _editor.State);
+            windows = _editor.Windows
+                .Select(window => BuildWindowInput(window, timeZone))
+                .ToArray();
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException or FormatException or TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            SetValidation(
+                ValidationError,
+                "The term values could not be normalized.",
+                [new("term-editor", "Review the dates, time zone, scope, and registration-window values.")]);
+            return false;
+        }
+    }
+
+    private List<ValidationIssue> ValidateEditor()
+    {
+        var errors = ValidateProvenance();
+        if (string.IsNullOrWhiteSpace(_editor!.Code) || _editor.Code.Trim().Length > 50)
+        {
+            errors.Add(new("term-code", "Term code is required and must not exceed 50 characters."));
+        }
+
+        if (string.IsNullOrWhiteSpace(_editor.DisplayName) || _editor.DisplayName.Trim().Length > 200)
+        {
+            errors.Add(new("term-display-name", "Display name is required and must not exceed 200 characters."));
+        }
+
+        if (string.IsNullOrWhiteSpace(_editor.TimeZoneId) || _editor.TimeZoneId.Trim().Length > 100)
+        {
+            errors.Add(new("term-time-zone", "Institutional time zone is required."));
+        }
+        else
+        {
+            try
+            {
+                _ = TimeZoneInfo.FindSystemTimeZoneById(_editor.TimeZoneId.Trim());
+            }
+            catch (Exception exception) when (exception is TimeZoneNotFoundException or InvalidTimeZoneException)
+            {
+                errors.Add(new("term-time-zone", "Enter a valid IANA institutional time zone."));
+            }
+        }
+
+        var hasStart = DateOnly.TryParseExact(
+            _editor.TeachingStartsOn,
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var start);
+        var hasEnd = DateOnly.TryParseExact(
+            _editor.TeachingEndsOn,
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var end);
+        if (!hasStart || !hasEnd || end <= start)
+        {
+            const string dateMessage = "Teaching end date must be after the teaching start date.";
+            errors.Add(new("term-teaching-start", dateMessage));
+            errors.Add(new("term-teaching-end", dateMessage));
+        }
+
+        if (_editor.Windows.Count > 20)
+        {
+            errors.Add(new("registration-window-editor", "A term may contain at most 20 registration windows."));
+        }
+
+        for (var index = 0; index < _editor.Windows.Count; index++)
+        {
+            var window = _editor.Windows[index];
+            if (window.ScopeType is not RegistrationWindowScope.AllStudents &&
+                string.IsNullOrWhiteSpace(window.ScopeValue))
+            {
+                errors.Add(new(
+                    WindowControlId("window-scope-value", index),
+                    $"Window {index + 1} requires a scope value."));
+            }
+
+            var hasOpen = TryParseLocal(window.OpensAtLocal, out var opens);
+            var hasClose = TryParseLocal(window.ClosesAtLocal, out var closes);
+            if (!hasOpen || !hasClose || closes <= opens)
+            {
+                errors.Add(new(
+                    WindowControlId("window-closes-at", index),
+                    $"Window {index + 1} must close after it opens."));
+            }
+        }
+
+        return errors;
+    }
+
+    private List<ValidationIssue> ValidateProvenance()
+    {
+        var errors = new List<ValidationIssue>();
+        var reason = _editor?.Reason.Trim() ?? string.Empty;
+        if (reason.Length is < 10 or > 500)
+        {
+            errors.Add(new("term-change-reason", "Reason must contain between 10 and 500 characters."));
+        }
+
+        var source = _editor?.Source.Trim() ?? string.Empty;
+        if (source.Length is < 1 or > 200)
+        {
+            errors.Add(new("term-change-source", "Source is required and must not exceed 200 characters."));
+        }
+
+        return errors;
+    }
+
+    private static TermWindowInput BuildWindowInput(
+        WindowEditorModel window,
+        TimeZoneInfo timeZone)
+    {
+        _ = TryParseLocal(window.OpensAtLocal, out var opensLocal);
+        _ = TryParseLocal(window.ClosesAtLocal, out var closesLocal);
+        var opensUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(opensLocal, DateTimeKind.Unspecified),
+            timeZone);
+        var closesUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(closesLocal, DateTimeKind.Unspecified),
+            timeZone);
+        return new TermWindowInput(
+            window.Id,
+            window.ScopeType,
+            window.ScopeType is RegistrationWindowScope.AllStudents
+                ? null
+                : window.ScopeValue?.Trim(),
+            opensUtc,
+            closesUtc,
+            window.LifecycleState);
+    }
+
+    private void SetValidation(string code, string message, IReadOnlyList<ValidationIssue> errors)
+    {
+        _reasonCode = code;
+        _safeMessage = message;
+        _referenceId = null;
+        _successAnnouncement = null;
+        _state = ValidationErrorState;
+        _validationErrors.Clear();
+        _validationErrors.AddRange(errors);
+        _focusValidationSummary = true;
+    }
+
+    private void AddServerValidation(ApiError? error, string fallbackControlId)
+    {
+        if (error?.FieldErrors is { Count: > 0 })
+        {
+            foreach (var (field, messages) in error.FieldErrors)
+            {
+                var controlId = ControlForServerField(field, fallbackControlId);
+                _validationErrors.AddRange(messages.Select(message => new ValidationIssue(controlId, message)));
+            }
+        }
+
+        if (_validationErrors.Count == 0)
+        {
+            _validationErrors.Add(new(fallbackControlId, _safeMessage));
+        }
+    }
+
+    private void ResetFeedback()
+    {
+        _validationErrors.Clear();
+        _conflictingWindows.Clear();
+        _staleChangedFields.Clear();
+        _reasonCode = "AVAILABLE";
+        _safeMessage = string.Empty;
+        _referenceId = null;
+        _successAnnouncement = null;
+    }
+
+    private void ClearProtectedContent()
+    {
+        _terms.Clear();
+        _selectedTerm = null;
+        _staleServerTerm = null;
+        _editor = null;
+        _hasLoadedTerms = false;
+        _totalCount = 0;
+        _validationErrors.Clear();
+        _conflictingWindows.Clear();
+        _successAnnouncement = null;
+    }
+
+    private AdminRegistrationWindowDto? SelectedPublishWindow() =>
+        _selectedTerm?.Windows.FirstOrDefault(window => window.Id == _selectedWindowId);
+
+    private RenderFragment ReferenceContent() => @<text>
+        @if (!string.IsNullOrWhiteSpace(_referenceId))
+        {
+            <p class="srs-term-admin__reference">Reference <strong>@_referenceId</strong></p>
+        }
+    </text>;
+
+    private RenderFragment FieldError(string controlId) => @<text>
+        @if (ErrorFor(controlId) is { } message)
+        {
+            <p class="srs-term-admin__field-error" id="@(controlId)-error">@message</p>
+        }
+    </text>;
+
+    private string? ErrorFor(string controlId) => _validationErrors
+        .FirstOrDefault(error => error.ControlId == controlId)
+        ?.Message;
+
+    private string? InvalidAria(string controlId) => ErrorFor(controlId) is null ? null : "true";
+
+    private string? DescribedBy(string controlId) => ErrorFor(controlId) is null
+        ? null
+        : $"{controlId}-error";
+
+    private string CreatePayloadFingerprint(
+        TermInput term,
+        IReadOnlyList<TermWindowInput> windows)
+    {
+        var fingerprint = new StringBuilder()
+            .Append(term.Code).Append('|')
+            .Append(term.DisplayName).Append('|')
+            .Append(term.TimeZoneId).Append('|')
+            .Append(DateValue(term.TeachingStartsOn)).Append('|')
+            .Append(DateValue(term.TeachingEndsOn)).Append('|')
+            .Append(term.State).Append('|')
+            .Append(_editor!.Reason.Trim()).Append('|')
+            .Append(_editor.Source.Trim());
+        foreach (var window in windows)
+        {
+            fingerprint
+                .Append('|').Append(window.Id)
+                .Append('|').Append(window.ScopeType)
+                .Append('|').Append(window.ScopeValue)
+                .Append('|').Append(window.OpensAtUtc.ToString("O", CultureInfo.InvariantCulture))
+                .Append('|').Append(window.ClosesAtUtc.ToString("O", CultureInfo.InvariantCulture))
+                .Append('|').Append(window.LifecycleState);
+        }
+
+        return fingerprint.ToString();
+    }
+
+    private static bool TryParseLocal(string value, out DateTime local) =>
+        DateTime.TryParseExact(
+            value,
+            [
+                "yyyy-MM-ddTHH:mm",
+                "yyyy-MM-ddTHH:mm:ss",
+                "yyyy-MM-ddTHH:mm:ss.FFFFFFF"
+            ],
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out local);
+
+    private static string ControlForServerField(string field, string fallback) => field switch
+    {
+        "term.code" or "code" => "term-code",
+        "term.displayName" or "displayName" => "term-display-name",
+        "term.timeZoneId" or "timeZoneId" => "term-time-zone",
+        "term.teachingStartsOn" or "teachingStartsOn" => "term-teaching-start",
+        "term.teachingEndsOn" or "teachingEndsOn" => "term-teaching-end",
+        "reason" => "term-change-reason",
+        "source" => "term-change-source",
+        "windows" => "registration-window-editor",
+        _ => fallback
+    };
+
+    private static string WindowControlId(string prefix, int index) => index == 0
+        ? prefix
+        : $"{prefix}-{index}";
+
+    private static string WindowHeadingId(int index) => $"registration-window-{index + 1}-heading";
+
+    private static string DateValue(DateOnly value) =>
+        value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string DateLabel(DateOnly value) =>
+        value.ToString("dd MMM yyyy", CultureInfo.CurrentCulture);
+
+    private static string UtcRangeLabel(DateTime opens, DateTime closes) =>
+        $"{opens.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.CurrentCulture)} – " +
+        closes.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.CurrentCulture);
+
+    private static string TermStateLabel(TermState state) => state switch
+    {
+        TermState.Draft => "Draft",
+        TermState.RegistrationOpen => "Registration open",
+        TermState.RegistrationClosed => "Registration closed",
+        TermState.Teaching => "Teaching",
+        TermState.Completed => "Completed",
+        TermState.Archived => "Archived",
+        _ => "Unknown"
+    };
+
+    private static string WindowLifecycleToken(RegistrationWindowLifecycle lifecycle) => lifecycle switch
+    {
+        RegistrationWindowLifecycle.Draft => "draft",
+        RegistrationWindowLifecycle.Published => "published",
+        RegistrationWindowLifecycle.EmergencyClosed => "emergencyClosed",
+        RegistrationWindowLifecycle.Superseded => "superseded",
+        _ => "unknown"
+    };
+
+    private static string WindowLifecycleLabel(RegistrationWindowLifecycle lifecycle) => lifecycle switch
+    {
+        RegistrationWindowLifecycle.Draft => "Draft",
+        RegistrationWindowLifecycle.Published => "Published",
+        RegistrationWindowLifecycle.EmergencyClosed => "Emergency closed",
+        RegistrationWindowLifecycle.Superseded => "Superseded",
+        _ => "Unknown"
+    };
+
+    private static string ScopeLabel(RegistrationWindowScope scope) => scope switch
+    {
+        RegistrationWindowScope.AllStudents => "All students",
+        RegistrationWindowScope.Program => "Program",
+        RegistrationWindowScope.Cohort => "Cohort",
+        _ => "Unknown"
+    };
+
+    private static string WindowScopeLabel(AdminRegistrationWindowDto window) =>
+        window.ScopeType is RegistrationWindowScope.AllStudents
+            ? "All students"
+            : $"{ScopeLabel(window.ScopeType)}: {window.ScopeValue}";
+
+    private static string PublishWindowLabel(AdminRegistrationWindowDto window) =>
+        $"{WindowScopeLabel(window)} — {UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc)}";
+
+    private sealed record ValidationIssue(string ControlId, string Message);
+
+    private sealed record ChangedField(string Label, string ServerValue);
+
+    private sealed class TermEditorModel
+    {
+        public string Code { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string TimeZoneId { get; set; } = "Africa/Cairo";
+        public string TeachingStartsOn { get; set; } = string.Empty;
+        public string TeachingEndsOn { get; set; } = string.Empty;
+        public TermState State { get; set; } = TermState.Draft;
+        public string Reason { get; set; } = string.Empty;
+        public string Source { get; set; } = "ADM-02 web administration";
+        public List<WindowEditorModel> Windows { get; } = [];
+
+        public static TermEditorModel New() => new();
+
+        public static TermEditorModel From(AdminTermDto term)
+        {
+            var model = new TermEditorModel
+            {
+                Code = term.Code,
+                DisplayName = term.DisplayName,
+                TimeZoneId = term.TimeZoneId,
+                TeachingStartsOn = DateValue(term.TeachingStartsOn),
+                TeachingEndsOn = DateValue(term.TeachingEndsOn),
+                State = term.State,
+                Source = "ADM-02 web administration"
+            };
+            model.Windows.AddRange(term.Windows.Select(window => WindowEditorModel.From(window, term.TimeZoneId)));
+            return model;
+        }
+    }
+
+    private sealed class WindowEditorModel
+    {
+        public Guid ClientKey { get; init; } = Guid.NewGuid();
+        public string? Id { get; init; }
+        public RegistrationWindowScope ScopeType { get; set; } = RegistrationWindowScope.AllStudents;
+        public string? ScopeValue { get; set; }
+        public string OpensAtLocal { get; set; } = string.Empty;
+        public string ClosesAtLocal { get; set; } = string.Empty;
+        public RegistrationWindowLifecycle LifecycleState { get; set; } = RegistrationWindowLifecycle.Draft;
+        public bool HasImmutablePublishedValues => LifecycleState is RegistrationWindowLifecycle.Published;
+
+        public static WindowEditorModel New() => new();
+
+        public static WindowEditorModel From(AdminRegistrationWindowDto window, string timeZoneId)
+        {
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return new WindowEditorModel
+            {
+                Id = window.Id,
+                ScopeType = window.ScopeType,
+                ScopeValue = window.ScopeValue,
+                OpensAtLocal = LocalInputValue(window.OpensAtUtc, timeZone),
+                ClosesAtLocal = LocalInputValue(window.ClosesAtUtc, timeZone),
+                LifecycleState = window.LifecycleState
+            };
+        }
+
+        private static string LocalInputValue(DateTime utc, TimeZoneInfo timeZone)
+        {
+            var normalizedUtc = utc.Kind is DateTimeKind.Utc
+                ? utc
+                : DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+            return TimeZoneInfo.ConvertTimeFromUtc(normalizedUtc, timeZone)
+                .ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+        }
+    }
+}

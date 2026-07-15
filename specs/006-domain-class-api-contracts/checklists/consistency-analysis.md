@@ -90,3 +90,6 @@
   test-first source evidence is required before claiming runtime completeness.
 - [x] No entity, EF mapping, migration, route/handler ownership, production
   configuration, Gates B-D, or release authority is added.
+- [x] ApiError field-detail bounds are synchronized across research,
+  requirements, API contract, JSON Schema, C# source, tests, and the existing
+  sole-writer tasks without changing the public field set.

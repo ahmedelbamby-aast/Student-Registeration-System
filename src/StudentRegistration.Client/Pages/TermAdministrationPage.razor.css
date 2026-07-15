@@ -1,0 +1,356 @@
+.srs-term-admin {
+    background: #f7f9fc;
+    color: var(--srs-color-semantic-text-primary);
+    min-block-size: 100vh;
+}
+
+.srs-term-admin__header,
+.srs-term-admin__footer,
+.srs-term-admin main {
+    inline-size: min(100%, var(--srs-sizing-content-wide));
+    margin-inline: auto;
+}
+
+.srs-term-admin__header {
+    align-items: center;
+    background: #eef3f8;
+    border-block-end: 1px solid var(--srs-color-semantic-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 3vw, 2rem);
+}
+
+.srs-term-admin__brand {
+    align-items: center;
+    color: var(--srs-color-primitive-blue-900);
+    display: flex;
+    gap: .75rem;
+    text-decoration: none;
+}
+
+.srs-term-admin__brand img {
+    background: var(--srs-color-primitive-blue-900);
+    border-radius: .5rem;
+    block-size: 4rem;
+    inline-size: auto;
+    object-fit: contain;
+    padding: .35rem;
+}
+
+.srs-term-admin__brand span {
+    display: grid;
+}
+
+.srs-term-admin main {
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.srs-term-admin__intro,
+.srs-term-admin__search,
+.srs-term-admin__list,
+.srs-term-admin__editor-panel,
+.srs-term-admin__state,
+.srs-term-admin__validation,
+.srs-term-admin__success {
+    background: var(--srs-color-semantic-surface-default);
+    border: 1px solid var(--srs-color-semantic-border);
+    border-radius: .65rem;
+    margin-block-end: 1rem;
+    padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.srs-term-admin__intro h1,
+.srs-term-admin__intro p,
+.srs-term-admin__search h2,
+.srs-term-admin__list > h2,
+.srs-term-admin__editor-heading h2 {
+    margin-block: 0 .5rem;
+}
+
+.srs-term-admin__eyebrow {
+    color: var(--srs-color-primitive-blue-700);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.srs-term-admin__search,
+.srs-term-admin__editor-heading,
+.srs-term-admin__window-heading {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.srs-term-admin__search form,
+.srs-term-admin__actions,
+.srs-term-admin__editor-actions,
+.srs-term-admin__pagination {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.srs-term-admin__search form label {
+    inline-size: 100%;
+}
+
+.srs-term-admin__workspace {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, .9fr) minmax(22rem, 1.1fr);
+}
+
+.srs-term-admin__workspace--list-only {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.srs-term-admin__list,
+.srs-term-admin__editor-panel {
+    min-inline-size: 0;
+}
+
+.srs-term-admin__table-region {
+    overflow-x: auto;
+}
+
+.srs-term-admin table {
+    border-collapse: collapse;
+    inline-size: 100%;
+    min-inline-size: 42rem;
+}
+
+.srs-term-admin caption {
+    font-weight: 600;
+    padding-block-end: .75rem;
+    text-align: start;
+}
+
+.srs-term-admin th,
+.srs-term-admin td {
+    border-block-end: 1px solid var(--srs-color-primitive-gray-300);
+    padding: .7rem;
+    text-align: start;
+    vertical-align: top;
+}
+
+.srs-term-admin td > span,
+.srs-term-admin td > strong {
+    display: block;
+}
+
+.srs-term-admin__window-summary {
+    margin: 0;
+    padding-inline-start: 1.1rem;
+}
+
+.srs-term-admin__window-summary span,
+.srs-term-admin__window-summary code {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.srs-term-admin__semantic-alternative {
+    display: none;
+}
+
+.srs-term-admin__field-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-block-end: 1rem;
+}
+
+.srs-term-admin__field,
+.srs-term-admin__field--wide {
+    display: grid;
+    gap: .35rem;
+    min-inline-size: 0;
+}
+
+.srs-term-admin__field--wide {
+    grid-column: 1 / -1;
+}
+
+.srs-term-admin input,
+.srs-term-admin select,
+.srs-term-admin textarea,
+.srs-term-admin button,
+.srs-term-admin__action-link {
+    border: 1px solid var(--srs-color-semantic-border);
+    border-radius: .3rem;
+    box-sizing: border-box;
+    font: inherit;
+    min-block-size: var(--srs-sizing-interactive-minimum);
+}
+
+.srs-term-admin input,
+.srs-term-admin select,
+.srs-term-admin textarea {
+    background: #fff;
+    inline-size: 100%;
+    padding: .65rem .75rem;
+}
+
+.srs-term-admin textarea {
+    min-block-size: 6rem;
+    resize: vertical;
+}
+
+.srs-term-admin button,
+.srs-term-admin__action-link {
+    align-items: center;
+    background: #fff;
+    color: var(--srs-color-semantic-text-primary);
+    cursor: pointer;
+    display: inline-flex;
+    font-weight: 650;
+    justify-content: center;
+    padding: .6rem 1rem;
+    text-decoration: none;
+}
+
+.srs-term-admin button[type="submit"],
+.srs-term-admin__editor-actions button:last-child {
+    background: var(--srs-color-component-button-primary-background);
+    color: var(--srs-color-component-button-primary-text);
+}
+
+.srs-term-admin button:disabled {
+    background: var(--srs-color-semantic-disabled-surface);
+    color: var(--srs-color-semantic-disabled-text);
+    cursor: not-allowed;
+}
+
+.srs-term-admin button:focus-visible,
+.srs-term-admin input:focus-visible,
+.srs-term-admin select:focus-visible,
+.srs-term-admin textarea:focus-visible,
+.srs-term-admin a:focus-visible {
+    outline: var(--srs-focus-outline-width) solid var(--srs-focus-ring-color);
+    outline-offset: var(--srs-focus-outline-offset);
+}
+
+.srs-term-admin__windows {
+    border: 1px solid var(--srs-color-primitive-gray-300);
+    border-radius: .5rem;
+    margin: 0 0 1rem;
+    min-inline-size: 0;
+    padding: 1rem;
+}
+
+.srs-term-admin__window-editor {
+    background: var(--srs-color-semantic-surface-muted);
+    border-inline-start: .25rem solid var(--srs-color-primitive-blue-700);
+    margin-block: 1rem;
+    padding: 1rem;
+}
+
+.srs-term-admin__state--error,
+.srs-term-admin__validation {
+    background: var(--srs-color-semantic-danger-surface);
+    color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-term-admin__state--warning {
+    background: var(--srs-color-semantic-warning-surface);
+    color: var(--srs-color-semantic-warning-text);
+}
+
+.srs-term-admin__success {
+    background: var(--srs-color-semantic-success-surface);
+    color: var(--srs-color-semantic-success-text);
+}
+
+.srs-term-admin__code,
+.srs-term-admin__version {
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-wrap: anywhere;
+}
+
+.srs-term-admin__field-error {
+    color: var(--srs-color-semantic-danger-text);
+    margin: 0;
+}
+
+.srs-term-admin__dialog-host {
+    inset: 0;
+    position: fixed;
+}
+
+.srs-term-admin__footer {
+    border-block-start: 1px solid var(--srs-color-semantic-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 3vw, 2rem) 2rem;
+}
+
+@media (max-width: 64rem) {
+    .srs-term-admin__workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 37.5rem) {
+    .srs-term-admin__header,
+    .srs-term-admin__search,
+    .srs-term-admin__editor-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .srs-term-admin__field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .srs-term-admin__field--wide {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 23.4375rem) {
+    .srs-term-admin main {
+        padding-inline: .75rem;
+    }
+
+    .srs-term-admin__table-region {
+        display: none;
+    }
+
+    .srs-term-admin__semantic-alternative {
+        display: block;
+    }
+
+    .srs-term-admin__semantic-alternative > ul {
+        display: grid;
+        gap: 1rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .srs-term-admin__semantic-alternative > ul > li {
+        border: 1px solid var(--srs-color-semantic-border);
+        border-radius: .5rem;
+        padding: 1rem;
+    }
+
+    .srs-term-admin__semantic-alternative dl div {
+        border-block-end: 1px solid var(--srs-color-primitive-gray-300);
+        padding-block: .4rem;
+    }
+
+    .srs-term-admin__semantic-alternative dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+}

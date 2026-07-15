@@ -11,6 +11,18 @@ separate.
 **Rationale**: It provides a clear extension seam without premature distributed-system cost.
 **Alternatives rejected**: A microservice per feature and direct client-to-database access.
 
+### Cross-module transport boundary
+**Decision**: SPEC-008 logically owns its academic API DTOs, while their three
+physical source groups live under `StudentRegistration.Contracts.Academics`:
+academic context, term administration, and profile correction. Academics,
+Api, and Client consume those dependency-neutral types.
+**Rationale**: The Blazor WebAssembly client is allowed to reference Contracts
+but is deliberately forbidden from referencing the Academics runtime module.
+One shared transport definition avoids browser duplicates without moving
+business behavior into Contracts.
+**Alternatives rejected**: A Client-to-Academics project reference, duplicate
+browser DTOs, or business services inside the Contracts assembly.
+
 ### Authority and consistency
 **Decision**: Validate permissions, term state, policy, conflicts, and durable changes on the server, with database enforcement for contested writes.
 **Rationale**: Browser state is stale and untrusted during registration peaks.

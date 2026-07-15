@@ -1,0 +1,1406 @@
+@page "/admin/students"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Data
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Contracts.Academics
+@inject AcademicApiClient AcademicApi
+
+<PageTitle>Student administration | Student Registration</PageTitle>
+
+<div class="srs-student-admin"
+     data-route-id="ADM-04"
+     data-state="@_state">
+    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="srs-student-admin__header" role="banner">
+        <a class="srs-student-admin__brand" href="/admin" aria-label="Administration home">
+            <span class="srs-student-admin__logo-panel">
+                <img src="/brand/aastmt-logo.png"
+                     alt="Arab Academy for Science, Technology and Maritime Transport" />
+            </span>
+            <span>
+                <strong>AASTMT</strong>
+                <small>Student Registration</small>
+            </span>
+        </a>
+
+        <RoleNavigation AccessibleName="Administration navigation"
+                        Items="@AdministrationNavigation" />
+
+        @if (_appContext is not null)
+        {
+            <dl class="srs-student-admin__context" aria-label="Authoritative application context">
+                <div>
+                    <dt>Signed in as</dt>
+                    <dd>@_appContext.DisplayName</dd>
+                </div>
+                <div>
+                    <dt>Academic term</dt>
+                    <dd>@(_appContext.RegistrationTerm?.Label ?? _appContext.TeachingTerm?.Label ?? "No server-selected term")</dd>
+                </div>
+                <div>
+                    <dt>Server date</dt>
+                    <dd>
+                        <time datetime="@_appContext.ServerTimeUtc.ToString("O")">
+                            @_appContext.ServerTimeUtc.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                        </time>
+                    </dd>
+                </div>
+            </dl>
+        }
+    </header>
+
+    <main id="main-content"
+          data-testid="student-administration-page"
+          tabindex="-1">
+        <section class="srs-student-admin__intro" aria-labelledby="student-administration-heading">
+            <p class="srs-student-admin__eyebrow">Sourced academic records</p>
+            <h1 id="student-administration-heading" tabindex="-1">Student administration</h1>
+            <p>
+                Locate one Student inside the server-selected academic term, review the
+                sourced record, and submit a reasoned version-safe correction.
+            </p>
+        </section>
+
+        @if (_isLoadingContext)
+        {
+            <section class="srs-student-admin__state srs-student-admin__state--loading"
+                     data-testid="ADM-04-COMP-STATE-LOADING"
+                     role="status"
+                     aria-live="polite"
+                     aria-busy="true">
+                <h2>Loading Student administration</h2>
+                <p>Requesting the authoritative session and academic term.</p>
+            </section>
+        }
+        else if (_state is UnauthorizedState)
+        {
+            <section class="srs-student-admin__state srs-student-admin__state--danger"
+                     data-testid="ADM-04-COMP-STATE-UNAUTHORIZED"
+                     role="alert"
+                     aria-live="assertive"
+                     aria-labelledby="student-admin-restricted-heading">
+                <h2 id="student-admin-restricted-heading" @ref="_stateHeading" tabindex="-1">
+                    Student records are restricted
+                </h2>
+                <p class="srs-student-admin__reason">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                @ReferenceContent()
+                <a class="srs-student-admin__button-link" href="/admin">Return to Admin home</a>
+            </section>
+        }
+        else if (_state is SessionExpiredState)
+        {
+            <section class="srs-student-admin__state srs-student-admin__state--danger"
+                     data-testid="ADM-04-COMP-STATE-SESSION-EXPIRED"
+                     role="alert"
+                     aria-live="assertive"
+                     aria-labelledby="student-admin-session-heading">
+                <h2 id="student-admin-session-heading" @ref="_stateHeading" tabindex="-1">
+                    Session expired
+                </h2>
+                <p class="srs-student-admin__reason">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <a class="srs-student-admin__button-link" href="/staff/login">Sign in again</a>
+            </section>
+        }
+        else
+        {
+            @if (_state is ServiceErrorState)
+            {
+                <section class="srs-student-admin__state srs-student-admin__state--danger"
+                         data-testid="ADM-04-COMP-STATE-SERVICE-ERROR"
+                         role="status"
+                         aria-live="polite"
+                         aria-labelledby="student-admin-service-heading">
+                    <h2 id="student-admin-service-heading" @ref="_stateHeading" tabindex="-1">
+                        Student administration is unavailable
+                    </h2>
+                    <p class="srs-student-admin__reason">@_reasonCode</p>
+                    <p>@_safeMessage</p>
+                    @ReferenceContent()
+                    <div class="srs-student-admin__actions">
+                        <button type="button" @onclick="RetryAsync">Retry</button>
+                        <a href="/status/support">Open safe support path</a>
+                    </div>
+                </section>
+            }
+            else if (_state is OfflineState && !_showCorrectionDialog)
+            {
+                <section class="srs-student-admin__state srs-student-admin__state--warning"
+                         data-testid="ADM-04-COMP-STATE-OFFLINE"
+                         role="status"
+                         aria-live="polite"
+                         aria-labelledby="student-admin-offline-heading">
+                    <h2 id="student-admin-offline-heading">Student administration is offline</h2>
+                    <p>No change was queued. Check the connection and retry when online.</p>
+                    <button type="button" @onclick="RetryAsync">Retry when online</button>
+                </section>
+            }
+
+            <section class="srs-student-admin__search"
+                     data-testid="student-search"
+                     aria-labelledby="student-search-heading">
+                <div>
+                    <p class="srs-student-admin__eyebrow">Term-scoped locator</p>
+                    <h2 id="student-search-heading">Search Students</h2>
+                    <p>Enter 3 to 50 characters. Empty-query Student enumeration is not available.</p>
+                </div>
+                <form role="search" @onsubmit="SearchStudentsAsync" @onsubmit:preventDefault="true">
+                    <label for="student-search-input">University ID or Student search</label>
+                    <div class="srs-student-admin__search-controls">
+                        <input id="student-search-input"
+                               data-testid="student-search-input"
+                               value="@_searchQuery"
+                               @oninput="OnSearchInput"
+                               minlength="3"
+                               maxlength="50"
+                               autocomplete="off"
+                               aria-describedby="student-search-help" />
+                        <button type="submit" disabled="@_isSearching">
+                            @(_isSearching ? "Searching…" : "Search Students")
+                        </button>
+                        @if (!_hasSearched || _students.Count > 0)
+                        {
+                            <button type="button" class="srs-student-admin__button--quiet" @onclick="ClearSearch">
+                                Clear Student search
+                            </button>
+                        }
+                    </div>
+                    <p id="student-search-help" class="srs-student-admin__hint">
+                        The term is supplied by the server context, never by this form.
+                    </p>
+                </form>
+            </section>
+
+            @if (_state is ValidationErrorState && !_showCorrectionDialog)
+            {
+                <section class="srs-student-admin__state srs-student-admin__state--warning"
+                         data-testid="ADM-04-COMP-STATE-VALIDATION-ERROR"
+                         role="alert"
+                         aria-live="assertive"
+                         aria-labelledby="student-admin-validation-heading">
+                    <h2 id="student-admin-validation-heading" @ref="_stateHeading" tabindex="-1">
+                        Review the Student request
+                    </h2>
+                    <p class="srs-student-admin__reason">@_reasonCode</p>
+                    <p>@_safeMessage</p>
+                </section>
+            }
+
+            @if (_hasSearched && _students.Count == 0 && _state is EmptyState)
+            {
+                <section class="srs-student-admin__state"
+                         data-testid="ADM-04-COMP-STATE-EMPTY"
+                         role="status"
+                         aria-live="polite"
+                         aria-labelledby="student-admin-empty-heading">
+                    <h2 id="student-admin-empty-heading">No matching Students</h2>
+                    <p>No records matched “@_lastSubmittedQuery” in the current server-selected term.</p>
+                    <button type="button" @onclick="ClearSearch">Clear Student search</button>
+                </section>
+            }
+
+            <div class="srs-student-admin__workspace @(_selectedStudent is not null ? "srs-student-admin__workspace--split" : null)">
+            @if (_students.Count > 0)
+            {
+                <section class="srs-student-admin__results"
+                         data-testid="student-search-results"
+                         aria-labelledby="student-search-results-heading">
+                    <div class="srs-student-admin__section-heading">
+                        <div>
+                            <p class="srs-student-admin__eyebrow">Authorized locator fields</p>
+                            <h2 id="student-search-results-heading">Student search results</h2>
+                        </div>
+                        <span>@_totalCount result@(_totalCount == 1 ? string.Empty : "s")</span>
+                    </div>
+                    <div class="srs-student-admin__table-scroll"
+                         role="region"
+                         aria-label="Student search results table"
+                         tabindex="0">
+                        <table>
+                            <caption class="visually-hidden">Students matching the submitted term-scoped search</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">University ID</th>
+                                    <th scope="col">Program</th>
+                                    <th scope="col">Cohort</th>
+                                    <th scope="col">Standing</th>
+                                    <th scope="col">Profile version</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var student in _students)
+                                {
+                                    <tr class="@(student.StudentId == _selectedStudent?.StudentId ? "is-selected" : null)">
+                                        <th scope="row">@student.UniversityId</th>
+                                        <td>@student.ProgramCode</td>
+                                        <td>@student.Cohort</td>
+                                        <td>@student.Standing</td>
+                                        <td>@student.DataVersion</td>
+                                        <td>
+                                            <button type="button"
+                                                    data-testid="@($"open-student-{student.StudentId}")"
+                                                    disabled="@_isLoadingStudent"
+                                                    @onclick="() => OpenStudentAsync(student)">
+                                                Open academic record
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <ul class="srs-student-admin__compact-list srs-student-admin__result-cards"
+                        aria-label="Student results, compact view">
+                        @foreach (var student in _students)
+                        {
+                            <li class="@(student.StudentId == _selectedStudent?.StudentId ? "is-selected" : null)">
+                                <dl>
+                                    <div><dt>University ID</dt><dd>@student.UniversityId</dd></div>
+                                    <div><dt>Program</dt><dd>@student.ProgramCode</dd></div>
+                                    <div><dt>Cohort</dt><dd>@student.Cohort</dd></div>
+                                    <div><dt>Standing</dt><dd>@student.Standing</dd></div>
+                                    <div><dt>Profile version</dt><dd>@student.DataVersion</dd></div>
+                                </dl>
+                                <button type="button"
+                                        data-testid="@($"open-student-card-{student.StudentId}")"
+                                        disabled="@_isLoadingStudent"
+                                        @onclick="() => OpenStudentAsync(student)">
+                                    Open academic record
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="srs-student-admin__pagination" data-testid="student-search-pagination">
+                        <p aria-live="polite">
+                            Page @_currentPage of @TotalSearchPages · @_totalCount total result@(_totalCount == 1 ? string.Empty : "s")
+                        </p>
+                        <Pagination AccessibleLabel="Student search result pages"
+                                    PreviousLabel="Previous"
+                                    NextLabel="Next"
+                                    LoadingLabel="Loading Student result page"
+                                    CurrentPage="@_currentPage"
+                                    TotalPages="@TotalSearchPages"
+                                    VisiblePages="@VisibleSearchPages"
+                                    PageLabel="@(page => page.ToString(CultureInfo.InvariantCulture))"
+                                    CurrentPageLabel="@((page, total) => $"Page {page} of {total}")"
+                                    PageChanged="ChangeSearchPageAsync"
+                                    IsLoading="@_isSearching" />
+                    </div>
+                </section>
+            }
+
+            @if (_isLoadingStudent)
+            {
+                <section class="srs-student-admin__state srs-student-admin__state--loading"
+                         role="status"
+                         aria-live="polite">
+                    <h2>Loading sourced academic profile</h2>
+                </section>
+            }
+
+            @if (_selectedStudent is not null)
+            {
+                <section class="srs-student-admin__detail"
+                         data-testid="ADM-04-COMP-STATE-SUCCESS"
+                         aria-live="polite"
+                         aria-labelledby="selected-student-heading">
+                    <div class="srs-student-admin__detail-header">
+                        <div>
+                            <p class="srs-student-admin__eyebrow">Selected sourced record</p>
+                            <h2 id="selected-student-heading">Student @_selectedStudent.UniversityId</h2>
+                            <p>Read-only until the explicit correction command is opened.</p>
+                        </div>
+                        <button type="button"
+                                @ref="_correctionTrigger"
+                                data-testid="open-academic-correction"
+                                @onclick="OpenCorrectionAsync">
+                            Open academic correction
+                        </button>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_successAnnouncement))
+                    {
+                        <p class="srs-student-admin__success" role="status" aria-live="polite">
+                            @_successAnnouncement
+                        </p>
+                    }
+
+                    <section class="srs-student-admin__panel"
+                             data-testid="academic-summary"
+                             aria-labelledby="academic-summary-heading">
+                        <h3 id="academic-summary-heading">Academic summary</h3>
+                        <dl class="srs-student-admin__facts">
+                            <div><dt>University ID</dt><dd>@_selectedStudent.UniversityId</dd></div>
+                            <div><dt>Program</dt><dd>@_selectedStudent.ProgramCode</dd></div>
+                            <div><dt>Cohort</dt><dd>@_selectedStudent.Cohort</dd></div>
+                            <div><dt>GPA</dt><dd>@FormatDecimal(_selectedStudent.CurrentGpa)</dd></div>
+                            <div><dt>Earned credits</dt><dd>@FormatDecimal(_selectedStudent.EarnedCredits)</dd></div>
+                            <div><dt>Standing</dt><dd>@_selectedStudent.Standing</dd></div>
+                            <div><dt>Profile data version</dt><dd>@_selectedStudent.DataVersion</dd></div>
+                            <div><dt>Student row version</dt><dd>@_selectedStudent.StudentRowVersion</dd></div>
+                            <div><dt>Student-term row version</dt><dd>@_selectedStudent.StudentTermStateRowVersion</dd></div>
+                            <div>
+                                <dt>Source timestamp</dt>
+                                <dd>
+                                    <time datetime="@_selectedStudent.DataAsOfUtc.ToString("O")">
+                                        @_selectedStudent.DataAsOfUtc.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                                    </time>
+                                </dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="srs-student-admin__panel"
+                             data-testid="academic-transcript"
+                             aria-labelledby="academic-transcript-heading">
+                        <div class="srs-student-admin__section-heading">
+                            <div>
+                                <h3 id="academic-transcript-heading">Transcript</h3>
+                                <p>
+                                    @_selectedStudent.TranscriptSummary.AttemptCount attempts ·
+                                    @FormatDecimal(_selectedStudent.TranscriptSummary.AttemptedCredits) attempted credits ·
+                                    @FormatDecimal(_selectedStudent.TranscriptSummary.EarnedCredits) earned credits
+                                </p>
+                            </div>
+                        </div>
+                        <div class="srs-student-admin__table-scroll"
+                             role="region"
+                             aria-label="Transcript attempts table"
+                             tabindex="0">
+                            <table>
+                                <caption class="visually-hidden">Sourced transcript attempts for the selected Student</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Course</th>
+                                        <th scope="col">Term</th>
+                                        <th scope="col">Credits</th>
+                                        <th scope="col">Grade</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Provenance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var attempt in _selectedStudent.TranscriptAttempts.Items)
+                                    {
+                                        <tr>
+                                            <th scope="row">@attempt.CourseCode</th>
+                                            <td>@attempt.TermCode</td>
+                                            <td>@FormatDecimal(attempt.Credits)</td>
+                                            <td>@(attempt.Grade ?? "Not recorded")</td>
+                                            <td>@attempt.Status</td>
+                                            <td>Attempt source: @attempt.Provenance</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <ul class="srs-student-admin__compact-list" aria-label="Transcript attempts, stacked view">
+                            @foreach (var attempt in _selectedStudent.TranscriptAttempts.Items)
+                            {
+                                <li>
+                                    <dl>
+                                        <div><dt>Course</dt><dd>@attempt.CourseCode</dd></div>
+                                        <div><dt>Term</dt><dd>@attempt.TermCode</dd></div>
+                                        <div><dt>Credits</dt><dd>@FormatDecimal(attempt.Credits)</dd></div>
+                                        <div><dt>Grade</dt><dd>@(attempt.Grade ?? "Not recorded")</dd></div>
+                                        <div><dt>Status</dt><dd>@attempt.Status</dd></div>
+                                        <div><dt>Provenance</dt><dd>Attempt source: @attempt.Provenance</dd></div>
+                                    </dl>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+
+                    <section class="srs-student-admin__panel"
+                             data-testid="academic-holds"
+                             aria-labelledby="academic-holds-heading">
+                        <h3 id="academic-holds-heading">Active holds</h3>
+                        <div class="srs-student-admin__table-scroll"
+                             role="region"
+                             aria-label="Active holds table"
+                             tabindex="0">
+                            <table>
+                                <caption class="visually-hidden">Complete active hold set for the selected Student</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Code</th>
+                                        <th scope="col">Reason</th>
+                                        <th scope="col">Blocks registration</th>
+                                        <th scope="col">Effective from</th>
+                                        <th scope="col">Source</th>
+                                        <th scope="col">Source reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (_selectedStudent.ActiveHolds.Count == 0)
+                                    {
+                                        <tr><td colspan="6">No active holds were returned.</td></tr>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var hold in _selectedStudent.ActiveHolds)
+                                        {
+                                            <tr>
+                                                <th scope="row">@hold.Code</th>
+                                                <td>@hold.Message</td>
+                                                <td>@(hold.BlocksRegistration ? "Yes" : "No")</td>
+                                                <td>@hold.EffectiveFromUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</td>
+                                                <td>Hold source: @hold.Source</td>
+                                                <td>@hold.SourceReference</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <ul class="srs-student-admin__compact-list" aria-label="Active holds, stacked view">
+                            @if (_selectedStudent.ActiveHolds.Count == 0)
+                            {
+                                <li>No active holds were returned.</li>
+                            }
+                            else
+                            {
+                                @foreach (var hold in _selectedStudent.ActiveHolds)
+                                {
+                                    <li>
+                                        <dl>
+                                            <div><dt>Code</dt><dd>@hold.Code</dd></div>
+                                            <div><dt>Reason</dt><dd>@hold.Message</dd></div>
+                                            <div><dt>Blocks registration</dt><dd>@(hold.BlocksRegistration ? "Yes" : "No")</dd></div>
+                                            <div><dt>Effective from</dt><dd>@hold.EffectiveFromUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</dd></div>
+                                            <div><dt>Source</dt><dd>Hold source: @hold.Source</dd></div>
+                                            <div><dt>Source reference</dt><dd>@hold.SourceReference</dd></div>
+                                        </dl>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </section>
+
+                    <section class="srs-student-admin__panel"
+                             data-testid="academic-provenance"
+                             aria-labelledby="academic-provenance-heading">
+                        <h3 id="academic-provenance-heading">Record provenance</h3>
+                        <div class="srs-student-admin__table-scroll"
+                             role="region"
+                             aria-label="Academic provenance table"
+                             tabindex="0">
+                            <table>
+                                <caption class="visually-hidden">Source provenance for the selected academic record</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Source</th>
+                                        <th scope="col">Reference</th>
+                                        <th scope="col">Imported at</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var provenance in _selectedStudent.Provenance.Items)
+                                    {
+                                        <tr>
+                                            <th scope="row">@provenance.Source</th>
+                                            <td>@provenance.Reference</td>
+                                            <td>
+                                                <time datetime="@provenance.ImportedAtUtc.ToString("O")">
+                                                    @provenance.ImportedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                                                </time>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <ul class="srs-student-admin__compact-list" aria-label="Academic provenance, stacked view">
+                            @foreach (var provenance in _selectedStudent.Provenance.Items)
+                            {
+                                <li>
+                                    <dl>
+                                        <div><dt>Source</dt><dd>@provenance.Source</dd></div>
+                                        <div><dt>Reference</dt><dd>@provenance.Reference</dd></div>
+                                        <div>
+                                            <dt>Imported at</dt>
+                                            <dd>
+                                                <time datetime="@provenance.ImportedAtUtc.ToString("O")">
+                                                    @provenance.ImportedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                                                </time>
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+
+                    <aside class="srs-student-admin__downstream" aria-label="Registration administration contribution">
+                        <div>
+                            <h3>Registration records</h3>
+                            <p>
+                                This page does not fabricate SPEC-017 registration or audit results.
+                                Open the owner workspace when that contribution is available.
+                            </p>
+                        </div>
+                        <a href="/admin/registrations">Open registrations</a>
+                    </aside>
+                </section>
+            }
+
+            @if (_state is StaleState)
+            {
+                <section class="srs-student-admin__state srs-student-admin__state--warning"
+                         data-testid="ADM-04-COMP-STATE-STALE"
+                         role="status"
+                         aria-live="polite"
+                         aria-labelledby="student-admin-stale-heading">
+                    <h2 id="student-admin-stale-heading" @ref="_stateHeading" tabindex="-1">
+                        Academic profile changed concurrently
+                    </h2>
+                    <p class="srs-student-admin__reason">STALE_VERSION</p>
+                    <p>@_safeMessage</p>
+                    @if (!string.IsNullOrWhiteSpace(_currentVersion))
+                    {
+                        <p>Current server version: <strong>@_currentVersion</strong></p>
+                    }
+                    <button type="button" @onclick="RefreshStudentContextAsync">
+                        Refresh Student context
+                    </button>
+                </section>
+            }
+            </div>
+        }
+    </main>
+
+    <footer class="srs-student-admin__footer" role="contentinfo">
+        <p>AASTMT Student Registration · Sourced academic administration</p>
+        <a href="@(_appContext?.SupportReferencePath ?? "/status/support")">Support</a>
+    </footer>
+</div>
+
+@if (_showCorrectionDialog && _selectedStudent is not null)
+{
+    <div class="srs-student-admin__dialog-backdrop">
+        <span class="srs-student-admin__focus-sentinel"
+              tabindex="0"
+              @onfocus="FocusLastDialogControlAsync"></span>
+        <div class="srs-student-admin__dialog"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="academic-correction-title"
+             aria-describedby="academic-correction-description"
+             @onkeydown="HandleDialogKeyDown"
+             @onkeydown:stopPropagation="true">
+            <header>
+                <p class="srs-student-admin__eyebrow">Version-safe owner command</p>
+                <h2 id="academic-correction-title">Academic correction</h2>
+                <p id="academic-correction-description">
+                    Correct the sourced GPA for Student @_selectedStudent.UniversityId.
+                    Both current row versions will be submitted.
+                </p>
+            </header>
+
+            @if (_state is OfflineState)
+            {
+                <section class="srs-student-admin__dialog-validation"
+                         data-testid="ADM-04-COMP-STATE-OFFLINE"
+                         role="status"
+                         aria-live="polite"
+                         aria-labelledby="academic-correction-offline-heading">
+                    <h3 id="academic-correction-offline-heading">Academic correction is offline</h3>
+                    <p>No change was queued. Keep this dialog open and retry when online.</p>
+                </section>
+            }
+
+            @if (_correctionErrors.Count > 0)
+            {
+                <div class="srs-student-admin__dialog-validation"
+                     data-testid="correction-validation-summary"
+                     @ref="_correctionValidationSummary"
+                     role="alert"
+                     aria-live="assertive"
+                     tabindex="-1">
+                    <h3>Review the academic correction</h3>
+                    <p class="srs-student-admin__reason">@_correctionReasonCode</p>
+                    <ul>
+                        @foreach (var error in _correctionErrors)
+                        {
+                            <li>Issue: @error</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="srs-student-admin__field">
+                <label for="academic-correction-reason">Reason for correction</label>
+                <textarea id="academic-correction-reason"
+                          @ref="_correctionReasonInput"
+                          value="@_correction.Reason"
+                          @oninput="OnCorrectionReasonInput"
+                          minlength="10"
+                          maxlength="500"
+                          rows="4"
+                          aria-describedby="@CorrectionReasonDescription"></textarea>
+                <p id="academic-correction-reason-hint" class="srs-student-admin__hint">
+                    Enter 10 to 500 characters for the audit record.
+                </p>
+                @if (!string.IsNullOrWhiteSpace(_reasonError))
+                {
+                    <p id="academic-correction-reason-error" class="srs-student-admin__field-error">
+                        @_reasonError
+                    </p>
+                }
+            </div>
+
+            <div class="srs-student-admin__field">
+                <label for="academic-correction-value">Corrected GPA</label>
+                <input id="academic-correction-value"
+                       data-testid="academic-correction-value"
+                       type="number"
+                       inputmode="decimal"
+                       step="0.01"
+                       value="@_correction.Value"
+                       @oninput="OnCorrectionValueInput"
+                       aria-describedby="@CorrectionValueDescription" />
+                <p id="academic-correction-value-hint" class="srs-student-admin__hint">
+                    Enter a sourced value from 0.00 to 4.00.
+                </p>
+                @if (!string.IsNullOrWhiteSpace(_valueError))
+                {
+                    <p id="academic-correction-value-error" class="srs-student-admin__field-error">
+                        @_valueError
+                    </p>
+                }
+            </div>
+
+            <dl class="srs-student-admin__version-preview">
+                <div><dt>Student version</dt><dd>@_selectedStudent.StudentRowVersion</dd></div>
+                <div><dt>Student-term version</dt><dd>@_selectedStudent.StudentTermStateRowVersion</dd></div>
+            </dl>
+
+            <div class="srs-student-admin__dialog-actions">
+                <button type="button"
+                        @ref="_cancelCorrectionButton"
+                        disabled="@_isSubmittingCorrection"
+                        @onclick="CancelCorrectionAsync">
+                    Cancel
+                </button>
+                <button type="button"
+                        @ref="_submitCorrectionButton"
+                        disabled="@_isSubmittingCorrection"
+                        @onclick="SubmitCorrectionAsync">
+                    @(_isSubmittingCorrection ? "Submitting…" : "Submit academic correction")
+                </button>
+            </div>
+        </div>
+        <span class="srs-student-admin__focus-sentinel"
+              tabindex="0"
+              @onfocus="FocusFirstDialogControlAsync"></span>
+    </div>
+}
+
+@code {
+    private const string ReadyState = "ready";
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+    private const int SearchPageSize = 20;
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdministrationNavigation =
+    [
+        new("Admin home", "/admin"),
+        new("Terms", "/admin/terms"),
+        new("Students", "/admin/students", IsActive: true),
+        new("Audit and reports", "/admin/audit", IsDisabled: true)
+    ];
+
+    private AppContextDto? _appContext;
+    private string? _termId;
+    private string _state = LoadingState;
+    private string _searchQuery = string.Empty;
+    private string _lastSubmittedQuery = string.Empty;
+    private string _reasonCode = string.Empty;
+    private string _safeMessage = string.Empty;
+    private string? _referenceId;
+    private string? _currentVersion;
+    private string? _successAnnouncement;
+    private List<AdminStudentLocatorDto> _students = [];
+    private AdminStudentAcademicContextDto? _selectedStudent;
+    private int _currentPage = 1;
+    private int _pageSize = SearchPageSize;
+    private int _totalCount;
+    private bool _isLoadingContext = true;
+    private bool _isSearching;
+    private bool _isLoadingStudent;
+    private bool _hasSearched;
+    private bool _showCorrectionDialog;
+    private bool _isSubmittingCorrection;
+    private bool _focusReasonOnRender;
+    private bool _focusValidationOnRender;
+    private bool _focusStateOnRender;
+    private CorrectionDraft _correction = new();
+    private string? _reasonError;
+    private string? _valueError;
+    private string _correctionReasonCode = string.Empty;
+    private List<string> _correctionErrors = [];
+
+    private ElementReference _stateHeading;
+    private ElementReference _correctionTrigger;
+    private ElementReference _correctionReasonInput;
+    private ElementReference _correctionValidationSummary;
+    private ElementReference _cancelCorrectionButton;
+    private ElementReference _submitCorrectionButton;
+
+    private string Reason => _correction.Reason;
+
+    private int TotalSearchPages => Math.Max(
+        1,
+        (int)Math.Ceiling(_totalCount / (double)Math.Max(1, _pageSize)));
+
+    private IReadOnlyList<int> VisibleSearchPages
+    {
+        get
+        {
+            const int maximumVisiblePages = 5;
+            var count = Math.Min(maximumVisiblePages, TotalSearchPages);
+            var maximumStart = Math.Max(1, TotalSearchPages - count + 1);
+            var start = Math.Clamp(_currentPage - (count / 2), 1, maximumStart);
+            return Enumerable.Range(start, count).ToArray();
+        }
+    }
+
+    private string CorrectionReasonDescription => string.IsNullOrWhiteSpace(_reasonError)
+        ? "academic-correction-reason-hint"
+        : "academic-correction-reason-hint academic-correction-reason-error";
+
+    private string CorrectionValueDescription => string.IsNullOrWhiteSpace(_valueError)
+        ? "academic-correction-value-hint"
+        : "academic-correction-value-hint academic-correction-value-error";
+
+    protected override async Task OnInitializedAsync() => await LoadContextAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusReasonOnRender)
+        {
+            _focusReasonOnRender = false;
+            await _correctionReasonInput.FocusAsync();
+        }
+        else if (_focusValidationOnRender)
+        {
+            _focusValidationOnRender = false;
+            await _correctionValidationSummary.FocusAsync();
+        }
+        else if (_focusStateOnRender)
+        {
+            _focusStateOnRender = false;
+            await _stateHeading.FocusAsync();
+        }
+    }
+
+    private async Task LoadContextAsync()
+    {
+        _isLoadingContext = true;
+        _state = LoadingState;
+        try
+        {
+            var result = await AcademicApi.GetAppContextAsync();
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            _appContext = result.Value;
+            _termId = result.Value.RegistrationTerm?.Id ?? result.Value.TeachingTerm?.Id;
+            _state = ReadyState;
+            ClearFailure();
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOffline();
+        }
+        catch (TaskCanceledException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _isLoadingContext = false;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs args) =>
+        _searchQuery = args.Value?.ToString() ?? string.Empty;
+
+    private Task SearchStudentsAsync() => SearchStudentsPageAsync(1, _searchQuery);
+
+    private Task ChangeSearchPageAsync(int page) =>
+        SearchStudentsPageAsync(page, _lastSubmittedQuery);
+
+    private async Task SearchStudentsPageAsync(int page, string candidateQuery)
+    {
+        if (_isSearching)
+        {
+            return;
+        }
+
+        var query = candidateQuery.Trim();
+        if (query.Length is < 3 or > 50)
+        {
+            ApplyValidation("VALIDATION_ERROR", "Enter a Student search from 3 to 50 characters.");
+            return;
+        }
+
+        if (page < 1 || (_hasSearched && page > TotalSearchPages))
+        {
+            ApplyValidation("PAGE_INVALID", "Choose an available Student result page.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_termId))
+        {
+            ApplyValidation(
+                "CONTEXT_UNAVAILABLE",
+                "No server-selected academic term is available for Student search.");
+            return;
+        }
+
+        _isSearching = true;
+        _successAnnouncement = null;
+        try
+        {
+            var result = await AcademicApi.SearchAdminStudentsAsync(
+                _termId,
+                query,
+                page,
+                SearchPageSize);
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            var totalPages = Math.Max(
+                1,
+                (int)Math.Ceiling(result.Value.TotalCount / (double)result.Value.PageSize));
+            if (result.Value.PageNumber > totalPages)
+            {
+                ApplyServiceFailure(
+                    "INVALID_RESPONSE",
+                    "The Student result page was outside the authoritative result set.",
+                    null);
+                return;
+            }
+
+            _students = result.Value.Items.ToList();
+            _selectedStudent = null;
+            _hasSearched = true;
+            _lastSubmittedQuery = query;
+            _searchQuery = query;
+            _currentPage = result.Value.PageNumber;
+            _pageSize = result.Value.PageSize;
+            _totalCount = result.Value.TotalCount;
+            _state = _students.Count == 0 ? EmptyState : ReadyState;
+            ClearFailure();
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOffline();
+        }
+        catch (TaskCanceledException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _isSearching = false;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        _searchQuery = string.Empty;
+        _lastSubmittedQuery = string.Empty;
+        _students = [];
+        _selectedStudent = null;
+        _hasSearched = false;
+        _currentPage = 1;
+        _pageSize = SearchPageSize;
+        _totalCount = 0;
+        _state = ReadyState;
+        _successAnnouncement = null;
+        ClearFailure();
+    }
+
+    private async Task OpenStudentAsync(AdminStudentLocatorDto student)
+    {
+        if (_isLoadingStudent || string.IsNullOrWhiteSpace(_termId))
+        {
+            return;
+        }
+
+        _isLoadingStudent = true;
+        _selectedStudent = null;
+        _successAnnouncement = null;
+        try
+        {
+            var result = await AcademicApi.GetAdminStudentAcademicContextAsync(
+                student.StudentId,
+                _termId);
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            if (!string.Equals(result.Value.TermId, _termId, StringComparison.Ordinal))
+            {
+                ApplyServiceFailure(
+                    "CONTEXT_UNAVAILABLE",
+                    "The Student record did not match the server-selected term.",
+                    null);
+                return;
+            }
+
+            _selectedStudent = result.Value;
+            _state = SuccessState;
+            ClearFailure();
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOffline();
+        }
+        catch (TaskCanceledException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _isLoadingStudent = false;
+        }
+    }
+
+    private Task OpenCorrectionAsync()
+    {
+        if (_selectedStudent is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        _correction = new CorrectionDraft
+        {
+            Value = _selectedStudent.CurrentGpa.ToString("0.00", CultureInfo.InvariantCulture)
+        };
+        ClearCorrectionErrors();
+        _showCorrectionDialog = true;
+        _focusReasonOnRender = true;
+        return Task.CompletedTask;
+    }
+
+    private void OnCorrectionReasonInput(ChangeEventArgs args) =>
+        _correction.Reason = args.Value?.ToString() ?? string.Empty;
+
+    private void OnCorrectionValueInput(ChangeEventArgs args) =>
+        _correction.Value = args.Value?.ToString() ?? string.Empty;
+
+    private async Task SubmitCorrectionAsync()
+    {
+        if (_isSubmittingCorrection)
+        {
+            return;
+        }
+
+        ClearCorrectionErrors();
+        var normalizedReason = Reason.Trim();
+        if (Reason.Length < 10 || normalizedReason.Length < 10)
+        {
+            _reasonError = "Enter a reason of at least 10 characters.";
+            AddCorrectionValidation(_reasonError);
+        }
+        else if (normalizedReason.Length > 500)
+        {
+            _reasonError = "Reason must not exceed 500 characters.";
+            AddCorrectionValidation(_reasonError);
+        }
+
+        if (!decimal.TryParse(
+                _correction.Value,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var correctedGpa))
+        {
+            _valueError = "Enter a numeric GPA.";
+            AddCorrectionValidation(_valueError);
+        }
+        else if (correctedGpa is < 0 or > 4)
+        {
+            _valueError = "GPA must be between zero and four.";
+            AddCorrectionValidation(_valueError);
+        }
+
+        if (_correctionErrors.Count > 0)
+        {
+            _state = ValidationErrorState;
+            _correctionReasonCode = "VALIDATION_ERROR";
+            _focusValidationOnRender = true;
+            return;
+        }
+
+        if (_selectedStudent is null)
+        {
+            return;
+        }
+
+        var provenance = _selectedStudent.Provenance.Items.FirstOrDefault();
+        if (provenance is null)
+        {
+            AddCorrectionValidation("Sourced correction provenance is unavailable.");
+            _correctionReasonCode = "PROFILE_NOT_READY";
+            _state = ValidationErrorState;
+            _focusValidationOnRender = true;
+            return;
+        }
+
+        // AcademicProfileCorrectionRequest carries ExpectedStudentRowVersion and
+        // ExpectedStudentTermStateRowVersion from the selected server response.
+        var request = new AcademicProfileCorrectionRequest(
+            _selectedStudent.TermId,
+            _selectedStudent.StudentRowVersion,
+            _selectedStudent.StudentTermStateRowVersion,
+            normalizedReason,
+            provenance.Source,
+            [new SetGpaOperation(correctedGpa, provenance.Reference)]);
+
+        _isSubmittingCorrection = true;
+        try
+        {
+            var result = await AcademicApi.CorrectAdminStudentAcademicProfileAsync(
+                _selectedStudent.StudentId,
+                request);
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyCorrectionFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            _selectedStudent = result.Value;
+            _state = SuccessState;
+            _successAnnouncement = "Correction saved after server validation.";
+            _showCorrectionDialog = false;
+            ClearFailure();
+            await _correctionTrigger.FocusAsync();
+        }
+        catch (HttpRequestException)
+        {
+            ApplyOffline();
+        }
+        catch (TaskCanceledException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _isSubmittingCorrection = false;
+        }
+    }
+
+    private void ApplyCorrectionFailure(HttpStatusCode statusCode, ApiError? error)
+    {
+        var code = error?.Code ?? "SERVICE_UNAVAILABLE";
+        if (statusCode == HttpStatusCode.Unauthorized || code == "SESSION_EXPIRED")
+        {
+            _showCorrectionDialog = false;
+            PurgeProtectedState();
+            ApplySessionExpired(code, error?.Message, error?.CorrelationId);
+            return;
+        }
+
+        if (statusCode == HttpStatusCode.Forbidden || code is "FORBIDDEN" or "UNAUTHORIZED")
+        {
+            _showCorrectionDialog = false;
+            PurgeProtectedState();
+            ApplyUnauthorized(code, error?.Message, error?.CorrelationId);
+            return;
+        }
+
+        if (statusCode == HttpStatusCode.Conflict && code == "STALE_VERSION")
+        {
+            _showCorrectionDialog = false;
+            _state = StaleState;
+            _reasonCode = "STALE_VERSION";
+            _safeMessage = error?.Message ?? "The academic profile changed. Refresh and review it.";
+            _referenceId = error?.CorrelationId;
+            var currentVersion = error?.CurrentVersion;
+            _currentVersion = currentVersion;
+            _focusStateOnRender = true;
+            return;
+        }
+
+        if (statusCode == HttpStatusCode.BadRequest || code is "VALIDATION_ERROR" or "PROFILE_NOT_READY")
+        {
+            _state = ValidationErrorState;
+            _correctionReasonCode = code;
+            _reasonError = FieldError(error, "reason");
+            _valueError = FieldError(error, "currentGpa");
+            _correctionErrors = error?.FieldErrors is { } fieldErrors
+                ? fieldErrors
+                    .SelectMany(pair => pair.Value)
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList()
+                : [];
+            if (_correctionErrors.Count == 0)
+            {
+                _correctionErrors.Add(error?.Message ?? "Review the academic correction.");
+            }
+
+            _focusValidationOnRender = true;
+            return;
+        }
+
+        _showCorrectionDialog = false;
+        ApplyServiceFailure(code, error?.Message, error?.CorrelationId);
+    }
+
+    private async Task RefreshStudentContextAsync()
+    {
+        if (_selectedStudent is null)
+        {
+            return;
+        }
+
+        var locator = _students.FirstOrDefault(
+            student => string.Equals(
+                student.StudentId,
+                _selectedStudent.StudentId,
+                StringComparison.Ordinal));
+        if (locator is not null)
+        {
+            await OpenStudentAsync(locator);
+        }
+    }
+
+    private async Task RetryAsync()
+    {
+        if (_appContext is null)
+        {
+            await LoadContextAsync();
+            return;
+        }
+
+        if (_hasSearched && !string.IsNullOrWhiteSpace(_lastSubmittedQuery))
+        {
+            await SearchStudentsPageAsync(_currentPage, _lastSubmittedQuery);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            await SearchStudentsAsync();
+            return;
+        }
+
+        _state = ReadyState;
+        ClearFailure();
+    }
+
+    private async Task CancelCorrectionAsync()
+    {
+        if (_isSubmittingCorrection)
+        {
+            return;
+        }
+
+        _showCorrectionDialog = false;
+        ClearCorrectionErrors();
+        if (_state is ValidationErrorState && _selectedStudent is not null)
+        {
+            _state = SuccessState;
+        }
+
+        await _correctionTrigger.FocusAsync();
+    }
+
+    private async Task HandleDialogKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            await CancelCorrectionAsync();
+        }
+    }
+
+    private async Task FocusFirstDialogControlAsync() =>
+        await _correctionReasonInput.FocusAsync();
+
+    private async Task FocusLastDialogControlAsync()
+    {
+        if (_isSubmittingCorrection)
+        {
+            await _cancelCorrectionButton.FocusAsync();
+            return;
+        }
+
+        await _submitCorrectionButton.FocusAsync();
+    }
+
+    private void ApplyFailure(HttpStatusCode statusCode, ApiError? error)
+    {
+        var code = error?.Code ?? "SERVICE_UNAVAILABLE";
+        if (statusCode == HttpStatusCode.Unauthorized || code == "SESSION_EXPIRED")
+        {
+            PurgeProtectedState();
+            ApplySessionExpired(code, error?.Message, error?.CorrelationId);
+        }
+        else if (statusCode == HttpStatusCode.Forbidden || code is "FORBIDDEN" or "UNAUTHORIZED")
+        {
+            PurgeProtectedState();
+            ApplyUnauthorized(code, error?.Message, error?.CorrelationId);
+        }
+        else if (statusCode == HttpStatusCode.BadRequest ||
+                 code is "VALIDATION_ERROR" or "PROFILE_NOT_READY")
+        {
+            ApplyValidation(code, error?.Message ?? "Review the submitted Student request.");
+        }
+        else
+        {
+            ApplyServiceFailure(code, error?.Message, error?.CorrelationId);
+        }
+    }
+
+    private void ApplyValidation(string code, string message)
+    {
+        _state = ValidationErrorState;
+        _reasonCode = code;
+        _safeMessage = message;
+        _focusStateOnRender = true;
+    }
+
+    private void ApplyUnauthorized(string code, string? message, string? referenceId)
+    {
+        _state = UnauthorizedState;
+        _reasonCode = code;
+        _safeMessage = message ?? "Access to Student academic records is restricted.";
+        _referenceId = referenceId;
+        _focusStateOnRender = true;
+    }
+
+    private void ApplySessionExpired(string code, string? message, string? referenceId)
+    {
+        _state = SessionExpiredState;
+        _reasonCode = code;
+        _safeMessage = message ?? "Sign in again before viewing Student academic records.";
+        _referenceId = referenceId;
+        _focusStateOnRender = true;
+    }
+
+    private void ApplyServiceFailure(string code, string? message, string? referenceId)
+    {
+        _state = ServiceErrorState;
+        _reasonCode = code;
+        _safeMessage = message ?? "Student administration could not be loaded safely.";
+        _referenceId = referenceId;
+        _focusStateOnRender = true;
+    }
+
+    private void ApplyOffline()
+    {
+        _state = OfflineState;
+        _reasonCode = "OFFLINE";
+        _safeMessage = "The service could not be reached.";
+    }
+
+    private void PurgeProtectedState()
+    {
+        _students = [];
+        _selectedStudent = null;
+        _searchQuery = string.Empty;
+        _lastSubmittedQuery = string.Empty;
+        _correction = new CorrectionDraft();
+        _hasSearched = false;
+        _currentPage = 1;
+        _pageSize = SearchPageSize;
+        _totalCount = 0;
+        _showCorrectionDialog = false;
+        _isSubmittingCorrection = false;
+        _focusReasonOnRender = false;
+        _focusValidationOnRender = false;
+        _successAnnouncement = null;
+        _currentVersion = null;
+        ClearCorrectionErrors();
+    }
+
+    private void ClearFailure()
+    {
+        _reasonCode = string.Empty;
+        _safeMessage = string.Empty;
+        _referenceId = null;
+        _currentVersion = null;
+    }
+
+    private void ClearCorrectionErrors()
+    {
+        _correctionErrors = [];
+        _correctionReasonCode = string.Empty;
+        _reasonError = null;
+        _valueError = null;
+    }
+
+    private void AddCorrectionValidation(string message)
+    {
+        if (!_correctionErrors.Contains(message, StringComparer.Ordinal))
+        {
+            _correctionErrors.Add(message);
+        }
+    }
+
+    private static string? FieldError(ApiError? error, string fieldFragment)
+    {
+        if (error?.FieldErrors is not { } fieldErrors)
+        {
+            return null;
+        }
+
+        foreach (var (field, messages) in fieldErrors)
+        {
+            if (field.Contains(fieldFragment, StringComparison.OrdinalIgnoreCase))
+            {
+                return messages.FirstOrDefault();
+            }
+        }
+
+        return null;
+    }
+
+    private RenderFragment ReferenceContent() => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(_referenceId))
+        {
+            return;
+        }
+
+        builder.OpenElement(0, "p");
+        builder.AddContent(1, "Reference: ");
+        builder.OpenElement(2, "strong");
+        builder.AddContent(3, _referenceId);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    private static string FormatDecimal(decimal value) =>
+        value.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private sealed class CorrectionDraft
+    {
+        public string Reason { get; set; } = string.Empty;
+
+        public string Value { get; set; } = string.Empty;
+    }
+}

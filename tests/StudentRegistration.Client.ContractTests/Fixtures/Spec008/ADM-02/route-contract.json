@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "ADM-02",
+  "routeTemplate": "/admin/terms",
+  "pageName": "TermAdministrationPage.razor",
+  "apis": [
+    {
+      "operation": "list",
+      "method": "GET",
+      "path": "/api/admin/terms",
+      "successStatus": 200,
+      "successType": "Page<AdminTermDto>",
+      "reasonCodes": [
+        "PAGE_SIZE_INVALID",
+        "VALIDATION_ERROR",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "SERVICE_UNAVAILABLE",
+        "INTERNAL_ERROR"
+      ]
+    },
+    {
+      "operation": "create",
+      "method": "POST",
+      "path": "/api/admin/terms",
+      "successStatus": 201,
+      "successType": "AdminTermDto",
+      "reasonCodes": [
+        "VALIDATION_ERROR",
+        "TERM_CODE_EXISTS",
+        "TERM_STATE_CONFLICT",
+        "IDEMPOTENCY_KEY_REUSED",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "SERVICE_UNAVAILABLE",
+        "INTERNAL_ERROR"
+      ]
+    },
+    {
+      "operation": "update",
+      "method": "PUT",
+      "path": "/api/admin/terms/{termId}",
+      "successStatus": 200,
+      "successType": "AdminTermDto",
+      "reasonCodes": [
+        "VALIDATION_ERROR",
+        "NOT_FOUND",
+        "STALE_VERSION",
+        "TERM_STATE_CONFLICT",
+        "WINDOW_OVERLAP",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "SERVICE_UNAVAILABLE",
+        "INTERNAL_ERROR"
+      ]
+    },
+    {
+      "operation": "publish",
+      "method": "POST",
+      "path": "/api/admin/terms/{termId}/registration-windows/{windowId}/publish",
+      "successStatus": 200,
+      "successType": "AdminTermDto",
+      "reasonCodes": [
+        "VALIDATION_ERROR",
+        "NOT_FOUND",
+        "STALE_VERSION",
+        "WINDOW_OVERLAP",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "SERVICE_UNAVAILABLE",
+        "INTERNAL_ERROR"
+      ]
+    }
+  ],
+  "listQuery": {
+    "query": "trimmed 3..50",
+    "page": "minimum 1",
+    "pageSize": "default 20; maximum 100",
+    "state": "optional",
+    "defaultSort": "code,id",
+    "allowedSorts": [
+      "code,id",
+      "teachingStartsOn,id",
+      "state,id"
+    ]
+  },
+  "mutationRules": {
+    "reasonMinimumLength": 10,
+    "reasonMaximumLength": 500,
+    "sourceMaximumLength": 200,
+    "maximumWindows": 20,
+    "antiforgeryHeader": "X-XSRF-TOKEN",
+    "antiforgeryInterop": "StudentRegistration.antiforgery.getRequestToken",
+    "createClientRequestIdRequired": true,
+    "expectedTermRowVersionRequired": true,
+    "expectedWindowRowVersionsRequired": true,
+    "serverAcceptedRequiredForSuccess": true,
+    "browserClockAuthoritative": false,
+    "safeDraftPreservedOnStale": true,
+    "boundedAggregateRefetchOnStale": true
+  },
+  "requiredStates": [
+    "loading",
+    "empty",
+    "success",
+    "validation-error",
+    "service-error",
+    "unauthorized",
+    "session-expired",
+    "stale",
+    "offline"
+  ],
+  "stateFixtures": [
+    {
+      "id": "ADM-02-loading-v1",
+      "state": "loading",
+      "testId": "ADM-02-COMP-STATE-LOADING",
+      "focus": "preserve-current-or-initial-heading",
+      "liveRegion": "polite"
+    },
+    {
+      "id": "ADM-02-empty-v1",
+      "state": "empty",
+      "testId": "ADM-02-COMP-STATE-EMPTY",
+      "focus": "empty-heading",
+      "liveRegion": "none"
+    },
+    {
+      "id": "ADM-02-success-v1",
+      "state": "success",
+      "testId": "ADM-02-COMP-STATE-SUCCESS",
+      "focus": "page-heading-unless-user-set-focus",
+      "liveRegion": "polite"
+    },
+    {
+      "id": "ADM-02-validation-error-v1",
+      "state": "validation-error",
+      "testId": "ADM-02-COMP-STATE-VALIDATION-ERROR",
+      "focus": "validation-summary",
+      "liveRegion": "assertive"
+    },
+    {
+      "id": "ADM-02-service-error-v1",
+      "state": "service-error",
+      "testId": "ADM-02-COMP-STATE-SERVICE-ERROR",
+      "focus": "preserve-background-or-heading-after-navigation-failure",
+      "liveRegion": "polite"
+    },
+    {
+      "id": "ADM-02-unauthorized-v1",
+      "state": "unauthorized",
+      "testId": "ADM-02-COMP-STATE-UNAUTHORIZED",
+      "focus": "denied-heading",
+      "liveRegion": "assertive"
+    },
+    {
+      "id": "ADM-02-session-expired-v1",
+      "state": "session-expired",
+      "testId": "ADM-02-COMP-STATE-SESSION-EXPIRED",
+      "focus": "session-expired-heading",
+      "liveRegion": "assertive"
+    },
+    {
+      "id": "ADM-02-stale-v1",
+      "state": "stale",
+      "testId": "ADM-02-COMP-STATE-STALE",
+      "focus": "preserve-current-or-heading-after-submitted-command",
+      "liveRegion": "polite"
+    },
+    {
+      "id": "ADM-02-offline-v1",
+      "state": "offline",
+      "testId": "ADM-02-COMP-STATE-OFFLINE",
+      "focus": "preserve-current",
+      "liveRegion": "polite"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "ADM-02-create-v1",
+      "testId": "ADM-02-E2E-PRIMARY",
+      "outcome": "server-accepted-created-term"
+    },
+    {
+      "id": "ADM-02-invalid-dates-v1",
+      "testId": "ADM-02-E2E-FAILURE",
+      "outcome": "linked-validation-summary-no-command"
+    },
+    {
+      "id": "ADM-02-overlap-v1",
+      "testId": "ADM-02-E2E-FAILURE",
+      "outcome": "all-conflicting-windows-no-publish"
+    },
+    {
+      "id": "ADM-02-concurrent-edit-v1",
+      "testId": "ADM-02-E2E-FAILURE",
+      "outcome": "stale-review-safe-draft-preserved"
+    },
+    {
+      "id": "ADM-02-publish-v1",
+      "testId": "ADM-02-E2E-PRIMARY",
+      "outcome": "server-accepted-published-window"
+    }
+  ],
+  "responsiveWidths": [
+    320,
+    375,
+    768,
+    1024,
+    1280,
+    1920
+  ],
+  "visualTargets": {
+    "browsers": [
+      "chrome",
+      "edge",
+      "firefox",
+      "webkit"
+    ],
+    "widths": [
+      375,
+      768,
+      1280,
+      1920
+    ],
+    "count": 16
+  },
+  "testIds": [
+    "ADM-02-CONTRACT-T193",
+    "ADM-02-COMP-T194",
+    "ADM-02-E2E-PRIMARY",
+    "ADM-02-E2E-FAILURE",
+    "ADM-02-A11Y-T195",
+    "ADM-02-VIS-T196"
+  ]
+}

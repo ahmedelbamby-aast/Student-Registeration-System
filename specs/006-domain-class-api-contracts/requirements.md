@@ -240,6 +240,10 @@ interface PublicContextDto {
 }
 ```
 
+`fieldErrors` is bounded to at most 20 keys, at most 5 messages per key,
+and at most 256 characters per message. Owners fail closed instead of
+returning an unbounded diagnostic payload.
+
 Feature endpoints are defined and owned by SPEC-007 through SPEC-017. SPEC-008
 owns `GET /api/public/context` and `GET /api/context`; SPEC-006 owns only the
 shared response schemas and protocol rules.

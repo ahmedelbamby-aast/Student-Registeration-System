@@ -82,6 +82,47 @@ public sealed class ApiErrorModelTests
     }
 
     [Fact]
+    public void Field_errors_are_bounded_for_safe_predictable_responses()
+    {
+        var maximum = Enumerable.Range(1, 20).ToDictionary(
+            index => $"field{index}",
+            _ => (IReadOnlyList<string>)Enumerable.Repeat(new string('x', 256), 5).ToArray(),
+            StringComparer.Ordinal);
+
+        var error = new ApiError(
+            "VALIDATION_ERROR",
+            "One or more fields are invalid.",
+            "correlation-bounded",
+            maximum);
+
+        Assert.Equal(20, error.FieldErrors!.Count);
+        Assert.All(error.FieldErrors.Values, messages => Assert.Equal(5, messages.Count));
+
+        maximum["field21"] = ["Too many fields."];
+        Assert.Throws<ArgumentException>(() => new ApiError(
+            "VALIDATION_ERROR",
+            "One or more fields are invalid.",
+            "correlation-too-many-fields",
+            maximum));
+        Assert.Throws<ArgumentException>(() => new ApiError(
+            "VALIDATION_ERROR",
+            "One or more fields are invalid.",
+            "correlation-too-many-messages",
+            new Dictionary<string, IReadOnlyList<string>>
+            {
+                ["field"] = Enumerable.Repeat("message", 6).ToArray()
+            }));
+        Assert.Throws<ArgumentException>(() => new ApiError(
+            "VALIDATION_ERROR",
+            "One or more fields are invalid.",
+            "correlation-message-too-long",
+            new Dictionary<string, IReadOnlyList<string>>
+            {
+                ["field"] = [new string('x', 257)]
+            }));
+    }
+
+    [Fact]
     public void Web_serialization_omits_absent_optional_details_and_uses_safe_names()
     {
         var minimal = new ApiError(

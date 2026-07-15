@@ -1,0 +1,694 @@
+@page "/student"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.UX
+@using StudentRegistration.Contracts.Academics
+@inject AcademicApiClient AcademicApi
+
+<PageTitle>Student dashboard | Student Registration</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="srs-student-dashboard-host"
+         data-route-id="STU-01"
+         data-state="loading"
+         data-contract-state="STU-01-COMP-STATE-LOADING"
+         data-contract-id="STU-01-CONTRACT-T148">
+        <a class="srs-dashboard-skip-link" href="#main-content">Skip to main content</a>
+        <header class="srs-dashboard-standalone-header" role="banner">
+            <img src="/brand/aastmt-logo.png"
+                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+            <div>
+                <strong>AASTMT Student Registration</strong>
+                <span>Student academic services</span>
+            </div>
+        </header>
+        <main id="main-content"
+              data-testid="student-dashboard-page"
+              tabindex="-1">
+            <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
+                Student dashboard
+            </h1>
+            <section data-testid="student-dashboard-loading"
+                     role="status"
+                     aria-live="polite"
+                     aria-busy="true">
+                <h2>Loading your academic context</h2>
+                <p>
+                    Checking the server date, academic term, registration window,
+                    profile, and holds.
+                </p>
+            </section>
+        </main>
+        <footer class="srs-dashboard-standalone-footer" role="contentinfo">
+            <span>AASTMT academic services demo</span>
+        </footer>
+    </div>
+}
+else if (UseAuthenticatedShell && _shellContext is not null)
+{
+    <div class="srs-student-dashboard-host">
+        <AppShell Context="@_shellContext"
+                  IsLoading="false"
+                  MainContentId="main-content"
+                  SkipLinkLabel="Skip to main content"
+                  BrandLogoSource="/brand/aastmt-logo.png"
+                  BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+                  ServerDateTimeLabel="Server date and time"
+                  TeachingTermLabel="Teaching term"
+                  RegistrationTermLabel="Registration term"
+                  RegistrationWindowLabel="Registration window"
+                  NoTeachingTermLabel="No current teaching term"
+                  NoRegistrationTermLabel="No current registration term"
+                  NoRegistrationWindowLabel="No registration window"
+                  AuthorizedRolesLabel="Authorized roles"
+                  ActiveRoleLabel="Active role"
+                  SessionLabel="Session"
+                  ServiceLabel="Service"
+                  SupportLinkLabel="Open support"
+                  LoadingLabel="Loading Student dashboard">
+            <Navigation>
+                <RoleNavigation AccessibleName="Student role navigation"
+                                Items="@StudentNavigation" />
+            </Navigation>
+            <ChildContent>
+                <div class="srs-student-dashboard"
+                     data-testid="student-dashboard-page"
+                     data-route-id="STU-01"
+                     data-state="@StateToken"
+                     data-contract-state="@ContractStateId"
+                     data-component-test="STU-01-COMP-T149"
+                     data-primary-test="STU-01-E2E-PRIMARY"
+                     data-failure-test="STU-01-E2E-FAILURE"
+                     data-accessibility-test="STU-01-A11Y-T150"
+                     data-visual-test="STU-01-VIS-T151">
+                    <header class="srs-student-dashboard__intro">
+                        <div>
+                            <p class="srs-student-dashboard__eyebrow">Student academic services</p>
+                            <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
+                                Student dashboard
+                            </h1>
+                            <p>
+                                Review the server-authoritative academic and registration
+                                status before continuing.
+                            </p>
+                        </div>
+                        <button type="button"
+                                class="srs-dashboard-refresh"
+                                data-testid="student-dashboard-refresh"
+                                disabled="@_isRefreshing"
+                                @onclick="RefreshDashboardAsync">
+                            @(_isRefreshing ? "Refreshing dashboard…" : "Refresh dashboard")
+                        </button>
+                    </header>
+
+                    <p class="srs-student-dashboard__status"
+                       data-testid="student-dashboard-status"
+                       role="status"
+                       aria-live="polite">
+                        @DashboardStatusText
+                    </p>
+
+                    <div class="srs-student-dashboard__summary-grid">
+                        <section class="srs-dashboard-card"
+                                 role="region"
+                                 aria-labelledby="academic-summary-heading">
+                            <h2 id="academic-summary-heading">Academic summary</h2>
+                            @if (_academicContext is not null)
+                            {
+                                <dl class="srs-dashboard-facts">
+                                    <div>
+                                        <dt>University ID</dt>
+                                        <dd>@_academicContext.UniversityId</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Program</dt>
+                                        <dd>@_academicContext.ProgramCode</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Cohort</dt>
+                                        <dd>@_academicContext.Cohort</dd>
+                                    </div>
+                                    <div>
+                                        <dt>GPA</dt>
+                                        <dd>@_academicContext.CurrentGpa.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Earned credits</dt>
+                                        <dd>@_academicContext.EarnedCredits.ToString("0.##", CultureInfo.InvariantCulture)</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Standing</dt>
+                                        <dd>@_academicContext.Standing</dd>
+                                    </div>
+                                </dl>
+                                <p class="srs-dashboard-data-version">
+                                    Academic data as of
+                                    <time datetime="@UtcInstant(_academicContext.DataAsOfUtc)">
+                                        @FormatCompactDateTime(_academicContext.DataAsOfUtc)
+                                    </time>
+                                </p>
+                            }
+                            else
+                            {
+                                <p>Academic profile details are unavailable until the stated blocker is resolved.</p>
+                            }
+                        </section>
+
+                        <section class="srs-dashboard-card"
+                                 role="region"
+                                 aria-labelledby="registration-summary-heading">
+                            <h2 id="registration-summary-heading">Registration status</h2>
+                            @if (_appContext!.RegistrationTerm is null)
+                            {
+                                <h3>No current registration term</h3>
+                                <p>
+                                    The server has not published a current registration term.
+                                    Refresh the context later or use the support reference.
+                                </p>
+                            }
+                            else
+                            {
+                                <p>
+                                    <strong>@_appContext.RegistrationTerm.Label</strong>
+                                </p>
+                                <p data-registration-window-summary="@WindowStateToken">
+                                    @WindowDescription
+                                </p>
+                                @if (_state is RouteUiState.Stale)
+                                {
+                                    <p class="srs-dashboard-reason"
+                                       data-reason-code="@_reasonCode">@_reasonCode</p>
+                                }
+                            }
+                        </section>
+                    </div>
+
+                    @if (HasRegistrationBlocker)
+                    {
+                        <section id="registration-blockers"
+                                 class="srs-dashboard-blockers"
+                                 data-testid="registration-blockers"
+                                 aria-labelledby="registration-blockers-heading"
+                                 aria-live="assertive">
+                            <h2 id="registration-blockers-heading">Registration blocked</h2>
+                            <p class="srs-dashboard-reason"
+                               data-reason-code="@_reasonCode">@_reasonCode</p>
+                            @if (_academicContext is not null)
+                            {
+                                <ul>
+                                    @foreach (var hold in BlockingHolds)
+                                    {
+                                        <li>
+                                            <strong>@hold.Code</strong>
+                                            <span>@hold.Message</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p>@_safeMessage</p>
+                            }
+                        </section>
+                    }
+
+                    <section class="srs-dashboard-registration-action"
+                             aria-labelledby="registration-action-heading">
+                        <h2 id="registration-action-heading">Online registration</h2>
+                        @if (RegistrationEnabled)
+                        {
+                            <a class="srs-dashboard-primary-action"
+                               data-testid="registration-primary-action"
+                               href="/student/subjects">Start registration</a>
+                        }
+                        else
+                        {
+                            <p id="registration-action-reason">@RegistrationActionReason</p>
+                            <button type="button"
+                                    class="srs-dashboard-primary-action"
+                                    data-testid="registration-primary-action"
+                                    disabled
+                                    aria-disabled="true"
+                                    aria-describedby="@RegistrationActionDescriptionId">
+                                Start registration
+                            </button>
+                        }
+                        @* The exact future SPEC-015 transition remains documented but is
+                           not rendered until the contributor can authorize it:
+                           <a href="/student/schedule">Resume registration</a> *@
+                    </section>
+
+                    <section class="srs-dashboard-card srs-dashboard-timetable"
+                             role="region"
+                             aria-labelledby="current-timetable-heading"
+                             data-testid="current-timetable-unavailable"
+                             data-contributor-state="unavailable">
+                        <h2 id="current-timetable-heading">Current timetable</h2>
+                        <p>Current timetable is unavailable until SPEC-015 is delivered.</p>
+                        <p>
+                            Pending owner endpoint:
+                            <code>/api/student/registrations/current/timetable</code>
+                        </p>
+                    </section>
+
+                    <nav class="srs-dashboard-related-links" aria-label="Student account and registration links">
+                        <a href="/student/registrations">Current registrations</a>
+                        <a href="/student/account">Account</a>
+                    </nav>
+                </div>
+            </ChildContent>
+        </AppShell>
+    </div>
+}
+else
+{
+    <div class="srs-student-dashboard-host srs-student-dashboard-host--failure"
+         data-route-id="STU-01"
+         data-state="@StateToken"
+         data-contract-state="@ContractStateId">
+        <a class="srs-dashboard-skip-link" href="#main-content">Skip to main content</a>
+        <header class="srs-dashboard-standalone-header" role="banner">
+            <img src="/brand/aastmt-logo.png"
+                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+            <div>
+                <strong>AASTMT Student Registration</strong>
+                <span>Student academic services</span>
+            </div>
+        </header>
+        <main id="main-content"
+              data-testid="student-dashboard-page"
+              tabindex="-1">
+            <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
+                Student dashboard
+            </h1>
+            @if (IsAssertiveState)
+            {
+                <section class="srs-dashboard-failure"
+                         aria-labelledby="student-dashboard-failure-heading"
+                         role="alert"
+                         aria-live="assertive">
+                    @FailureContent
+                </section>
+            }
+            else
+            {
+                <section class="srs-dashboard-failure"
+                         aria-labelledby="student-dashboard-failure-heading"
+                         role="status"
+                         aria-live="polite">
+                    @FailureContent
+                </section>
+            }
+        </main>
+        <footer class="srs-dashboard-standalone-footer" role="contentinfo">
+            <a href="/status/support">Open safe support path</a>
+        </footer>
+    </div>
+}
+
+@code {
+    private const string RegistrationHold = "REGISTRATION_HOLD";
+    private const string ProfileNotReady = "PROFILE_NOT_READY";
+    private const string ProfileNotFound = "PROFILE_NOT_FOUND";
+    private const string WindowClosed = "WINDOW_CLOSED";
+    private const string WindowChanged = "WINDOW_CHANGED";
+    private const string StaleVersion = "STALE_VERSION";
+    private const string Unauthorized = "UNAUTHORIZED";
+    private const string Forbidden = "FORBIDDEN";
+    private const string SessionExpired = "SESSION_EXPIRED";
+    private const string ContextUnavailable = "CONTEXT_UNAVAILABLE";
+    private const string ServiceUnavailable = "SERVICE_UNAVAILABLE";
+    private const string Maintenance = "MAINTENANCE";
+
+    private const string LoadingStateId = "STU-01-COMP-STATE-LOADING";
+    private const string EmptyStateId = "STU-01-COMP-STATE-EMPTY";
+    private const string SuccessStateId = "STU-01-COMP-STATE-SUCCESS";
+    private const string ValidationStateId = "STU-01-COMP-STATE-VALIDATION-ERROR";
+    private const string ServiceStateId = "STU-01-COMP-STATE-SERVICE-ERROR";
+    private const string UnauthorizedStateId = "STU-01-COMP-STATE-UNAUTHORIZED";
+    private const string SessionExpiredStateId = "STU-01-COMP-STATE-SESSION-EXPIRED";
+    private const string StaleStateId = "STU-01-COMP-STATE-STALE";
+    private const string OfflineStateId = "STU-01-COMP-STATE-OFFLINE";
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Student dashboard", "/student", IsActive: true)
+    ];
+
+    private AppContextDto? _appContext;
+    private StudentAcademicContextDto? _academicContext;
+    private FrontendAppContextView? _shellContext;
+    private RouteUiState _state = RouteUiState.Loading;
+    private ElementReference _heading;
+    private bool _isLoading = true;
+    private bool _isRefreshing;
+    private bool _focusHeading;
+    private string _reasonCode = ContextUnavailable;
+    private string _safeMessage = "Student dashboard context could not be loaded.";
+    private string? _referenceId;
+
+    private string StateToken => _state switch
+    {
+        RouteUiState.Loading => "loading",
+        RouteUiState.Empty => "empty",
+        RouteUiState.Success => "success",
+        RouteUiState.ValidationError => "validation-error",
+        RouteUiState.ServiceError => "service-error",
+        RouteUiState.Unauthorized => "unauthorized",
+        RouteUiState.SessionExpired => "session-expired",
+        RouteUiState.Stale => "stale",
+        RouteUiState.Offline => "offline",
+        _ => "service-error"
+    };
+
+    private string ContractStateId => _state switch
+    {
+        RouteUiState.Loading => LoadingStateId,
+        RouteUiState.Empty => EmptyStateId,
+        RouteUiState.Success => SuccessStateId,
+        RouteUiState.ValidationError => ValidationStateId,
+        RouteUiState.ServiceError => ServiceStateId,
+        RouteUiState.Unauthorized => UnauthorizedStateId,
+        RouteUiState.SessionExpired => SessionExpiredStateId,
+        RouteUiState.Stale => StaleStateId,
+        RouteUiState.Offline => OfflineStateId,
+        _ => ServiceStateId
+    };
+
+    private bool UseAuthenticatedShell =>
+        _shellContext is not null &&
+        _state is RouteUiState.Empty or
+            RouteUiState.Success or
+            RouteUiState.ValidationError or
+            RouteUiState.Stale;
+
+    private bool IsAssertiveState =>
+        _state is RouteUiState.Unauthorized or RouteUiState.SessionExpired;
+
+    private IReadOnlyList<AcademicHoldDto> BlockingHolds =>
+        _academicContext?.ActiveHolds
+            .Where(hold => hold.BlocksRegistration)
+            .ToArray() ?? [];
+
+    private bool HasRegistrationBlocker =>
+        _state is RouteUiState.ValidationError;
+
+    private bool RegistrationEnabled =>
+        _state is RouteUiState.Success &&
+        _appContext?.RegistrationWindowState is RegistrationWindowState.Open &&
+        BlockingHolds.Count == 0;
+
+    private string RegistrationActionDescriptionId => HasRegistrationBlocker
+        ? "registration-blockers"
+        : "registration-action-reason";
+
+    private string WindowStateToken => _appContext?.RegistrationWindowState switch
+    {
+        RegistrationWindowState.Open => "open",
+        RegistrationWindowState.Upcoming => "upcoming",
+        RegistrationWindowState.Closed => "closed",
+        _ => "none"
+    };
+
+    private string WindowDescription => _appContext?.RegistrationWindow switch
+    {
+        { State: RegistrationWindowState.Open } window =>
+            $"Registration is open and closes {FormatDateTime(window.ClosesAtUtc)} ({_appContext.TimeZoneId}).",
+        { State: RegistrationWindowState.Upcoming } window =>
+            $"Registration opens {FormatDateTime(window.OpensAtUtc)} ({_appContext.TimeZoneId}).",
+        { State: RegistrationWindowState.Closed } window =>
+            $"Registration closed {FormatDateTime(window.ClosesAtUtc)} ({_appContext.TimeZoneId}).",
+        _ => "No registration window is available."
+    };
+
+    private string RegistrationActionReason => _state switch
+    {
+        RouteUiState.ValidationError => "Resolve the listed blocker before starting registration.",
+        RouteUiState.Stale => "Registration is closed. Refresh the dashboard before continuing.",
+        RouteUiState.Empty => "Registration cannot start until the server publishes a registration term.",
+        _ when _appContext?.RegistrationWindowState is RegistrationWindowState.Upcoming =>
+            "Registration has not opened. Review the server opening time above.",
+        _ => "Registration is not currently available."
+    };
+
+    private string DashboardStatusText => _isRefreshing
+        ? "Refreshing server-authoritative dashboard context."
+        : _state switch
+        {
+            RouteUiState.Empty => "No registration term is currently published.",
+            RouteUiState.ValidationError => "Registration is blocked until the listed issue is resolved.",
+            RouteUiState.Stale => "The registration window is closed or changed; refresh before continuing.",
+            _ => "Student dashboard context is current."
+        };
+
+    private RenderFragment FailureContent => @<text>
+        <h2 id="student-dashboard-failure-heading">@FailureHeading</h2>
+        <p class="srs-dashboard-reason" data-reason-code="@_reasonCode">@_reasonCode</p>
+        <p>@_safeMessage</p>
+        @if (!string.IsNullOrWhiteSpace(_referenceId))
+        {
+            <p>Reference <strong>@_referenceId</strong></p>
+        }
+        <div class="srs-dashboard-failure__actions">
+            <button type="button"
+                    data-testid="student-dashboard-refresh"
+                    disabled="@_isRefreshing"
+                    @onclick="RefreshDashboardAsync">
+                @(_isRefreshing ? "Refreshing dashboard…" : "Refresh dashboard")
+            </button>
+            <a href="/student/login">Sign in again</a>
+        </div>
+    </text>;
+
+    private string FailureHeading => _state switch
+    {
+        RouteUiState.Unauthorized => "Student dashboard access denied",
+        RouteUiState.SessionExpired => "Session expired",
+        RouteUiState.Offline => "Offline Student dashboard status",
+        RouteUiState.Stale => "Student dashboard context changed",
+        _ => "Student dashboard unavailable"
+    };
+
+    protected override Task OnInitializedAsync() =>
+        LoadDashboardAsync(initialNavigation: true);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusHeading && !_isLoading)
+        {
+            _focusHeading = false;
+            await _heading.FocusAsync(preventScroll: true);
+        }
+    }
+
+    private async Task RefreshDashboardAsync()
+    {
+        if (_isRefreshing)
+        {
+            return;
+        }
+
+        _isRefreshing = true;
+        try
+        {
+            await LoadDashboardAsync(initialNavigation: false);
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
+    }
+
+    private async Task LoadDashboardAsync(bool initialNavigation)
+    {
+        if (initialNavigation)
+        {
+            _isLoading = true;
+            _state = RouteUiState.Loading;
+            _focusHeading = true;
+        }
+
+        try
+        {
+            var appContextTask = AcademicApi.GetAppContextAsync();
+            var academicContextTask = AcademicApi.GetStudentAcademicContextAsync();
+            await Task.WhenAll(appContextTask, academicContextTask);
+
+            var appResult = await appContextTask;
+            var academicResult = await academicContextTask;
+            ResetLoadedData();
+
+            if (!appResult.IsSuccess || appResult.Value is null)
+            {
+                ApplyFailure(appResult.Error, appResult.StatusCode);
+                return;
+            }
+
+            _appContext = appResult.Value;
+            if (!IsStudentContext(_appContext))
+            {
+                ApplyFailure(
+                    new ApiError(
+                        Forbidden,
+                        "The active server role is not authorized for the Student dashboard.",
+                        "STU-01-AUTHORIZATION"),
+                    HttpStatusCode.Forbidden);
+                return;
+            }
+
+            if (_appContext.ServiceState is not ServiceState.Available)
+            {
+                var code = _appContext.ServiceState is ServiceState.Maintenance
+                    ? Maintenance
+                    : ServiceUnavailable;
+                ApplyFailure(
+                    new ApiError(
+                        code,
+                        "Student academic services are temporarily unavailable.",
+                        "STU-01-SERVICE"),
+                    HttpStatusCode.ServiceUnavailable);
+                return;
+            }
+
+            _shellContext = ToShellContext(_appContext);
+            if (!academicResult.IsSuccess || academicResult.Value is null)
+            {
+                ApplyFailure(academicResult.Error, academicResult.StatusCode);
+                return;
+            }
+
+            _academicContext = academicResult.Value;
+            ResolveAuthoritativeDashboardState();
+        }
+        catch (HttpRequestException)
+        {
+            ResetLoadedData();
+            _state = RouteUiState.Offline;
+            _reasonCode = "OFFLINE";
+            _safeMessage = "The browser cannot reach Student academic services. Reconnect and refresh the dashboard.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ResolveAuthoritativeDashboardState()
+    {
+        _referenceId = null;
+        if (_appContext!.RegistrationTerm is null ||
+            _appContext.RegistrationWindowState is RegistrationWindowState.None)
+        {
+            _state = RouteUiState.Empty;
+            _reasonCode = "NO_REGISTRATION_TERM";
+            _safeMessage = "The server has not published a current registration term.";
+            return;
+        }
+
+        if (BlockingHolds.Count > 0)
+        {
+            _state = RouteUiState.ValidationError;
+            _reasonCode = RegistrationHold;
+            _safeMessage = "Registration is blocked by the listed active hold.";
+            return;
+        }
+
+        if (_appContext.RegistrationWindowState is RegistrationWindowState.Closed)
+        {
+            _state = RouteUiState.Stale;
+            _reasonCode = WindowClosed;
+            _safeMessage = "The server reports that the registration window is closed.";
+            return;
+        }
+
+        _state = RouteUiState.Success;
+        _reasonCode = "AVAILABLE";
+        _safeMessage = "Student dashboard context is available.";
+    }
+
+    private void ApplyFailure(ApiError? error, HttpStatusCode statusCode)
+    {
+        _reasonCode = error?.Code ?? ContextUnavailable;
+        _safeMessage = error?.Message ?? "Student dashboard context could not be loaded.";
+        _referenceId = error?.CorrelationId;
+
+        _state = _reasonCode switch
+        {
+            ProfileNotReady or ProfileNotFound or RegistrationHold =>
+                RouteUiState.ValidationError,
+            WindowClosed or WindowChanged or StaleVersion => RouteUiState.Stale,
+            SessionExpired => RouteUiState.SessionExpired,
+            Unauthorized or Forbidden => RouteUiState.Unauthorized,
+            _ when statusCode is HttpStatusCode.Unauthorized => RouteUiState.Unauthorized,
+            _ when statusCode is HttpStatusCode.Forbidden => RouteUiState.Unauthorized,
+            _ => RouteUiState.ServiceError
+        };
+
+        if (_state is RouteUiState.Unauthorized or
+            RouteUiState.SessionExpired or
+            RouteUiState.ServiceError)
+        {
+            _appContext = null;
+            _academicContext = null;
+            _shellContext = null;
+        }
+    }
+
+    private void ResetLoadedData()
+    {
+        _appContext = null;
+        _academicContext = null;
+        _shellContext = null;
+        _referenceId = null;
+    }
+
+    private static bool IsStudentContext(AppContextDto context) =>
+        string.Equals(context.ActiveRole, "Student", StringComparison.Ordinal) &&
+        context.AuthorizedRoles.Contains("Student", StringComparer.Ordinal);
+
+    private static FrontendAppContextView ToShellContext(AppContextDto context) => new(
+        new DateTimeOffset(context.ServerTimeUtc),
+        context.TimeZoneId,
+        context.TeachingTerm?.Label,
+        context.RegistrationTerm?.Label,
+        context.RegistrationWindowState,
+        context.RegistrationWindow,
+        context.DisplayName,
+        context.AuthorizedRoles,
+        context.ActiveRole,
+        context.SessionState is SessionState.RoleSelectionRequired,
+        SessionStateToken(context.SessionState),
+        new DateTimeOffset(context.ExpiresAtUtc),
+        ServiceStateToken(context.ServiceState),
+        context.SupportReferencePath);
+
+    private static string SessionStateToken(SessionState state) => state switch
+    {
+        SessionState.Active => "active",
+        SessionState.Expiring => "expiring",
+        SessionState.RoleSelectionRequired => "role-selection-required",
+        _ => "unknown"
+    };
+
+    private static string ServiceStateToken(ServiceState state) => state switch
+    {
+        ServiceState.Available => "available",
+        ServiceState.Maintenance => "maintenance",
+        ServiceState.Unavailable => "unavailable",
+        _ => "unavailable"
+    };
+
+    private static string UtcInstant(DateTime value) =>
+        value.ToString("O", CultureInfo.InvariantCulture);
+
+    private static string FormatDateTime(DateTime value) =>
+        value.ToString("dd MMMM yyyy 'at' HH:mm 'UTC'", CultureInfo.InvariantCulture);
+
+    private static string FormatCompactDateTime(DateTime value) =>
+        value.ToString("dd MMM yyyy 'at' HH:mm 'UTC'", CultureInfo.InvariantCulture);
+}

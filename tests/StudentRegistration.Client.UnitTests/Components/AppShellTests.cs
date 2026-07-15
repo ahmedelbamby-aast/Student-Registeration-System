@@ -1,6 +1,7 @@
 using Bunit;
 using StudentRegistration.Client.Components.Layout;
 using StudentRegistration.Client.Features.Frontend.Models;
+using StudentRegistration.Contracts;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.Client.UnitTests.Components;
@@ -49,6 +50,33 @@ public sealed class AppShellTests
         Assert.Contains("Student", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Active", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Available", cut.Markup, StringComparison.Ordinal);
+        Assert.Equal("open", cut.Find("[data-context='registration-window']").GetAttribute("data-window-state"));
+        Assert.Equal(2, cut.FindAll("[data-context='registration-window'] time").Count);
+    }
+
+    [Fact]
+    public void Renders_the_server_none_state_without_inventing_window_times()
+    {
+        using var context = new BunitContext();
+        var appContext = CreateAppContext(
+            registrationTerm: null,
+            RegistrationWindowState.None,
+            registrationWindow: null);
+
+        var cut = context.Render<AppShell>(parameters => parameters
+            .Add(component => component.Context, appContext)
+            .Add(component => component.RegistrationTermLabel, "Registration term")
+            .Add(component => component.RegistrationWindowLabel, "Registration window")
+            .Add(component => component.NoRegistrationTermLabel, "No registration term")
+            .Add(component => component.NoRegistrationWindowLabel, "No registration window"));
+
+        Assert.Equal(
+            "No registration term",
+            cut.Find("[data-context='registration-term']").TextContent.Trim());
+        var window = cut.Find("[data-context='registration-window']");
+        Assert.Equal("none", window.GetAttribute("data-window-state"));
+        Assert.Contains("No registration window", window.TextContent, StringComparison.Ordinal);
+        Assert.Empty(window.QuerySelectorAll("time"));
     }
 
     [Fact]
@@ -100,14 +128,24 @@ public sealed class AppShellTests
             "var(--srs-");
     }
 
-    private static FrontendAppContextView CreateAppContext() =>
+    private static FrontendAppContextView CreateAppContext(
+        string? registrationTerm = "Summer 2026",
+        RegistrationWindowState registrationWindowState = RegistrationWindowState.Open,
+        RegistrationWindowSummaryDto? registrationWindow = null) =>
         new(
             new DateTimeOffset(2026, 7, 13, 10, 30, 0, TimeSpan.FromHours(3)),
             "Africa/Cairo",
             "Spring 2026",
-            "Summer 2026",
-            new DateTimeOffset(2026, 7, 13, 8, 0, 0, TimeSpan.FromHours(3)),
-            new DateTimeOffset(2026, 7, 20, 17, 0, 0, TimeSpan.FromHours(3)),
+            registrationTerm,
+            registrationWindowState,
+            registrationWindow ?? (registrationWindowState is RegistrationWindowState.None
+                ? null
+                : new RegistrationWindowSummaryDto(
+                    "WINDOW-1",
+                    registrationWindowState,
+                    new DateTime(2026, 7, 13, 5, 0, 0, DateTimeKind.Utc),
+                    new DateTime(2026, 7, 20, 14, 0, 0, DateTimeKind.Utc),
+                    "window-v1")),
             "Ahmed Student",
             ["Student"],
             "Student",

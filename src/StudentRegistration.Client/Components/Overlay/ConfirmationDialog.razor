@@ -60,6 +60,8 @@
     private ElementReference _dialog;
     private ElementReference _cancelButton;
     private ElementReference _confirmButton;
+    private bool _focusOnOpen;
+    private bool _wasOpen;
 
     [Parameter]
     public bool IsOpen { get; set; }
@@ -133,6 +135,20 @@
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(BusyLabel);
         }
+
+        _focusOnOpen = IsOpen && !_wasOpen;
+        _wasOpen = IsOpen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focusOnOpen)
+        {
+            return;
+        }
+
+        _focusOnOpen = false;
+        await FocusFirstAsync();
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs eventArgs)

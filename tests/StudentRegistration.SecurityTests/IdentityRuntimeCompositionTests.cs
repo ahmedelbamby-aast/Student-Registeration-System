@@ -91,7 +91,9 @@ public sealed class IdentityRuntimeCompositionTests
         using var lecturerRequest = ContextRequest(
             availableRoles,
             RolePolicies.Lecturer,
-            user.Id);
+            user.Id,
+            activeRole: RolePolicies.Admin,
+            existingPermissions: RolePolicies.PermissionsForRole(RolePolicies.Admin));
         lecturerRequest.Headers.TryAddWithoutValidation(AntiforgeryHeader, antiforgery.Token);
         lecturerRequest.Headers.TryAddWithoutValidation("Cookie", antiforgery.CookieHeader);
         using var lecturerResponse = await client.SendAsync(lecturerRequest);
@@ -158,6 +160,61 @@ public sealed class IdentityRuntimeCompositionTests
                 .Select(claim => claim.Value)
                 .Order(StringComparer.Ordinal)
                 .ToArray());
+    }
+
+    [Fact]
+    public async Task Real_admin_sign_in_issues_the_exact_effective_role_permissions()
+    {
+        const string password = "Spec008-Admin-Password!42";
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var user = new ApplicationUser(
+            Guid.NewGuid(),
+            "admin.academic",
+            "ADMIN.ACADEMIC",
+            universityId: null,
+            passwordHash: "PLACEHOLDER",
+            securityStamp: Convert.ToHexString(
+                System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)));
+        user.ReplacePasswordHash(
+            hasher.HashPassword(user, password),
+            Convert.ToHexString(
+                System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)));
+        var staff = new Staff(
+            Guid.NewGuid(),
+            user.Id,
+            "STAFF-ACADEMIC-ADMIN",
+            "Academic Admin");
+        var store = new TrackingIdentityAccountStore(
+            user,
+            [RolePolicies.Admin],
+            staff);
+        await using var application = await CreateIdentityEndpointApplicationAsync(store);
+        using var client = application.GetTestClient();
+        client.BaseAddress = new Uri("https://localhost");
+        var antiforgery = await GetAntiforgeryTokenAsync(client);
+        var capture = application.Services.GetRequiredService<SignInCapture>();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/staff/login")
+        {
+            Content = JsonContent.Create(new { userName = user.UserName, password })
+        };
+        request.Headers.TryAddWithoutValidation(AntiforgeryHeader, antiforgery.Token);
+        request.Headers.TryAddWithoutValidation("Cookie", antiforgery.CookieHeader);
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(capture.Principal);
+        Assert.Equal(
+            [RolePolicies.Admin],
+            capture.Principal!.FindAll(ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .ToArray());
+        Assert.Equal(
+            RolePolicies.PermissionsForRole(RolePolicies.Admin)
+                .Order(StringComparer.Ordinal),
+            capture.Principal.FindAll(RolePolicies.PermissionClaimType)
+                .Select(claim => claim.Value)
+                .Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -323,6 +380,7 @@ public sealed class IdentityRuntimeCompositionTests
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<IIdentityPasswordValidator, IdentityPasswordValidator>();
         builder.Services.AddSingleton<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
+        builder.Services.AddScoped<StaffAuthenticationService>();
         builder.Services.AddScoped<SessionLifecycleService>();
         builder.Services
             .AddAuthentication(TestAuthenticationScheme)
@@ -340,7 +398,14 @@ public sealed class IdentityRuntimeCompositionTests
                 });
         builder.Services.AddIdentityAuthorization();
         builder.Services.AddAntiforgery(options => options.HeaderName = AntiforgeryHeader);
-        builder.Services.AddRateLimiter(_ => { });
+        builder.Services.AddRateLimiter(options =>
+            options.AddFixedWindowLimiter(
+                IdentityRateLimitPolicies.StaffLogin,
+                limiter =>
+                {
+                    limiter.PermitLimit = 100;
+                    limiter.Window = TimeSpan.FromMinutes(1);
+                }));
 
         var application = builder.Build();
         application.UseRouting();
@@ -361,7 +426,8 @@ public sealed class IdentityRuntimeCompositionTests
         IReadOnlyList<string> availableRoles,
         string requestedRole,
         Guid? userId = null,
-        string? activeRole = null)
+        string? activeRole = null,
+        IReadOnlyList<string>? existingPermissions = null)
     {
         var request = new HttpRequestMessage(
             HttpMethod.Put,
@@ -378,6 +444,13 @@ public sealed class IdentityRuntimeCompositionTests
         if (activeRole is not null)
         {
             request.Headers.TryAddWithoutValidation("X-SPEC007-Active-Role", activeRole);
+        }
+
+        if (existingPermissions is not null)
+        {
+            request.Headers.TryAddWithoutValidation(
+                "X-SPEC007-Permissions",
+                string.Join(',', existingPermissions));
         }
 
         return request;
@@ -474,6 +547,19 @@ public sealed class IdentityRuntimeCompositionTests
                 claims.Add(new Claim(ClaimTypes.Role, activeRole.ToString()));
             }
 
+            if (Request.Headers.TryGetValue("X-SPEC007-Permissions", out var permissions))
+            {
+                claims.AddRange(
+                    permissions.ToString()
+                        .Split(
+                            ',',
+                            StringSplitOptions.RemoveEmptyEntries |
+                                StringSplitOptions.TrimEntries)
+                        .Select(permission => new Claim(
+                            RolePolicies.PermissionClaimType,
+                            permission)));
+            }
+
             var identity = new ClaimsIdentity(
                 claims,
                 Scheme.Name,
@@ -489,13 +575,16 @@ public sealed class IdentityRuntimeCompositionTests
         private int _callCount;
         private readonly ApplicationUser? _user;
         private readonly IReadOnlyList<string> _roles;
+        private readonly Staff? _staff;
 
         public TrackingIdentityAccountStore(
             ApplicationUser? user = null,
-            IReadOnlyList<string>? roles = null)
+            IReadOnlyList<string>? roles = null,
+            Staff? staff = null)
         {
             _user = user;
             _roles = roles ?? [];
+            _staff = staff;
         }
 
         public int CallCount => Volatile.Read(ref _callCount);
@@ -506,7 +595,11 @@ public sealed class IdentityRuntimeCompositionTests
 
         public Task<ApplicationUser?> FindByNormalizedUserNameAsync(
             string normalizedUserName,
-            CancellationToken cancellationToken) => Invoked<ApplicationUser?>();
+            CancellationToken cancellationToken) =>
+            Invoked(
+                _user?.NormalizedUserName == normalizedUserName
+                    ? _user
+                    : null);
 
         public Task<ApplicationUser?> FindByIdAsync(
             Guid applicationUserId,
@@ -515,7 +608,11 @@ public sealed class IdentityRuntimeCompositionTests
 
         public Task<Staff?> FindStaffAsync(
             Guid applicationUserId,
-            CancellationToken cancellationToken) => Invoked<Staff?>();
+            CancellationToken cancellationToken) =>
+            Invoked(
+                _staff?.ApplicationUserId == applicationUserId
+                    ? _staff
+                    : null);
 
         public Task<bool> IsStudentActivatedAsync(
             Guid applicationUserId,

@@ -12,9 +12,9 @@ not calculate current time/term, infer roles, or cache authorization truth.
 |---|---|
 | Server date/time | Visible localized date and time from `serverDateTime`; never browser-now as academic truth |
 | `timezone` | Visible beside Server date/time using the server timezone identifier |
-| Teaching term | Current teaching-term label/identifier |
-| Registration term | Registration-term label/identifier, which may differ from teaching term |
-| registration window | Opens/closes values and server-derived service/window state; no client-open calculation |
+| Teaching term | Nullable current teaching-term label/identifier; absence is rendered explicitly |
+| Registration term | Nullable registration-term label/identifier, which may differ from teaching term; absence is rendered explicitly |
+| registration window | Explicit server-derived `none`, `upcoming`, `open`, or `closed` state plus nullable canonical nested summary; times render only when the summary exists and the client never calculates openness |
 | Display name | Authenticated user heading/menu context, safely encoded |
 | Authorized roles | Navigation options already authorized by the server |
 | Active role | Current server-issued context; nullable only during `role-selection-required` |

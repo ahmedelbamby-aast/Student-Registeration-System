@@ -241,6 +241,13 @@ downstream-feature approval.
 
 ## Reconciled SPEC-008 owner decisions
 
+- SPEC-008-specific browser/API DTOs are logically Academics-owned but have one
+  physical dependency-neutral definition under
+  `src/StudentRegistration.Contracts/Academics/`. This follows the established
+  SPEC-007 shared-contract pattern and preserves the approved Client-to-
+  Contracts dependency without a Client-to-Academics reference or duplicate
+  browser models.
+
 - The canonical persisted AcademicTerm lifecycle is the SPEC-006 vocabulary:
   Draft, RegistrationOpen, RegistrationClosed, Teaching, Completed, and
   Archived. The canonical persisted RegistrationWindow lifecycle is Draft,

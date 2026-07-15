@@ -28,3 +28,13 @@ All 27 Page Design Records are approved as immutable record version `1.0`.
 Every route remains `design-only`; all downstream contracts remain
 `not-pinned`, so this approval does not authorize route source, API binding,
 or route-specific executable evidence.
+
+## 2026-07-14 shared-shell dependency revalidation
+
+Ahmed ELbamby approved the minimal SPEC-008 dependency amendment under his
+standing demo authority. Existing sole-writer tasks T006/T007 and T076/T077
+now cover a nullable teaching/registration-term projection, the canonical
+nested registration-window summary, and explicit server-derived
+none/upcoming/open/closed rendering. The focused model and AppShell tests pass.
+This revalidation changes no route ownership/readiness and does not approve
+production data, Gates B-D, or official AASTMT go-live.

@@ -48,7 +48,10 @@ no client-authoritative decisions
 Academics domain, application, and owner endpoints belong in
 `src/StudentRegistration.Academics/{Domain,Application,Endpoints}`. The API
 composition root is `src/StudentRegistration.Api`, cross-module DTO conventions
-are in `src/StudentRegistration.Contracts`, pages are in
+are in `src/StudentRegistration.Contracts`, and the SPEC-008 browser/API
+transport groups are physically owned at
+`src/StudentRegistration.Contracts/Academics/{AcademicContextContracts,AcademicTermContracts,AcademicProfileCorrectionContracts}.cs`
+under the `StudentRegistration.Contracts.Academics` namespace. Pages are in
 `src/StudentRegistration.Client`, and mappings are in
 `src/StudentRegistration.Infrastructure.SqlServer`. No generic Server/Domain
 business project is introduced.
@@ -91,7 +94,9 @@ business project is introduced.
 10. Keep application services behind narrow Academics ports, implement durable
      queries/commands and atomic audit in the SQL Server adapter, register them
      in the API composition root, and expose one small client API facade to the
-     four owned pages.
+     four owned pages. Academics logically owns its public transport contract,
+     while the physical DTO files live in the dependency-neutral Contracts
+     assembly so the Blazor client never references the Academics runtime.
 11. Consume explicit `AcademicTerms.Manage` and `AcademicProfiles.Manage`
      permissions plus `Context.Read` and `AcademicProfile.ReadOwn`; register
      their executable policies and server-derived claims. Student self and a

@@ -85,6 +85,7 @@ public sealed class UiStateMapper
             ["AVAILABILITY_DEADLINE_PASSED"] = RouteUiState.Stale,
             ["ACADEMIC_STANDING_UNAVAILABLE"] = RouteUiState.ValidationError,
             ["REGISTRATION_HOLD"] = RouteUiState.ValidationError,
+            ["PROFILE_NOT_READY"] = RouteUiState.ValidationError,
             ["PREREQUISITE_NOT_COMPLETED"] = RouteUiState.ValidationError,
             ["LOAD_ABOVE_NORMAL_MAXIMUM"] = RouteUiState.ValidationError,
             ["PROBATION_LOAD_EXCEEDED"] = RouteUiState.ValidationError,

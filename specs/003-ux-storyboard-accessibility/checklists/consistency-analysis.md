@@ -30,3 +30,6 @@
 - [x] The approved 1.1 route, endpoint-authority, journey, and state amendment
   is synchronized across all manifests, the storyboard, contributor baseline,
   and 27 immutable Page Design Records without promoting any route.
+- [x] The 2026-07-14 nullable term/window projection is synchronized across
+  the authenticated-shell contract, canonical model, AppShell, tests, and the
+  existing SPEC-003 sole-writer tasks without promoting a route.

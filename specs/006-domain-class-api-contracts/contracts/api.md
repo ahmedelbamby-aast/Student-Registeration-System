@@ -62,6 +62,10 @@ interface PublicContextDto {
 }
 ```
 
+`fieldErrors` is bounded to at most 20 keys, at most 5 messages per key,
+and at most 256 characters per message. Owners fail closed instead of
+returning an unbounded diagnostic payload.
+
 `activeRole` is non-null for `active` and `expiring`. It is null only when
 the authenticated user has multiple authorized roles and `sessionState` is
 `role-selection-required`; no client-selected value grants authorization.

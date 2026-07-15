@@ -430,6 +430,11 @@ The ten SPEC-008 endpoints are:
 
 The public response is the canonical six-field `PublicContextDto`; authenticated
 composition extends it only through the canonical shared `AppContextDto`.
+SPEC-008 logically owns its academic transport types, whose one physical C#
+definition MUST live in the dependency-neutral
+`StudentRegistration.Contracts.Academics` namespace so both the Academics
+runtime and Blazor client consume the same DTOs without a Client-to-Academics
+project reference.
 
 The Admin student locator requires `termId` and a 3..50-character query and
 returns only minimal locator fields. Detail and correction additionally bind

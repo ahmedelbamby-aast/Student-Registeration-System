@@ -10,6 +10,10 @@ demo model on 2026-07-14. Production and later release gates remain separate.
 - SPEC-006 owns the one shared `RegistrationWindowSummaryDto`; SPEC-008 supplies
   its values to the nullable shared AppContext property and MUST NOT define an
   academic duplicate.
+- SPEC-008 logically owns its academic transport DTOs, while their physical C#
+  definitions live once under `StudentRegistration.Contracts.Academics` so
+  Client and Academics share a dependency-neutral contract without exposing
+  domain entities.
 - Registration features consume the SPEC-008 student-term version and lock protocol without redefining these entities.
 
 ## Detailed Model

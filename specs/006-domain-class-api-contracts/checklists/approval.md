@@ -30,3 +30,11 @@ T047/T048 own composition checks/contract publication; SPEC-008 consumes the
 contracts and alone owns both handlers. The 63-task baseline and its recorded
 46 completed tasks are preserved. This approval creates no handler, route, EF
 model, migration, production configuration, Gate B-D, or release authority.
+
+## 2026-07-14 bounded-error amendment revalidation
+
+Ahmed ELbamby approved the test-first non-production amendment that limits the
+canonical ApiError to 20 field keys, 5 messages per key, and 256 characters
+per message. T006/T007 remain the sole schema test/writer and T012/T013 remain
+the sole C# test/writer. Contract and schema tests pass; production, Gates B-D,
+and official AASTMT authority remain excluded.

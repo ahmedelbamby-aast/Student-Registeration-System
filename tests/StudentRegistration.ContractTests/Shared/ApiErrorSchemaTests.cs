@@ -55,10 +55,13 @@ public sealed class ApiErrorSchemaTests
 
         var fieldErrors = properties.GetProperty("fieldErrors");
         Assert.Equal("object", fieldErrors.GetProperty("type").GetString());
+        Assert.Equal(20, fieldErrors.GetProperty("maxProperties").GetInt32());
         var messages = fieldErrors.GetProperty("additionalProperties");
         Assert.Equal("array", messages.GetProperty("type").GetString());
         Assert.Equal(1, messages.GetProperty("minItems").GetInt32());
+        Assert.Equal(5, messages.GetProperty("maxItems").GetInt32());
         AssertNonEmptyString(messages.GetProperty("items"));
+        Assert.Equal(256, messages.GetProperty("items").GetProperty("maxLength").GetInt32());
     }
 
     private static void AssertNonEmptyString(JsonElement property)

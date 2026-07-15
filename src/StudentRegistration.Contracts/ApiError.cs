@@ -5,6 +5,10 @@ namespace StudentRegistration.Contracts;
 
 public sealed record ApiError
 {
+    private const int MaximumFieldCount = 20;
+    private const int MaximumMessagesPerField = 5;
+    private const int MaximumFieldMessageLength = 256;
+
     public ApiError(
         string code,
         string message,
@@ -41,6 +45,13 @@ public sealed record ApiError
             return null;
         }
 
+        if (fieldErrors.Count > MaximumFieldCount)
+        {
+            throw new ArgumentException(
+                $"No more than {MaximumFieldCount} field errors are allowed.",
+                nameof(fieldErrors));
+        }
+
         var copy = new Dictionary<string, IReadOnlyList<string>>(
             fieldErrors.Count,
             StringComparer.Ordinal);
@@ -53,10 +64,18 @@ public sealed record ApiError
                     "Each field error requires at least one message.",
                     nameof(fieldErrors));
             }
+            if (messages.Count > MaximumMessagesPerField)
+            {
+                throw new ArgumentException(
+                    $"No more than {MaximumMessagesPerField} messages are allowed per field.",
+                    nameof(fieldErrors));
+            }
 
             var messageCopy = messages
-                .Select((message, index) =>
-                    Required(message, $"{nameof(fieldErrors)}[{fieldName}][{index}]"))
+                .Select((message, index) => RequiredBounded(
+                    message,
+                    $"{nameof(fieldErrors)}[{fieldName}][{index}]",
+                    MaximumFieldMessageLength))
                 .ToArray();
             copy.Add(fieldName, Array.AsReadOnly(messageCopy));
         }
@@ -72,5 +91,21 @@ public sealed record ApiError
         }
 
         return value;
+    }
+
+    private static string RequiredBounded(
+        string value,
+        string parameterName,
+        int maximumLength)
+    {
+        var required = Required(value, parameterName);
+        if (required.Length > maximumLength)
+        {
+            throw new ArgumentException(
+                $"The value must not exceed {maximumLength} characters.",
+                parameterName);
+        }
+
+        return required;
     }
 }

@@ -73,6 +73,10 @@ interface PublicContextDto {
 }
 ```
 
+`fieldErrors` is bounded to at most 20 keys, at most 5 messages per key,
+and at most 256 characters per message. This prevents accidental diagnostic
+amplification while retaining actionable validation details.
+
 Feature endpoints are defined in SPEC-007 through SPEC-017. SPEC-008 owns the
 two context handlers; SPEC-006 owns their shared schemas only. Generic example
 resource and command paths were rejected because every literal method/path must

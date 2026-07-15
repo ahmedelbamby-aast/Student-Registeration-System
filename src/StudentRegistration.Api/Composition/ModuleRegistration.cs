@@ -1,5 +1,6 @@
 using StudentRegistration.Api.Endpoints;
 using StudentRegistration.Api.Operations;
+using StudentRegistration.Academics.Endpoints;
 using StudentRegistration.IdentityAccess.Endpoints;
 
 namespace StudentRegistration.Api.Composition;
@@ -19,6 +20,7 @@ public static class Program
             builder.Configuration,
             builder.Environment);
         builder.Services.AddStudentRegistrationModules();
+        builder.Services.AddStudentRegistrationAcademicModule(builder.Configuration);
 
         var app = builder.Build();
         app.UseSafeApiErrors();
@@ -28,6 +30,7 @@ public static class Program
         app.UseStudentRegistrationIdentitySecurity();
         app.MapSpec018Endpoints();
         app.MapSpec007Endpoints();
+        app.MapSpec008Endpoints();
         app.MapStudentRegistrationWebAppFallback();
         app.Run();
     }

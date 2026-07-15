@@ -22,3 +22,12 @@
 
 Any route/contributor contract change returns that route to design-only until
 its exact baseline is revalidated.
+
+## 2026-07-14 shared-shell dependency revalidation
+
+The SPEC-003-owned `FrontendAppContextView` and `AppShell` were revalidated
+test-first through their existing sole-writer tasks. They now represent absent
+terms and absent windows explicitly, consume the canonical nested server
+summary, and never calculate window state in the browser. This additive shared
+component amendment leaves all route contributor rows and later gates
+unchanged.

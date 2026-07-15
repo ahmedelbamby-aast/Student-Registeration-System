@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "ADM-04",
+  "routeTemplate": "/admin/students",
+  "pageName": "StudentAdministrationPage.razor",
+  "permission": "AcademicProfiles.Manage",
+  "api": {
+    "search": {
+      "method": "GET",
+      "path": "/api/admin/students",
+      "successType": "Page<AdminStudentLocatorDto>",
+      "requiredQuery": ["termId", "query"],
+      "optionalQuery": ["page", "pageSize", "sort"],
+      "defaultSort": "universityId,studentId"
+    },
+    "detail": {
+      "method": "GET",
+      "path": "/api/admin/students/{studentId}/academic-context",
+      "successType": "AdminStudentAcademicContextDto",
+      "requiredQuery": ["termId"],
+      "optionalQuery": [
+        "transcriptPage",
+        "transcriptPageSize",
+        "provenancePage",
+        "provenancePageSize"
+      ]
+    },
+    "correction": {
+      "method": "PATCH",
+      "path": "/api/admin/students/{studentId}/academic-profile",
+      "requestType": "AcademicProfileCorrectionRequest",
+      "successType": "AdminStudentAcademicContextDto",
+      "antiforgeryHeader": "X-XSRF-TOKEN",
+      "expectedVersions": [
+        "expectedStudentRowVersion",
+        "expectedStudentTermStateRowVersion"
+      ]
+    }
+  },
+  "bounds": {
+    "searchMinimum": 3,
+    "searchMaximum": 50,
+    "defaultPage": 1,
+    "defaultPageSize": 20,
+    "maximumPageSize": 100,
+    "reasonMinimum": 10,
+    "reasonMaximum": 500,
+    "sourceMaximum": 200,
+    "sourceReferenceMaximum": 200,
+    "operationMinimum": 1,
+    "operationMaximum": 20
+  },
+  "states": [
+    { "state": "loading", "testId": "ADM-04-COMP-STATE-LOADING", "liveRegion": "polite" },
+    { "state": "empty", "testId": "ADM-04-COMP-STATE-EMPTY", "liveRegion": "polite" },
+    { "state": "success", "testId": "ADM-04-COMP-STATE-SUCCESS", "liveRegion": "polite" },
+    { "state": "validation-error", "testId": "ADM-04-COMP-STATE-VALIDATION-ERROR", "liveRegion": "assertive" },
+    { "state": "service-error", "testId": "ADM-04-COMP-STATE-SERVICE-ERROR", "liveRegion": "polite" },
+    { "state": "unauthorized", "testId": "ADM-04-COMP-STATE-UNAUTHORIZED", "liveRegion": "assertive" },
+    { "state": "session-expired", "testId": "ADM-04-COMP-STATE-SESSION-EXPIRED", "liveRegion": "assertive" },
+    { "state": "stale", "testId": "ADM-04-COMP-STATE-STALE", "liveRegion": "polite" },
+    { "state": "offline", "testId": "ADM-04-COMP-STATE-OFFLINE", "liveRegion": "polite" }
+  ],
+  "journeys": [
+    { "fixture": "ADM-04-read-v1", "state": "success", "reasonCode": null },
+    { "fixture": "ADM-04-no-results-v1", "state": "empty", "reasonCode": null },
+    { "fixture": "ADM-04-invalid-correction-v1", "state": "validation-error", "reasonCode": "VALIDATION_ERROR" },
+    { "fixture": "ADM-04-stale-v1", "state": "stale", "reasonCode": "STALE_VERSION" },
+    { "fixture": "ADM-04-reason-required-v1", "state": "validation-error", "reasonCode": "VALIDATION_ERROR" },
+    { "fixture": "ADM-04-restricted-v1", "state": "unauthorized", "reasonCode": "FORBIDDEN" }
+  ],
+  "privacy": {
+    "purgeStates": ["unauthorized", "session-expired"],
+    "restrictedForbiddenContent": [
+      "studentId",
+      "universityId",
+      "currentGpa",
+      "transcriptAttempts",
+      "activeHolds",
+      "provenance"
+    ]
+  },
+  "reasonCodes": [
+    "VALIDATION_ERROR",
+    "STALE_VERSION",
+    "PROFILE_NOT_READY",
+    "INVALID_SUPERSESSION",
+    "SERVICE_UNAVAILABLE",
+    "MAINTENANCE",
+    "UNAUTHORIZED",
+    "FORBIDDEN",
+    "SESSION_EXPIRED"
+  ],
+  "responsiveWidths": [320, 375, 768, 1024, 1280, 1920],
+  "visualWidths": [375, 768, 1280, 1920],
+  "testIds": [
+    "ADM-04-CONTRACT-T203",
+    "ADM-04-COMP-T204",
+    "ADM-04-E2E-PRIMARY",
+    "ADM-04-E2E-FAILURE",
+    "ADM-04-A11Y-T205",
+    "ADM-04-VIS-T206"
+  ]
+}

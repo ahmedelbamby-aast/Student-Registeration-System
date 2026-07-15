@@ -56,3 +56,6 @@ analysis and Ahmed ELbamby's approval.
   no additional checked task or runtime success claim is inferred.
 - [x] Runtime completion, downstream exact pins, OpenAPI/NFR evidence, Gates
   B-D, production configuration, and release approval remain fail closed.
+- [x] The canonical ApiError schema and C# source enforce at most 20 field
+  keys, 5 messages per key, and 256 characters per message through the
+  existing T006/T007 and T012/T013 sole-writer pairs.

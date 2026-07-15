@@ -14,11 +14,16 @@ public sealed class EC_7Tests
 
         Assert.Equal("visual-baselines/1.0.0", manifest.GetProperty("version").GetString());
         Assert.Equal(
-            "not-collected-routes-design-only",
+            "partially-approved-routes",
             manifest.GetProperty("status").GetString());
         Assert.False(manifest.GetProperty("automaticReplacementAllowed").GetBoolean());
         Assert.Equal("Ahmed ELbamby", manifest.GetProperty("approvalAuthority").GetString());
-        Assert.Empty(manifest.GetProperty("baselines").EnumerateArray());
+        var approvedSet = Assert.Single(manifest.GetProperty("baselines").EnumerateArray());
+        Assert.Equal("AUTH-01", approvedSet.GetProperty("routeId").GetString());
+        Assert.Equal("success", approvedSet.GetProperty("state").GetString());
+        Assert.Equal("Ahmed ELbamby", approvedSet.GetProperty("approvedBy").GetString());
+        Assert.Equal("2026-07-14", approvedSet.GetProperty("approvedOn").GetString());
+        Assert.Equal(16, approvedSet.GetProperty("targetCount").GetInt32());
 
         var requiredEvidence = manifest
             .GetProperty("requiredEvidenceFields")
@@ -42,6 +47,9 @@ public sealed class EC_7Tests
         };
 
         Assert.All(expectedEvidence, field => Assert.Contains(field, requiredEvidence));
+        Assert.All(
+            expectedEvidence,
+            field => Assert.True(approvedSet.TryGetProperty(field, out _)));
 
         var dataModel = RepositoryFiles.Read("specs/003-ux-storyboard-accessibility/data-model.md");
         RepositoryFiles.ContainsAll(
