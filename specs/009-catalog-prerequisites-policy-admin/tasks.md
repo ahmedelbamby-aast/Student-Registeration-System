@@ -57,21 +57,21 @@
 
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
-- [ ] T046 [P] [AC-1] [FR-2] [FR-3] Create missing-prerequisite import coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-1Tests.cs.
-- [ ] T047 [P] [AC-2] [FR-3] Create prerequisite-cycle path coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-2Tests.cs.
-- [ ] T048 [P] [AC-3] [FR-4] [FR-5] Create source-backed DS413 plus normal 18/19-credit and GPA-below-2.0 12/13-credit typed simulation/explanation coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-3Tests.cs.
-- [ ] T049 [P] [AC-4] [FR-1] [FR-6] [FR-7] Create immutable governed publication coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-4Tests.cs.
-- [ ] T050 [P] [AC-5] [FR-6] [FR-8] [FR-9] Create two-admin publication one-winner coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-5Tests.cs.
-- [ ] T051 [P] [AC-6] [FR-8] [FR-10] Create edited-draft stale-preview deterministic-replay coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-6Tests.cs.
-- [ ] T052 [P] [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create catalogue/policy quality-gate coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-7Tests.cs.
-- [ ] T053 [P] [EC-1] Create normalized duplicate-code coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-1Tests.cs.
-- [ ] T054 [P] [EC-2] Create historical-reference deactivation coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-2Tests.cs.
-- [ ] T055 [P] [EC-3] Create stale concurrent policy publication coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-3Tests.cs.
-- [ ] T056 [P] [EC-4] Create unknown typed-rule rejection coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-4Tests.cs.
-- [ ] T057 [P] [EC-5] Create audit-failure full-rollback coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-5Tests.cs.
-- [ ] T058 [P] [SC-1] Create invalid/cyclic publication-block outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-1OutcomeTests.cs.
-- [ ] T059 [P] [SC-2] Create immutable/auditable version outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-2OutcomeTests.cs.
-- [ ] T060 [P] [SC-3] Create preview/explanation outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-3OutcomeTests.cs.
+- [x] T046 [P] [AC-1] [FR-2] [FR-3] Create missing-prerequisite import coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-1Tests.cs.
+- [x] T047 [P] [AC-2] [FR-3] Create prerequisite-cycle path coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-2Tests.cs.
+- [x] T048 [P] [AC-3] [FR-4] [FR-5] Create source-backed DS413 plus normal 18/19-credit and GPA-below-2.0 12/13-credit typed simulation/explanation coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-3Tests.cs.
+- [x] T049 [P] [AC-4] [FR-1] [FR-6] [FR-7] Create immutable governed publication coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-4Tests.cs.
+- [x] T050 [P] [AC-5] [FR-6] [FR-8] [FR-9] Create two-admin publication one-winner coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-5Tests.cs.
+- [x] T051 [P] [AC-6] [FR-8] [FR-10] Create edited-draft stale-preview deterministic-replay coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-6Tests.cs.
+- [x] T052 [P] [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create catalogue/policy quality-gate coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/AC-7Tests.cs.
+- [x] T053 [P] [EC-1] Create normalized duplicate-code coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-1Tests.cs.
+- [x] T054 [P] [EC-2] Create historical-reference deactivation coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-2Tests.cs.
+- [x] T055 [P] [EC-3] Create stale concurrent policy publication coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-3Tests.cs.
+- [x] T056 [P] [EC-4] Create unknown typed-rule rejection coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-4Tests.cs.
+- [x] T057 [P] [EC-5] Create audit-failure full-rollback coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec009/EdgeCases/EC-5Tests.cs.
+- [x] T058 [P] [SC-1] Create invalid/cyclic publication-block outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-1OutcomeTests.cs.
+- [x] T059 [P] [SC-2] Create immutable/auditable version outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-2OutcomeTests.cs.
+- [x] T060 [P] [SC-3] Create preview/explanation outcome evidence in tests/StudentRegistration.AcceptanceTests/Specs/Spec009/SC-3OutcomeTests.cs.
 
 ## Phase 4 - Consolidated Behavior Tests and Delivery
 
