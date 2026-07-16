@@ -27,33 +27,33 @@
 - [x] T016 [P] [ENTITY-CatalogueDraft] [OWNER-SPEC-009] Create failing editable lifecycle/content-hash/rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueDraftModelTests.cs.
 - [x] T017 [P] [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Create failing immutable scope/version/supersession checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueVersionModelTests.cs.
 - [x] T018 [API-Endpoint01] [OWNER-SPEC-009] Finalize GET /api/admin/programs in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T019 [P] [API-Endpoint01] Create failing bounded program list and authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint01ContractTests.cs for GET /api/admin/programs.
+- [x] T019 [P] [API-Endpoint01] Create failing bounded program list and authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint01ContractTests.cs for GET /api/admin/programs.
 - [x] T020 [API-Endpoint02] [OWNER-SPEC-009] Finalize GET /api/admin/catalogue/versions in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T021 [P] [API-Endpoint02] Create failing immutable version list/filter checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint02ContractTests.cs for GET /api/admin/catalogue/versions.
+- [x] T021 [P] [API-Endpoint02] Create failing immutable version list/filter checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint02ContractTests.cs for GET /api/admin/catalogue/versions.
 - [x] T022 [API-Endpoint03] [OWNER-SPEC-009] Finalize GET /api/admin/catalogue/drafts/{draftId} in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T023 [P] [API-Endpoint03] Create failing draft detail/direct-object authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint03ContractTests.cs for GET /api/admin/catalogue/drafts/{draftId}.
+- [x] T023 [P] [API-Endpoint03] Create failing draft detail/direct-object authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint03ContractTests.cs for GET /api/admin/catalogue/drafts/{draftId}.
 - [x] T024 [API-Endpoint04] [OWNER-SPEC-009] Finalize PUT /api/admin/catalogue/drafts/{draftId} in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T025 [P] [API-Endpoint04] Create failing expected-version, URL/access-date/field-classification provenance, preview-invalidation, and no-partial-edit checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint04ContractTests.cs for PUT /api/admin/catalogue/drafts/{draftId}.
+- [x] T025 [P] [API-Endpoint04] Create failing expected-version, URL/access-date/field-classification provenance, preview-invalidation, and no-partial-edit checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint04ContractTests.cs for PUT /api/admin/catalogue/drafts/{draftId}.
 - [x] T026 [API-Endpoint05] [OWNER-SPEC-009] Finalize POST /api/admin/catalogue/imports in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T027 [P] [API-Endpoint05] Create failing source/access-date/hash/synthetic-field-manifest/idempotent import-creation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint05ContractTests.cs for POST /api/admin/catalogue/imports.
+- [x] T027 [P] [API-Endpoint05] Create failing source/access-date/hash/synthetic-field-manifest/idempotent import-creation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint05ContractTests.cs for POST /api/admin/catalogue/imports.
 - [x] T028 [API-Endpoint06] [OWNER-SPEC-009] Finalize GET /api/admin/catalogue/imports/{importId} in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T029 [P] [API-Endpoint06] Create failing import status/row-error/minimization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint06ContractTests.cs for GET /api/admin/catalogue/imports/{importId}.
+- [x] T029 [P] [API-Endpoint06] Create failing import status/row-error/minimization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint06ContractTests.cs for GET /api/admin/catalogue/imports/{importId}.
 - [x] T030 [API-Endpoint07] [OWNER-SPEC-009] Finalize POST /api/admin/catalogue/imports/{importId}/validate in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T031 [P] [API-Endpoint07] Create failing complete-graph, official/synthetic provenance validation, and bound-preview checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint07ContractTests.cs for POST /api/admin/catalogue/imports/{importId}/validate.
+- [x] T031 [P] [API-Endpoint07] Create failing complete-graph, official/synthetic provenance validation, and bound-preview checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint07ContractTests.cs for POST /api/admin/catalogue/imports/{importId}/validate.
 - [x] T032 [API-Endpoint08] [OWNER-SPEC-009] Finalize POST /api/admin/catalogue/imports/{importId}/publish in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T033 [P] [API-Endpoint08] Create failing stale-preview/idempotency/atomic-publication checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint08ContractTests.cs for POST /api/admin/catalogue/imports/{importId}/publish.
+- [x] T033 [P] [API-Endpoint08] Create failing stale-preview/idempotency/atomic-publication checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint08ContractTests.cs for POST /api/admin/catalogue/imports/{importId}/publish.
 - [x] T034 [API-Endpoint09] [OWNER-SPEC-009] Finalize GET /api/admin/policies in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T035 [P] [API-Endpoint09] Create failing bounded policy list and source/status checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint09ContractTests.cs for GET /api/admin/policies.
+- [x] T035 [P] [API-Endpoint09] Create failing bounded policy list and source/status checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint09ContractTests.cs for GET /api/admin/policies.
 - [x] T036 [API-Endpoint10] [OWNER-SPEC-009] Finalize POST /api/admin/policies in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T037 [P] [API-Endpoint10] Create failing typed policy-draft create/idempotency checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint10ContractTests.cs for POST /api/admin/policies.
+- [x] T037 [P] [API-Endpoint10] Create failing typed policy-draft create/idempotency checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint10ContractTests.cs for POST /api/admin/policies.
 - [x] T038 [API-Endpoint11] [OWNER-SPEC-009] Finalize PUT /api/admin/policies/{policySetId} in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T039 [P] [API-Endpoint11] Create failing expected-version, typed-value, source, and preview-invalidation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint11ContractTests.cs for PUT /api/admin/policies/{policySetId}.
+- [x] T039 [P] [API-Endpoint11] Create failing expected-version, typed-value, source, and preview-invalidation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint11ContractTests.cs for PUT /api/admin/policies/{policySetId}.
 - [x] T040 [API-Endpoint12] [OWNER-SPEC-009] Finalize POST /api/admin/policies/{policySetId}/validate in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T041 [P] [API-Endpoint12] Create failing typed validation and preview-binding checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint12ContractTests.cs for POST /api/admin/policies/{policySetId}/validate.
+- [x] T041 [P] [API-Endpoint12] Create failing typed validation and preview-binding checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint12ContractTests.cs for POST /api/admin/policies/{policySetId}/validate.
 - [x] T042 [API-Endpoint13] [OWNER-SPEC-009] Finalize POST /api/admin/policies/{policySetId}/simulate in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T043 [P] [API-Endpoint13] Create failing deterministic simulation/explanation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint13ContractTests.cs for POST /api/admin/policies/{policySetId}/simulate.
+- [x] T043 [P] [API-Endpoint13] Create failing deterministic simulation/explanation checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint13ContractTests.cs for POST /api/admin/policies/{policySetId}/simulate.
 - [x] T044 [API-Endpoint14] [OWNER-SPEC-009] Finalize POST /api/admin/policies/{policySetId}/publish in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
-- [ ] T045 [P] [API-Endpoint14] Create failing one-winner, immutable version, audit, and replay checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint14ContractTests.cs for POST /api/admin/policies/{policySetId}/publish.
+- [x] T045 [P] [API-Endpoint14] Create failing one-winner, immutable version, audit, and replay checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint14ContractTests.cs for POST /api/admin/policies/{policySetId}/publish.
 
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
@@ -93,20 +93,20 @@
 
 ## Phase 5 - Endpoint Handlers After Behavior Tests
 
-- [ ] T076 [API-Endpoint01] Deliver GET /api/admin/programs at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T019 and T061 fail.
-- [ ] T077 [API-Endpoint02] Deliver GET /api/admin/catalogue/versions at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T021 and T061 fail.
-- [ ] T078 [API-Endpoint03] Deliver GET /api/admin/catalogue/drafts/{draftId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T023 and T061 fail.
-- [ ] T079 [API-Endpoint04] Deliver PUT /api/admin/catalogue/drafts/{draftId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T025, T061, and T063 fail.
-- [ ] T080 [API-Endpoint05] Deliver POST /api/admin/catalogue/imports at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T027, T061, and T063 fail.
-- [ ] T081 [API-Endpoint06] Deliver GET /api/admin/catalogue/imports/{importId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T029 and T061 fail.
-- [ ] T082 [API-Endpoint07] Deliver POST /api/admin/catalogue/imports/{importId}/validate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T031 and T061 fail.
-- [ ] T083 [API-Endpoint08] Deliver POST /api/admin/catalogue/imports/{importId}/publish at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T033, T061, and T063 fail.
-- [ ] T084 [API-Endpoint09] Deliver GET /api/admin/policies at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T035 and T062 fail.
-- [ ] T085 [API-Endpoint10] Deliver POST /api/admin/policies at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T037, T062, and T063 fail.
-- [ ] T086 [API-Endpoint11] Deliver PUT /api/admin/policies/{policySetId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T039, T062, and T063 fail.
-- [ ] T087 [API-Endpoint12] Deliver POST /api/admin/policies/{policySetId}/validate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T041 and T062 fail.
-- [ ] T088 [API-Endpoint13] Deliver POST /api/admin/policies/{policySetId}/simulate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T043 and T062 fail.
-- [ ] T089 [API-Endpoint14] Deliver POST /api/admin/policies/{policySetId}/publish at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T045, T062, and T063 fail.
+- [x] T076 [API-Endpoint01] Deliver GET /api/admin/programs at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T019 and T061 fail.
+- [x] T077 [API-Endpoint02] Deliver GET /api/admin/catalogue/versions at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T021 and T061 fail.
+- [x] T078 [API-Endpoint03] Deliver GET /api/admin/catalogue/drafts/{draftId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T023 and T061 fail.
+- [x] T079 [API-Endpoint04] Deliver PUT /api/admin/catalogue/drafts/{draftId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T025, T061, and T063 fail.
+- [x] T080 [API-Endpoint05] Deliver POST /api/admin/catalogue/imports at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T027, T061, and T063 fail.
+- [x] T081 [API-Endpoint06] Deliver GET /api/admin/catalogue/imports/{importId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T029 and T061 fail.
+- [x] T082 [API-Endpoint07] Deliver POST /api/admin/catalogue/imports/{importId}/validate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T031 and T061 fail.
+- [x] T083 [API-Endpoint08] Deliver POST /api/admin/catalogue/imports/{importId}/publish at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T033, T061, and T063 fail.
+- [x] T084 [API-Endpoint09] Deliver GET /api/admin/policies at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T035 and T062 fail.
+- [x] T085 [API-Endpoint10] Deliver POST /api/admin/policies at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T037, T062, and T063 fail.
+- [x] T086 [API-Endpoint11] Deliver PUT /api/admin/policies/{policySetId} at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T039, T062, and T063 fail.
+- [x] T087 [API-Endpoint12] Deliver POST /api/admin/policies/{policySetId}/validate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T041 and T062 fail.
+- [x] T088 [API-Endpoint13] Deliver POST /api/admin/policies/{policySetId}/simulate at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T043 and T062 fail.
+- [x] T089 [API-Endpoint14] Deliver POST /api/admin/policies/{policySetId}/publish at src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs after T045, T062, and T063 fail.
 
 ## Phase 6 - Frontend Functional Tests and Page
 

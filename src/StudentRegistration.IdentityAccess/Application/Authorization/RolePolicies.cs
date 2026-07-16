@@ -25,6 +25,7 @@ public static class RolePolicies
     public const string AcademicProfileReadOwn = "AcademicProfile.ReadOwn";
     public const string AcademicTermsManage = "AcademicTerms.Manage";
     public const string AcademicProfilesManage = "AcademicProfiles.Manage";
+    public const string CataloguePolicyManage = "CataloguePolicy.Manage";
 
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
@@ -97,6 +98,13 @@ public static class RolePolicies
                 .RequireClaim(PermissionClaimType, AcademicProfilesManage));
 
         options.AddPolicy(
+            CataloguePolicyManage,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, CataloguePolicyManage));
+
+        options.AddPolicy(
             OwnStudentResource,
             policy => policy
                 .RequireAuthenticatedUser()
@@ -119,7 +127,8 @@ public static class RolePolicies
             IdentityAccessManage,
             ContextRead,
             AcademicTermsManage,
-            AcademicProfilesManage
+            AcademicProfilesManage,
+            CataloguePolicyManage
         ],
         Lecturer or TeachingAssistant => [ContextRead],
         _ => []

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using StudentRegistration.Api.Composition;
 using StudentRegistration.Contracts;
+using StudentRegistration.Contracts.Academics;
 using StudentRegistration.Contracts.Identity;
 using StudentRegistration.TestSupport;
 
@@ -64,7 +65,10 @@ public sealed class ApiErrorAndDtoTests
             (typeof(RecoveryCompleteRequest), nameof(RecoveryCompleteRequest.ChallengeToken)),
             (typeof(RecoveryCompleteRequest), nameof(RecoveryCompleteRequest.NewPassword)),
             (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.CurrentPassword)),
-            (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.NewPassword))
+            (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.NewPassword)),
+            (typeof(CatalogueValidationResult), nameof(CatalogueValidationResult.PreviewToken)),
+            (typeof(PublishVersionRequest), nameof(PublishVersionRequest.PreviewToken)),
+            (typeof(PolicyPublishRequest), nameof(PolicyPublishRequest.PreviewToken))
         };
         var actualSecretInputs = publicProperties
             .Where(item =>

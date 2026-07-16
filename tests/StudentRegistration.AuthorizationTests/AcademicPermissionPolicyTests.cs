@@ -51,6 +51,23 @@ public sealed class AcademicPermissionPolicyTests
             resource: null,
             RolePolicies.AcademicProfilesManage)).Succeeded);
 
+        Assert.True((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin, RolePolicies.CataloguePolicyManage),
+            resource: null,
+            RolePolicies.CataloguePolicyManage)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin),
+            resource: null,
+            RolePolicies.CataloguePolicyManage)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Lecturer, RolePolicies.CataloguePolicyManage),
+            resource: null,
+            RolePolicies.CataloguePolicyManage)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin, RolePolicies.AcademicTermsManage),
+            resource: null,
+            RolePolicies.CataloguePolicyManage)).Succeeded);
+
         var ownedProfile = new StudentResource(studentUserId);
         Assert.True((await authorization.AuthorizeAsync(
             Principal(RolePolicies.Student, RolePolicies.AcademicProfileReadOwn, studentUserId),
@@ -82,7 +99,8 @@ public sealed class AcademicPermissionPolicyTests
         RolePolicies.IdentityAccessManage,
         RolePolicies.ContextRead,
         RolePolicies.AcademicTermsManage,
-        RolePolicies.AcademicProfilesManage)]
+        RolePolicies.AcademicProfilesManage,
+        RolePolicies.CataloguePolicyManage)]
     [InlineData(RolePolicies.Lecturer, RolePolicies.ContextRead)]
     [InlineData(RolePolicies.TeachingAssistant, RolePolicies.ContextRead)]
     public void Permission_claims_are_derived_only_from_the_effective_role(
