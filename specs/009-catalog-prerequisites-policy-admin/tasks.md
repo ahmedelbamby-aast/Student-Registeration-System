@@ -77,7 +77,7 @@
 
 - [x] T061 [FR-1] [FR-2] [FR-3] [WORKSTREAM-CATALOGUE-VALIDATION-AND-PUBLICATION] Create the failing consolidated 19-course snapshot/provenance/draft/import/graph/version/publication suite in tests/StudentRegistration.IntegrationTests/Academics/CataloguePublicationTests.cs.
 - [x] T062 [FR-4] [FR-5] [FR-6] [FR-7] [WORKSTREAM-POLICY-ADMINISTRATION] Create the failing consolidated simple demo rule boundaries/typed-policy/simulation/version/authorization suite in tests/StudentRegistration.IntegrationTests/Academics/PolicyAdministrationTests.cs.
-- [ ] T063 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Create the failing consolidated preview/scope-lock/dependency/idempotency race suite in tests/StudentRegistration.IntegrationTests/Academics/PublicationRaceTests.cs.
+- [x] T063 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Create the failing consolidated preview/scope-lock/dependency/idempotency race suite in tests/StudentRegistration.IntegrationTests/Academics/PublicationRaceTests.cs.
 - [x] T064 [ENTITY-Program] [OWNER-SPEC-009] Deliver the canonical Program at src/StudentRegistration.Academics/Domain/Program.cs after T009 fails.
 - [x] T065 [ENTITY-Course] [OWNER-SPEC-009] Deliver the canonical Course at src/StudentRegistration.Academics/Domain/Course.cs after T010 fails.
 - [x] T066 [ENTITY-CurriculumCourse] [OWNER-SPEC-009] Deliver the canonical CurriculumCourse at src/StudentRegistration.Academics/Domain/CurriculumCourse.cs after T011 fails.
@@ -89,7 +89,7 @@
 - [x] T072 [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Deliver the canonical CatalogueVersion at src/StudentRegistration.Academics/Domain/CatalogueVersion.cs after T017 fails.
 - [x] T073 [FR-1] [FR-2] [FR-3] [WORKSTREAM-CATALOGUE-VALIDATION-AND-PUBLICATION] Deliver curated snapshot/provenance plus catalogue draft/import/publication behavior at src/StudentRegistration.Academics/Application/CataloguePublicationService.cs after T061 fails.
 - [x] T074 [FR-4] [FR-5] [FR-6] [FR-7] [WORKSTREAM-POLICY-ADMINISTRATION] Deliver the typed simple demo rule set and policy administration at src/StudentRegistration.Academics/Application/PolicyAdministrationService.cs after T062 fails.
-- [ ] T075 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Deliver preview, transaction, and idempotency confirmation at src/StudentRegistration.Academics/Application/PublicationConfirmationService.cs after T063 fails.
+- [x] T075 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Deliver preview, transaction, and idempotency confirmation at src/StudentRegistration.Academics/Application/PublicationConfirmationService.cs after T063 fails.
 
 ## Phase 5 - Endpoint Handlers After Behavior Tests
 
