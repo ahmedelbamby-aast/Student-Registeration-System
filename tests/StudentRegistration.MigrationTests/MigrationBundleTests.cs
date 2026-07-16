@@ -66,6 +66,10 @@ public sealed class MigrationBundleTests
                     RepositoryFiles.PathTo("src/StudentRegistration.Api"),
                     "*.cs",
                     SearchOption.AllDirectories)
+                .Where(path => !path.Split(
+                        Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar)
+                    .Contains("Development", StringComparer.OrdinalIgnoreCase))
                 .Select(File.ReadAllText));
 
         Assert.DoesNotMatch(

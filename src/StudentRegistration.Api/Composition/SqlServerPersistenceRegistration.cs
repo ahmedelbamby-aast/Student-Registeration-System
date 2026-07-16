@@ -29,6 +29,7 @@ public static class SqlServerPersistenceRegistration
             options.UseSqlServer(
                 connectionString,
                 sqlServer => sqlServer.EnableRetryOnFailure()));
+        services.AddStudentRegistrationAcademicSqlServer();
         return services;
     }
 }

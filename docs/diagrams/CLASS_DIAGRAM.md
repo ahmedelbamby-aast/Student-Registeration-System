@@ -1,386 +1,257 @@
-# Domain and Application Class Diagram
+# Delivered SPEC-008 Class Diagram
 
-This system-wide class-level view shows the canonical use-case services,
-transaction collaborators, module seams, and core registration model. Exact
-fields remain in owner-spec contracts and the ERD; these panels are not an
-instruction to create one project per architectural layer.
+This diagram documents the implemented Academic Term and Student Profile slice
+inside the modular monolith. It names only delivered SPEC-008 types and their
+direct collaborators. DTO field details remain in the shared Contracts project
+and the feature API contract; database columns remain in the ERD and EF mapping.
 
-## Application orchestration
-
-```mermaid
-classDiagram
-  class RegistrationEndpoint
-  class RegistrationCommandFactory
-  class RegistrationTransactionCoordinator
-  class SqlSeatAllocator
-  class RegistrationSubmissionStore
-  class StudentRegistrationDbContext
-  class IStudentAcademicReader
-  class ISchedulingReader
-  class IEligibilityEvaluator
-  class IRegistrationPlanReader
-  class CurrentUser
-  class TimeProvider
-
-  RegistrationEndpoint --> RegistrationCommandFactory
-  RegistrationCommandFactory --> CurrentUser
-  RegistrationCommandFactory --> TimeProvider
-  RegistrationCommandFactory --> IStudentAcademicReader
-  RegistrationCommandFactory --> ISchedulingReader
-  RegistrationCommandFactory --> IEligibilityEvaluator
-  RegistrationCommandFactory --> IRegistrationPlanReader
-  RegistrationCommandFactory --> RegistrationTransactionCoordinator
-  RegistrationTransactionCoordinator --> SqlSeatAllocator
-  RegistrationTransactionCoordinator --> RegistrationSubmissionStore
-  RegistrationTransactionCoordinator --> StudentRegistrationDbContext
-```
+## Browser, API, and application boundary
 
 ```mermaid
 classDiagram
-  class ScheduleRecommendationEndpoint
-  class OptimizationCoordinator
-  class ScheduleOptimizer
-  class ScheduleScorer
-  class ISchedulingReader
-  class RecommendationApplicationService
-  class AppContextEndpoint
+  direction LR
+
+  class AcademicApiClient {
+    <<Blazor same-origin facade>>
+    +GetPublicContextAsync()
+    +GetAppContextAsync()
+    +GetStudentAcademicContextAsync()
+    +ListAdminTermsAsync()
+    +CreateAdminTermAsync()
+    +UpdateAdminTermAsync()
+    +PublishAdminRegistrationWindowAsync()
+    +SearchAdminStudentsAsync()
+    +GetAdminStudentAcademicContextAsync()
+    +CorrectAdminStudentAcademicProfileAsync()
+  }
+  class Spec008Endpoints {
+    <<HTTP endpoint facade>>
+    +MapSpec008Endpoints()
+  }
   class AcademicContextResolver
-  class ISessionContextReader
-  class IAcademicContextReader
+  class StudentAcademicProfileService
+  class AdminAcademicManagementService
+  class RegistrationWindowService
+  class IAcademicStudentScopeReader {
+    <<port>>
+  }
+  class IAcademicSessionContextAdapter {
+    <<port>>
+  }
+  class AcademicSessionContextAdapter {
+    <<API composition adapter>>
+  }
+  class SessionLifecycleService {
+    <<SPEC-007 application service>>
+  }
+  class Contracts {
+    <<dependency-neutral DTOs>>
+  }
 
-  ScheduleRecommendationEndpoint --> OptimizationCoordinator
-  OptimizationCoordinator --> ScheduleOptimizer
-  ScheduleOptimizer --> ScheduleScorer
-  ScheduleOptimizer --> ISchedulingReader
-  ScheduleRecommendationEndpoint --> RecommendationApplicationService
-  AppContextEndpoint --> AcademicContextResolver
-  AppContextEndpoint --> ISessionContextReader
-  AcademicContextResolver --> IAcademicContextReader
+  AcademicApiClient ..> Spec008Endpoints : same-origin HTTP + JSON
+  AcademicApiClient --> Contracts
+  Spec008Endpoints --> Contracts
+  Spec008Endpoints --> AcademicContextResolver
+  Spec008Endpoints --> StudentAcademicProfileService
+  Spec008Endpoints --> AdminAcademicManagementService
+  Spec008Endpoints --> IAcademicStudentScopeReader
+  Spec008Endpoints --> IAcademicSessionContextAdapter
+  AcademicSessionContextAdapter ..|> IAcademicSessionContextAdapter
+  AcademicSessionContextAdapter --> SessionLifecycleService
+  AcademicSessionContextAdapter --> Contracts
+  AdminAcademicManagementService --> RegistrationWindowService : term owner
+  AdminAcademicManagementService --> StudentAcademicProfileService : profile owner
 ```
 
-## System module services
+`AcademicApiClient` does transport, antiforgery-token forwarding, and bounded
+response/error deserialization. It does not decide term, window, authorization,
+time, GPA, hold, or concurrency outcomes. `Spec008Endpoints` applies the named
+server policies and maps application outcomes to the ten HTTP contracts.
+Identity-session composition stays in the API project:
+`AcademicSessionContextAdapter` combines SPEC-007 session data with the
+academic result through `IAcademicSessionContextAdapter`; the Academics project
+does not reference the IdentityAccess implementation.
+
+## Application services, ports, and SQL adapter
 
 ```mermaid
 classDiagram
-  class StudentAuthenticationService
-  class StudentActivationService
-  class StaffAuthenticationService
-  class DemoDatabaseInitializer
-  class DemoIdentitySeedContributor
-  class DemoStudentProfileSeedContributor
-  class AdminUserLifecycleService
-  class IAdminUserLifecycleCommands
+  direction LR
+
   class AcademicContextResolver
   class RegistrationWindowService
-  class CataloguePublicationService
-  class PolicyAdministrationService
-  class IPolicyEvaluator
-  class OfferingPublicationService
-  class ResourceAvailabilityService
-  class ISchedulingReader
-  class EligibilityService
-  class RegistrationPlanService
-  class ScheduleOptimizer
-  class RegistrationTransactionCoordinator
-  class RegistrationReceiptService
-  class StaffWorkspaceQueries
-  class AuditTransactionWriter
-  class IAuditEventWriter
-  class IAuditEventReader
-  class IRegistrationSubmissionReader
-  class IOperationalMetricsReader
-  class AuditEventQueries
-  class AuditExportService
-  class AdminMetricsQuery
-  class ObservabilityExtensions
+  class StudentAcademicProfileService
+  class AdminAcademicManagementService
+  class DemoStudentProfileSeedContributor
+  class TimeProvider
 
-  AdminUserLifecycleService ..|> IAdminUserLifecycleCommands
-  DemoDatabaseInitializer --> DemoIdentitySeedContributor
-  DemoDatabaseInitializer --> DemoStudentProfileSeedContributor
-  AcademicContextResolver --> RegistrationWindowService
-  EligibilityService --> IPolicyEvaluator
-  EligibilityService --> ISchedulingReader
-  RegistrationPlanService --> EligibilityService
-  ScheduleOptimizer --> ISchedulingReader
-  AuditTransactionWriter ..|> IAuditEventWriter
-  RegistrationTransactionCoordinator --> IAuditEventWriter
-  OfferingPublicationService --> IAuditEventWriter
-  RegistrationReceiptService --> IRegistrationSubmissionReader
-  StaffWorkspaceQueries --> ISchedulingReader
-  AuditEventQueries --> IAuditEventReader
-  AuditExportService --> AuditEventQueries
-  AdminMetricsQuery --> IOperationalMetricsReader
+  class IAcademicContextReader { <<port>> }
+  class IAcademicStudentScopeReader { <<port>> }
+  class IRegistrationWindowStore { <<port>> }
+  class IStudentAcademicProfileStore { <<port>> }
+  class IAdminAcademicStore { <<port>> }
+  class IDemoStudentProfileSeedStore { <<port>> }
+  class IAuditEventWriter { <<shared audit port>> }
+
+  class AcademicStore {
+    <<single SQL adapter>>
+  }
+  class StudentRegistrationDbContext {
+    <<shared EF Core DbContext>>
+  }
+  class AcademicContextModelConfiguration {
+    <<EF mapping contribution>>
+  }
+
+  AcademicContextResolver --> IAcademicContextReader
+  AcademicContextResolver --> TimeProvider
+  RegistrationWindowService --> IRegistrationWindowStore
+  RegistrationWindowService --> TimeProvider
+  StudentAcademicProfileService --> IStudentAcademicProfileStore
+  StudentAcademicProfileService --> TimeProvider
+  AdminAcademicManagementService --> IAdminAcademicStore
+  AdminAcademicManagementService --> RegistrationWindowService
+  AdminAcademicManagementService --> StudentAcademicProfileService
+  DemoStudentProfileSeedContributor --> IDemoStudentProfileSeedStore
+
+  AcademicStore ..|> IAcademicContextReader
+  AcademicStore ..|> IAcademicStudentScopeReader
+  AcademicStore ..|> IRegistrationWindowStore
+  AcademicStore ..|> IStudentAcademicProfileStore
+  AcademicStore ..|> IAdminAcademicStore
+  AcademicStore ..|> IDemoStudentProfileSeedStore
+  AcademicStore --> StudentRegistrationDbContext
+  AcademicStore --> IAuditEventWriter
+  AcademicStore --> TimeProvider
+  StudentRegistrationDbContext --> AcademicContextModelConfiguration
 ```
 
-## Core domain model
+The six narrow ports are implemented by one scoped `AcademicStore`. This is a
+simple adapter choice, not six repositories: the ports express consumer needs
+while one SQL implementation preserves the local transaction and audit
+boundary. SPEC-008 adds its mapping to the existing
+`StudentRegistrationDbContext`; it does not create another DbContext,
+repository base class, unit-of-work abstraction, or distributed transaction.
+
+## Delivered domain entities
 
 ```mermaid
 classDiagram
+  class AcademicTerm {
+    +Guid Id
+    +string Code
+    +Guid CreationClientRequestId
+    +string CreationPayloadHash
+    +string DisplayName
+    +DateOnly TeachingStartsOn
+    +DateOnly TeachingEndsOn
+    +string TimeZoneId
+    +TermState State
+    +byte[] Version
+  }
+  class RegistrationWindow {
+    +Guid Id
+    +Guid TermId
+    +RegistrationWindowScopeType ScopeType
+    +string ScopeValue
+    +DateTime OpensAtUtc
+    +DateTime ClosesAtUtc
+    +RegistrationWindowLifecycleState State
+    +byte[] Version
+    +GetComputedState(serverNowUtc)
+  }
   class Student {
-    +StudentId Id
-    +ApplicationUserId ApplicationUserId
+    +Guid Id
+    +Guid ApplicationUserId
     +string ProgramCode
     +string Cohort
-    +Gpa CurrentGpa
-    +Credits EarnedCredits
-    +AcademicStanding Standing
+    +decimal CurrentGpa
+    +decimal EarnedCredits
+    +string Standing
     +bool IsActive
     +string Source
     +string SourceReference
     +string DataVersion
-    +Instant DataAsOfUtc
-    +Instant ImportedAtUtc
-    +RowVersion Version
-  }
-  class AcademicTerm {
-    +AcademicTermId Id
-    +TermCode Code
-    +Guid CreationClientRequestId
-    +string CreationPayloadHash
-    +string DisplayName
-    +LocalDate TeachingStartsOn
-    +LocalDate TeachingEndsOn
-    +TimeZoneId TimeZone
-    +TermState State
-    +RowVersion Version
-  }
-  class RegistrationWindow {
-    +RegistrationWindowId Id
-    +AcademicTermId TermId
-    +WindowScopeType ScopeType
-    +string ScopeValue
-    +WindowState State
-    +Instant OpensAtUtc
-    +Instant ClosesAtUtc
-    +RowVersion Version
-    +Allows(Instant now, Student student) bool
+    +DateTime DataAsOfUtc
+    +DateTime ImportedAtUtc
+    +byte[] Version
   }
   class StudentTermAcademicState {
-    +StudentTermAcademicStateId Id
-    +StudentId StudentId
-    +AcademicTermId TermId
-    +Gpa GpaAtStart
-    +Credits EarnedCreditsAtStart
-    +AcademicStanding StandingAtStart
+    +Guid Id
+    +Guid StudentId
+    +Guid TermId
+    +decimal GpaAtStart
+    +decimal EarnedCreditsAtStart
+    +string StandingAtStart
     +string Source
     +string SourceReference
     +string DataVersion
-    +Instant DataAsOfUtc
-    +RowVersion Version
+    +DateTime DataAsOfUtc
+    +byte[] Version
   }
   class TranscriptAttempt {
-    +TranscriptAttemptId Id
-    +StudentId StudentId
-    +AcademicTermId TermId
-    +TranscriptAttemptId SupersedesAttemptId
+    +Guid Id
+    +Guid StudentId
+    +Guid TermId
+    +Guid SupersedesAttemptId
     +string CourseCode
-    +Credits Credits
+    +decimal Credits
     +string GradeCode
-    +AttemptStatus Status
+    +TranscriptAttemptStatus Status
     +string Source
     +string SourceReference
-    +Instant ImportedAtUtc
-    +SupersedesCurrentLeaf(TranscriptAttempt prior) bool
+    +DateTime ImportedAtUtc
   }
   class StudentHold {
-    +StudentHoldId Id
-    +StudentId StudentId
-    +AcademicTermId TermId
+    +Guid Id
+    +Guid StudentId
+    +Guid TermId
     +string Code
     +string Message
     +bool BlocksRegistration
-    +Instant EffectiveFromUtc
-    +Instant EffectiveToUtc
+    +DateTime EffectiveFromUtc
+    +DateTime EffectiveToUtc
     +string Source
     +string SourceReference
-    +Instant ImportedAtUtc
-  }
-  class CourseOffering {
-    +CourseOfferingId Id
-    +CourseId CourseId
-    +OfferingState State
-    +RowVersion Version
-  }
-  class SectionGroup {
-    +SectionGroupId Id
-    +GroupCode Code
-    +int Capacity
-    +int EnrolledCount
-    +GroupState State
-    +bool RegistrationPaused
-    +RowVersion Version
-  }
-  class MeetingSlot {
-    +DayOfWeek Day
-    +TimeOnly Start
-    +TimeOnly End
-    +RoomId RoomId
-    +Overlaps(MeetingSlot other) bool
-  }
-  class StaffTermAvailability {
-    +StaffTermAvailabilityId Id
-    +StaffId StaffId
-    +AcademicTermId TermId
-    +Instant DeadlineUtc
-    +RowVersion Version
-    +ReplaceRanges()
-  }
-  class StaffAvailability {
-    +DayOfWeek Day
-    +TimeOnly Start
-    +TimeOnly End
-    +AvailabilityType Type
-  }
-  class RegistrationPlan {
-    +RegistrationPlanId Id
-    +StudentId StudentId
-    +AcademicTermId TermId
-    +PlanState State
-    +RowVersion Version
-  }
-  class RegistrationSubmission {
-    +RegistrationSubmissionId Id
-    +Guid ClientRequestId
-    +string PayloadHash
-    +SubmissionState State
-    +string ResultCode
-  }
-  class RegistrationReceipt {
-    <<read projection>>
-    +RegistrationSubmissionId SubmissionId
-    +string Reference
-    +string SnapshotJson
-    +Instant IssuedAtUtc
-  }
-  class Enrollment {
-    +EnrollmentId Id
-    +StudentId StudentId
-    +CourseOfferingId OfferingId
-    +SectionGroupId GroupId
-    +EnrollmentState State
-  }
-  class EligibilityDecision {
-    +bool IsEligible
-    +PolicyVersion PolicyVersion
-    +InputSummary Inputs
-  }
-  class RuleResult {
-    +string ReasonCode
-    +bool Passed
-    +string Explanation
-    +string RequiredValue
-    +string CurrentValue
-    +string Source
-    +bool OverridePossible
+    +DateTime ImportedAtUtc
+    +IsActiveAt(instantUtc)
   }
 
-  AcademicTerm "1" --> "*" RegistrationWindow
-  AcademicTerm "1" --> "*" CourseOffering
-  AcademicTerm "1" --> "*" StudentTermAcademicState
-  AcademicTerm "1" --> "*" TranscriptAttempt
-  AcademicTerm "1" --> "*" StudentHold
-  Student "1" --> "*" StudentTermAcademicState
-  Student "1" --> "*" TranscriptAttempt
-  Student "1" --> "*" StudentHold
-  TranscriptAttempt "0..1" --> "0..1" TranscriptAttempt : supersedes
-  CourseOffering "1" *-- "*" SectionGroup
-  SectionGroup "1" *-- "*" MeetingSlot
-  StaffTermAvailability "1" *-- "*" StaffAvailability
-  Student "1" --> "*" RegistrationPlan
-  Student "1" --> "*" RegistrationSubmission
-  RegistrationSubmission "1" --> "0..1" RegistrationReceipt : projects
-  RegistrationSubmission "1" --> "*" Enrollment
-  EligibilityDecision "1" *-- "*" RuleResult
+  AcademicTerm "1" --> "0..*" RegistrationWindow
+  AcademicTerm "1" --> "0..*" StudentTermAcademicState
+  AcademicTerm "1" --> "0..*" TranscriptAttempt
+  AcademicTerm "1" --> "0..*" StudentHold
+  Student "1" --> "0..*" StudentTermAcademicState
+  Student "1" --> "0..*" TranscriptAttempt
+  Student "1" --> "0..*" StudentHold
+  TranscriptAttempt "0..1 prior" --> "0..1 successor" TranscriptAttempt : supersedes
 ```
 
-AcademicTerm creation replay is bound by globally unique
-`CreationClientRequestId` plus `CreationPayloadHash`; it does not add an
-idempotency entity. Transcript supersession is filtered-unique when non-null,
-targets only the current leaf with the same student/course/term, and remains
-acyclic because historical rows are immutable. Term/window publication and
-profile corrections use expected versions.
+These are the exact six persisted Academics entities. `ProgramCode` and
+`CourseCode` are stable sourced scalar references, not foreign keys to future
+catalogue entities. `Student.ApplicationUserId` is the persistence link to the
+SPEC-007 identity row, but `Student` stores only the identifier and has no
+domain navigation or IdentityAccess implementation dependency. Computed
+open/upcoming/closed/none window state is not a seventh entity or a persisted
+lifecycle.
 
-## Shared context contracts
+## Dependency direction and deliberate exclusions
 
-```mermaid
-classDiagram
-  class AppContextDto {
-    +Instant serverTimeUtc
-    +string timeZoneId
-    +TermSummaryDto teachingTerm
-    +TermSummaryDto registrationTerm
-    +RegistrationWindowState registrationWindowState
-    +RegistrationWindowSummaryDto registrationWindow
-    +ServiceState serviceState
-    +string displayName
-    +string[] authorizedRoles
-    +string activeRole
-    +SessionState sessionState
-    +Instant expiresAtUtc
-    +string supportReferencePath
-  }
-  class TermSummaryDto {
-    +Guid id
-    +string code
-    +string label
-    +TermState state
-    +string rowVersion
-  }
-  class RegistrationWindowSummaryDto {
-    +Guid id
-    +RegistrationWindowState state
-    +Instant opensAtUtc
-    +Instant closesAtUtc
-    +string rowVersion
-  }
-  class PublicContextDto {
-    +Instant serverTimeUtc
-    +string timeZoneId
-    +string teachingTermLabel
-    +string registrationTermLabel
-    +RegistrationWindowState registrationWindowState
-    +ServiceState serviceState
-  }
-
-  AppContextDto --> TermSummaryDto : nullable terms
-  AppContextDto --> RegistrationWindowSummaryDto : nullable matched window
+```text
+Blazor Client -> dependency-neutral Contracts
+Blazor Client --same-origin HTTP--> HTTP endpoint facade
+HTTP endpoint facade -> Academics application services and ports
+API composition adapter -> Academics session-composition port + SPEC-007 service
+Academics application -> Academics domain + narrow ports + TimeProvider
+SQL infrastructure adapter -> Academics ports/domain + shared DbContext/audit port
 ```
 
-`RegistrationWindowSummaryDto` is authenticated-context-only. The public DTO
-remains exactly six fields and does not expose the matched window's ID,
-interval, row version, or personal/session data.
-
-## Core interfaces
-
-```csharp
-public interface IEligibilityEvaluator
-{
-    Task<EligibilityDecision> EvaluateAsync(
-        StudentId studentId,
-        AcademicTermId termId,
-        CourseOfferingId offeringId,
-        CancellationToken cancellationToken);
-}
-
-public interface IRegistrationTransactionCoordinator
-{
-    Task<RegistrationSubmissionResult> TrySubmitAsync(
-        RegistrationSubmissionCommand command,
-        CancellationToken cancellationToken);
-}
-
-// ScheduleOptimizer and AcademicContextResolver are concrete module-owned
-// services with the CancellationToken-bearing methods specified by SPEC-013
-// and SPEC-008; no speculative duplicate interface is introduced here.
-```
-
-These are design contracts, not public implementation types. Exact DTO fields
-and HTTP outcomes are governed by SPEC-006 and the owning feature contract.
-
-## Dependency rule
-
-Endpoints depend on application use cases inside their business module.
-Application code depends on domain types and narrow ports. The SQL Server
-infrastructure project implements persistence ports and owns
-`StudentRegistrationDbContext` and migrations. Domain folders do not reference
-ASP.NET Core, EF Core, SQL Server, Blazor, or the infrastructure project.
+Dependencies do not point from Domain to Application, API, Client, EF Core, SQL
+Server, or IdentityAccess. There is one API host, one shared SQL database, one
+`StudentRegistrationDbContext`, and local EF/SQL transactions. This delivered
+SPEC-008 view intentionally contains no `CourseOffering`, `SectionGroup`,
+`MeetingSlot`, optimizer, eligibility engine, seat allocator, enrollment,
+registration submission, event bus, message broker, microservice, distributed
+lock, second DbContext, generic repository, or extra unit of work. Those future
+capabilities remain with their owning specs and are not dependencies of
+SPEC-008.
