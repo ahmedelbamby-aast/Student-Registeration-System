@@ -17,15 +17,15 @@
 
 ## Phase 2 - Failing Model and Contract Tests
 
-- [ ] T009 [P] [ENTITY-Program] [OWNER-SPEC-009] Create failing scoped/versioned Program checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/ProgramModelTests.cs.
-- [ ] T010 [P] [ENTITY-Course] [OWNER-SPEC-009] Create failing normalized code, credit, status, version ownership, and official-versus-synthetic field-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CourseModelTests.cs.
-- [ ] T011 [P] [ENTITY-CurriculumCourse] [OWNER-SPEC-009] Create failing curriculum/course/version, cohort-scope, term, and field-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CurriculumCourseModelTests.cs.
-- [ ] T012 [P] [ENTITY-CoursePrerequisite] [OWNER-SPEC-009] Create failing self-edge, missing-reference, cycle, and prerequisite-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CoursePrerequisiteModelTests.cs.
-- [ ] T013 [P] [ENTITY-PolicySet] [OWNER-SPEC-009] Create failing typed effective-date, scope, lifecycle, and immutable-publication checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/PolicySetModelTests.cs.
-- [ ] T014 [P] [ENTITY-PolicyRule] [OWNER-SPEC-009] Create failing typed rule/value/source checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/PolicyRuleModelTests.cs.
-- [ ] T015 [P] [ENTITY-ImportBatch] [OWNER-SPEC-009] Create failing target/source/access-date/hash/synthetic-field-count/state/error/version checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/ImportBatchModelTests.cs.
-- [ ] T016 [P] [ENTITY-CatalogueDraft] [OWNER-SPEC-009] Create failing editable lifecycle/content-hash/rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueDraftModelTests.cs.
-- [ ] T017 [P] [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Create failing immutable scope/version/supersession checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueVersionModelTests.cs.
+- [x] T009 [P] [ENTITY-Program] [OWNER-SPEC-009] Create failing scoped/versioned Program checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/ProgramModelTests.cs.
+- [x] T010 [P] [ENTITY-Course] [OWNER-SPEC-009] Create failing normalized code, credit, status, version ownership, and official-versus-synthetic field-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CourseModelTests.cs.
+- [x] T011 [P] [ENTITY-CurriculumCourse] [OWNER-SPEC-009] Create failing curriculum/course/version, cohort-scope, term, and field-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CurriculumCourseModelTests.cs.
+- [x] T012 [P] [ENTITY-CoursePrerequisite] [OWNER-SPEC-009] Create failing self-edge, missing-reference, cycle, and prerequisite-provenance checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CoursePrerequisiteModelTests.cs.
+- [x] T013 [P] [ENTITY-PolicySet] [OWNER-SPEC-009] Create failing typed effective-date, scope, lifecycle, and immutable-publication checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/PolicySetModelTests.cs.
+- [x] T014 [P] [ENTITY-PolicyRule] [OWNER-SPEC-009] Create failing typed rule/value/source checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/PolicyRuleModelTests.cs.
+- [x] T015 [P] [ENTITY-ImportBatch] [OWNER-SPEC-009] Create failing target/source/access-date/hash/synthetic-field-count/state/error/version checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/ImportBatchModelTests.cs.
+- [x] T016 [P] [ENTITY-CatalogueDraft] [OWNER-SPEC-009] Create failing editable lifecycle/content-hash/rowversion checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueDraftModelTests.cs.
+- [x] T017 [P] [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Create failing immutable scope/version/supersession checks in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueVersionModelTests.cs.
 - [ ] T018 [API-Endpoint01] [OWNER-SPEC-009] Finalize GET /api/admin/programs in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
 - [ ] T019 [P] [API-Endpoint01] Create failing bounded program list and authorization checks in tests/StudentRegistration.ContractTests/Specs/Spec009/Endpoint01ContractTests.cs for GET /api/admin/programs.
 - [ ] T020 [API-Endpoint02] [OWNER-SPEC-009] Finalize GET /api/admin/catalogue/versions in specs/009-catalog-prerequisites-policy-admin/contracts/api.md.
@@ -78,15 +78,15 @@
 - [ ] T061 [FR-1] [FR-2] [FR-3] [WORKSTREAM-CATALOGUE-VALIDATION-AND-PUBLICATION] Create the failing consolidated 19-course snapshot/provenance/draft/import/graph/version/publication suite in tests/StudentRegistration.IntegrationTests/Academics/CataloguePublicationTests.cs.
 - [ ] T062 [FR-4] [FR-5] [FR-6] [FR-7] [WORKSTREAM-POLICY-ADMINISTRATION] Create the failing consolidated simple demo rule boundaries/typed-policy/simulation/version/authorization suite in tests/StudentRegistration.IntegrationTests/Academics/PolicyAdministrationTests.cs.
 - [ ] T063 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Create the failing consolidated preview/scope-lock/dependency/idempotency race suite in tests/StudentRegistration.IntegrationTests/Academics/PublicationRaceTests.cs.
-- [ ] T064 [ENTITY-Program] [OWNER-SPEC-009] Deliver the canonical Program at src/StudentRegistration.Academics/Domain/Program.cs after T009 fails.
-- [ ] T065 [ENTITY-Course] [OWNER-SPEC-009] Deliver the canonical Course at src/StudentRegistration.Academics/Domain/Course.cs after T010 fails.
-- [ ] T066 [ENTITY-CurriculumCourse] [OWNER-SPEC-009] Deliver the canonical CurriculumCourse at src/StudentRegistration.Academics/Domain/CurriculumCourse.cs after T011 fails.
-- [ ] T067 [ENTITY-CoursePrerequisite] [OWNER-SPEC-009] Deliver the canonical CoursePrerequisite at src/StudentRegistration.Academics/Domain/CoursePrerequisite.cs after T012 fails.
-- [ ] T068 [ENTITY-PolicySet] [OWNER-SPEC-009] Deliver the canonical PolicySet at src/StudentRegistration.Academics/Domain/PolicySet.cs after T013 fails.
-- [ ] T069 [ENTITY-PolicyRule] [OWNER-SPEC-009] Deliver the canonical PolicyRule at src/StudentRegistration.Academics/Domain/PolicyRule.cs after T014 fails.
-- [ ] T070 [ENTITY-ImportBatch] [OWNER-SPEC-009] Deliver the canonical ImportBatch at src/StudentRegistration.Academics/Domain/ImportBatch.cs after T015 fails.
-- [ ] T071 [ENTITY-CatalogueDraft] [OWNER-SPEC-009] Deliver the canonical CatalogueDraft at src/StudentRegistration.Academics/Domain/CatalogueDraft.cs after T016 fails.
-- [ ] T072 [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Deliver the canonical CatalogueVersion at src/StudentRegistration.Academics/Domain/CatalogueVersion.cs after T017 fails.
+- [x] T064 [ENTITY-Program] [OWNER-SPEC-009] Deliver the canonical Program at src/StudentRegistration.Academics/Domain/Program.cs after T009 fails.
+- [x] T065 [ENTITY-Course] [OWNER-SPEC-009] Deliver the canonical Course at src/StudentRegistration.Academics/Domain/Course.cs after T010 fails.
+- [x] T066 [ENTITY-CurriculumCourse] [OWNER-SPEC-009] Deliver the canonical CurriculumCourse at src/StudentRegistration.Academics/Domain/CurriculumCourse.cs after T011 fails.
+- [x] T067 [ENTITY-CoursePrerequisite] [OWNER-SPEC-009] Deliver the canonical CoursePrerequisite at src/StudentRegistration.Academics/Domain/CoursePrerequisite.cs after T012 fails.
+- [x] T068 [ENTITY-PolicySet] [OWNER-SPEC-009] Deliver the canonical PolicySet at src/StudentRegistration.Academics/Domain/PolicySet.cs after T013 fails.
+- [x] T069 [ENTITY-PolicyRule] [OWNER-SPEC-009] Deliver the canonical PolicyRule at src/StudentRegistration.Academics/Domain/PolicyRule.cs after T014 fails.
+- [x] T070 [ENTITY-ImportBatch] [OWNER-SPEC-009] Deliver the canonical ImportBatch at src/StudentRegistration.Academics/Domain/ImportBatch.cs after T015 fails.
+- [x] T071 [ENTITY-CatalogueDraft] [OWNER-SPEC-009] Deliver the canonical CatalogueDraft at src/StudentRegistration.Academics/Domain/CatalogueDraft.cs after T016 fails.
+- [x] T072 [ENTITY-CatalogueVersion] [OWNER-SPEC-009] Deliver the canonical CatalogueVersion at src/StudentRegistration.Academics/Domain/CatalogueVersion.cs after T017 fails.
 - [ ] T073 [FR-1] [FR-2] [FR-3] [WORKSTREAM-CATALOGUE-VALIDATION-AND-PUBLICATION] Deliver curated snapshot/provenance plus catalogue draft/import/publication behavior at src/StudentRegistration.Academics/Application/CataloguePublicationService.cs after T061 fails.
 - [ ] T074 [FR-4] [FR-5] [FR-6] [FR-7] [WORKSTREAM-POLICY-ADMINISTRATION] Deliver the typed simple demo rule set and policy administration at src/StudentRegistration.Academics/Application/PolicyAdministrationService.cs after T062 fails.
 - [ ] T075 [FR-8] [FR-9] [FR-10] [WORKSTREAM-PREVIEW-CONCURRENCY-AND-IDEMPOTENCY] Deliver preview, transaction, and idempotency confirmation at src/StudentRegistration.Academics/Application/PublicationConfirmationService.cs after T063 fails.
