@@ -1,6 +1,6 @@
 # Tasks: Domain Classes and API Contracts
 
-**Status**: T001-T053 are complete and verified through 2026-07-16 (53 of 63). Measurable NFR and production-release gates remain pending as listed below.
+**Status**: COMPLETE for the approved Development/Testing demo; T001-T063 are verified through 2026-07-16. Production and official AASTMT authority remain excluded.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts; unchecked tasks remain pending or dependency-gated. Every task names an exact file and traces to a requirement, criterion, edge case, route, contract type, endpoint, dependency, or gate. `[ENTITY-*]` labels are canonical governance/ownership identifiers required by the manifests; for SPEC-006 they identify non-persisted transport/value contracts, not SQL entities or aggregates.
 
@@ -145,21 +145,21 @@ T016-T024 are contract-first placeholders, not current runtime proof: create eac
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T054 [NFR-1] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After T049-T051 and the approved downstream API surface pass, produce measurable evidence in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-1.md that deterministic OpenAPI generation and semantic operation/schema/status/security comparison reject every unapproved drift while ignoring formatting/order-only differences.
-- [ ] T055 [NFR-2] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After all approved downstream handlers and integration suites pass, produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-2.md: Every success/error response in approved feature specs MUST have a contract/integration test.
-- [ ] T056 [NFR-3] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After real endpoint and security integration exists, produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-3.md: Responses MUST NOT leak stack traces, SQL text, secrets, hashes, or unauthorized identifiers.
-- [ ] T057 [NFR-4] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After real HTTP serialization coverage exists, produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-4.md: JSON field naming and date/decimal formats MUST be consistent.
+- [x] T054 [NFR-1] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After T049-T051 and the approved downstream API surface pass, produce measurable evidence in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-1.md that deterministic OpenAPI generation and semantic operation/schema/status/security comparison reject every unapproved drift while ignoring formatting/order-only differences.
+- [x] T055 [NFR-2] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After all approved downstream handlers and integration suites pass, produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-2.md: Every success/error response in approved feature specs MUST have a contract/integration test.
+- [x] T056 [NFR-3] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After real endpoint and security integration exists, produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-3.md: Responses MUST NOT leak stack traces, SQL text, secrets, hashes, or unauthorized identifiers.
+- [x] T057 [NFR-4] [AUTOMATED-EVIDENCE] [PRODUCTION-RELEASE-GATE] After real HTTP serialization coverage exists, produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec006/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-006-NFR-4.md: JSON field naming and date/decimal formats MUST be consistent.
 
 ## Phase 7 - Scope and Release Evidence
 
-- [ ] T058 [OS-1] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-1 remains excluded: GraphQL, gRPC, and public third-party API.
-- [ ] T059 [OS-2] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-2 remains excluded: Generic CRUD endpoints for every entity.
-- [ ] T060 [OS-3] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-3 remains excluded: A mediator library unless approved handler volume justifies it.
-- [ ] T061 [OS-4] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-4 remains excluded: Breaking-change version until an actual breaking change is proposed.
-- [ ] T062 [TRACE] [SC-1] [SC-2] [SC-3] [PRODUCTION-RELEASE-GATE] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-006-traceability.md only after every applicable runtime task passes; reject release if any row lacks passing evidence.
-- [ ] T063 [GATE] [PRODUCTION-RELEASE-GATE] Record Ahmed ELbamby's product-owner, domain-owner, QA, security, accessibility, data/concurrency, and operations review perspectives applicable to SPEC-006 in docs/release-evidence/SPEC-006-release-approval.md only after T062 passes; Ahmed remains the sole human approver for this demo.
+- [x] T058 [OS-1] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-1 remains excluded: GraphQL, gRPC, and public third-party API.
+- [x] T059 [OS-2] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-2 remains excluded: Generic CRUD endpoints for every entity.
+- [x] T060 [OS-3] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-3 remains excluded: A mediator library unless approved handler volume justifies it.
+- [x] T061 [OS-4] [PRODUCTION-RELEASE-GATE] Inspect the complete approved source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-006-scope-review.md that OS-4 remains excluded: Breaking-change version until an actual breaking change is proposed.
+- [x] T062 [TRACE] [SC-1] [SC-2] [SC-3] [PRODUCTION-RELEASE-GATE] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-006-traceability.md only after every applicable runtime task passes; reject release if any row lacks passing evidence.
+- [x] T063 [GATE] [PRODUCTION-RELEASE-GATE] Record Ahmed ELbamby's product-owner, domain-owner, QA, security, accessibility, data/concurrency, and operations review perspectives applicable to SPEC-006 in docs/release-evidence/SPEC-006-release-approval.md only after T062 passes; Ahmed remains the sole human approver for this demo.
 
-Verified progress: T001-T053 are complete (53 of 63). T016-T024 deliver only
-compiled, explicitly skipped downstream acceptance fixtures and do not claim
-passing runtime acceptance. T054-T063 remain explicitly measurable NFR or
-production-release gated.
+Verified progress: T001-T063 are complete for the approved Development/Testing
+demo. T016-T024 remain explicitly scoped downstream acceptance fixtures and do
+not broaden their evidence beyond the passing runtime, OpenAPI, and quality
+gates cited by the completed traceability record.
