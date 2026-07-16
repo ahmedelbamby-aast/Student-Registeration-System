@@ -7,6 +7,10 @@ namespace StudentRegistration.AuthorizationTests;
 
 public sealed class AcademicPermissionPolicyTests
 {
+    private const string CatalogueReadAvailable = "Catalogue.ReadAvailable";
+    private const string OfferingsManage = "Offerings.Manage";
+    private const string OfferingDetailsRead = "OfferingDetailsRead";
+
     [Fact]
     public async Task Academic_policies_require_the_exact_permission_and_role_or_owner_scope()
     {
@@ -93,14 +97,19 @@ public sealed class AcademicPermissionPolicyTests
     }
 
     [Theory]
-    [InlineData(RolePolicies.Student, RolePolicies.ContextRead, RolePolicies.AcademicProfileReadOwn)]
+    [InlineData(
+        RolePolicies.Student,
+        RolePolicies.ContextRead,
+        RolePolicies.AcademicProfileReadOwn,
+        RolePolicies.CatalogueReadAvailable)]
     [InlineData(
         RolePolicies.Admin,
         RolePolicies.IdentityAccessManage,
         RolePolicies.ContextRead,
         RolePolicies.AcademicTermsManage,
         RolePolicies.AcademicProfilesManage,
-        RolePolicies.CataloguePolicyManage)]
+        RolePolicies.CataloguePolicyManage,
+        RolePolicies.OfferingsManage)]
     [InlineData(RolePolicies.Lecturer, RolePolicies.ContextRead)]
     [InlineData(RolePolicies.TeachingAssistant, RolePolicies.ContextRead)]
     public void Permission_claims_are_derived_only_from_the_effective_role(
@@ -111,6 +120,69 @@ public sealed class AcademicPermissionPolicyTests
             expectedPermissions.Order(StringComparer.Ordinal),
             RolePolicies.PermissionsForRole(role).Order(StringComparer.Ordinal));
         Assert.Empty(RolePolicies.PermissionsForRole("Unknown"));
+    }
+
+    [Fact]
+    public async Task Scheduling_policies_require_the_governed_role_and_permission_pairs()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddIdentityAuthorization();
+        await using var provider = services.BuildServiceProvider();
+        var authorization = provider.GetRequiredService<IAuthorizationService>();
+
+        Assert.True((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin, OfferingsManage),
+            resource: null,
+            OfferingsManage)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin),
+            resource: null,
+            OfferingsManage)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Student, OfferingsManage),
+            resource: null,
+            OfferingsManage)).Succeeded);
+
+        Assert.True((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Student, CatalogueReadAvailable),
+            resource: null,
+            OfferingDetailsRead)).Succeeded);
+        Assert.True((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin, OfferingsManage),
+            resource: null,
+            OfferingDetailsRead)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Student),
+            resource: null,
+            OfferingDetailsRead)).Succeeded);
+        Assert.False((await authorization.AuthorizeAsync(
+            Principal(RolePolicies.Admin, CatalogueReadAvailable),
+            resource: null,
+            OfferingDetailsRead)).Succeeded);
+    }
+
+    [Fact]
+    public void Scheduling_permissions_are_derived_only_for_the_governed_roles()
+    {
+        Assert.Contains(
+            CatalogueReadAvailable,
+            RolePolicies.PermissionsForRole(RolePolicies.Student));
+        Assert.Contains(
+            OfferingsManage,
+            RolePolicies.PermissionsForRole(RolePolicies.Admin));
+        Assert.DoesNotContain(
+            OfferingsManage,
+            RolePolicies.PermissionsForRole(RolePolicies.Student));
+        Assert.DoesNotContain(
+            CatalogueReadAvailable,
+            RolePolicies.PermissionsForRole(RolePolicies.Admin));
+        Assert.DoesNotContain(
+            OfferingsManage,
+            RolePolicies.PermissionsForRole(RolePolicies.Lecturer));
+        Assert.DoesNotContain(
+            OfferingsManage,
+            RolePolicies.PermissionsForRole(RolePolicies.TeachingAssistant));
     }
 
     private static ClaimsPrincipal Principal(

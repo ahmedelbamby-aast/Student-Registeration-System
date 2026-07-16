@@ -26,6 +26,9 @@ public static class RolePolicies
     public const string AcademicTermsManage = "AcademicTerms.Manage";
     public const string AcademicProfilesManage = "AcademicProfiles.Manage";
     public const string CataloguePolicyManage = "CataloguePolicy.Manage";
+    public const string CatalogueReadAvailable = "Catalogue.ReadAvailable";
+    public const string OfferingsManage = "Offerings.Manage";
+    public const string OfferingDetailsRead = "OfferingDetailsRead";
 
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
@@ -105,6 +108,34 @@ public static class RolePolicies
                 .RequireClaim(PermissionClaimType, CataloguePolicyManage));
 
         options.AddPolicy(
+            CatalogueReadAvailable,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Student)
+                .RequireClaim(PermissionClaimType, CatalogueReadAvailable));
+
+        options.AddPolicy(
+            OfferingsManage,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, OfferingsManage));
+
+        options.AddPolicy(
+            OfferingDetailsRead,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireAssertion(context =>
+                    context.User.IsInRole(Student)
+                    && context.User.HasClaim(
+                        PermissionClaimType,
+                        CatalogueReadAvailable)
+                    || context.User.IsInRole(Admin)
+                    && context.User.HasClaim(
+                        PermissionClaimType,
+                        OfferingsManage)));
+
+        options.AddPolicy(
             OwnStudentResource,
             policy => policy
                 .RequireAuthenticatedUser()
@@ -121,14 +152,15 @@ public static class RolePolicies
 
     public static IReadOnlyList<string> PermissionsForRole(string role) => role switch
     {
-        Student => [ContextRead, AcademicProfileReadOwn],
+        Student => [ContextRead, AcademicProfileReadOwn, CatalogueReadAvailable],
         Admin =>
         [
             IdentityAccessManage,
             ContextRead,
             AcademicTermsManage,
             AcademicProfilesManage,
-            CataloguePolicyManage
+            CataloguePolicyManage,
+            OfferingsManage
         ],
         Lecturer or TeachingAssistant => [ContextRead],
         _ => []

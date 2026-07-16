@@ -1,0 +1,651 @@
+@page "/admin/resources"
+@using System.Net
+@using StudentRegistration.Client.Features.Academics
+@inject SchedulingApiClient SchedulingApi
+
+<PageTitle>Resource administration | Student Registration</PageTitle>
+
+<main class="srs-scheduling-admin"
+      data-route-id="ADM-07"
+      data-state="@_state"
+      data-testid="resource-administration-page">
+    <a class="srs-skip-link" href="#resource-main-content">Skip to main content</a>
+
+    <header class="srs-scheduling-admin__header">
+        <div>
+            <p class="srs-scheduling-admin__eyebrow">Scheduling resources</p>
+            <h1 id="resource-main-content" tabindex="-1">Resource administration</h1>
+            <p>Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override.</p>
+        </div>
+        <nav aria-label="Administration navigation">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/offerings">Offerings</a>
+        </nav>
+    </header>
+
+    @if (_state == LoadingState)
+    {
+        <section role="status" aria-live="polite" aria-busy="true">
+            <h2>Loading rooms, availability, and impacts</h2>
+            <p>Requesting bounded Scheduling projections.</p>
+        </section>
+    }
+    else if (_state == UnauthorizedState)
+    {
+        <section role="alert" aria-live="assertive">
+            <h2>Resource administration access denied</h2>
+            <p class="srs-scheduling-admin__code">@_reasonCode</p>
+            <a href="/admin">Return to authorized home</a>
+        </section>
+    }
+    else if (_state == SessionExpiredState)
+    {
+        <section role="alert" aria-live="assertive">
+            <h2>Session expired</h2>
+            <p class="srs-scheduling-admin__code">@_reasonCode</p>
+            <a href="/staff/login">Sign in again</a>
+        </section>
+    }
+    else
+    {
+        @if (_state is ServiceErrorState or OfflineState)
+        {
+            <section role="status" aria-live="polite">
+                <h2>Scheduling resources unavailable</h2>
+                <p class="srs-scheduling-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_referenceId))
+                {
+                    <p>Reference: @_referenceId</p>
+                }
+                <button type="button" @onclick="LoadAsync">Retry</button>
+            </section>
+        }
+
+        @if (_state == StaleState)
+        {
+            <section role="status" aria-live="polite">
+                <h2>Concurrent resource change requires review</h2>
+                <p class="srs-scheduling-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <button type="button" @onclick="LoadAsync">Refresh and review</button>
+            </section>
+        }
+
+        @if (_validationMessages.Count > 0)
+        {
+            <section role="alert" aria-live="assertive" tabindex="-1">
+                <h2>Review the resource command</h2>
+                <p class="srs-scheduling-admin__code">@_reasonCode</p>
+                <ul>
+                    @foreach (var message in _validationMessages)
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_successMessage))
+        {
+            <section role="status" aria-live="polite">
+                <h2>Server-confirmed result</h2>
+                <p>@_successMessage</p>
+            </section>
+        }
+
+        <section aria-labelledby="room-management-heading">
+            <div class="srs-scheduling-admin__section-heading">
+                <div>
+                    <p class="srs-scheduling-admin__eyebrow">Keyboard text entry</p>
+                    <h2 id="room-management-heading">Rooms</h2>
+                </div>
+            </div>
+
+            @if (_rooms.Count == 0)
+            {
+                <section aria-labelledby="room-empty-heading">
+                    <h3 id="room-empty-heading">No rooms match the current query</h3>
+                    <p>Create a room or clear the bounded filter.</p>
+                </section>
+            }
+            else
+            {
+                <div class="srs-scheduling-admin__table-region" role="region" aria-label="Room results" tabindex="0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Room</th>
+                                <th scope="col">Location</th>
+                                <th scope="col">Capacity</th>
+                                <th scope="col">State</th>
+                                <th scope="col">Version</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var room in _rooms)
+                            {
+                                <tr>
+                                    <td>@room.Code</td>
+                                    <td>@room.Location</td>
+                                    <td>@room.Capacity</td>
+                                    <td>@room.State</td>
+                                    <td><code>@room.RowVersion</code></td>
+                                    <td>
+                                        <button type="button"
+                                                disabled="@_pending"
+                                                @onclick="() => SelectRoom(room)">
+                                            Review room
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <div class="srs-scheduling-admin__form-grid">
+                <label>
+                    Room code
+                    <input id="resource-room-code" maxlength="30" @bind="_roomCode" />
+                </label>
+                <label>
+                    Location
+                    <input id="resource-room-location" maxlength="120" @bind="_roomLocation" />
+                </label>
+                <label>
+                    Capacity
+                    <input id="resource-room-capacity" type="number" min="0" @bind="_roomCapacity" />
+                </label>
+                <label>
+                    State
+                    <select id="resource-room-state" @bind="_roomState">
+                        <option value="Available">Available</option>
+                        <option value="Unavailable">Unavailable</option>
+                    </select>
+                </label>
+                <label>
+                    Change reason
+                    <input id="resource-room-reason" maxlength="256" @bind="_roomReason" />
+                </label>
+            </div>
+            <div class="srs-scheduling-admin__actions">
+                <button type="button" disabled="@_pending" @onclick="CreateRoomAsync">
+                    Create room
+                </button>
+                <button type="button"
+                        disabled="@(_pending || _selectedRoom is null)"
+                        @onclick="SaveRoomAsync">
+                    Save room
+                </button>
+            </div>
+        </section>
+
+        <section data-testid="read-only-staff-availability"
+                 aria-labelledby="staff-availability-heading">
+            <div class="srs-scheduling-admin__section-heading">
+                <div>
+                    <p class="srs-scheduling-admin__eyebrow">Read-only planning input</p>
+                    <h2 id="staff-availability-heading">Staff availability</h2>
+                </div>
+                <strong>Read-only Staff declaration</strong>
+            </div>
+            <p>
+                Staff own and replace these declarations. Admin can select an ID and version
+                as an offering-planning dependency, but cannot edit or override any range.
+            </p>
+            <form method="get" aria-label="Choose availability term">
+                <label for="resource-availability-term">Academic term ID</label>
+                <input id="resource-availability-term"
+                       name="termId"
+                       value="@TermId?.ToString("D")"
+                       required />
+                <button type="submit">Load Staff availability</button>
+            </form>
+
+            <div data-testid="staff-availability-declarations">
+                @if (TermId is null)
+                {
+                    <p>Choose the server-issued academic term before loading Staff declarations.</p>
+                }
+                else if (_availability.Count == 0)
+                {
+                    <p>No Staff declarations are available for the configured term.</p>
+                }
+                else
+                {
+                    <ul class="srs-scheduling-admin__cards">
+                        @foreach (var availability in _availability)
+                        {
+                            <li>
+                                <h3>@availability.StaffName</h3>
+                                <p>Deadline @availability.DeadlineUtc.ToString("u")</p>
+                                <p>Version <code>@availability.RowVersion</code></p>
+                                <ul>
+                                    @foreach (var range in availability.Ranges)
+                                    {
+                                        <li>
+                                            @range.DayOfWeek
+                                            @range.StartLocal.ToString("HH:mm")–@range.EndLocal.ToString("HH:mm"):
+                                            @range.Kind
+                                        </li>
+                                    }
+                                </ul>
+                                <button type="button"
+                                        @onclick="() => UsePlanningDependency(availability)">
+                                    Use as planning dependency
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @if (_planningDependencies.Count > 0)
+            {
+                <section aria-labelledby="planning-dependency-heading">
+                    <h3 id="planning-dependency-heading">Selected planning dependencies</h3>
+                    <ul>
+                        @foreach (var dependency in _planningDependencies)
+                        {
+                            <li>@dependency.Key — version @dependency.Value</li>
+                        }
+                    </ul>
+                </section>
+            }
+        </section>
+
+        <section aria-labelledby="impact-alert-heading">
+            <h2 id="impact-alert-heading">Schedule impact alerts</h2>
+            @if (_alerts.Count == 0)
+            {
+                <p>No schedule impacts require Admin revalidation.</p>
+            }
+            else
+            {
+                <ol class="srs-scheduling-admin__cards">
+                    @foreach (var alert in _alerts.OrderByDescending(item => item.DetectedAtUtc))
+                    {
+                        <li>
+                            <h3>@alert.ReasonCode</h3>
+                            <dl>
+                                <div><dt>State</dt><dd>@alert.State</dd></div>
+                                <div><dt>Group</dt><dd>@alert.GroupId</dd></div>
+                                <div><dt>Detected</dt><dd>@alert.DetectedAtUtc.ToString("u")</dd></div>
+                                <div><dt>Version</dt><dd><code>@alert.RowVersion</code></dd></div>
+                            </dl>
+                            @if (alert.LastValidation is not null)
+                            {
+                                <p>
+                                    Latest revalidation:
+                                    @(alert.LastValidation.Valid ? "passed" : "failed")
+                                    at @alert.LastValidation.ValidatedAtUtc.ToString("u")
+                                </p>
+                            }
+                            <div class="srs-scheduling-admin__actions">
+                                <button type="button"
+                                        disabled="@(_pending || alert.State == "Resolved")"
+                                        @onclick="() => RevalidateAlertAsync(alert)">
+                                    Revalidate impact
+                                </button>
+                                <button type="button"
+                                        disabled="@(_pending || alert.State != "Revalidated" || alert.LastValidation?.Valid != true)"
+                                        @onclick="() => SelectAlertForResolution(alert)">
+                                    Prepare resolution
+                                </button>
+                            </div>
+                        </li>
+                    }
+                </ol>
+            }
+
+            @if (_selectedAlert is not null)
+            {
+                <section aria-labelledby="resolve-alert-heading">
+                    <h3 id="resolve-alert-heading">Resolve revalidated impact</h3>
+                    <label for="resource-alert-resolution-reason">Resolution reason</label>
+                    <textarea id="resource-alert-resolution-reason"
+                              maxlength="256"
+                              @bind="_resolutionReason"
+                              @bind:event="oninput"></textarea>
+                    <button type="button"
+                            disabled="@(_pending || string.IsNullOrWhiteSpace(_resolutionReason))"
+                            @onclick="ResolveAlertAsync">
+                        Resolve impact
+                    </button>
+                </section>
+            }
+        </section>
+    }
+</main>
+
+@code {
+    [SupplyParameterFromQuery(Name = "termId")]
+    public Guid? TermId { get; set; }
+
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private readonly List<RoomDto> _rooms = [];
+    private readonly List<StaffTermAvailabilityDto> _availability = [];
+    private readonly List<ScheduleImpactAlertDto> _alerts = [];
+    private readonly List<string> _validationMessages = [];
+    private readonly Dictionary<Guid, string> _planningDependencies = [];
+    private RoomDto? _selectedRoom;
+    private ScheduleImpactAlertDto? _selectedAlert;
+    private string _state = LoadingState;
+    private string _reasonCode = "AVAILABLE";
+    private string _safeMessage = string.Empty;
+    private string? _referenceId;
+    private string? _successMessage;
+    private string _roomCode = string.Empty;
+    private string _roomLocation = string.Empty;
+    private int _roomCapacity;
+    private string _roomState = "Available";
+    private string _roomReason = string.Empty;
+    private string _resolutionReason = string.Empty;
+    private bool _pending;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _pending = true;
+        _state = LoadingState;
+        ResetFeedback();
+        var roomsTask = SchedulingApi.ListRoomsAsync();
+        var availabilityTask = TermId is { } termId
+            ? SchedulingApi.ListAvailabilityAsync(termId)
+            : null;
+        var alertsTask = SchedulingApi.ListAlertsAsync();
+        await Task.WhenAll(roomsTask, alertsTask);
+        if (availabilityTask is not null)
+        {
+            await availabilityTask;
+        }
+        _pending = false;
+
+        var rooms = await roomsTask;
+        var availability = availabilityTask is null ? null : await availabilityTask;
+        var alerts = await alertsTask;
+        var failure = FirstFailure(rooms, availability, alerts);
+        if (failure is not null)
+        {
+            ApplyFailure(failure.Value.Status, failure.Value.Error);
+            return;
+        }
+
+        _rooms.Clear();
+        _rooms.AddRange(rooms.Value!.Items);
+        _availability.Clear();
+        if (availability is not null)
+        {
+            _availability.AddRange(availability.Value!.Items);
+        }
+        _alerts.Clear();
+        _alerts.AddRange(alerts.Value!.Items);
+        SelectRoom(_rooms.FirstOrDefault());
+        _state = _rooms.Count == 0 && _availability.Count == 0 && _alerts.Count == 0
+            ? EmptyState
+            : SuccessState;
+    }
+
+    private void SelectRoom(RoomDto? room)
+    {
+        _selectedRoom = room;
+        _roomCode = room?.Code ?? string.Empty;
+        _roomLocation = room?.Location ?? string.Empty;
+        _roomCapacity = room?.Capacity ?? 0;
+        _roomState = room?.State ?? "Available";
+        _roomReason = string.Empty;
+    }
+
+    private async Task CreateRoomAsync()
+    {
+        if (!ValidRoom())
+        {
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.CreateRoomAsync(
+            new(
+                _roomCode.Trim(),
+                _roomLocation.Trim(),
+                _roomCapacity,
+                _roomState,
+                Guid.NewGuid()));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _rooms.Add(result.Value);
+        SelectRoom(result.Value);
+        _successMessage = "Room created by the server";
+        _state = SuccessState;
+    }
+
+    private async Task SaveRoomAsync()
+    {
+        if (_selectedRoom is null || !ValidRoom())
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_roomReason))
+        {
+            SetLocalValidation("A room change reason is required.");
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.UpdateRoomAsync(
+            _selectedRoom.Id,
+            new(
+                _selectedRoom.RowVersion,
+                _roomCode.Trim(),
+                _roomLocation.Trim(),
+                _roomCapacity,
+                _roomState,
+                _roomReason.Trim()));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        ReplaceRoom(result.Value);
+        SelectRoom(result.Value);
+        _successMessage = "Room saved by the server";
+        _state = SuccessState;
+    }
+
+    private bool ValidRoom()
+    {
+        if (string.IsNullOrWhiteSpace(_roomCode)
+            || string.IsNullOrWhiteSpace(_roomLocation)
+            || _roomCapacity < 0)
+        {
+            SetLocalValidation("Room code, location, and a non-negative capacity are required.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void UsePlanningDependency(StaffTermAvailabilityDto availability)
+    {
+        _planningDependencies[availability.Id] = availability.RowVersion;
+        _successMessage =
+            "Read-only Staff availability selected as an offering-planning dependency.";
+    }
+
+    private async Task RevalidateAlertAsync(ScheduleImpactAlertDto alert)
+    {
+        var roomVersions = alert.RoomId is { } roomId
+            && !string.IsNullOrWhiteSpace(alert.DetectedRoomRowVersion)
+            ? new Dictionary<string, string>
+            {
+                [roomId.ToString("D")] = alert.DetectedRoomRowVersion
+            }
+            : [];
+        var staffVersions = alert.StaffTermAvailabilityId is { } availabilityId
+            && !string.IsNullOrWhiteSpace(alert.DetectedStaffTermAvailabilityRowVersion)
+            ? new Dictionary<string, string>
+            {
+                [availabilityId.ToString("D")] =
+                    alert.DetectedStaffTermAvailabilityRowVersion
+            }
+            : [];
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.RevalidateAlertAsync(
+            alert.Id,
+            new(
+                alert.RowVersion,
+                alert.DetectedGroupRowVersion,
+                roomVersions,
+                staffVersions));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        ReplaceAlert(result.Value);
+        _selectedAlert = result.Value.LastValidation?.Valid == true
+            ? result.Value
+            : null;
+        _successMessage = "Impact revalidated by the server";
+        _state = result.Value.LastValidation?.Valid == true
+            ? SuccessState
+            : ValidationErrorState;
+    }
+
+    private void SelectAlertForResolution(ScheduleImpactAlertDto alert)
+    {
+        _selectedAlert = alert;
+        _resolutionReason = string.Empty;
+    }
+
+    private async Task ResolveAlertAsync()
+    {
+        if (_selectedAlert is null || string.IsNullOrWhiteSpace(_resolutionReason))
+        {
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.ResolveAlertAsync(
+            _selectedAlert.Id,
+            new(_selectedAlert.RowVersion, _resolutionReason.Trim()));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        ReplaceAlert(result.Value);
+        _selectedAlert = null;
+        _resolutionReason = string.Empty;
+        _successMessage = "Impact resolved by the server";
+        _state = SuccessState;
+    }
+
+    private void ReplaceRoom(RoomDto room)
+    {
+        var index = _rooms.FindIndex(item => item.Id == room.Id);
+        if (index >= 0)
+        {
+            _rooms[index] = room;
+        }
+        else
+        {
+            _rooms.Add(room);
+        }
+    }
+
+    private void ReplaceAlert(ScheduleImpactAlertDto alert)
+    {
+        var index = _alerts.FindIndex(item => item.Id == alert.Id);
+        if (index >= 0)
+        {
+            _alerts[index] = alert;
+        }
+        else
+        {
+            _alerts.Add(alert);
+        }
+    }
+
+    private static (HttpStatusCode Status, ApiError? Error)? FirstFailure(
+        AcademicApiResult<Page<RoomDto>> rooms,
+        AcademicApiResult<Page<StaffTermAvailabilityDto>>? availability,
+        AcademicApiResult<Page<ScheduleImpactAlertDto>> alerts)
+    {
+        if (!rooms.IsSuccess) return (rooms.StatusCode, rooms.Error);
+        if (availability is { IsSuccess: false })
+        {
+            return (availability.StatusCode, availability.Error);
+        }
+        if (!alerts.IsSuccess) return (alerts.StatusCode, alerts.Error);
+        return null;
+    }
+
+    private void SetLocalValidation(string message)
+    {
+        _validationMessages.Clear();
+        _validationMessages.Add(message);
+        _reasonCode = "VALIDATION_ERROR";
+        _state = ValidationErrorState;
+        _successMessage = null;
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _reasonCode = error?.Code
+            ?? (status == HttpStatusCode.ServiceUnavailable
+                ? "SCHEDULING_UNAVAILABLE"
+                : "INTERNAL_ERROR");
+        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _referenceId = error?.CorrelationId;
+        _successMessage = null;
+        _state = status switch
+        {
+            HttpStatusCode.Unauthorized => SessionExpiredState,
+            HttpStatusCode.Forbidden => UnauthorizedState,
+            HttpStatusCode.Conflict when _reasonCode is
+                "STALE_VERSION" or "GROUP_CHANGED" or "RESOURCE_CONFLICT" => StaleState,
+            HttpStatusCode.BadRequest => ValidationErrorState,
+            _ => ServiceErrorState
+        };
+    }
+
+    private void ResetFeedback()
+    {
+        _validationMessages.Clear();
+        _reasonCode = "AVAILABLE";
+        _safeMessage = string.Empty;
+        _referenceId = null;
+        _successMessage = null;
+    }
+}

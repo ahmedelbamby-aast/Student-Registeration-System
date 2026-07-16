@@ -116,8 +116,9 @@ public sealed class S1IdentityAcademicFoundationMigrationTests
                 [MigrationId],
                 await context.Database.GetAppliedMigrationsAsync());
 
-            // Updating an already-current database is intentionally a no-op.
-            await context.Database.MigrateAsync();
+            // Reapplying this migration slice is intentionally a no-op even
+            // after later incremental migrations have been added.
+            await migrator.MigrateAsync(MigrationId);
             Assert.Equal(
                 [MigrationId],
                 await context.Database.GetAppliedMigrationsAsync());

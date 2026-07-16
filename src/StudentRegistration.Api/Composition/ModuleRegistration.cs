@@ -2,6 +2,7 @@ using StudentRegistration.Api.Endpoints;
 using StudentRegistration.Api.Operations;
 using StudentRegistration.Academics.Endpoints;
 using StudentRegistration.IdentityAccess.Endpoints;
+using StudentRegistration.Scheduling.Endpoints;
 
 namespace StudentRegistration.Api.Composition;
 
@@ -32,6 +33,7 @@ public static class Program
         app.MapSpec007Endpoints();
         app.MapSpec008Endpoints();
         app.MapSpec009Endpoints();
+        app.MapSpec010Endpoints();
         if (app.Environment.IsDevelopment() ||
             app.Environment.IsEnvironment("Testing"))
         {

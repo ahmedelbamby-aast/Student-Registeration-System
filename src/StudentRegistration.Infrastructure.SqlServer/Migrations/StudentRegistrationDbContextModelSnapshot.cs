@@ -114,6 +114,419 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CatalogueDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BasedOnVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CanonicalContentHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ContentJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScopeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ValidationSummaryJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasedOnVersionId");
+
+                    b.HasIndex("ScopeCode", "State", "Id");
+
+                    b.ToTable("CatalogueDrafts", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_CatalogueDrafts_State", "[State] IN ('editing', 'validated', 'published', 'abandoned')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CatalogueVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("EffectiveFromUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PublishedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PublishedBy")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ScopeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("SourceDraftId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceReference")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("SupersedesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("VersionCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceDraftId")
+                        .IsUnique();
+
+                    b.HasIndex("SupersedesId");
+
+                    b.HasIndex("ScopeCode", "VersionCode")
+                        .IsUnique();
+
+                    b.HasIndex("ScopeCode", "State", "PublishedAtUtc", "Id");
+
+                    b.ToTable("CatalogueVersions", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_CatalogueVersions_State", "[State] IN ('published', 'superseded')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CatalogueVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Credits")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CatalogueVersionId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Courses", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_Courses_Credits", "[Credits] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CoursePrerequisite", b =>
+                {
+                    b.Property<Guid>("CatalogueVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RequiredCourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MinimumGrade")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("CatalogueVersionId", "CourseId", "RequiredCourseId");
+
+                    b.HasIndex("CatalogueVersionId", "RequiredCourseId");
+
+                    b.ToTable("CoursePrerequisites", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_CoursePrerequisites_NotSelf", "[CourseId] <> [RequiredCourseId]");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CurriculumCourse", b =>
+                {
+                    b.Property<Guid>("CatalogueVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CohortScope")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RecommendedTerm")
+                        .HasColumnType("int");
+
+                    b.HasKey("CatalogueVersionId", "ProgramId", "CourseId");
+
+                    b.HasIndex("CatalogueVersionId", "CourseId");
+
+                    b.HasIndex("ProgramId", "CohortScope", "RecommendedTerm", "CourseId");
+
+                    b.ToTable("CurriculumCourses", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_CurriculumCourses_Level", "[Level] > 0");
+
+                            t.HasCheckConstraint("CK_CurriculumCourses_RecommendedTerm", "[RecommendedTerm] IS NULL OR [RecommendedTerm] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.ImportBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AccessedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CatalogueDraftId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Errors")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PublishedVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceReference")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("SyntheticFieldCount")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublishedVersionId");
+
+                    b.HasIndex("CatalogueDraftId", "State");
+
+                    b.ToTable("ImportBatches", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_ImportBatches_State", "[State] IN ('uploaded', 'validating', 'invalid', 'validated', 'publishing', 'published', 'failed')");
+
+                            t.HasCheckConstraint("CK_ImportBatches_SyntheticFieldCount", "[SyntheticFieldCount] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.PolicyRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("PolicySetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SourceKind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("SourceReference")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ValueType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PolicySetId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("PolicyRules", "academics");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.PolicySet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("EffectiveFromUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveToUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("VersionCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("VersionToken")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramId");
+
+                    b.HasIndex("TermId");
+
+                    b.HasIndex("ScopeCode", "VersionCode")
+                        .IsUnique();
+
+                    b.HasIndex("ScopeCode", "State", "EffectiveFromUtc", "Id");
+
+                    b.ToTable("PolicySets", "academics", t =>
+                        {
+                            t.HasCheckConstraint("CK_PolicySets_EffectiveRange", "[EffectiveToUtc] IS NULL OR [EffectiveToUtc] > [EffectiveFromUtc]");
+
+                            t.HasCheckConstraint("CK_PolicySets_State", "[State] IN ('draft', 'validated', 'published', 'superseded')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.Program", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CatalogueVersionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CatalogueVersionId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Programs", "academics");
+                });
+
             modelBuilder.Entity("StudentRegistration.Academics.Domain.RegistrationWindow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -927,6 +1340,624 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.ToTable("AuditEvents", "audit");
                 });
 
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.CourseOffering", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("TermId", "CourseId")
+                        .IsUnique();
+
+                    b.HasIndex("TermId", "State", "Id");
+
+                    b.ToTable("CourseOfferings", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseOfferings_State", "[State] IN ('draft', 'published', 'closed', 'cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.GroupStaffAssignment", b =>
+                {
+                    b.Property<Guid>("MeetingSlotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TeachingRole")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("MeetingSlotId", "StaffId", "TeachingRole");
+
+                    b.HasIndex("MeetingSlotId", "GroupId");
+
+                    b.HasIndex("StaffId", "GroupId", "MeetingSlotId");
+
+                    b.HasIndex("GroupId", "ActivityType", "MeetingSlotId", "StaffId");
+
+                    b.ToTable("GroupStaffAssignments", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_GroupStaffAssignments_RoleActivity", "([ActivityType] = 'lecture' AND [TeachingRole] = 'lecturer') OR ([ActivityType] IN ('tutorial', 'laboratory') AND [TeachingRole] = 'teaching-assistant')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.MeetingSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("EndLocal")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartLocal")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId", "ActivityType", "DayOfWeek", "StartLocal", "Id");
+
+                    b.HasIndex("RoomId", "DayOfWeek", "StartLocal", "EndLocal", "GroupId");
+
+                    b.ToTable("MeetingSlots", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingSlots_ActivityType", "[ActivityType] IN ('lecture', 'tutorial', 'laboratory')");
+
+                            t.HasCheckConstraint("CK_MeetingSlots_DayOfWeek", "[DayOfWeek] >= 0 AND [DayOfWeek] <= 6");
+
+                            t.HasCheckConstraint("CK_MeetingSlots_Range", "[EndLocal] > [StartLocal]");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AvailabilityState")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("AvailabilityState", "Capacity", "Code", "Id");
+
+                    b.ToTable("Rooms", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_Rooms_AvailabilityState", "[AvailabilityState] IN ('available', 'unavailable')");
+
+                            t.HasCheckConstraint("CK_Rooms_Capacity", "[Capacity] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.ScheduleImpactAlert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DetectedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("DetectedGroupVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(8)");
+
+                    b.Property<byte[]>("DetectedResourceVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(8)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("LastRevalidationPassed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastValidationJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ResolutionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevalidatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("StaffTermAvailabilityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId", "State", "Id");
+
+                    b.HasIndex("RoomId", "State", "Id");
+
+                    b.HasIndex("StaffTermAvailabilityId", "State", "Id");
+
+                    b.HasIndex("State", "DetectedAtUtc", "Id");
+
+                    b.ToTable("ScheduleImpactAlerts", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_ScheduleImpactAlerts_Resource", "[StaffTermAvailabilityId] IS NOT NULL OR [RoomId] IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_ScheduleImpactAlerts_State", "[State] IN ('open', 'revalidated', 'resolved')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.SectionGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EnrolledCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GroupCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("RegistrationPaused")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("Id", "OfferingId");
+
+                    b.HasIndex("OfferingId", "GroupCode")
+                        .IsUnique();
+
+                    b.HasIndex("OfferingId", "State", "RegistrationPaused", "Id");
+
+                    b.ToTable("SectionGroups", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_SectionGroups_Capacity", "[Capacity] >= 0 AND [EnrolledCount] >= 0 AND [EnrolledCount] <= [Capacity]");
+
+                            t.HasCheckConstraint("CK_SectionGroups_State", "[State] IN ('draft', 'published', 'closed', 'cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.StaffAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("EndLocal")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("StaffTermAvailabilityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartLocal")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffTermAvailabilityId", "DayOfWeek", "StartLocal", "EndLocal");
+
+                    b.ToTable("StaffAvailabilities", "scheduling", t =>
+                        {
+                            t.HasCheckConstraint("CK_StaffAvailabilities_DayOfWeek", "[DayOfWeek] >= 0 AND [DayOfWeek] <= 6");
+
+                            t.HasCheckConstraint("CK_StaffAvailabilities_Kind", "[Kind] IN ('available', 'unavailable')");
+
+                            t.HasCheckConstraint("CK_StaffAvailabilities_Range", "[EndLocal] > [StartLocal]");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.StaffTermAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DeadlineUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId", "TermId")
+                        .IsUnique();
+
+                    b.HasIndex("TermId", "DeadlineUtc", "Id");
+
+                    b.ToTable("StaffTermAvailabilities", "scheduling");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CatalogueDraft", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueVersion", null)
+                        .WithMany()
+                        .HasForeignKey("BasedOnVersionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CatalogueVersion", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueDraft", null)
+                        .WithOne()
+                        .HasForeignKey("StudentRegistration.Academics.Domain.CatalogueVersion", "SourceDraftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueVersion", null)
+                        .WithMany()
+                        .HasForeignKey("SupersedesId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.Course", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("StudentRegistration.Academics.Domain.CatalogueFieldProvenance", "Provenance", b1 =>
+                        {
+                            b1.Property<Guid>("CourseId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateOnly>("AccessedOn")
+                                .HasColumnType("date")
+                                .HasColumnName("ProvenanceAccessedOn");
+
+                            b1.Property<string>("SourceKind")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("nvarchar(30)")
+                                .HasColumnName("ProvenanceSourceKind");
+
+                            b1.Property<string>("SourceReference")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)")
+                                .HasColumnName("ProvenanceSourceReference");
+
+                            b1.Property<string>("SyntheticFields")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ProvenanceSyntheticFieldsJson");
+
+                            b1.HasKey("CourseId");
+
+                            b1.ToTable("Courses", "academics");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CourseId");
+                        });
+
+                    b.Navigation("Provenance")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CoursePrerequisite", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId", "CourseId")
+                        .HasPrincipalKey("CatalogueVersionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId", "RequiredCourseId")
+                        .HasPrincipalKey("CatalogueVersionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("StudentRegistration.Academics.Domain.CatalogueFieldProvenance", "Provenance", b1 =>
+                        {
+                            b1.Property<Guid>("CoursePrerequisiteCatalogueVersionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("CoursePrerequisiteCourseId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("CoursePrerequisiteRequiredCourseId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateOnly>("AccessedOn")
+                                .HasColumnType("date")
+                                .HasColumnName("ProvenanceAccessedOn");
+
+                            b1.Property<string>("SourceKind")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("nvarchar(30)")
+                                .HasColumnName("ProvenanceSourceKind");
+
+                            b1.Property<string>("SourceReference")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)")
+                                .HasColumnName("ProvenanceSourceReference");
+
+                            b1.Property<string>("SyntheticFields")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ProvenanceSyntheticFieldsJson");
+
+                            b1.HasKey("CoursePrerequisiteCatalogueVersionId", "CoursePrerequisiteCourseId", "CoursePrerequisiteRequiredCourseId");
+
+                            b1.ToTable("CoursePrerequisites", "academics");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CoursePrerequisiteCatalogueVersionId", "CoursePrerequisiteCourseId", "CoursePrerequisiteRequiredCourseId");
+                        });
+
+                    b.Navigation("Provenance")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.CurriculumCourse", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId", "CourseId")
+                        .HasPrincipalKey("CatalogueVersionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.Program", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId", "ProgramId")
+                        .HasPrincipalKey("CatalogueVersionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("StudentRegistration.Academics.Domain.CatalogueFieldProvenance", "Provenance", b1 =>
+                        {
+                            b1.Property<Guid>("CurriculumCourseCatalogueVersionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("CurriculumCourseProgramId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("CurriculumCourseCourseId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateOnly>("AccessedOn")
+                                .HasColumnType("date")
+                                .HasColumnName("ProvenanceAccessedOn");
+
+                            b1.Property<string>("SourceKind")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("nvarchar(30)")
+                                .HasColumnName("ProvenanceSourceKind");
+
+                            b1.Property<string>("SourceReference")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)")
+                                .HasColumnName("ProvenanceSourceReference");
+
+                            b1.Property<string>("SyntheticFields")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ProvenanceSyntheticFieldsJson");
+
+                            b1.HasKey("CurriculumCourseCatalogueVersionId", "CurriculumCourseProgramId", "CurriculumCourseCourseId");
+
+                            b1.ToTable("CurriculumCourses", "academics");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CurriculumCourseCatalogueVersionId", "CurriculumCourseProgramId", "CurriculumCourseCourseId");
+                        });
+
+                    b.Navigation("Provenance")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.ImportBatch", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueDraft", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueDraftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueVersion", null)
+                        .WithMany()
+                        .HasForeignKey("PublishedVersionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.PolicyRule", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.PolicySet", null)
+                        .WithMany()
+                        .HasForeignKey("PolicySetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.PolicySet", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Program", null)
+                        .WithMany()
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Academics.Domain.Program", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.CatalogueVersion", null)
+                        .WithMany()
+                        .HasForeignKey("CatalogueVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("StudentRegistration.Academics.Domain.CatalogueFieldProvenance", "Provenance", b1 =>
+                        {
+                            b1.Property<Guid>("ProgramId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<DateOnly>("AccessedOn")
+                                .HasColumnType("date")
+                                .HasColumnName("ProvenanceAccessedOn");
+
+                            b1.Property<string>("SourceKind")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("nvarchar(30)")
+                                .HasColumnName("ProvenanceSourceKind");
+
+                            b1.Property<string>("SourceReference")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)")
+                                .HasColumnName("ProvenanceSourceReference");
+
+                            b1.Property<string>("SyntheticFields")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ProvenanceSyntheticFieldsJson");
+
+                            b1.HasKey("ProgramId");
+
+                            b1.ToTable("Programs", "academics");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProgramId");
+                        });
+
+                    b.Navigation("Provenance")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("StudentRegistration.Academics.Domain.RegistrationWindow", b =>
                 {
                     b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
@@ -1055,6 +2086,122 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .HasForeignKey("StudentRegistration.IdentityAccess.Domain.StudentActivation", "ApplicationUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.CourseOffering", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.GroupStaffAssignment", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.SectionGroup", null)
+                        .WithMany("StaffAssignments")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.IdentityAccess.Domain.Staff", null)
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.MeetingSlot", null)
+                        .WithMany()
+                        .HasForeignKey("MeetingSlotId", "GroupId")
+                        .HasPrincipalKey("Id", "GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.MeetingSlot", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.SectionGroup", null)
+                        .WithMany("Meetings")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.ScheduleImpactAlert", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.SectionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.StaffTermAvailability", null)
+                        .WithMany()
+                        .HasForeignKey("StaffTermAvailabilityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.SectionGroup", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.CourseOffering", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.StaffAvailability", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.StaffTermAvailability", null)
+                        .WithMany("Ranges")
+                        .HasForeignKey("StaffTermAvailabilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.StaffTermAvailability", b =>
+                {
+                    b.HasOne("StudentRegistration.IdentityAccess.Domain.Staff", null)
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.SectionGroup", b =>
+                {
+                    b.Navigation("Meetings");
+
+                    b.Navigation("StaffAssignments");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Scheduling.Domain.StaffTermAvailability", b =>
+                {
+                    b.Navigation("Ranges");
                 });
 #pragma warning restore 612, 618
         }

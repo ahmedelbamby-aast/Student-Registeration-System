@@ -1,0 +1,624 @@
+@page "/admin/offerings"
+@using System.Net
+@inject SchedulingApiClient SchedulingApi
+
+<PageTitle>Offering administration | Student Registration</PageTitle>
+
+<main class="srs-scheduling-admin"
+      data-route-id="ADM-06"
+      data-state="@_state"
+      data-testid="offering-administration-page">
+    <a class="srs-skip-link" href="#offering-main-content">Skip to main content</a>
+
+    <header class="srs-scheduling-admin__header">
+        <div>
+            <p class="srs-scheduling-admin__eyebrow">Scheduling</p>
+            <h1 id="offering-main-content" tabindex="-1">Offering administration</h1>
+            <p>Create Draft offerings, edit complete groups, validate every resource, and publish only after server confirmation.</p>
+        </div>
+        <nav aria-label="Administration navigation">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/catalogue">Catalogue</a>
+            <a href="/admin/resources">Resources</a>
+        </nav>
+    </header>
+
+    @if (_state == LoadingState)
+    {
+        <section role="status" aria-live="polite" aria-busy="true">
+            <h2>Loading offerings</h2>
+            <p>Requesting the bounded owner list.</p>
+        </section>
+    }
+    else if (_state == UnauthorizedState)
+    {
+        <section role="alert" aria-live="assertive">
+            <h2>Offering administration access denied</h2>
+            <p class="srs-scheduling-admin__code">@_reasonCode</p>
+            <a href="/admin">Return to authorized home</a>
+        </section>
+    }
+    else if (_state == SessionExpiredState)
+    {
+        <section role="alert" aria-live="assertive">
+            <h2>Session expired</h2>
+            <p class="srs-scheduling-admin__code">@_reasonCode</p>
+            <a href="/staff/login">Sign in again</a>
+        </section>
+    }
+    else
+    {
+        @if (_state is ServiceErrorState or OfflineState)
+        {
+            <section role="status" aria-live="polite">
+                <h2>Scheduling service unavailable</h2>
+                <p class="srs-scheduling-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_referenceId))
+                {
+                    <p>Reference: @_referenceId</p>
+                }
+                <button type="button" @onclick="LoadAsync">Retry</button>
+            </section>
+        }
+
+        @if (_state == StaleState)
+        {
+            <section role="status" aria-live="polite">
+                <h2>Concurrent offering change requires review</h2>
+                <p class="srs-scheduling-admin__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <button type="button" @onclick="LoadAsync">Refresh and review</button>
+            </section>
+        }
+
+        @if (_validationReasons.Count > 0)
+        {
+            <section data-testid="offering-validation-summary"
+                     role="alert"
+                     aria-live="assertive"
+                     tabindex="-1">
+                <h2>Publication blockers</h2>
+                <ul>
+                    @foreach (var reason in _validationReasons)
+                    {
+                        <li>
+                            <strong>@reason.Code</strong>
+                            <span>@reason.Message</span>
+                            @if (reason.OverlapStartLocal is not null)
+                            {
+                                <span>
+                                    @reason.OverlapStartLocal.Value.ToString("HH:mm")–@reason.OverlapEndLocal?.ToString("HH:mm")
+                                </span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_successMessage))
+        {
+            <section role="status" aria-live="polite">
+                <h2>Server-confirmed result</h2>
+                <p>@_successMessage</p>
+            </section>
+        }
+
+        <section aria-labelledby="offering-list-heading">
+            <div class="srs-scheduling-admin__section-heading">
+                <div>
+                    <p class="srs-scheduling-admin__eyebrow">Bounded owner query</p>
+                    <h2 id="offering-list-heading">Offerings</h2>
+                </div>
+                <form role="search" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+                    <label for="offering-search">Course code or title</label>
+                    <input id="offering-search"
+                           type="search"
+                           minlength="3"
+                           maxlength="50"
+                           @bind="_query" />
+                    <button type="submit" disabled="@_pending">Search</button>
+                </form>
+            </div>
+
+            @if (_offerings.Count == 0)
+            {
+                <section aria-labelledby="offering-empty-heading">
+                    <h3 id="offering-empty-heading">No offerings match this query</h3>
+                    <p>Create a Draft offering or clear the bounded filter.</p>
+                </section>
+            }
+            else
+            {
+                <div class="srs-scheduling-admin__table-region" role="region" aria-label="Offering results" tabindex="0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Course</th>
+                                <th scope="col">State</th>
+                                <th scope="col">Groups</th>
+                                <th scope="col">Version</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var offering in _offerings)
+                            {
+                                <tr>
+                                    <td>@offering.CourseCode — @offering.CourseTitle</td>
+                                    <td>@offering.State</td>
+                                    <td>@offering.GroupCount</td>
+                                    <td><code>@offering.RowVersion</code></td>
+                                    <td>
+                                        <button type="button"
+                                                disabled="@_pending"
+                                                @onclick="() => SelectOfferingAsync(offering.Id)">
+                                            Review
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section aria-labelledby="create-offering-heading">
+            <h2 id="create-offering-heading">Create Draft offering</h2>
+            <div class="srs-scheduling-admin__form-grid">
+                <label>
+                    Term ID
+                    <input id="offering-create-term" @bind="_createTermId" />
+                </label>
+                <label>
+                    Course ID
+                    <input id="offering-create-course" @bind="_createCourseId" />
+                </label>
+                <label>
+                    Initial group code
+                    <input id="offering-create-group-code" maxlength="20" @bind="_createGroupCode" />
+                </label>
+                <label>
+                    Initial capacity
+                    <input id="offering-create-capacity" type="number" min="0" @bind="_createCapacity" />
+                </label>
+            </div>
+            <button type="button" disabled="@_pending" @onclick="CreateOfferingAsync">Create offering</button>
+        </section>
+
+        @if (_selectedOffering is not null)
+        {
+            <section aria-labelledby="offering-editor-heading">
+                <div class="srs-scheduling-admin__section-heading">
+                    <div>
+                        <p class="srs-scheduling-admin__eyebrow">Selected aggregate</p>
+                        <h2 id="offering-editor-heading">
+                            @_selectedOffering.CourseCode — @_selectedOffering.CourseTitle
+                        </h2>
+                    </div>
+                    <div>
+                        <span>@_selectedOffering.State</span>
+                        <code>@_selectedOffering.RowVersion</code>
+                    </div>
+                </div>
+
+                @if (_selectedGroup is not null)
+                {
+                    <article data-testid="offering-group-editor">
+                        <h3>Group @_selectedGroup.GroupCode</h3>
+                        <p>
+                            @_selectedGroup.EnrolledCount enrolled;
+                            capacity @_selectedGroup.Capacity;
+                            version <code>@_selectedGroup.RowVersion</code>
+                        </p>
+
+                        <label for="offering-group-capacity">Capacity</label>
+                        <input id="offering-group-capacity"
+                               type="number"
+                               min="@_selectedGroup.EnrolledCount"
+                               @bind="_editedCapacity" />
+                        <label>
+                            <input type="checkbox" @bind="_registrationPaused" />
+                            Pause registration
+                        </label>
+                        <label for="offering-change-reason">Change reason</label>
+                        <input id="offering-change-reason" maxlength="256" @bind="_changeReason" />
+                        <button type="button" disabled="@_pending" @onclick="SaveGroupAsync">
+                            Save group
+                        </button>
+
+                        <h4>Complete activity bundle</h4>
+                        <div class="srs-scheduling-admin__table-region" role="region" aria-label="Group activities" tabindex="0">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Activity</th>
+                                        <th scope="col">Staff</th>
+                                        <th scope="col">Room and location</th>
+                                        <th scope="col">Day and term-local time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var meeting in _selectedGroup.Meetings)
+                                    {
+                                        <tr>
+                                            <td>@ActivityLabel(meeting.ActivityType)</td>
+                                            <td>
+                                                @foreach (var staff in StaffFor(meeting.Id))
+                                                {
+                                                    <span>@staff.Name (@staff.Role)</span>
+                                                }
+                                            </td>
+                                            <td>@meeting.RoomCode — @meeting.Location</td>
+                                            <td>
+                                                @meeting.DayOfWeek,
+                                                @meeting.StartLocal.ToString("HH:mm")–@meeting.EndLocal.ToString("HH:mm")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                }
+
+                <div class="srs-scheduling-admin__actions">
+                    <button type="button" disabled="@_pending" @onclick="ValidateOfferingAsync">
+                        Validate offering
+                    </button>
+                    <button type="button"
+                            disabled="@(_pending || _validation is null || !_validation.Valid)"
+                            @onclick="OpenPublishDialog">
+                        Publish offering
+                    </button>
+                </div>
+            </section>
+        }
+    }
+
+    @if (_showPublishDialog)
+    {
+        <div class="srs-scheduling-admin__dialog-backdrop">
+            <section role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="publish-offering-heading">
+                <h2 id="publish-offering-heading">Confirm offering publication</h2>
+                <p>The server will lock and revalidate all submitted dependency versions.</p>
+                <label for="offering-publish-reason">Publication reason</label>
+                <input id="offering-publish-reason" maxlength="256" @bind="_publishReason" />
+                <button type="button" disabled="@_pending" @onclick="PublishOfferingAsync">
+                    Confirm publish
+                </button>
+                <button type="button" disabled="@_pending" @onclick="ClosePublishDialog">
+                    Cancel
+                </button>
+            </section>
+        </div>
+    }
+</main>
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private readonly List<CourseOfferingSummaryDto> _offerings = [];
+    private readonly List<ValidationReasonDto> _validationReasons = [];
+    private CourseOfferingDto? _selectedOffering;
+    private GroupDto? _selectedGroup;
+    private OfferingValidationResult? _validation;
+    private string _state = LoadingState;
+    private string _reasonCode = "AVAILABLE";
+    private string _safeMessage = string.Empty;
+    private string? _referenceId;
+    private string? _successMessage;
+    private string? _query;
+    private string _createTermId = string.Empty;
+    private string _createCourseId = string.Empty;
+    private string _createGroupCode = "A";
+    private int _createCapacity = 30;
+    private int _editedCapacity;
+    private bool _registrationPaused;
+    private string _changeReason = string.Empty;
+    private string _publishReason = "Publish validated offering";
+    private bool _pending;
+    private bool _showPublishDialog;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _pending = true;
+        _state = LoadingState;
+        ResetFeedback();
+        var result = await SchedulingApi.ListOfferingsAsync(query: _query);
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _offerings.Clear();
+        _offerings.AddRange(result.Value.Items);
+        _state = _offerings.Count == 0 ? EmptyState : SuccessState;
+        if (_offerings.Count > 0)
+        {
+            await SelectOfferingAsync(_offerings[0].Id);
+        }
+    }
+
+    private Task SearchAsync() => LoadAsync();
+
+    private async Task SelectOfferingAsync(Guid offeringId)
+    {
+        _pending = true;
+        var result = await SchedulingApi.GetOfferingAsync(offeringId);
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _selectedOffering = result.Value;
+        SelectGroup(result.Value.Groups.FirstOrDefault());
+        _state = SuccessState;
+    }
+
+    private void SelectGroup(GroupDto? group)
+    {
+        _selectedGroup = group;
+        _editedCapacity = group?.Capacity ?? 0;
+        _registrationPaused = group?.RegistrationPaused ?? false;
+        _changeReason = string.Empty;
+        _validation = null;
+        _validationReasons.Clear();
+    }
+
+    private async Task CreateOfferingAsync()
+    {
+        if (!Guid.TryParse(_createTermId, out var termId)
+            || !Guid.TryParse(_createCourseId, out var courseId)
+            || string.IsNullOrWhiteSpace(_createGroupCode)
+            || _createCapacity < 0)
+        {
+            SetLocalValidation("Enter valid term/course IDs, group code, and capacity.");
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.CreateOfferingAsync(
+            new(
+                termId,
+                courseId,
+                [new(_createGroupCode.Trim(), _createCapacity)],
+                Guid.NewGuid()));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _selectedOffering = result.Value;
+        SelectGroup(result.Value.Groups.FirstOrDefault());
+        _successMessage = "Draft offering created by the server";
+        await RefreshListAsync();
+    }
+
+    private async Task SaveGroupAsync()
+    {
+        if (_selectedOffering is null || _selectedGroup is null)
+        {
+            return;
+        }
+
+        if (_editedCapacity < _selectedGroup.EnrolledCount
+            || string.IsNullOrWhiteSpace(_changeReason))
+        {
+            SetLocalValidation("Capacity cannot be below enrollment and a reason is required.");
+            return;
+        }
+
+        var meetings = _selectedGroup.Meetings
+            .Select(meeting => new MeetingMutation(
+                MeetingKey(meeting.Id),
+                meeting.Id,
+                meeting.ActivityType,
+                meeting.DayOfWeek,
+                meeting.StartLocal,
+                meeting.EndLocal,
+                meeting.RoomId))
+            .ToArray();
+        var staff = _selectedGroup.Staff
+            .Select(assignment => new StaffAssignmentMutation(
+                MeetingKey(assignment.MeetingSlotId),
+                assignment.StaffId,
+                assignment.Role))
+            .ToArray();
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.UpdateGroupAsync(
+            _selectedGroup.Id,
+            new(
+                _selectedOffering.RowVersion,
+                _selectedGroup.RowVersion,
+                EmptyVersions,
+                EmptyVersions,
+                _selectedGroup.GroupCode,
+                _editedCapacity,
+                _registrationPaused,
+                null,
+                meetings,
+                staff,
+                _changeReason.Trim()));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        var updated = result.Value;
+        _selectedOffering = _selectedOffering with
+        {
+            Groups = _selectedOffering.Groups
+                .Select(group => group.Id == updated.Id ? updated : group)
+                .ToArray()
+        };
+        SelectGroup(updated);
+        _successMessage = "Group saved by the server";
+        _state = SuccessState;
+    }
+
+    private async Task ValidateOfferingAsync()
+    {
+        if (_selectedOffering is null)
+        {
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var result = await SchedulingApi.ValidateOfferingAsync(
+            _selectedOffering.Id,
+            new(
+                _selectedOffering.RowVersion,
+                _selectedOffering.Groups.ToDictionary(
+                    group => group.Id.ToString("D"),
+                    group => group.RowVersion),
+                EmptyVersions,
+                EmptyVersions));
+        _pending = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _validation = result.Value;
+        _validationReasons.Clear();
+        _validationReasons.AddRange(result.Value.Reasons);
+        _state = result.Value.Valid ? SuccessState : ValidationErrorState;
+        _reasonCode = result.Value.Valid
+            ? "VALIDATED"
+            : result.Value.Reasons.FirstOrDefault()?.Code ?? "VALIDATION_ERROR";
+        _successMessage = result.Value.Valid ? "Offering validation passed" : null;
+    }
+
+    private void OpenPublishDialog() => _showPublishDialog = _validation?.Valid == true;
+
+    private void ClosePublishDialog() => _showPublishDialog = false;
+
+    private async Task PublishOfferingAsync()
+    {
+        if (_selectedOffering is null
+            || _validation is null
+            || !_validation.Valid
+            || string.IsNullOrWhiteSpace(_validation.PreviewToken))
+        {
+            return;
+        }
+
+        _pending = true;
+        ResetFeedback();
+        var versions = _validation.DependencyVersions;
+        var result = await SchedulingApi.PublishOfferingAsync(
+            _selectedOffering.Id,
+            new(
+                versions.Offering,
+                versions.Groups,
+                versions.Rooms,
+                versions.StaffTermAvailability,
+                _validation.PreviewToken,
+                Guid.NewGuid(),
+                _publishReason.Trim()));
+        _pending = false;
+        _showPublishDialog = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _selectedOffering = result.Value;
+        SelectGroup(result.Value.Groups.FirstOrDefault());
+        _successMessage = "Published by the server";
+        _state = SuccessState;
+        await RefreshListAsync();
+    }
+
+    private async Task RefreshListAsync()
+    {
+        var result = await SchedulingApi.ListOfferingsAsync(query: _query);
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _offerings.Clear();
+            _offerings.AddRange(result.Value.Items);
+        }
+    }
+
+    private IEnumerable<GroupStaffDto> StaffFor(Guid meetingId) =>
+        _selectedGroup?.Staff.Where(item => item.MeetingSlotId == meetingId)
+        ?? [];
+
+    private static string ActivityLabel(string activityType) =>
+        activityType == "Tutorial" ? "Section (Tutorial)" : activityType;
+
+    private static string MeetingKey(Guid id) => $"meeting-{id:N}";
+
+    private static IReadOnlyDictionary<string, string> EmptyVersions { get; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
+    private void SetLocalValidation(string message)
+    {
+        _validationReasons.Clear();
+        _validationReasons.Add(new(
+            "VALIDATION_ERROR",
+            message,
+            []));
+        _reasonCode = "VALIDATION_ERROR";
+        _state = ValidationErrorState;
+        _successMessage = null;
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _reasonCode = error?.Code
+            ?? (status == HttpStatusCode.ServiceUnavailable
+                ? "SCHEDULING_UNAVAILABLE"
+                : "INTERNAL_ERROR");
+        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _referenceId = error?.CorrelationId;
+        _successMessage = null;
+        _state = status switch
+        {
+            HttpStatusCode.Unauthorized => SessionExpiredState,
+            HttpStatusCode.Forbidden => UnauthorizedState,
+            HttpStatusCode.Conflict when _reasonCode is
+                "STALE_PREVIEW" or "STALE_VERSION" or "GROUP_CHANGED" => StaleState,
+            HttpStatusCode.BadRequest => ValidationErrorState,
+            _ => ServiceErrorState
+        };
+    }
+
+    private void ResetFeedback()
+    {
+        _validationReasons.Clear();
+        _reasonCode = "AVAILABLE";
+        _safeMessage = string.Empty;
+        _referenceId = null;
+        _successMessage = null;
+    }
+}
