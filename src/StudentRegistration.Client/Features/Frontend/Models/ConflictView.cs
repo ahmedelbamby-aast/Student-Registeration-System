@@ -99,7 +99,11 @@ public sealed class ConflictAlternativeView
 
 public sealed class ConflictResolutionLinkView
 {
-    public ConflictResolutionLinkView(string label, string href)
+    public ConflictResolutionLinkView(
+        string label,
+        string href,
+        string? action = null,
+        string? targetGroupId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ArgumentException.ThrowIfNullOrWhiteSpace(href);
@@ -111,14 +115,46 @@ public sealed class ConflictResolutionLinkView
                 nameof(href));
         }
 
+        if ((action is null) != (targetGroupId is null))
+        {
+            throw new ArgumentException(
+                "Conflict command action and target must be supplied together.");
+        }
+
+        if (action is not null && action is not ("change-group" or "remove-group"))
+        {
+            throw new ArgumentException(
+                "Conflict commands must change or remove a group.",
+                nameof(action));
+        }
+
+        if (targetGroupId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetGroupId);
+        }
+
         Label = label;
         Href = href;
+        Action = action;
+        TargetGroupId = targetGroupId;
     }
 
     public string Label { get; }
 
     public string Href { get; }
+
+    public string? Action { get; }
+
+    public string? TargetGroupId { get; }
+
+    [JsonIgnore]
+    public bool IsCommand => Action is not null;
 }
+
+public sealed record ConflictResolutionRequest(
+    string Action,
+    string TargetGroupId,
+    string Route);
 
 /// <summary>
 /// Presentation-only rendering of server-authoritative scheduling conflicts.

@@ -37,6 +37,7 @@ public static class Program
         app.MapSpec009Endpoints();
         app.MapSpec010Endpoints();
         app.MapSpec011Endpoints();
+        app.MapSpec012Endpoints();
         if (app.Environment.IsDevelopment() ||
             app.Environment.IsEnvironment("Testing"))
         {

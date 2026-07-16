@@ -1,16 +1,21 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.JSInterop;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Registration;
 
 namespace StudentRegistration.Client.Features.Registration;
 
 /// <summary>
-/// Read-only client for SPEC-011 discovery. Eligibility, filtering, paging,
-/// capacity, and selectability remain authoritative on the server.
+/// Client for registration discovery and the server-authoritative current plan.
+/// Eligibility, capacity, conflict detection, and validation remain on the server.
 /// </summary>
 public sealed class RegistrationApiClient
 {
+    private const string AntiforgeryHeader = "X-XSRF-TOKEN";
+    private const string AntiforgeryInterop =
+        "StudentRegistration.antiforgery.getRequestToken";
+
     private static readonly JsonSerializerOptions ResponseJsonOptions =
         new(JsonSerializerDefaults.Web)
         {
@@ -19,10 +24,17 @@ public sealed class RegistrationApiClient
         };
 
     private readonly HttpClient _httpClient;
+    private readonly IJSRuntime? _javascript;
 
     public RegistrationApiClient(HttpClient httpClient)
+        : this(httpClient, null)
+    {
+    }
+
+    public RegistrationApiClient(HttpClient httpClient, IJSRuntime? javascript)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _javascript = javascript;
     }
 
     public Task<RegistrationApiResult<Page<OfferingEligibilityDto>>> ListOfferingsAsync(
@@ -51,6 +63,122 @@ public sealed class RegistrationApiClient
         GetAsync<OfferingEligibilityDto>(
             $"/api/student/offerings/{RequiredId(offeringId, nameof(offeringId)):D}/eligibility",
             cancellationToken);
+
+    public async Task<RegistrationPlanApiResult> GetRegistrationPlanAsync(
+        Guid termId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.GetAsync(
+            PlanPath(termId),
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        return await ReadPlanAsync(response, cancellationToken);
+    }
+
+    public Task<RegistrationPlanApiResult> ReplaceRegistrationPlanAsync(
+        Guid termId,
+        RegistrationPlanMutationRequest request,
+        CancellationToken cancellationToken = default) =>
+        SendPlanAsync(
+            HttpMethod.Put,
+            PlanPath(termId),
+            request,
+            cancellationToken);
+
+    public Task<RegistrationPlanApiResult> ValidateRegistrationPlanAsync(
+        Guid termId,
+        CancellationToken cancellationToken = default) =>
+        SendPlanAsync<object?>(
+            HttpMethod.Post,
+            $"{PlanPath(termId)}/validate",
+            null,
+            cancellationToken);
+
+    private async Task<RegistrationPlanApiResult> SendPlanAsync<TRequest>(
+        HttpMethod method,
+        string path,
+        TRequest request,
+        CancellationToken cancellationToken)
+    {
+        using var message = new HttpRequestMessage(method, path);
+        if (request is not null)
+        {
+            message.Content = JsonContent.Create(request);
+        }
+
+        if (_javascript is not null)
+        {
+            var token = await _javascript.InvokeAsync<string>(
+                AntiforgeryInterop,
+                cancellationToken);
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                message.Headers.TryAddWithoutValidation(AntiforgeryHeader, token);
+            }
+        }
+
+        using var response = await _httpClient.SendAsync(
+            message,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        return await ReadPlanAsync(response, cancellationToken);
+    }
+
+    private static async Task<RegistrationPlanApiResult> ReadPlanAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            try
+            {
+                var plan = await response.Content.ReadFromJsonAsync<RegistrationPlanDto>(
+                    ResponseJsonOptions,
+                    cancellationToken);
+                return plan is null
+                    ? RegistrationPlanApiResult.Failure(null, response.StatusCode)
+                    : RegistrationPlanApiResult.Success(plan, response.StatusCode);
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException
+                    or NotSupportedException
+                    or JsonException
+                    or ArgumentException)
+            {
+                return RegistrationPlanApiResult.Failure(null, response.StatusCode);
+            }
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            try
+            {
+                var stale = await response.Content
+                    .ReadFromJsonAsync<StaleRegistrationPlanResponse>(
+                        ResponseJsonOptions,
+                        cancellationToken);
+                if (stale is not null)
+                {
+                    return RegistrationPlanApiResult.Stale(
+                        stale.Error,
+                        stale.CurrentPlan,
+                        response.StatusCode);
+                }
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException
+                    or NotSupportedException
+                    or JsonException
+                    or ArgumentException)
+            {
+                // Fall through to the canonical safe error reader.
+            }
+        }
+
+        return RegistrationPlanApiResult.Failure(
+            await ReadErrorAsync(response, cancellationToken),
+            response.StatusCode);
+    }
 
     private async Task<RegistrationApiResult<T>> GetAsync<T>(
         string path,
@@ -135,6 +263,9 @@ public sealed class RegistrationApiClient
         value == Guid.Empty
             ? throw new ArgumentException("A non-empty identifier is required.", parameterName)
             : value;
+
+    private static string PlanPath(Guid termId) =>
+        $"/api/student/terms/{RequiredId(termId, nameof(termId)):D}/registration-plan";
 }
 
 public sealed record OfferingDiscoveryQuery(
@@ -170,4 +301,28 @@ public sealed record RegistrationApiResult<T>(
         ApiError? error,
         System.Net.HttpStatusCode statusCode) =>
         new(false, default, error, statusCode, null);
+}
+
+public sealed record RegistrationPlanApiResult(
+    bool IsSuccess,
+    RegistrationPlanDto? Value,
+    ApiError? Error,
+    System.Net.HttpStatusCode StatusCode,
+    RegistrationPlanDto? CurrentPlan)
+{
+    public static RegistrationPlanApiResult Success(
+        RegistrationPlanDto value,
+        System.Net.HttpStatusCode statusCode) =>
+        new(true, value, null, statusCode, null);
+
+    public static RegistrationPlanApiResult Failure(
+        ApiError? error,
+        System.Net.HttpStatusCode statusCode) =>
+        new(false, null, error, statusCode, null);
+
+    public static RegistrationPlanApiResult Stale(
+        ApiError error,
+        RegistrationPlanDto currentPlan,
+        System.Net.HttpStatusCode statusCode) =>
+        new(false, null, error, statusCode, currentPlan);
 }

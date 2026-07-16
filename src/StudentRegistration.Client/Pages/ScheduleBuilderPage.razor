@@ -1,0 +1,722 @@
+@page "/student/schedule"
+@using System.Net
+@using Microsoft.JSInterop
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Scheduling
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Client.Features.Scheduling
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApiClient RegistrationApi
+@inject NavigationManager Navigation
+
+<PageTitle>Schedule builder | Student Registration</PageTitle>
+
+@if (_initialLoading)
+{
+    <div class="srs-schedule-builder"
+         data-route-id="STU-04"
+         data-state="loading"
+         data-contract-state="STU-04-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1">
+            <h1>Schedule builder</h1>
+            <section role="status" aria-live="polite" aria-busy="true">
+                <h2>Loading schedule builder</h2>
+                <p>Loading the current server-authored registration plan.</p>
+            </section>
+        </main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext"
+              MainContentId="main-content"
+              SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time"
+              TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term"
+              RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term"
+              NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window"
+              AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role"
+              SessionLabel="Session"
+              ServiceLabel="Service"
+              SupportLinkLabel="Open support"
+              LoadingLabel="Loading schedule builder">
+        <Navigation>
+            <RoleNavigation AccessibleName="Student role navigation"
+                            Items="@StudentNavigation" />
+        </Navigation>
+        <ChildContent>
+            <main id="main-content"
+                  class="srs-schedule-builder"
+                  data-route-id="STU-04"
+                  data-state="@_state"
+                  data-contract-state="@ContractState"
+                  tabindex="-1">
+                <header>
+                    <p>Student registration</p>
+                    <h1>Schedule builder</h1>
+                    <p>
+                        Edit the server-stored plan. Capacity is advisory until
+                        final submission revalidates every selection.
+                    </p>
+                </header>
+
+                @if (_requestLoading)
+                {
+                    <p role="status" aria-live="polite" aria-busy="true">
+                        Recalculating the current plan.
+                    </p>
+                }
+
+                @if (IsFailureState)
+                {
+                    <section aria-labelledby="schedule-failure-heading"
+                             role="@(_state is UnauthorizedState or SessionExpiredState ? "alert" : "status")"
+                             aria-live="@(_state is UnauthorizedState or SessionExpiredState ? "assertive" : "polite")">
+                        <h2 id="schedule-failure-heading">@FailureHeading</h2>
+                        <p><strong>@_reasonCode</strong></p>
+                        <p>@_safeMessage</p>
+                        @if (!string.IsNullOrWhiteSpace(_referenceId))
+                        {
+                            <p>Reference: @_referenceId</p>
+                        }
+                        @if (_state is ServiceErrorState or OfflineState)
+                        {
+                            <button type="button"
+                                    disabled="@_requestLoading"
+                                    @onclick="LoadPlanAsync">
+                                Retry schedule builder
+                            </button>
+                        }
+                        <a href="@_shellContext.SupportReferencePath">Open safe support path</a>
+                    </section>
+                }
+                else if (_plan is not null)
+                {
+                    @if (_state == StaleState)
+                    {
+                        <section role="status" aria-live="polite" aria-labelledby="plan-stale-heading">
+                            <h2 id="plan-stale-heading">Plan changed</h2>
+                            <p><strong>@_reasonCode</strong></p>
+                            <p>@_safeMessage</p>
+                            <p>The current authorized plan is shown below. Review it before editing again.</p>
+                        </section>
+                    }
+
+                    <section aria-labelledby="credit-summary-heading">
+                        <h2 id="credit-summary-heading">Credit summary</h2>
+                        <dl>
+                            <div data-load-field="total-credits">
+                                <dt>Total credits</dt>
+                                <dd>@Credits(_plan.TotalCredits)</dd>
+                            </div>
+                            <div data-load-field="default-target">
+                                <dt>Default target</dt>
+                                <dd>@Credits(_plan.DefaultTargetCredits)</dd>
+                            </div>
+                            <div data-load-field="maximum-allowed">
+                                <dt>Maximum allowed</dt>
+                                <dd>@Credits(_plan.MaximumAllowedCredits)</dd>
+                            </div>
+                        </dl>
+                        @if (_plan.LoadReasons.Count > 0)
+                        {
+                            <h3>Load policy reasons</h3>
+                            <ul>
+                                @foreach (var reason in _plan.LoadReasons)
+                                {
+                                    <li data-load-reason="@reason.Code">
+                                        <p><strong>@reason.Code</strong></p>
+                                        <p>@reason.Message</p>
+                                        <dl>
+                                            <div><dt>Policy version</dt><dd>@reason.PolicyVersion</dd></div>
+                                            <div><dt>Source</dt><dd>@reason.SourceReference</dd></div>
+                                        </dl>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </section>
+
+                    @if (_state == EmptyState)
+                    {
+                        <section aria-labelledby="plan-empty-heading" role="status" aria-live="polite">
+                            <h2 id="plan-empty-heading">Your plan is empty</h2>
+                            <p>Add an eligible subject group to build your schedule.</p>
+                            <a href="/student/subjects">Add a subject</a>
+                        </section>
+                    }
+                    else
+                    {
+                        <section aria-labelledby="selected-groups-heading">
+                            <h2 id="selected-groups-heading">Selected groups</h2>
+                            <ul>
+                                @foreach (var group in _plan.SelectedGroups)
+                                {
+                                    <li data-selected-group-id="@group.GroupId">
+                                        <article>
+                                            <h3>@group.CourseCode @group.SubjectTitle</h3>
+                                            <p>Group <strong>@group.GroupCode</strong> · @Credits(group.Credits)</p>
+                                            <p>
+                                                Advisory capacity: @group.EnrolledCount of @group.Capacity enrolled.
+                                            </p>
+                                            <a href="@SafeRoute($"/student/subjects/{group.OfferingId:D}")">
+                                                Change @group.CourseCode group @group.GroupCode
+                                            </a>
+                                            <button type="button"
+                                                    disabled="@_requestLoading"
+                                                    @onclick="() => RemoveGroupAsync(group.GroupId)">
+                                                Remove @group.CourseCode group @group.GroupCode
+                                            </button>
+                                        </article>
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+
+                        <div class="srs-schedule-builder__views">
+                            <ScheduleCalendar Heading="Schedule calendar"
+                                              EquivalentListId="schedule-list"
+                                              DayColumnLabel="Day"
+                                              TimeColumnLabel="Time"
+                                              MeetingColumnLabel="Meeting"
+                                              GroupLabel="Group"
+                                              ActivityKindLabel="Activity"
+                                              LecturerLabel="Lecturer"
+                                              TeachingAssistantsLabel="Teaching assistants"
+                                              LocationLabel="Location"
+                                              ConflictLabel="Conflict status"
+                                              Meetings="@_meetingItems"
+                                              EmptyText="No meetings are selected." />
+                            <ScheduleList ComponentId="schedule-list"
+                                          EquivalentCalendarId="schedule-calendar"
+                                          Heading="Chronological schedule"
+                                          GroupLabel="Group"
+                                          ActivityKindLabel="Activity"
+                                          LecturerLabel="Lecturer"
+                                          TeachingAssistantsLabel="Teaching assistants"
+                                          LocationLabel="Location"
+                                          DayLabel="Day"
+                                          StartLabel="Starts"
+                                          EndLabel="Ends"
+                                          TimezoneLabel="Timezone"
+                                          ConflictLabel="Conflict status"
+                                          Meetings="@_meetingItems"
+                                          EmptyText="No meetings are selected." />
+                        </div>
+
+                        @if (_conflictState is { Conflicts.Count: > 0 })
+                        {
+                            @foreach (var conflict in _conflictState.Conflicts)
+                            {
+                                <ConflictPanel ComponentId="@($"conflict-{conflict.Source.First.GroupId}-{conflict.Source.Second.GroupId}")"
+                                               Heading="Conflict"
+                                               Explanation="@conflict.Source.Message"
+                                               SubjectsHeading="Affected subjects"
+                                               SubjectLabel="Subject"
+                                               GroupLabel="Group"
+                                               OverlapsHeading="Exact overlap"
+                                               DayLabel="Day"
+                                               StartLabel="Starts"
+                                               EndLabel="Ends"
+                                               InvolvedGroupsLabel="Affected groups"
+                                               AlternativesHeading="Alternatives"
+                                               ReplacementGroupsLabel="Replacement groups"
+                                               ResolutionHeading="Resolve conflict"
+                                               Conflict="@conflict.Panel"
+                                               ResolutionRequested="ResolveConflictAsync" />
+                            }
+                        }
+
+                        @if (_plan.SelectionIssues.Count > 0)
+                        {
+                            <section aria-labelledby="selection-issues-heading" role="alert">
+                                <h2 id="selection-issues-heading">Selections need attention</h2>
+                                <ul>
+                                    @foreach (var issue in _plan.SelectionIssues)
+                                    {
+                                        <li data-selection-issue="@issue.Code">
+                                            <p><strong>@issue.Code</strong></p>
+                                            <p>@issue.Message</p>
+                                            @foreach (var action in issue.Actions)
+                                            {
+                                                @if (action.Action == "remove-group")
+                                                {
+                                                    <button type="button"
+                                                            disabled="@_requestLoading"
+                                                            @onclick="() => RemoveGroupAsync(action.TargetGroupId)">
+                                                        @action.Label
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@SafeRoute(action.Route)">@action.Label</a>
+                                                }
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            </section>
+                        }
+
+                        <section aria-labelledby="validation-snapshot-heading">
+                            <h2 id="validation-snapshot-heading">Validation snapshot</h2>
+                            <dl>
+                                <div><dt>Evaluated</dt><dd>@_plan.Validation.EvaluatedAtUtc.ToString("u")</dd></div>
+                                <div><dt>Academic context</dt><dd>@_plan.Validation.AcademicContextVersion</dd></div>
+                                <div><dt>Policy</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
+                                <div><dt>Catalogue</dt><dd>@_plan.Validation.CatalogueVersion</dd></div>
+                            </dl>
+                        </section>
+
+                        <div>
+                            <button type="button"
+                                    aria-describedby="@(_plan.ReviewBlocked ? "review-blocked-reason" : null)"
+                                    disabled="@(_plan.ReviewBlocked || _requestLoading)"
+                                    @onclick="ContinueAsync">
+                                Continue to review
+                            </button>
+                            @if (_plan.ReviewBlocked)
+                            {
+                                <p id="review-blocked-reason">
+                                    Resolve every conflict or unavailable selection before continuing.
+                                </p>
+                            }
+                        </div>
+                    }
+                }
+            </main>
+        </ChildContent>
+    </AppShell>
+}
+else
+{
+    <main id="main-content"
+          class="srs-schedule-builder"
+          data-route-id="STU-04"
+          data-state="@_state"
+          data-contract-state="@ContractState"
+          tabindex="-1">
+        <h1>Schedule builder</h1>
+        <section role="alert" aria-live="assertive">
+            <h2>@FailureHeading</h2>
+            <p><strong>@_reasonCode</strong></p>
+            <p>@_safeMessage</p>
+            @if (!string.IsNullOrWhiteSpace(_referenceId))
+            {
+                <p>Reference: @_referenceId</p>
+            }
+            <a href="/student">Return to Student dashboard</a>
+        </section>
+    </main>
+}
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Dashboard", "/student"),
+        new("Available subjects", "/student/subjects"),
+        new("Current plan", "/student/schedule", IsActive: true)
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private RegistrationPlanDto? _plan;
+    private AccessibleConflictState? _conflictState;
+    private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetingItems = [];
+    private Guid _termId;
+    private string _state = LoadingState;
+    private string _reasonCode = "REGISTRATION_PLAN_UNAVAILABLE";
+    private string _safeMessage = "The schedule builder request could not be completed.";
+    private string? _referenceId;
+    private bool _initialLoading = true;
+    private bool _requestLoading;
+
+    private bool IsFailureState => _state is
+        ServiceErrorState or UnauthorizedState or SessionExpiredState or OfflineState;
+
+    private string ContractState => _state switch
+    {
+        LoadingState => "STU-04-COMP-STATE-LOADING",
+        EmptyState => "STU-04-COMP-STATE-EMPTY",
+        SuccessState => "STU-04-COMP-STATE-SUCCESS",
+        ValidationErrorState => "STU-04-COMP-STATE-VALIDATION-ERROR",
+        ServiceErrorState => "STU-04-COMP-STATE-SERVICE-ERROR",
+        UnauthorizedState => "STU-04-COMP-STATE-UNAUTHORIZED",
+        SessionExpiredState => "STU-04-COMP-STATE-SESSION-EXPIRED",
+        StaleState => "STU-04-COMP-STATE-STALE",
+        OfflineState => "STU-04-COMP-STATE-OFFLINE",
+        _ => "STU-04-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private string FailureHeading => _state switch
+    {
+        UnauthorizedState => "Access denied",
+        SessionExpiredState => "Session expired",
+        OfflineState => "Schedule builder is offline",
+        _ => "Schedule builder is unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            var context = contextResult.Value;
+            if (!RegistrationPageSupport.IsStudentContext(context))
+            {
+                ApplyFailure(
+                    HttpStatusCode.Forbidden,
+                    new("FORBIDDEN", "A Student session is required.", "STU-04-AUTH"));
+                return;
+            }
+
+            if (context.RegistrationTerm is null)
+            {
+                ApplyFailure(
+                    HttpStatusCode.NotFound,
+                    new(
+                        "REGISTRATION_CONTEXT_NOT_FOUND",
+                        "No authorized registration term is available.",
+                        "STU-04-CONTEXT"));
+                return;
+            }
+
+            if (!Guid.TryParse(context.RegistrationTerm.Id, out _termId))
+            {
+                ApplyFailure(
+                    HttpStatusCode.ServiceUnavailable,
+                    new(
+                        "REGISTRATION_CONTEXT_INVALID",
+                        "The authorized registration term could not be loaded safely.",
+                        "STU-04-CONTEXT"));
+                return;
+            }
+
+            _shellContext = RegistrationPageSupport.ToShellContext(context);
+            await LoadPlanAsync();
+
+            var requestedOffering = QueryGuid("offeringId");
+            var requestedGroup = QueryGuid("groupId");
+            if (_plan is not null
+                && requestedOffering is not null
+                && requestedGroup is not null)
+            {
+                var selected = _plan.SelectedGroups
+                    .Where(group => group.OfferingId != requestedOffering.Value)
+                    .Select(group => group.GroupId)
+                    .Append(requestedGroup.Value)
+                    .Distinct()
+                    .ToArray();
+                if (!_plan.SelectedGroups.Select(group => group.GroupId).SequenceEqual(selected))
+                {
+                    await ReplaceAsync(selected);
+                }
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _initialLoading = false;
+        }
+    }
+
+    private async Task LoadPlanAsync()
+    {
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.GetRegistrationPlanAsync(_termId);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+            }
+            else
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private Task RemoveGroupAsync(Guid groupId) =>
+        _plan is null
+            ? Task.CompletedTask
+            : ReplaceAsync(_plan.SelectedGroups
+                .Where(group => group.GroupId != groupId)
+                .Select(group => group.GroupId)
+                .ToArray());
+
+    private async Task ReplaceAsync(IReadOnlyList<Guid> selectedGroupIds)
+    {
+        if (_plan is null)
+        {
+            return;
+        }
+
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.ReplaceRegistrationPlanAsync(
+                _termId,
+                new(_plan.RowVersion, selectedGroupIds));
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+            }
+            else if (result.StatusCode == HttpStatusCode.Conflict
+                     && result.CurrentPlan is not null)
+            {
+                _reasonCode = result.Error?.Code ?? "STALE_VERSION";
+                _safeMessage = result.Error?.Message
+                    ?? "The plan changed in another editor.";
+                _referenceId = result.Error?.CorrelationId;
+                ApplyPlan(result.CurrentPlan, StaleState);
+            }
+            else
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private async Task ResolveConflictAsync(ConflictResolutionRequest request)
+    {
+        if (request.Action == "remove-group"
+            && Guid.TryParse(request.TargetGroupId, out var groupId))
+        {
+            await RemoveGroupAsync(groupId);
+            return;
+        }
+
+        if (request.Action == "change-group")
+        {
+            Navigation.NavigateTo(SafeRoute(request.Route));
+        }
+    }
+
+    private async Task ContinueAsync()
+    {
+        if (_plan is null || _plan.ReviewBlocked)
+        {
+            return;
+        }
+
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.ValidateRegistrationPlanAsync(_termId);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+                if (!result.Value.ReviewBlocked)
+                {
+                    Navigation.NavigateTo("/student/review");
+                }
+            }
+            else
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private void ApplyPlan(RegistrationPlanDto plan, string? forcedState = null)
+    {
+        _plan = plan;
+        _meetingItems = plan.SelectedGroups
+            .SelectMany(group => group.Meetings.Select(meeting => Meeting(group, meeting, plan)))
+            .OrderBy(meeting => DayIndex(meeting.Day))
+            .ThenBy(meeting => meeting.StartsAt, StringComparer.Ordinal)
+            .ThenBy(meeting => meeting.EndsAt, StringComparer.Ordinal)
+            .ThenBy(meeting => meeting.SubjectCode, StringComparer.Ordinal)
+            .ThenBy(meeting => meeting.GroupCode, StringComparer.Ordinal)
+            .ThenBy(meeting => meeting.MeetingId, StringComparer.Ordinal)
+            .ToArray();
+        var conflicts = plan.Conflicts.Select(Present).ToArray();
+        _conflictState = ConflictStateMapper.Map(conflicts, _meetingItems);
+        _state = forcedState
+            ?? (plan.SelectedGroups.Count == 0
+                ? EmptyState
+                : plan.ReviewBlocked || plan.SelectionIssues.Any(issue => issue.Blocking)
+                    ? ValidationErrorState
+                    : SuccessState);
+    }
+
+    private void ApplyFailure(HttpStatusCode statusCode, ApiError? error)
+    {
+        _plan = null;
+        _meetingItems = [];
+        _conflictState = null;
+        _reasonCode = error?.Code ?? "REGISTRATION_PLAN_UNAVAILABLE";
+        _safeMessage = error?.Message ?? "The schedule builder request could not be completed.";
+        _referenceId = error?.CorrelationId;
+        _state = _reasonCode == "SESSION_EXPIRED"
+            ? SessionExpiredState
+            : statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
+                ? UnauthorizedState
+                : ServiceErrorState;
+    }
+
+    private void ApplyOffline()
+    {
+        _plan = null;
+        _meetingItems = [];
+        _conflictState = null;
+        _reasonCode = "OFFLINE";
+        _safeMessage = "Reconnect, then retry the current plan. No edit was queued.";
+        _referenceId = null;
+        _state = OfflineState;
+    }
+
+    private static ScheduleCalendar.ScheduleMeetingItem Meeting(
+        RegistrationPlanGroupDto group,
+        RegistrationPlanMeetingDto meeting,
+        RegistrationPlanDto plan)
+    {
+        var hasConflict = plan.Conflicts.Any(conflict =>
+            conflict.First.GroupId == group.GroupId || conflict.Second.GroupId == group.GroupId);
+        var issue = plan.SelectionIssues.FirstOrDefault(item => item.GroupId == group.GroupId);
+        var status = hasConflict ? "Conflict" : issue?.Code ?? "No conflict";
+        return new(
+            meeting.MeetingId.ToString("D"),
+            group.CourseCode,
+            group.SubjectTitle,
+            group.GroupCode,
+            meeting.ActivityKind,
+            meeting.LecturerName,
+            meeting.TeachingAssistantNames,
+            $"{meeting.RoomCode} · {meeting.Location}",
+            Day(meeting.DayOfWeek).ToString(),
+            meeting.StartLocal.ToString("HH:mm"),
+            meeting.EndLocal.ToString("HH:mm"),
+            meeting.Timezone,
+            status,
+            $"/student/subjects/{group.OfferingId:D}",
+            $"Open {group.CourseCode} group {group.GroupCode} details");
+    }
+
+    private static ServerScheduleConflictPresentation Present(
+        ScheduleConflictDto conflict) =>
+        new(
+            conflict.Code,
+            Present(conflict.First),
+            Present(conflict.Second),
+            Day(conflict.DayOfWeek),
+            conflict.OverlapStartLocal,
+            conflict.OverlapEndLocal,
+            conflict.Message,
+            conflict.Actions.Select(action =>
+                new ServerConflictResolutionActionPresentation(
+                    action.Action,
+                    action.TargetGroupId.ToString("D"),
+                    action.Label,
+                    SafeRoute(action.Route))).ToArray());
+
+    private static ServerConflictGroupPresentation Present(
+        ScheduleConflictParticipantDto participant) =>
+        new(
+            participant.GroupId.ToString("D"),
+            participant.GroupCode,
+            participant.CourseCode,
+            participant.SubjectTitle,
+            participant.StartLocal,
+            participant.EndLocal);
+
+    private Guid? QueryGuid(string name)
+    {
+        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query.TrimStart('?');
+        foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var pair = part.Split('=', 2);
+            if (pair.Length == 2
+                && string.Equals(Uri.UnescapeDataString(pair[0]), name, StringComparison.Ordinal)
+                && Guid.TryParse(Uri.UnescapeDataString(pair[1]), out var value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string Credits(decimal value) =>
+        $"{value:0.##} credits";
+
+    private static DayOfWeek Day(int day) =>
+        day is >= 0 and <= 6 ? (DayOfWeek)day : DayOfWeek.Sunday;
+
+    private static int DayIndex(string day) =>
+        Enum.TryParse<DayOfWeek>(day, out var parsed) ? (int)parsed : 7;
+
+    private static string SafeRoute(string route) =>
+        !string.IsNullOrWhiteSpace(route)
+        && route.StartsWith("/", StringComparison.Ordinal)
+        && !route.StartsWith("//", StringComparison.Ordinal)
+            ? route
+            : "/student/schedule";
+}

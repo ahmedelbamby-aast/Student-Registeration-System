@@ -84,6 +84,41 @@ public sealed class ConflictPanelTests
     }
 
     [Fact]
+    public void Command_resolution_preserves_action_and_target_for_the_owning_page()
+    {
+        using var context = new BunitContext();
+        ConflictResolutionRequest? received = null;
+        var conflict = CreateConflictWithCommands();
+
+        var cut = context.Render<ConflictPanel>(parameters => parameters
+            .Add(component => component.ComponentId, "schedule-conflict-command")
+            .Add(component => component.Heading, "Conflict")
+            .Add(component => component.Explanation, "Resolve this conflict.")
+            .Add(component => component.SubjectsHeading, "Subjects")
+            .Add(component => component.SubjectLabel, "Subject")
+            .Add(component => component.GroupLabel, "Group")
+            .Add(component => component.OverlapsHeading, "Overlap")
+            .Add(component => component.DayLabel, "Day")
+            .Add(component => component.StartLabel, "Start")
+            .Add(component => component.EndLabel, "End")
+            .Add(component => component.InvolvedGroupsLabel, "Groups")
+            .Add(component => component.AlternativesHeading, "Alternatives")
+            .Add(component => component.ReplacementGroupsLabel, "Replacement groups")
+            .Add(component => component.ResolutionHeading, "Resolve")
+            .Add(component => component.Conflict, conflict)
+            .Add(component => component.ResolutionRequested,
+                (ConflictResolutionRequest request) => received = request));
+
+        var remove = cut.Find("button[data-resolution-action='remove-group']");
+        remove.Click();
+
+        Assert.NotNull(received);
+        Assert.Equal("remove-group", received.Action);
+        Assert.Equal("group-1", received.TargetGroupId);
+        Assert.Equal("/student/schedule", received.Route);
+    }
+
+    [Fact]
     public void Panel_styles_cover_native_link_interactions_and_token_only_states()
     {
         var styles = RepositoryFiles.Read(
@@ -221,5 +256,27 @@ public sealed class ConflictPanelTests
                 new ConflictResolutionLinkView(
                     "Remove Machine Learning",
                     "/student/registration/subjects/AI301/remove")
+            ]);
+
+    private static ConflictView CreateConflictWithCommands() =>
+        new(
+            [
+                new ConflictSubjectGroupView("AI301", "Machine Learning", "G1"),
+                new ConflictSubjectGroupView("AI302", "Computer Vision", "G2")
+            ],
+            [
+                new ConflictOverlapSlotView(
+                    DayOfWeek.Monday,
+                    new TimeOnly(10, 0),
+                    new TimeOnly(11, 0),
+                    ["AI301:G1", "AI302:G2"])
+            ],
+            [],
+            [
+                new ConflictResolutionLinkView(
+                    "Remove Machine Learning",
+                    "/student/schedule",
+                    "remove-group",
+                    "group-1")
             ]);
 }

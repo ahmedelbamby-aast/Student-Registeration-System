@@ -37,7 +37,15 @@ public sealed class RegistrationDiscoveryModelConfigurationTests
 
         var createScript = context.Database.GenerateCreateScript();
         Assert.DoesNotContain(
-            "CREATE TABLE [registration]",
+            "CREATE TABLE [registration].[OfferingEligibility]",
+            createScript,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(
+            "CREATE TABLE [registration].[EligibilityReason]",
+            createScript,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(
+            "CREATE TABLE [registration].[GroupSummary]",
             createScript,
             StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(

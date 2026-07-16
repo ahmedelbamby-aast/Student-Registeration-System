@@ -1340,6 +1340,152 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.ToTable("AuditEvents", "audit");
                 });
 
+            modelBuilder.Entity("StudentRegistration.Infrastructure.SqlServer.Persistence.Configurations.EligibilityReasonReadModel", b =>
+                {
+                    b.Property<bool>("Blocking")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("EligibilityReason", "registration");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Infrastructure.SqlServer.Persistence.Configurations.GroupSummaryReadModel", b =>
+                {
+                    b.Property<string>("GroupCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Selectable")
+                        .HasColumnType("bit");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("GroupSummary", "registration");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Infrastructure.SqlServer.Persistence.Configurations.OfferingEligibilityReadModel", b =>
+                {
+                    b.Property<string>("CourseCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("Eligible")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("OfferingEligibility", "registration");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Conflicts")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ConflictsJson");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalCredits")
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<string>("Validation")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ValidationSnapshotJson");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TermId");
+
+                    b.HasIndex("StudentId", "TermId")
+                        .IsUnique();
+
+                    b.ToTable("RegistrationPlans", "registration", t =>
+                        {
+                            t.HasCheckConstraint("CK_RegistrationPlans_ConflictsJson", "ISJSON([ConflictsJson]) = 1");
+
+                            t.HasCheckConstraint("CK_RegistrationPlans_State", "[State] IN ('draft', 'review-blocked')");
+
+                            t.HasCheckConstraint("CK_RegistrationPlans_TotalCredits", "[TotalCredits] >= 0");
+
+                            t.HasCheckConstraint("CK_RegistrationPlans_ValidationSnapshotJson", "[ValidationSnapshotJson] IS NULL OR ISJSON([ValidationSnapshotJson]) = 1");
+                        });
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlanItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CapturedGroupVersion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CapturedOfferingVersion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SelectedGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfferingId", "SelectedGroupId");
+
+                    b.HasIndex("PlanId", "OfferingId")
+                        .IsUnique();
+
+                    b.HasIndex("PlanId", "SelectedGroupId");
+
+                    b.ToTable("RegistrationPlanItems", "registration");
+                });
+
             modelBuilder.Entity("StudentRegistration.Scheduling.Domain.CourseOffering", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2084,6 +2230,43 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.HasOne("StudentRegistration.IdentityAccess.Domain.ApplicationUser", null)
                         .WithOne()
                         .HasForeignKey("StudentRegistration.IdentityAccess.Domain.StudentActivation", "ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlan", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("TermId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlanItem", b =>
+                {
+                    b.HasOne("StudentRegistration.Scheduling.Domain.CourseOffering", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Registration.Domain.RegistrationPlan", null)
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.SectionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId", "SelectedGroupId")
+                        .HasPrincipalKey("OfferingId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

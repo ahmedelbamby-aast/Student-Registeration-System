@@ -124,6 +124,31 @@ public sealed class EligibilityDecisionTests
     }
 
     [Fact]
+    public async Task Replacing_a_selected_offering_does_not_double_count_or_self_conflict()
+    {
+        var fixture = new Spec011ScenarioBuilder
+        {
+            CandidateOfferingAlreadySelected = true,
+            CurrentPlanCredits = 15m
+        };
+
+        var offering = Assert.Single((await Service(fixture).EvaluateTermAsync(
+            fixture.ApplicationUserId,
+            fixture.TermId)).Items);
+        var group = Assert.Single(offering.Groups);
+
+        Assert.Equal(15m, offering.CurrentPlanCredits);
+        Assert.Equal(15m, offering.ProjectedPlanCredits);
+        Assert.True(group.Selectable);
+        Assert.DoesNotContain(
+            group.NonSelectableReasons,
+            reason => reason.Code == "MEETING_CONFLICT");
+        Assert.Contains(
+            offering.Reasons,
+            reason => reason.Code == "NO_MEETING_CONFLICT" && reason.Passed);
+    }
+
+    [Fact]
     public async Task Versioned_empty_plan_is_the_live_default()
     {
         var fixture = new Spec011ScenarioBuilder

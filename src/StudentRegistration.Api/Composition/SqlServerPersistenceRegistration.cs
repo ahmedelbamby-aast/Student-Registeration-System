@@ -32,6 +32,7 @@ public static class SqlServerPersistenceRegistration
                 sqlServer => sqlServer.EnableRetryOnFailure()));
         services.AddStudentRegistrationAcademicSqlServer();
         services.AddStudentRegistrationDiscoverySqlServer();
+        services.AddStudentRegistrationPlansSqlServer();
         return services;
     }
 }

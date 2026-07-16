@@ -98,7 +98,20 @@
                         }
                         else
                         {
-                            <a data-resolution-link href="@link.Href">@link.Label</a>
+                            @if (link.IsCommand && ResolutionRequested.HasDelegate)
+                            {
+                                <button type="button"
+                                        data-resolution-link
+                                        data-resolution-action="@link.Action"
+                                        data-target-group-id="@link.TargetGroupId"
+                                        @onclick="() => RequestResolutionAsync(link)">
+                                    @link.Label
+                                </button>
+                            }
+                            else
+                            {
+                                <a data-resolution-link href="@link.Href">@link.Label</a>
+                            }
                         }
                     </li>
                 }
@@ -168,6 +181,9 @@
     [Parameter]
     public string? ErrorMessage { get; set; }
 
+    [Parameter]
+    public EventCallback<ConflictResolutionRequest> ResolutionRequested { get; set; }
+
     private string HeadingId => $"{ComponentId}-heading";
 
     private string SubjectsHeadingId => $"{ComponentId}-subjects-heading";
@@ -224,4 +240,10 @@
 
     private static string FormatTime(TimeOnly value) =>
         value.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
+    private Task RequestResolutionAsync(ConflictResolutionLinkView link) =>
+        ResolutionRequested.InvokeAsync(new ConflictResolutionRequest(
+            link.Action!,
+            link.TargetGroupId!,
+            link.Href));
 }

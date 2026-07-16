@@ -163,14 +163,22 @@ public sealed class EligibilityService(
         var course = academic.Catalogue?.Courses.SingleOrDefault(
             item => item.CourseId == offering.CourseId);
         var policy = academic.Policy;
-        var projectedCredits = plan.Credits + (course?.Credits ?? 0m);
+        var offeringAlreadySelected = plan.Selections.Any(selection =>
+            selection.OfferingId == offering.OfferingId);
+        var projectedCredits = plan.Credits + (offeringAlreadySelected
+            ? 0m
+            : course?.Credits ?? 0m);
         var maximum = academic.Gpa < 2m
             ? ProbationMaximumCredits
             : NormalMaximumCredits;
+        var otherPlanMeetings = plan.Selections
+            .Where(selection => selection.OfferingId != offering.OfferingId)
+            .SelectMany(selection => selection.Meetings)
+            .ToArray();
         var groupModels = offering.Groups
             .OrderBy(item => item.GroupCode, StringComparer.Ordinal)
             .ThenBy(item => item.GroupId)
-            .Select(item => groups.Project(item, plan.Meetings))
+            .Select(item => groups.Project(item, otherPlanMeetings))
             .ToArray();
         var reasons = new List<EligibilityReason>();
 

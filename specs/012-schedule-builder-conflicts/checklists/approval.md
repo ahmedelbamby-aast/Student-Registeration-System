@@ -14,12 +14,21 @@ documented test-first order.
 This approval does not authorize production deployment, official AASTMT
 go-live, Gate B-D, or release sign-off.
 
-## Pending Credit-Load Response Amendment
+## Credit-Load Response Amendment
 
-**Amendment status**: PENDING Ahmed ELbamby review
+**Amendment status**: APPROVED<br>
+**Amendment version**: `spec012-credit-load/1.0`<br>
+**Approved by**: Ahmed ELbamby<br>
+**Approved on**: 2026-07-16
 
-The original Gate A approval remains immutable. The draft addition of
-`defaultTargetCredits`, `maximumAllowedCredits`, and sourced `loadReasons` to
-every RegistrationPlan response corrects a pre-implementation STU-04 contract
-gap, but its tests and runtime delivery are not authorized until Ahmed approves
-and versions this amendment explicitly.
+Ahmed ELbamby approves a deliberately simple plan-response contract for this
+non-production demo. Every empty, current, replaced, validated, or authorized
+stale-current RegistrationPlan response returns server-composed
+`defaultTargetCredits=18` and `maximumAllowedCredits=18`.
+
+Every response also retains server-authored `loadReasons` with safe
+policy/source provenance. There is no overload path or GPA-derived 12-credit
+branch, and the browser does not derive either value or invent a reason. This
+approved version supersedes only the earlier pending credit-load draft; the
+original Gate A approval and all owner/term, privacy, rowversion, atomicity,
+non-mutating-validation, and no-seat-reservation boundaries remain unchanged.

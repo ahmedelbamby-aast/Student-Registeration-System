@@ -10,12 +10,20 @@ public interface ICurrentPlanReader
 
 public sealed record CurrentPlanSnapshot(
     decimal Credits,
-    IReadOnlyList<CurrentPlanMeetingSnapshot> Meetings,
+    IReadOnlyList<CurrentPlanSelectionSnapshot> Selections,
     string Version)
 {
     public static CurrentPlanSnapshot Empty { get; } =
-        new(0m, [], EmptyCurrentPlanReader.InitialVersion);
+        new(
+            0m,
+            Array.Empty<CurrentPlanSelectionSnapshot>(),
+            EmptyCurrentPlanReader.InitialVersion);
 }
+
+public sealed record CurrentPlanSelectionSnapshot(
+    Guid OfferingId,
+    Guid GroupId,
+    IReadOnlyList<CurrentPlanMeetingSnapshot> Meetings);
 
 public sealed record CurrentPlanMeetingSnapshot(
     DayOfWeek DayOfWeek,

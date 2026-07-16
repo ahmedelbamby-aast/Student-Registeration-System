@@ -1,7 +1,8 @@
 # Research: Schedule Builder and Conflicts
 
-**Draft amendment:** The credit-load response projection is pending Ahmed
-ELbamby's review and is not yet an immutable downstream contract pin.
+**Approved amendment:** `spec012-credit-load/1.0`, approved by Ahmed ELbamby
+on 2026-07-16, keeps plan-response credit guidance fixed and intentionally
+small for the demo.
 
 ## Decisions
 
@@ -17,10 +18,18 @@ ELbamby's review and is not yet an immutable downstream contract pin.
 
 ### Feature contract
 ```typescript
+interface ScheduleConflictParticipantDto {
+  groupId: string;
+  groupCode: string;
+  courseCode: string;
+  subjectTitle: string;
+  startLocal: string;
+  endLocal: string;
+}
 interface ScheduleConflictDto {
   code: "MEETING_OVERLAP" | "TRAVEL_BUFFER";
-  first: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
-  second: { groupId: string; groupCode: string; courseCode: string; subjectTitle: string; startLocal: string; endLocal: string };
+  first: ScheduleConflictParticipantDto;
+  second: ScheduleConflictParticipantDto;
   dayOfWeek: number;
   overlapStartLocal: string;
   overlapEndLocal: string;
@@ -34,7 +43,7 @@ interface RegistrationPlanDto {
   selectedGroups: GroupDto[];
   totalCredits: number;
   defaultTargetCredits: 18;
-  maximumAllowedCredits: 12 | 18;
+  maximumAllowedCredits: 18;
   loadReasons: Array<{
     code: string;
     blocking: boolean;
@@ -48,9 +57,19 @@ interface RegistrationPlanDto {
 ```
 
 Endpoints are owner/term scoped GET/PUT plus a non-mutating validate operation.
-All responses carry the server-composed 18-credit default target, effective
-12/18 maximum, and safe policy/source load reasons so direct schedule
+All responses carry the server-composed 18-credit default target, fixed
+18-credit maximum, and safe policy/source load reasons so direct schedule
 navigation never depends on client state or a browser GPA calculation.
+
+### Simple fixed credit-load response
+**Decision**: Every RegistrationPlan response reports
+`defaultTargetCredits=18`, `maximumAllowedCredits=18`, and server-authored
+`loadReasons` with policy/source provenance.
+**Rationale**: The demo has one approved normal maximum. Reasons remain
+server-authored and explainable without adding a second maximum or overload
+workflow.
+**Alternatives rejected**: The earlier draft 12/18 GPA branch and an overload
+flow. The browser never derives the maximum or invents a reason.
 
 ### Plan route and update shape
 **Decision**: Use one active plan per authenticated student/term, a complete-

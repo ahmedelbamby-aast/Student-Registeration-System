@@ -6,6 +6,7 @@ using StudentRegistration.Academics.Domain;
 using StudentRegistration.IdentityAccess.Domain;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Registration.Application.Ports;
+using StudentRegistration.Registration.Domain;
 using StudentRegistration.Scheduling.Application.Ports;
 using StudentRegistration.Scheduling.Domain;
 using AcademicProgram = StudentRegistration.Academics.Domain.Program;
@@ -192,11 +193,86 @@ public sealed class RegistrationDiscoveryQueryAdapter(
             cancellationToken)).Single();
     }
 
-    public Task<CurrentPlanSnapshot> ReadAsync(
+    public async Task<CurrentPlanSnapshot> ReadAsync(
         Guid studentId,
         Guid termId,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(CurrentPlanSnapshot.Empty);
+        CancellationToken cancellationToken = default)
+    {
+        if (studentId == Guid.Empty || termId == Guid.Empty)
+        {
+            return CurrentPlanSnapshot.Empty;
+        }
+
+        var rows = await (
+                from planRow in CurrentPlanForStudentTermQuery(studentId, termId)
+                join item in dbContext.Set<RegistrationPlanItem>().AsNoTracking()
+                    on planRow.Id equals item.PlanId into planItems
+                from item in planItems.DefaultIfEmpty()
+                join meeting in dbContext.Set<MeetingSlot>().AsNoTracking()
+                    on item.SelectedGroupId equals meeting.GroupId into groupMeetings
+                from meeting in groupMeetings.DefaultIfEmpty()
+                orderby item.OfferingId,
+                    item.SelectedGroupId,
+                    meeting.DayOfWeek,
+                    meeting.StartLocal,
+                    meeting.EndLocal,
+                    meeting.Id
+                select new
+                {
+                    planRow.TotalCredits,
+                    planRow.Version,
+                    OfferingId = item == null ? (Guid?)null : item.OfferingId,
+                    GroupId = item == null ? (Guid?)null : item.SelectedGroupId,
+                    DayOfWeek = meeting == null
+                        ? (DayOfWeek?)null
+                        : meeting.DayOfWeek,
+                    StartLocal = meeting == null
+                        ? (TimeOnly?)null
+                        : meeting.StartLocal,
+                    EndLocal = meeting == null
+                        ? (TimeOnly?)null
+                        : meeting.EndLocal
+                })
+            .ToArrayAsync(cancellationToken);
+        if (rows.Length == 0)
+        {
+            return CurrentPlanSnapshot.Empty;
+        }
+
+        var selections = rows
+            .Where(row => row.OfferingId.HasValue && row.GroupId.HasValue)
+            .GroupBy(row => new
+            {
+                OfferingId = row.OfferingId!.Value,
+                GroupId = row.GroupId!.Value
+            })
+            .Select(selection => new CurrentPlanSelectionSnapshot(
+                selection.Key.OfferingId,
+                selection.Key.GroupId,
+                selection
+                    .Where(row =>
+                        row.DayOfWeek.HasValue &&
+                        row.StartLocal.HasValue &&
+                        row.EndLocal.HasValue)
+                    .Select(row => new CurrentPlanMeetingSnapshot(
+                        row.DayOfWeek!.Value,
+                        row.StartLocal!.Value,
+                        row.EndLocal!.Value))
+                    .ToArray()))
+            .ToArray();
+        var plan = rows[0];
+        return new(
+            plan.TotalCredits,
+            selections,
+            Convert.ToBase64String(plan.Version));
+    }
+
+    private IQueryable<RegistrationPlan> CurrentPlanForStudentTermQuery(
+        Guid studentId,
+        Guid termId) =>
+        dbContext.Set<RegistrationPlan>()
+            .AsNoTracking()
+            .Where(plan => plan.StudentId == studentId && plan.TermId == termId);
 
     private IQueryable<CourseOffering> OfferingsForTermQuery(Guid termId) =>
         dbContext.Set<CourseOffering>()

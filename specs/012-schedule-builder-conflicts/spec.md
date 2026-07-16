@@ -5,6 +5,7 @@
 **Status**: APPROVED
 **Owner**: Technical Lead
 **Normative detail**: [requirements.md](requirements.md)
+**Credit-load amendment**: `spec012-credit-load/1.0`, approved 2026-07-16
 
 ## Context
 
@@ -61,7 +62,8 @@ Given a current plan and advisory group capacity<br>
 When the student selects a second group for one offering or saves with a stale
 rowversion<br>
 Then the invalid/stale update is rejected<br>
-And the student can load the current plan and change/remove a group.
+And the student can load the current plan and change/remove a group<br>
+And every returned plan reports default target 18 and maximum 18.
 ### User Story 5 - Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
 
 As a Student, I need the Plan quality gate (NFR-1, NFR-2, NFR-3, NFR-4) behavior so that Schedule Builder and Conflicts produces a verifiable outcome.
@@ -102,7 +104,10 @@ And one stale editor receives 409 without a lost update.
 - FR-4: The UI MUST render a red X plus text/icon-accessible conflict state.
 - FR-5: Review/submission MUST be blocked while any hard conflict exists.
 - FR-6: Students MUST be able to change/remove groups and see recalculated
-  credits/conflicts.
+  credits/conflicts. Every plan response MUST include server-composed
+  `defaultTargetCredits=18` and `maximumAllowedCredits=18`. SPEC-012 has no
+  overload path or GPA-derived 12-credit branch. Server-authored `loadReasons`
+  MUST retain safe policy/source provenance.
 - FR-7: One plan per authenticated student/term MUST persist server-side with
   rowversion and owner/term routes; direct-object access returns no data.
 - FR-8: The client MUST treat capacity displayed in a plan as advisory until

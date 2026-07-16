@@ -60,6 +60,8 @@ public sealed class Spec011ScenarioBuilder
 
     public bool Conflict { get; set; }
 
+    public bool CandidateOfferingAlreadySelected { get; set; }
+
     public byte OfferingRowVersionValue { get; set; } = 5;
 
     public byte GroupRowVersionValue { get; set; } = 6;
@@ -225,16 +227,41 @@ public sealed class Spec011ScenarioBuilder
             ]);
     }
 
-    public CurrentPlanSnapshot CurrentPlanSnapshot() =>
-        new(
+    public CurrentPlanSnapshot CurrentPlanSnapshot()
+    {
+        if (CandidateOfferingAlreadySelected)
+        {
+            return new(
+                CurrentPlanCredits,
+                [new CurrentPlanSelectionSnapshot(
+                    OfferingId,
+                    Guid.Parse("01100000-0000-0000-0000-000000000007"),
+                    [
+                        new(
+                            DayOfWeek.Monday,
+                            new TimeOnly(9, 0),
+                            new TimeOnly(10, 0)),
+                        new(
+                            DayOfWeek.Monday,
+                            new TimeOnly(10, 0),
+                            new TimeOnly(11, 0))
+                    ])],
+                CurrentPlanVersion);
+        }
+
+        return new(
             CurrentPlanCredits,
             Conflict
-                ? [new CurrentPlanMeetingSnapshot(
-                    DayOfWeek.Monday,
-                    new TimeOnly(9, 30),
-                    new TimeOnly(10, 30))]
+                ? [new CurrentPlanSelectionSnapshot(
+                    Guid.Parse("01100000-0000-0000-0000-000000000008"),
+                    Guid.Parse("01100000-0000-0000-0000-000000000009"),
+                    [new CurrentPlanMeetingSnapshot(
+                        DayOfWeek.Monday,
+                        new TimeOnly(9, 30),
+                        new TimeOnly(10, 30))])]
                 : [],
             CurrentPlanVersion);
+    }
 
     public static byte[] Bytes(byte value) => [value, value, value, value];
 
