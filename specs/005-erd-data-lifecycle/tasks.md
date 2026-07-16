@@ -159,10 +159,10 @@ its canonical owner specification and exact mapping contribution are approved,
 implemented, and version-pinned. T069 remains blocked while any required row is
 skipped, deferred, or supported only by a design-time reference contract.
 
-- [ ] T065 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-1 remains excluded: Database-per-module or read replica in MVP.
-- [ ] T066 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-2 remains excluded: Hard deletion/retention schedule until AASTMT privacy approval.
-- [ ] T067 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-3 remains excluded: Automatically resolving invalid imported curriculum data.
-- [ ] T068 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-4 remains excluded: Direct production schema mutation outside migrations.
+- [x] T065 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-1 remains excluded: Database-per-module or read replica in MVP.
+- [x] T066 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-2 remains excluded: Hard deletion/retention schedule until AASTMT privacy approval.
+- [x] T067 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-3 remains excluded: Automatically resolving invalid imported curriculum data.
+- [x] T068 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-4 remains excluded: Direct production schema mutation outside migrations.
 - [ ] T069 [TRACE] [SC-1] [SC-2] [SC-3] After the deferred runtime activation prerequisite is satisfied, execute and pass every required SPEC-005 fixture, generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-005-traceability.md, and reject release if any row is skipped, deferred, design-only, or lacks passing evidence.
 - [ ] T070 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-005 in docs/release-evidence/SPEC-005-release-approval.md.
 
