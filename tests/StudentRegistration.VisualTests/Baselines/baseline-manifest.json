@@ -121,6 +121,22 @@
       "targetCount": 16
     },
     {
+      "routeId": "STU-08",
+      "state": "default",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "fd5257f6e04ac20119c6d15353ce0254d497dacea08a7ce61ff537a5d1b096e0",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-16",
+      "targetManifest": "Spec007/STU-08/baseline-targets.json",
+      "targetCount": 16
+    },
+    {
       "routeId": "ADM-02",
       "state": "success",
       "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",

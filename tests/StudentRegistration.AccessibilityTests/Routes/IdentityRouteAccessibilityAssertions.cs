@@ -10,10 +10,11 @@ internal static class IdentityRouteAccessibilityAssertions
         string route,
         string heading,
         string primaryButton,
-        int width)
+        int width,
+        Func<IPage, Task>? configure = null)
     {
         await using var context = await fixture.OpenContextAsync(width);
-        var page = await OpenAsync(context, route, heading);
+        var page = await OpenAsync(context, route, heading, configure);
 
         await AxeAccessibilityFixture.AssertNoSeriousAxeViolationsAsync(page);
         Assert.True(await page.EvaluateAsync<bool>(
@@ -33,13 +34,15 @@ internal static class IdentityRouteAccessibilityAssertions
         AxeAccessibilityFixture fixture,
         string route,
         string heading,
-        string primaryButton)
+        string primaryButton,
+        Func<IPage, Task>? configure = null,
+        string expectedMainId = "identity-main")
     {
         await using var context = await fixture.OpenContextAsync(
             width: 320,
             height: 900,
             deviceScaleFactor: 4);
-        var page = await OpenAsync(context, route, heading);
+        var page = await OpenAsync(context, route, heading, configure);
 
         var skip = page.GetByRole(
             AriaRole.Link,
@@ -49,7 +52,7 @@ internal static class IdentityRouteAccessibilityAssertions
             "element => getComputedStyle(element).outlineStyle !== 'none'"));
         await skip.PressAsync("Enter");
         Assert.Equal(
-            "identity-main",
+            expectedMainId,
             await page.EvaluateAsync<string>("() => document.activeElement.id"));
 
         var button = page.GetByRole(
@@ -68,9 +71,15 @@ internal static class IdentityRouteAccessibilityAssertions
     private static async Task<IPage> OpenAsync(
         IBrowserContext context,
         string route,
-        string heading)
+        string heading,
+        Func<IPage, Task>? configure)
     {
         var page = await context.NewPageAsync();
+        if (configure is not null)
+        {
+            await configure(page);
+        }
+
         await page.GotoAsync(route, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.DOMContentLoaded

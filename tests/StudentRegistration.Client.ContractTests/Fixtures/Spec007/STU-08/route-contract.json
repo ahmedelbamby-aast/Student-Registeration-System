@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "STU-08",
+  "routeTemplate": "/student/account",
+  "apis": [
+    { "method": "GET", "path": "/api/auth/session" },
+    { "method": "POST", "path": "/api/auth/password/change" },
+    { "method": "POST", "path": "/api/auth/sessions/revoke-all" },
+    { "method": "POST", "path": "/api/auth/logout" }
+  ],
+  "requiredStates": ["loading", "success", "validation-error", "service-error", "unauthorized", "session-expired", "stale", "offline"],
+  "reasonCodes": ["CURRENT_PASSWORD_INVALID", "SESSION_EXPIRED", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]
+}

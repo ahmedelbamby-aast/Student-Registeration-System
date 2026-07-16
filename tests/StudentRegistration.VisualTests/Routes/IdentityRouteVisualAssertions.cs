@@ -33,10 +33,16 @@ internal static class IdentityRouteVisualAssertions
         string route,
         string heading,
         string browserName,
-        int width)
+        int width,
+        Func<IPage, Task>? configure = null)
     {
         await using var context = await fixture.OpenContextAsync(browserName, width);
         var page = await context.NewPageAsync();
+        if (configure is not null)
+        {
+            await configure(page);
+        }
+
         await page.GotoAsync(route, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
