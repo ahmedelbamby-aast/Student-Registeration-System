@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "AUTH-05",
+  "routeTemplate": "/account/recovery",
+  "apis": [
+    { "method": "POST", "path": "/api/auth/recovery/request" },
+    { "method": "POST", "path": "/api/auth/recovery/complete" }
+  ],
+  "requiredStates": ["loading", "success", "validation-error", "service-error", "offline"],
+  "reasonCodes": ["CHALLENGE_INVALID", "PASSWORD_REJECTED", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]
+}

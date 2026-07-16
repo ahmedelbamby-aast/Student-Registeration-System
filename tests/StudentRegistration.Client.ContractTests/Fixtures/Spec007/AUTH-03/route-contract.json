@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "AUTH-03",
+  "routeTemplate": "/student/activate",
+  "apis": [
+    { "method": "POST", "path": "/api/auth/student/activate" }
+  ],
+  "requiredStates": ["loading", "success", "validation-error", "service-error", "offline"],
+  "reasonCodes": ["ACTIVATION_FAILED", "PASSWORD_REJECTED", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]
+}
