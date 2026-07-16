@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "ADM-03",
+  "routeTemplate": "/admin/users",
+  "apis": [
+    { "method": "GET", "path": "/api/admin/users" },
+    { "method": "POST", "path": "/api/admin/users/imports" },
+    { "method": "GET", "path": "/api/admin/users/imports/{importId}" },
+    { "method": "POST", "path": "/api/admin/users/imports/{importId}/publish" },
+    { "method": "PATCH", "path": "/api/admin/users/{userId}/status" },
+    { "method": "PUT", "path": "/api/admin/users/{userId}/roles" }
+  ],
+  "requiredStates": ["loading", "empty", "success", "validation-error", "service-error", "unauthorized", "session-expired", "stale", "offline"],
+  "reasonCodes": ["VALIDATION_FAILED", "IMPORT_INVALID", "FINAL_ADMIN_REQUIRED", "STALE_VERSION", "FORBIDDEN", "SERVICE_UNAVAILABLE"]
+}

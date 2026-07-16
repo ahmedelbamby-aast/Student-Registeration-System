@@ -153,6 +153,22 @@
       "targetCount": 16
     },
     {
+      "routeId": "ADM-03",
+      "state": "default",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "6fd349913d4f8a504cec416515db866e35f92d403bbbf85bde61acdff3de8d31",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-16",
+      "targetManifest": "Spec007/ADM-03/baseline-targets.json",
+      "targetCount": 16
+    },
+    {
       "routeId": "ADM-04",
       "state": "success",
       "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
