@@ -1,6 +1,6 @@
 # Tasks: Domain Classes and API Contracts
 
-**Status**: T001-T026, T028-T048, and T052-T053 are complete and verified through 2026-07-16 (49 of 63). The idempotent SQL cancellation/replay, OpenAPI, measurable NFR, and production-release gates remain pending as listed below.
+**Status**: T001-T048 and T052-T053 are complete and verified through 2026-07-16 (50 of 63). OpenAPI, measurable NFR, and production-release gates remain pending as listed below.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts; unchecked tasks remain pending or dependency-gated. Every task names an exact file and traces to a requirement, criterion, edge case, route, contract type, endpoint, dependency, or gate. `[ENTITY-*]` labels are canonical governance/ownership identifiers required by the manifests; for SPEC-006 they identify non-persisted transport/value contracts, not SQL entities or aggregates.
 
@@ -108,7 +108,7 @@ T016-T024 are contract-first placeholders, not current runtime proof: create eac
 - [x] T024 [AC-9] [FR-10] [DEFERRED-DOWNSTREAM] Create compiled, explicitly skipped complete-context, authorized-role filtering, activeRole null-state, independently nullable teaching/registration term, and missing-contributor fail-safe coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec006/AC-9Tests.cs; activate and pass it only after SPEC-007 and SPEC-008 contributor contracts, fixtures, and SPEC-008's real handler are approved, implemented, and version-pinned.
 - [x] T025 [EC-1] [RUNTIME-GATE] After a real request-body command endpoint is implemented, exercise malformed JSON through ASP.NET Core in tests/StudentRegistration.IntegrationTests/Specs/Spec006/EdgeCases/EC-1Tests.cs and assert 400 VALIDATION_ERROR with no command construction, application-service call, or durable effect; keep this task unchecked until that endpoint exists.
 - [x] T026 [EC-2] [RUNTIME-GATE] After a real body-consuming endpoint is implemented, exercise an unsupported media type through ASP.NET Core in tests/StudentRegistration.IntegrationTests/Specs/Spec006/EdgeCases/EC-2Tests.cs and assert 415 before command execution; keep this task unchecked until that endpoint exists.
-- [ ] T027 [EC-3] [RUNTIME-GATE] After a real idempotent SQL-backed mutation is implemented, inject cancellation before and response loss after commit in tests/StudentRegistration.IntegrationTests/Specs/Spec006/EdgeCases/EC-3Tests.cs and assert safe pre-commit cancellation plus stored-result replay without a duplicate effect after commit; keep this task unchecked until that runtime exists.
+- [x] T027 [EC-3] [RUNTIME-GATE] After a real idempotent SQL-backed mutation is implemented, inject cancellation before and response loss after commit in tests/StudentRegistration.IntegrationTests/Specs/Spec006/EdgeCases/EC-3Tests.cs and assert safe pre-commit cancellation plus stored-result replay without a duplicate effect after commit; keep this task unchecked until that runtime exists.
 - [x] T028 [EC-4] [RUNTIME-GATE] After a real protected endpoint and SPEC-007 authorization pipeline are implemented, exercise unauthenticated and unauthorized requests in tests/StudentRegistration.IntegrationTests/Specs/Spec006/EdgeCases/EC-4Tests.cs and assert 401/403 with no protected resource, identifier, rowversion, or currentVersion disclosure; keep this task unchecked until that runtime exists.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
@@ -159,8 +159,7 @@ T016-T024 are contract-first placeholders, not current runtime proof: create eac
 - [ ] T062 [TRACE] [SC-1] [SC-2] [SC-3] [PRODUCTION-RELEASE-GATE] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-006-traceability.md only after every applicable runtime task passes; reject release if any row lacks passing evidence.
 - [ ] T063 [GATE] [PRODUCTION-RELEASE-GATE] Record Ahmed ELbamby's product-owner, domain-owner, QA, security, accessibility, data/concurrency, and operations review perspectives applicable to SPEC-006 in docs/release-evidence/SPEC-006-release-approval.md only after T062 passes; Ahmed remains the sole human approver for this demo.
 
-Verified progress: T001-T026, T028-T048, and T052-T053 are complete (49 of
-63). T016-T024 deliver only compiled, explicitly skipped downstream acceptance
-fixtures and do not claim passing runtime acceptance. T027, T049-T051, and
-T054-T063 remain explicitly idempotent-SQL runtime, OpenAPI, measurable NFR,
-or production-release gated.
+Verified progress: T001-T048 and T052-T053 are complete (50 of 63). T016-T024
+deliver only compiled, explicitly skipped downstream acceptance fixtures and
+do not claim passing runtime acceptance. T049-T051 and T054-T063 remain
+explicitly OpenAPI, measurable NFR, or production-release gated.
