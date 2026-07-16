@@ -99,18 +99,19 @@ No direct frontend route is owned by this specification; frontend integration re
 
 - [ ] T033 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-1.md: Critical flows MUST meet WCAG 2.2 AA.
 - [ ] T034 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-2.md: The design MUST support the approved SPEC-018 scale targets without changing domain behavior.
-- [ ] T035 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-3.md: Authorization MUST be enforced by the API for every protected action.
+- [x] T035 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-3.md: Authorization MUST be enforced by the API for every protected action.
 - [x] T036 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec001/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-001-NFR-4.md: The initial solution MUST remain one deployable modular monolith.
 
 ## Phase 7 - Scope and Release Evidence
 
-- [ ] T037 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-1 remains excluded: Payment, grade entry, attendance, waitlist, advisor workflow, and notifications.
-- [ ] T038 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-2 remains excluded: Public staff registration.
-- [ ] T039 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-3 remains excluded: Client-side-only authorization.
-- [ ] T040 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-4 remains excluded: Multi-tenancy and native mobile applications.
+- [x] T037 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-1 remains excluded: Payment, grade entry, attendance, waitlist, advisor workflow, and notifications.
+- [x] T038 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-2 remains excluded: Public staff registration.
+- [x] T039 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-3 remains excluded: Client-side-only authorization.
+- [x] T040 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-001-scope-review.md that OS-4 remains excluded: Multi-tenancy and native mobile applications.
 - [ ] T041 [TRACE] [SC-1] [SC-2] [SC-3] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-001-traceability.md and reject release if any row lacks passing evidence.
 - [ ] T042 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-001 in docs/release-evidence/SPEC-001-release-approval.md.
 
-Twenty-seven tasks are complete. Fifteen runtime, Gate C, NFR, scope-audit,
-and release-approval tasks remain open until their owning downstream evidence
-is available; no completion is inferred from a placeholder or skipped fixture.
+Thirty-two tasks are complete. Ten Gate C, journey, accessibility/scale,
+traceability, and release-approval tasks remain open until their owning
+downstream evidence is available; no completion is inferred from a placeholder
+or skipped fixture.
