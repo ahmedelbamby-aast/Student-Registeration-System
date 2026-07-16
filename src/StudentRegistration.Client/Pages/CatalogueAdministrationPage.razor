@@ -1,0 +1,900 @@
+@page "/admin/catalogue"
+@using System.Globalization
+@using System.Net
+@using System.Text.Json
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Overlay
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Contracts.Academics
+@inject CatalogueApiClient CatalogueApi
+
+<PageTitle>Catalogue administration | Student Registration</PageTitle>
+
+<div class="srs-catalogue"
+     data-route-id="ADM-05"
+     data-state="@_state"
+     data-contract-state="@CurrentStateFixture">
+    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="srs-catalogue__header" role="banner">
+        <a class="srs-catalogue__brand" href="/admin" aria-label="Administration home">
+            <img src="/brand/aastmt-logo.png"
+                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+            <span><strong>AASTMT</strong><small>Student Registration</small></span>
+        </a>
+        <RoleNavigation AccessibleName="Administration navigation"
+                        Items="@AdministrationNavigation" />
+    </header>
+
+    <main id="main-content" tabindex="-1" data-testid="catalogue-administration-page">
+        <section class="srs-catalogue__intro"
+                 aria-labelledby="catalogue-administration-heading">
+            <p class="srs-catalogue__eyebrow">Governed academic master data</p>
+            <h1 id="catalogue-administration-heading" tabindex="-1">
+                Catalogue and policy administration
+            </h1>
+            <p>
+                Review a curated programme subset, keep field provenance beside every
+                value, validate prerequisite and typed-policy rules, simulate without
+                saving, and publish only after server confirmation.
+            </p>
+        </section>
+
+        @if (_state is LoadingState)
+        {
+            <section class="srs-catalogue__panel"
+                     role="status"
+                     aria-live="polite"
+                     aria-busy="true">
+                <h2>Loading catalogue and policy versions</h2>
+                <p>The bounded owner APIs are being requested once.</p>
+            </section>
+        }
+        else if (_state is UnauthorizedState or SessionExpiredState)
+        {
+            <section class="srs-catalogue__panel srs-catalogue__panel--danger"
+                     role="alert"
+                     aria-live="assertive">
+                <h2 @ref="_stateHeading" tabindex="-1">
+                    @(_state is SessionExpiredState ? "Session expired" : "Catalogue access denied")
+                </h2>
+                <p class="srs-catalogue__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                <a href="@(_state is SessionExpiredState ? "/staff/login" : "/admin")">
+                    @(_state is SessionExpiredState ? "Sign in again" : "Return to authorized home")
+                </a>
+            </section>
+        }
+        else if (_state is ServiceErrorState or OfflineState)
+        {
+            <section class="srs-catalogue__panel srs-catalogue__panel--warning"
+                     role="status"
+                     aria-live="polite">
+                <h2 @ref="_stateHeading" tabindex="-1">
+                    @(_state is OfflineState
+                        ? "Catalogue administration is offline"
+                        : "Catalogue administration service unavailable")
+                </h2>
+                <p class="srs-catalogue__code">@_reasonCode</p>
+                <p>@_safeMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_referenceId))
+                {
+                    <p>Reference <strong>@_referenceId</strong></p>
+                }
+                <div class="srs-catalogue__actions">
+                    <button type="button" @onclick="LoadAsync">Retry</button>
+                    <a href="/status/support">Open safe support path</a>
+                </div>
+            </section>
+        }
+        else
+        {
+            @if (_state is EmptyState)
+            {
+                <section class="srs-catalogue__panel" aria-labelledby="catalogue-empty-heading">
+                    <h2 id="catalogue-empty-heading" @ref="_stateHeading" tabindex="-1">
+                        No catalogue versions are available
+                    </h2>
+                    <p>Retry after an authorized draft or version has been created.</p>
+                </section>
+            }
+
+            @if (_state is StaleState)
+            {
+                <section class="srs-catalogue__panel srs-catalogue__panel--warning"
+                         role="status"
+                         aria-live="polite">
+                    <h2 @ref="_stateHeading" tabindex="-1">
+                        Publication confirmation is stale
+                    </h2>
+                    <p class="srs-catalogue__code">@_reasonCode</p>
+                    <p>@_safeMessage</p>
+                    @if (!string.IsNullOrWhiteSpace(_currentVersion))
+                    {
+                        <p>Current version <code>@_currentVersion</code></p>
+                    }
+                    <button type="button" @onclick="RefreshAndRevalidateAsync">
+                        Refresh and revalidate
+                    </button>
+                </section>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_successAnnouncement))
+            {
+                <section class="srs-catalogue__panel srs-catalogue__panel--success"
+                         role="status"
+                         aria-live="polite">
+                    <h2>Server-confirmed result</h2>
+                    <p>@_successAnnouncement</p>
+                </section>
+            }
+
+            @if (_validationIssues.Count > 0)
+            {
+                <section class="srs-catalogue__panel srs-catalogue__panel--danger"
+                         data-testid="catalogue-validation-summary"
+                         @ref="_validationSummary"
+                         role="alert"
+                         aria-live="assertive"
+                         tabindex="-1">
+                    <h2>Review catalogue or policy values</h2>
+                    <p class="srs-catalogue__code">@_reasonCode</p>
+                    <ul>
+                        @foreach (var issue in _validationIssues)
+                        {
+                            <li><a href="#@issue.ControlId">@issue.Message</a></li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            <section class="srs-catalogue__panel" aria-labelledby="version-list-heading">
+                <div class="srs-catalogue__heading-row">
+                    <div>
+                        <p class="srs-catalogue__eyebrow">Immutable history</p>
+                        <h2 id="version-list-heading">Version and status list</h2>
+                    </div>
+                    <span class="srs-catalogue__disclaimer">
+                        Curated demo subset — locally assigned credits and fixture flags
+                        remain explicitly synthetic.
+                    </span>
+                </div>
+                <div class="srs-catalogue__table-region"
+                     role="region"
+                     aria-label="Catalogue versions"
+                     tabindex="0">
+                    <table>
+                        <caption>@_versions.Count catalogue versions</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Version</th>
+                                <th scope="col">Scope</th>
+                                <th scope="col">Lifecycle</th>
+                                <th scope="col">Source</th>
+                                <th scope="col">Published</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var version in _versions)
+                            {
+                                <tr>
+                                    <td><strong>@version.Version</strong></td>
+                                    <td>@version.Scope</td>
+                                    <td>@version.State</td>
+                                    <td>@version.Source</td>
+                                    <td>@version.PublishedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.CurrentCulture)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="srs-catalogue__workspace">
+                <section class="srs-catalogue__panel" aria-labelledby="catalogue-draft-heading">
+                    <div class="srs-catalogue__heading-row">
+                        <div>
+                            <p class="srs-catalogue__eyebrow">Catalogue draft</p>
+                            <h2 id="catalogue-draft-heading">@_draft?.Scope programme snapshot</h2>
+                        </div>
+                        <span class="srs-catalogue__status">@_draft?.State</span>
+                    </div>
+                    <dl class="srs-catalogue__facts">
+                        <div><dt>Draft version</dt><dd><code>@_draft?.RowVersion</code></dd></div>
+                        <div><dt>Content hash</dt><dd><code>@_draft?.CanonicalContentHash</code></dd></div>
+                        <div><dt>Courses</dt><dd>@(_draft?.Courses.Count ?? 0)</dd></div>
+                    </dl>
+
+                    <div class="srs-catalogue__course-list" aria-label="Curated courses">
+                        @foreach (var course in _draft?.Courses ?? [])
+                        {
+                            <article class="srs-catalogue__course"
+                                     id="@($"course-{course.Code}")"
+                                     data-testid="catalogue-course">
+                                <div>
+                                    <h3>@course.Code — @course.Title</h3>
+                                    <p>@course.Credits credits · @(course.Active ? "Active" : "Inactive")</p>
+                                </div>
+                                <div class="srs-catalogue__provenance">
+                                    <strong>@SourceKindLabel(course.Provenance.SourceKind)</strong>
+                                    <span>Accessed @course.Provenance.AccessedOn.ToString("dd MMM yyyy", CultureInfo.CurrentCulture)</span>
+                                    <a href="@course.Provenance.SourceReference">Open source reference</a>
+                                    <span>
+                                        Synthetic fields:
+                                        @string.Join(", ", course.Provenance.SyntheticFields)
+                                    </span>
+                                </div>
+                            </article>
+                        }
+                    </div>
+
+                    <form class="srs-catalogue__subpanel"
+                          @onsubmit="CreateImportAsync"
+                          @onsubmit:preventDefault>
+                        <h3>Import catalogue evidence</h3>
+                        <div class="srs-catalogue__field-grid">
+                            <label class="srs-catalogue__field srs-catalogue__field--wide">
+                                Source URL or reference
+                                <input id="catalogue-import-source"
+                                       type="url"
+                                       required
+                                       @bind="_importSource" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                Access date
+                                <input id="catalogue-import-accessed-on"
+                                       type="date"
+                                       required
+                                       value="@_importAccessedOn"
+                                       @oninput="eventArgs => _importAccessedOn = eventArgs.Value?.ToString() ?? string.Empty" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                Server-verifiable content hash
+                                <input id="catalogue-import-hash"
+                                       required
+                                       @bind="_importHash" />
+                            </label>
+                            <label class="srs-catalogue__field srs-catalogue__field--wide">
+                                Synthetic field manifest
+                                <input id="catalogue-import-synthetic-fields"
+                                       aria-describedby="synthetic-field-help"
+                                       @bind="_importSyntheticFields" />
+                                <span id="synthetic-field-help">
+                                    Comma-separated field names; do not hide local gap values.
+                                </span>
+                            </label>
+                        </div>
+                        <button type="submit" disabled="@_isImporting">
+                            @(_isImporting ? "Creating import…" : "Create import")
+                        </button>
+                        @if (_currentImport is not null)
+                        {
+                            <p>
+                                Current import <code>@_currentImport.Id</code>:
+                                <strong>@_currentImport.State</strong>,
+                                rowversion <code>@_currentImport.RowVersion</code>
+                            </p>
+                        }
+                    </form>
+
+                    <div class="srs-catalogue__actions">
+                        <button type="button"
+                                disabled="@(_isValidating || _draft is null)"
+                                @onclick="ValidateCatalogueAsync">
+                            @(_isValidating ? "Validating…" : "Validate catalogue")
+                        </button>
+                        <button type="button"
+                                @ref="_publishTrigger"
+                                disabled="@(_previewToken is null || _isPublishing)"
+                                @onclick="OpenPublishConfirmation">
+                            Publish catalogue
+                        </button>
+                    </div>
+                </section>
+
+                <section class="srs-catalogue__panel" aria-labelledby="policy-editor-heading">
+                    <div class="srs-catalogue__heading-row">
+                        <div>
+                            <p class="srs-catalogue__eyebrow">Typed policy</p>
+                            <h2 id="policy-editor-heading">@_policy?.Version</h2>
+                        </div>
+                        <span class="srs-catalogue__status">@_policy?.State</span>
+                    </div>
+                    <p>
+                        Values are typed data only. Scripts and executable expressions
+                        are not accepted.
+                    </p>
+                    <form @onsubmit="SavePolicyAsync" @onsubmit:preventDefault>
+                        <div class="srs-catalogue__field-grid">
+                            <label class="srs-catalogue__field">
+                                Normal maximum credits
+                                <input id="normal-max-credits"
+                                       inputmode="decimal"
+                                       aria-invalid="@InvalidAria("normal-max-credits")"
+                                       aria-describedby="@DescribedBy("normal-max-credits")"
+                                       @bind="_normalMaxCredits" />
+                                @FieldError("normal-max-credits")
+                            </label>
+                            <label class="srs-catalogue__field">
+                                GPA-below-2.0 maximum credits
+                                <input id="probation-max-credits"
+                                       inputmode="decimal"
+                                       aria-invalid="@InvalidAria("probation-max-credits")"
+                                       aria-describedby="@DescribedBy("probation-max-credits")"
+                                       @bind="_probationMaxCredits" />
+                                @FieldError("probation-max-credits")
+                            </label>
+                        </div>
+                        <button type="submit" disabled="@_isSavingPolicy">
+                            @(_isSavingPolicy ? "Saving…" : "Save policy draft")
+                        </button>
+                    </form>
+
+                    <section class="srs-catalogue__subpanel" aria-labelledby="simulation-heading">
+                        <h3 id="simulation-heading">Deterministic policy simulation</h3>
+                        <div class="srs-catalogue__field-grid">
+                            <label class="srs-catalogue__field">
+                                Student context fixture
+                                <input id="simulation-fixture"
+                                       required
+                                       @bind="_simulationFixture" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                Requested course codes
+                                <input id="simulation-courses"
+                                       @bind="_simulationCourses" />
+                            </label>
+                        </div>
+                        <button type="button"
+                                disabled="@(_isSimulating || _policy is null)"
+                                @onclick="SimulatePolicyAsync">
+                            @(_isSimulating ? "Simulating…" : "Simulate policy")
+                        </button>
+                        <p>Simulation does not publish or save changes.</p>
+                        @if (_simulation is not null)
+                        {
+                            <div class="srs-catalogue__simulation"
+                                 role="status"
+                                 aria-live="polite">
+                                <h4>@(_simulation.Eligible ? "Eligible" : "Not eligible")</h4>
+                                <p>Policy version @_simulation.PolicyVersion</p>
+                                <ul>
+                                    @foreach (var rule in _simulation.RuleResults)
+                                    {
+                                        <li>
+                                            <strong>@rule.RuleCode:</strong>
+                                            <span>@rule.Explanation</span>
+                                            <span>@SourceKindLabel(rule.SourceKind)</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </section>
+                </section>
+            </div>
+
+            @if (_catalogueValidation is not null)
+            {
+                <section class="srs-catalogue__panel @(_catalogueValidation.Valid ? "srs-catalogue__panel--success" : "srs-catalogue__panel--danger")"
+                         aria-labelledby="catalogue-findings-heading"
+                         aria-live="polite">
+                    <h2 id="catalogue-findings-heading">
+                        @(_catalogueValidation.Valid
+                            ? "Catalogue validation passed"
+                            : "Catalogue validation findings")
+                    </h2>
+                    @if (_catalogueValidation.Errors.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var error in _catalogueValidation.Errors)
+                            {
+                                <li>
+                                    <strong>@error.Code</strong>
+                                    <span>@error.Message</span>
+                                    @if (error.Code == "PREREQUISITE_CYCLE")
+                                    {
+                                        <span class="srs-catalogue__cycle-links">
+                                            @foreach (var courseCode in CycleCodes(error.Message))
+                                            {
+                                                <a data-testid="cycle-edit-link"
+                                                   href="@($"#course-{courseCode}")">
+                                                    Edit @courseCode
+                                                </a>
+                                            }
+                                        </span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    @if (_catalogueValidation.Valid)
+                    {
+                        <p>
+                            Preview is bound to actor, scope, content hash, dependencies,
+                            rowversion, and expiry. It is not publication authority.
+                        </p>
+                    }
+                </section>
+            }
+        }
+    </main>
+
+    @if (_showPublishConfirmation)
+    {
+        <div data-testid="publish-catalogue-dialog">
+            <ConfirmationDialog IsOpen="true"
+                                DialogId="publish-catalogue-dialog"
+                                TitleId="publish-catalogue-dialog-title"
+                                DescriptionId="publish-catalogue-dialog-description"
+                                Title="Publish catalogue"
+                                Message="Publish one immutable version using the current draft rowversion and bound preview? The server will revalidate and choose one winner."
+                                ConfirmLabel="Confirm publish"
+                                CancelLabel="Cancel"
+                                IsBusy="@_isPublishing"
+                                BusyLabel="Publishing catalogue…"
+                                OnConfirm="PublishCatalogueAsync"
+                                OnCancel="ClosePublishConfirmation"
+                                FocusRestoreRequested="RestorePublishFocusAsync" />
+        </div>
+    }
+</div>
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private static readonly Guid DemoDraftId =
+        Guid.Parse("00000000-0000-0000-0000-000000000901");
+    private static readonly Guid DemoImportId =
+        Guid.Parse("00000000-0000-0000-0000-000000000902");
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem>
+        AdministrationNavigation =
+        [
+            new("Dashboard", "/admin"),
+            new("Terms", "/admin/terms"),
+            new("Catalogue", "/admin/catalogue", IsActive: true),
+            new("Offerings", "/admin/offerings")
+        ];
+
+    private readonly List<CatalogueVersionSummaryDto> _versions = [];
+    private readonly List<ValidationIssue> _validationIssues = [];
+    private ElementReference _validationSummary;
+    private ElementReference _stateHeading;
+    private ElementReference _publishTrigger;
+    private string _state = LoadingState;
+    private string _reasonCode = "SERVICE_UNAVAILABLE";
+    private string _safeMessage = "Catalogue administration could not be loaded.";
+    private string? _referenceId;
+    private string? _currentVersion;
+    private string? _successAnnouncement;
+    private CatalogueDraftDto? _draft;
+    private ImportBatchDto? _currentImport;
+    private PolicySetAdminDto? _policy;
+    private CatalogueValidationResult? _catalogueValidation;
+    private PolicySimulationResult? _simulation;
+    private string? _previewToken;
+    private string _normalMaxCredits = "18";
+    private string _probationMaxCredits = "12";
+    private string _importSource = string.Empty;
+    private string _importAccessedOn = "2026-07-13";
+    private string _importHash = string.Empty;
+    private string _importSyntheticFields = "Credits, IsActive";
+    private string _simulationFixture = "ACTIVE-96-CREDITS";
+    private string _simulationCourses = "DS413";
+    private bool _isImporting;
+    private bool _isValidating;
+    private bool _isSavingPolicy;
+    private bool _isSimulating;
+    private bool _isPublishing;
+    private bool _showPublishConfirmation;
+    private bool _focusValidationSummary;
+    private bool _focusStateHeading;
+
+    private string CurrentStateFixture => _state switch
+    {
+        LoadingState => "ADM-05-COMP-STATE-LOADING",
+        EmptyState => "ADM-05-COMP-STATE-EMPTY",
+        SuccessState => "ADM-05-COMP-STATE-SUCCESS",
+        ValidationErrorState => "ADM-05-COMP-STATE-VALIDATION-ERROR",
+        ServiceErrorState => "ADM-05-COMP-STATE-SERVICE-ERROR",
+        UnauthorizedState => "ADM-05-COMP-STATE-UNAUTHORIZED",
+        SessionExpiredState => "ADM-05-COMP-STATE-SESSION-EXPIRED",
+        StaleState => "ADM-05-COMP-STATE-STALE",
+        OfflineState => "ADM-05-COMP-STATE-OFFLINE",
+        _ => "ADM-05-COMP-STATE-SERVICE-ERROR"
+    };
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusValidationSummary)
+        {
+            _focusValidationSummary = false;
+            await _validationSummary.FocusAsync();
+        }
+
+        if (_focusStateHeading)
+        {
+            _focusStateHeading = false;
+            await _stateHeading.FocusAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _state = LoadingState;
+        ResetFeedback();
+        try
+        {
+            var programsTask = CatalogueApi.ListProgramsAsync();
+            var versionsTask = CatalogueApi.ListVersionsAsync();
+            var draftTask = CatalogueApi.GetDraftAsync(DemoDraftId);
+            var policiesTask = CatalogueApi.ListPoliciesAsync();
+            var importTask = CatalogueApi.GetImportAsync(DemoImportId);
+            await Task.WhenAll(
+                programsTask,
+                versionsTask,
+                draftTask,
+                policiesTask,
+                importTask);
+
+            var programs = await programsTask;
+            var versions = await versionsTask;
+            var draft = await draftTask;
+            var policies = await policiesTask;
+            var import = await importTask;
+            var failure = FirstFailure(programs, versions, draft, policies, import);
+            if (failure is not null)
+            {
+                ApplyFailure(failure.Value.StatusCode, failure.Value.Error);
+                return;
+            }
+
+            _versions.Clear();
+            _versions.AddRange(versions.Value!.Items);
+            _draft = draft.Value;
+            _currentImport = import.Value;
+            _policy = policies.Value!.Items.FirstOrDefault();
+            ApplyPolicyEditor();
+            _state = _versions.Count == 0 && programs.Value!.Items.Count == 0
+                ? EmptyState
+                : SuccessState;
+        }
+        catch (HttpRequestException)
+        {
+            _state = OfflineState;
+            _reasonCode = "OFFLINE";
+            _safeMessage = "The browser cannot reach catalogue administration. No action was queued.";
+        }
+    }
+
+    private async Task CreateImportAsync()
+    {
+        if (_draft is null
+            || !DateOnly.TryParseExact(
+                _importAccessedOn,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var accessedOn)
+            || string.IsNullOrWhiteSpace(_importSource)
+            || string.IsNullOrWhiteSpace(_importHash))
+        {
+            SetValidation(
+                "VALIDATION_ERROR",
+                [
+                    new(
+                        "catalogue-import-source",
+                        "Source, access date, and content hash are required.")
+                ]);
+            return;
+        }
+
+        _isImporting = true;
+        ResetFeedback();
+        var result = await CatalogueApi.CreateImportAsync(
+            new(
+                _draft.Id,
+                _importSource.Trim(),
+                accessedOn,
+                _importHash.Trim(),
+                SplitValues(_importSyntheticFields),
+                Guid.NewGuid()));
+        _isImporting = false;
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _currentImport = result.Value;
+            _successAnnouncement = "Import evidence was accepted by the server.";
+            _state = SuccessState;
+            return;
+        }
+
+        ApplyFailure(result.StatusCode, result.Error);
+    }
+
+    private async Task SavePolicyAsync()
+    {
+        if (_policy is null)
+        {
+            return;
+        }
+
+        var issues = new List<ValidationIssue>();
+        if (!decimal.TryParse(
+                _normalMaxCredits,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var normal)
+            || normal <= 0)
+        {
+            issues.Add(new(
+                "normal-max-credits",
+                "Normal maximum credits must be a positive typed number."));
+        }
+
+        if (!decimal.TryParse(
+                _probationMaxCredits,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var probation)
+            || probation <= 0)
+        {
+            issues.Add(new(
+                "probation-max-credits",
+                "Probation maximum credits must be a positive typed number."));
+        }
+
+        if (issues.Count > 0)
+        {
+            SetValidation("RULE_VALUE_TYPE_MISMATCH", issues);
+            return;
+        }
+
+        _isSavingPolicy = true;
+        ResetFeedback();
+        var operations = _policy.Rules
+            .Where(rule => rule.Code is "NORMAL_MAX_CREDITS" or "PROBATION_MAX_CREDITS")
+            .Select(rule =>
+            {
+                var value = rule.Code == "NORMAL_MAX_CREDITS" ? normal : probation;
+                return new PolicySetOperation(
+                    "upsert-rule",
+                    rule with { Value = JsonSerializer.SerializeToElement(value) });
+            })
+            .ToArray();
+        var result = await CatalogueApi.UpdatePolicyAsync(
+            _policy.Id,
+            new(_policy.RowVersion, "Update typed demo credit boundaries", operations));
+        _isSavingPolicy = false;
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _policy = result.Value;
+            _previewToken = null;
+            _successAnnouncement =
+                "Policy draft saved. Any earlier publication preview was invalidated.";
+            return;
+        }
+
+        ApplyFailure(result.StatusCode, result.Error);
+    }
+
+    private async Task ValidateCatalogueAsync()
+    {
+        if (_draft is null)
+        {
+            return;
+        }
+
+        _isValidating = true;
+        ResetFeedback();
+        var import = _currentImport;
+        var result = await CatalogueApi.ValidateImportAsync(
+            import?.Id ?? DemoImportId,
+            new(
+                import?.RowVersion ?? "import-rv-1",
+                _draft.RowVersion));
+        _isValidating = false;
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _catalogueValidation = result.Value;
+            _previewToken = result.Value.Valid ? result.Value.PreviewToken : null;
+            _state = result.Value.Valid ? SuccessState : ValidationErrorState;
+            _reasonCode = result.Value.Valid
+                ? "VALIDATED"
+                : result.Value.Errors.FirstOrDefault()?.Code ?? "VALIDATION_ERROR";
+            return;
+        }
+
+        ApplyFailure(result.StatusCode, result.Error);
+    }
+
+    private async Task SimulatePolicyAsync()
+    {
+        if (_policy is null || string.IsNullOrWhiteSpace(_simulationFixture))
+        {
+            return;
+        }
+
+        _isSimulating = true;
+        ResetFeedback();
+        var result = await CatalogueApi.SimulatePolicyAsync(
+            _policy.Id,
+            new(
+                _policy.Id,
+                _simulationFixture.Trim(),
+                SplitValues(_simulationCourses)));
+        _isSimulating = false;
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _simulation = result.Value;
+            _successAnnouncement =
+                "Simulation completed deterministically; no durable change was made.";
+            return;
+        }
+
+        ApplyFailure(result.StatusCode, result.Error);
+    }
+
+    private void OpenPublishConfirmation() =>
+        _showPublishConfirmation = _previewToken is not null;
+
+    private void ClosePublishConfirmation() =>
+        _showPublishConfirmation = false;
+
+    private async Task PublishCatalogueAsync()
+    {
+        if (_draft is null || _previewToken is null)
+        {
+            return;
+        }
+
+        _isPublishing = true;
+        ResetFeedback();
+        var result = await CatalogueApi.PublishImportAsync(
+            _currentImport?.Id ?? DemoImportId,
+            new(_draft.RowVersion, _previewToken, Guid.NewGuid()));
+        _isPublishing = false;
+        _showPublishConfirmation = false;
+        if (result.IsSuccess && result.Value is not null)
+        {
+            _versions.Insert(0, result.Value);
+            _previewToken = null;
+            _catalogueValidation = null;
+            _state = SuccessState;
+            _successAnnouncement = "Published immutable catalogue version";
+            return;
+        }
+
+        ApplyFailure(result.StatusCode, result.Error);
+    }
+
+    private async Task RefreshAndRevalidateAsync()
+    {
+        await LoadAsync();
+        if (_state is SuccessState)
+        {
+            await ValidateCatalogueAsync();
+        }
+    }
+
+    private Task RestorePublishFocusAsync() => _publishTrigger.FocusAsync().AsTask();
+
+    private void ApplyPolicyEditor()
+    {
+        if (_policy is null)
+        {
+            return;
+        }
+
+        _normalMaxCredits = RuleNumber("NORMAL_MAX_CREDITS", "18");
+        _probationMaxCredits = RuleNumber("PROBATION_MAX_CREDITS", "12");
+    }
+
+    private string RuleNumber(string code, string fallback)
+    {
+        var rule = _policy?.Rules.FirstOrDefault(item => item.Code == code);
+        return rule?.Value.ValueKind is JsonValueKind.Number
+            && rule.Value.TryGetDecimal(out var value)
+                ? value.ToString(CultureInfo.InvariantCulture)
+                : fallback;
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _reasonCode = error?.Code
+            ?? (status is HttpStatusCode.ServiceUnavailable
+                ? "SERVICE_UNAVAILABLE"
+                : "UNEXPECTED_ERROR");
+        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _referenceId = error?.CorrelationId;
+        _currentVersion = error?.CurrentVersion;
+        _state = status switch
+        {
+            HttpStatusCode.Unauthorized => SessionExpiredState,
+            HttpStatusCode.Forbidden => UnauthorizedState,
+            HttpStatusCode.Conflict when
+                _reasonCode is "STALE_PREVIEW" or "STALE_VERSION" => StaleState,
+            HttpStatusCode.BadRequest => ValidationErrorState,
+            _ => ServiceErrorState
+        };
+        _focusStateHeading = _state is
+            UnauthorizedState or SessionExpiredState or StaleState;
+    }
+
+    private static (HttpStatusCode StatusCode, ApiError? Error)? FirstFailure(
+        AcademicApiResult<Page<ProgramAdminDto>> programs,
+        AcademicApiResult<Page<CatalogueVersionSummaryDto>> versions,
+        AcademicApiResult<CatalogueDraftDto> draft,
+        AcademicApiResult<Page<PolicySetAdminDto>> policies,
+        AcademicApiResult<ImportBatchDto> import)
+    {
+        if (!programs.IsSuccess) return (programs.StatusCode, programs.Error);
+        if (!versions.IsSuccess) return (versions.StatusCode, versions.Error);
+        if (!draft.IsSuccess) return (draft.StatusCode, draft.Error);
+        if (!policies.IsSuccess) return (policies.StatusCode, policies.Error);
+        if (!import.IsSuccess) return (import.StatusCode, import.Error);
+        return null;
+    }
+
+    private void SetValidation(string code, IReadOnlyList<ValidationIssue> issues)
+    {
+        _validationIssues.Clear();
+        _validationIssues.AddRange(issues);
+        _reasonCode = code;
+        _state = ValidationErrorState;
+        _focusValidationSummary = true;
+        _successAnnouncement = null;
+    }
+
+    private void ResetFeedback()
+    {
+        _validationIssues.Clear();
+        _reasonCode = "AVAILABLE";
+        _safeMessage = string.Empty;
+        _referenceId = null;
+        _currentVersion = null;
+        _successAnnouncement = null;
+    }
+
+    private RenderFragment FieldError(string controlId) => @<text>
+        @if (ErrorFor(controlId) is { } error)
+        {
+            <span class="srs-catalogue__field-error" id="@(controlId)-error">@error</span>
+        }
+    </text>;
+
+    private string? ErrorFor(string controlId) =>
+        _validationIssues.FirstOrDefault(issue => issue.ControlId == controlId)?.Message;
+
+    private string? InvalidAria(string controlId) =>
+        ErrorFor(controlId) is null ? null : "true";
+
+    private string? DescribedBy(string controlId) =>
+        ErrorFor(controlId) is null ? null : $"{controlId}-error";
+
+    private static IReadOnlyList<string> SplitValues(string value) =>
+        value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static IReadOnlyList<string> CycleCodes(string message) =>
+        message.Split("->", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+    private static string SourceKindLabel(string sourceKind) =>
+        sourceKind == "official-source" ? "Official source" : "Synthetic demo";
+
+    private sealed record ValidationIssue(string ControlId, string Message);
+}

@@ -110,8 +110,8 @@
 
 ## Phase 6 - Frontend Functional Tests and Page
 
-- [ ] T090 [P] [ADM-05] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-6] [FR-7] [FR-8] [FR-9] [FR-10] [AC-1] [AC-2] [AC-3] [AC-4] [AC-5] [AC-6] Create failing catalogue snapshot provenance/synthetic-label/draft/import/version/simple-policy journeys in tests/StudentRegistration.E2ETests/Specs/Spec009/CatalogueAdministrationPageFeatureTests.cs.
-- [ ] T091 [ADM-05] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-6] [FR-7] [FR-8] [FR-9] [FR-10] [AC-1] [AC-2] [AC-3] [AC-4] [AC-5] [AC-6] Deliver CatalogueAdministrationPage at src/StudentRegistration.Client/Pages/CatalogueAdministrationPage.razor after T090 and SPEC-017 contributor tests fail.
+- [x] T090 [P] [ADM-05] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-6] [FR-7] [FR-8] [FR-9] [FR-10] [AC-1] [AC-2] [AC-3] [AC-4] [AC-5] [AC-6] Create failing catalogue snapshot provenance/synthetic-label/draft/import/version/simple-policy journeys in tests/StudentRegistration.E2ETests/Specs/Spec009/CatalogueAdministrationPageFeatureTests.cs.
+- [x] T091 [ADM-05] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-4] [FR-5] [FR-6] [FR-7] [FR-8] [FR-9] [FR-10] [AC-1] [AC-2] [AC-3] [AC-4] [AC-5] [AC-6] Deliver CatalogueAdministrationPage at src/StudentRegistration.Client/Pages/CatalogueAdministrationPage.razor after T090 and SPEC-017 contributor tests fail.
 
 ## Phase 7 - Quality, Scope, and Release Evidence
 

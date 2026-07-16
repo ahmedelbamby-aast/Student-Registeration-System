@@ -11,6 +11,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped<AcademicApiClient>();
+builder.Services.AddScoped<CatalogueApiClient>();
 builder.Services.AddScoped<IdentityApiClient>();
 builder.Services.AddScoped<OperationsApiClient>();
 
