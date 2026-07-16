@@ -1,17 +1,65 @@
+using Microsoft.Data.SqlClient;
+using StudentRegistration.IntegrationTests.Infrastructure;
+using Testcontainers.MsSql;
+
 namespace StudentRegistration.IntegrationTests.Specs.Spec005.EdgeCases;
 
 public sealed class EC_1Tests
 {
-    private const string DeferredReason =
-        "Deferred bootstrap fault proof: activate SPEC-004 DbContext composition, SPEC-007/008 seed contributors, DemoDatabaseInitializer, SqlServerTestDatabaseFixture, and S1/S2/S4/S6 at entity-ownership 2.0.0 and persistence-manifest 2.1.0.";
-
-    [Fact(Skip = DeferredReason)]
-    public void Partial_bootstrap_never_marks_ready_and_non_development_or_testing_seed_reset_is_rejected_without_mutation()
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Migrated_but_unseeded_database_is_not_ready()
     {
-        // Given a fault injected between migration and seed, plus seed/reset requests targeting a forbidden environment.
-        // When the real bootstrap and environment guards execute.
-        // Then readiness remains false, partial work is not accepted, and forbidden requests make no database mutation.
-        throw new NotImplementedException(
-            "Inject faults into the real SQL bootstrap and compare database state; a mocked readiness flag cannot prove this boundary.");
+        await using var container = new MsSqlBuilder(
+                SqlServerTestDatabaseFixture.SqlServerImage)
+            .WithPassword($"Srs!1{Guid.NewGuid():N}a")
+            .Build();
+        await container.StartAsync();
+
+        var databaseName =
+            $"{SqlServerTestDatabaseFixture.TestingDatabasePrefix}{Guid.NewGuid():N}";
+        var createResult = await container.ExecScriptAsync($"""
+            CREATE DATABASE [{databaseName}];
+            ALTER DATABASE [{databaseName}]
+                SET COMPATIBILITY_LEVEL = {SqlServerTestDatabaseFixture.CompatibilityLevel};
+            """);
+        Assert.Equal<long?>(0L, createResult.ExitCode);
+
+        var connectionString = new SqlConnectionStringBuilder(
+            container.GetConnectionString())
+        {
+            InitialCatalog = databaseName
+        }.ConnectionString;
+        var bootstrapper = new Spec008SqlServerTestDatabaseBootstrapper(
+            studentCount: 1);
+
+        await bootstrapper.ApplyMigrationsAsync(
+            connectionString,
+            CancellationToken.None);
+        var readiness = await bootstrapper.VerifyReadinessAsync(
+            connectionString,
+            CancellationToken.None);
+
+        Assert.True(readiness.MigrationsApplied);
+        Assert.False(readiness.SeedComplete);
+        Assert.NotEmpty(readiness.LogicalFingerprint);
+    }
+
+    [Theory]
+    [InlineData("Production", "StudentRegistration_Production")]
+    [InlineData("Staging", "StudentRegistration_Development")]
+    [InlineData("Testing", "StudentRegistration_Test_shared")]
+    public void Seed_and_reset_guards_reject_forbidden_targets_before_mutation(
+        string environmentName,
+        string databaseName)
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            NonProductionDatabaseGuard.EnsureSeedAllowed(
+                environmentName,
+                databaseName));
+        Assert.Throws<InvalidOperationException>(() =>
+            NonProductionDatabaseGuard.EnsureExplicitResetAllowed(
+                environmentName,
+                databaseName));
     }
 }

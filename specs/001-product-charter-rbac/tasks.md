@@ -70,8 +70,8 @@ pending their owning dependency or release gate.
 
 **Dependencies**: Approval/dependency/model/API baseline through T009.
 - [ ] T015 [AC-5] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec001/AC-5Tests.cs for AC-5: Product quality boundary (NFR-1, NFR-2, NFR-3, NFR-4): Given the MVP release candidate and SPEC-018 production-like load profile When accessibility, authorization, architecture, and scale gates execute Then critical flows meet WCAG 2.2 AA And every protected request is API-authorized And the modular monolith meets SPEC-018 targets without distributed services.
-- [ ] T016 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec001/EdgeCases/EC-1Tests.cs and assert: User holds Lecturer and TA roles -> offer only the authorized contexts.
-- [ ] T017 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec001/EdgeCases/EC-2Tests.cs and assert: Staff has no supported role -> deny access with safe no-role message.
+- [x] T016 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec001/EdgeCases/EC-1Tests.cs and assert: User holds Lecturer and TA roles -> offer only the authorized contexts.
+- [x] T017 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec001/EdgeCases/EC-2Tests.cs and assert: Staff has no supported role -> deny access with safe no-role message.
 - [x] T018 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec001/EdgeCases/EC-3Tests.cs and assert: A requested enhancement is outside MVP -> create/review a new spec rather than adding it silently.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
