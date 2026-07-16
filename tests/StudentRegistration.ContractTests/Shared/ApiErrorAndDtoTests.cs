@@ -144,7 +144,7 @@ public sealed class ApiErrorAndDtoTests
     }
 
     [Fact]
-    public async Task Fallback_declines_framework_bad_requests_and_aborted_requests()
+    public async Task Framework_bad_requests_are_safe_and_aborted_requests_are_declined()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -157,11 +157,24 @@ public sealed class ApiErrorAndDtoTests
             RequestServices = provider
         };
         badRequestContext.Response.Body = new MemoryStream();
-        Assert.False(await handler.TryHandleAsync(
+        Assert.True(await handler.TryHandleAsync(
             badRequestContext,
             new BadHttpRequestException("Invalid request.", StatusCodes.Status400BadRequest),
             CancellationToken.None));
-        Assert.Equal(0, badRequestContext.Response.Body.Length);
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestContext.Response.StatusCode);
+        badRequestContext.Response.Body.Position = 0;
+        using (var body = await JsonDocument.ParseAsync(badRequestContext.Response.Body))
+        {
+            Assert.Equal(
+                "VALIDATION_ERROR",
+                body.RootElement.GetProperty("code").GetString());
+            Assert.False(string.IsNullOrWhiteSpace(
+                body.RootElement.GetProperty("correlationId").GetString()));
+            Assert.DoesNotContain(
+                "Invalid request.",
+                body.RootElement.GetRawText(),
+                StringComparison.Ordinal);
+        }
 
         using var requestAbort = new CancellationTokenSource();
         requestAbort.Cancel();

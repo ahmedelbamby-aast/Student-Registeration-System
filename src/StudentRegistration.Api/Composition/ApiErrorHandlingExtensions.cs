@@ -19,7 +19,72 @@ public static class ApiErrorHandlingExtensions
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        return application.UseExceptionHandler();
+        application.UseExceptionHandler(new ExceptionHandlerOptions
+        {
+            ExceptionHandler = static _ => Task.CompletedTask
+        });
+        return application.UseMiddleware<SafeClientErrorBodyMiddleware>();
+    }
+}
+
+internal sealed class SafeClientErrorBodyMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        await next(context);
+        if (context.Response.HasStarted ||
+            context.Response.ContentLength is > 0 ||
+            !string.IsNullOrWhiteSpace(context.Response.ContentType))
+        {
+            return;
+        }
+
+        if (!SafeClientErrors.IsSupportedStatus(context.Response.StatusCode))
+        {
+            return;
+        }
+
+        await SafeClientErrors.WriteAsync(
+            context,
+            context.Response.StatusCode,
+            context.RequestAborted);
+    }
+}
+
+internal static class SafeClientErrors
+{
+    internal static bool IsSupportedStatus(int statusCode) =>
+        statusCode is
+            StatusCodes.Status400BadRequest or
+            StatusCodes.Status415UnsupportedMediaType;
+
+    internal static async Task WriteAsync(
+        HttpContext context,
+        int statusCode,
+        CancellationToken cancellationToken)
+    {
+        var (code, message) = statusCode switch
+        {
+            StatusCodes.Status415UnsupportedMediaType => (
+                "UNSUPPORTED_MEDIA_TYPE",
+                "The request content type is not supported."),
+            _ => (
+                "VALIDATION_ERROR",
+                "The request body or parameters are invalid.")
+        };
+        var correlationId = context.TraceIdentifier;
+        if (string.IsNullOrWhiteSpace(correlationId))
+        {
+            correlationId = Guid.NewGuid().ToString("N");
+            context.TraceIdentifier = correlationId;
+        }
+
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsJsonAsync(
+            new ApiError(code, message, correlationId),
+            cancellationToken);
     }
 }
 
@@ -37,8 +102,7 @@ internal sealed class SafeApiExceptionHandler(
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(exception);
 
-        if (exception is BadHttpRequestException ||
-            exception is OperationCanceledException &&
+        if (exception is OperationCanceledException &&
             httpContext.RequestAborted.IsCancellationRequested)
         {
             return false;
@@ -54,6 +118,20 @@ internal sealed class SafeApiExceptionHandler(
         {
             correlationId = Guid.NewGuid().ToString("N");
             httpContext.TraceIdentifier = correlationId;
+        }
+
+        if (exception is BadHttpRequestException badRequestException)
+        {
+            var statusCode = badRequestException.StatusCode is
+                StatusCodes.Status400BadRequest or
+                StatusCodes.Status415UnsupportedMediaType
+                    ? badRequestException.StatusCode
+                    : StatusCodes.Status400BadRequest;
+            await SafeClientErrors.WriteAsync(
+                httpContext,
+                statusCode,
+                cancellationToken);
+            return true;
         }
 
         logger.LogError(

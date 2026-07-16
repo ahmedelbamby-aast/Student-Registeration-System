@@ -47,7 +47,9 @@ It never serializes the exception message, stack trace, SQL text, connection
 information, secret, raw payload, or internal topology. Feature-owned expected
 validation, authorization, concurrency, and business outcomes remain explicit
 typed results and are not routed through this fallback.
-Framework-owned bad requests and a cancellation caused by the disconnected
-request are also declined by the unexpected-error handler; their owning ASP.NET
-Core/request pipeline remains responsible for the applicable 4xx or aborted
-connection behavior. Real endpoint proof remains gated by T025-T028.
+Framework-owned malformed-body and unsupported-media failures are normalized
+at the API boundary to safe 400 `VALIDATION_ERROR` and 415
+`UNSUPPORTED_MEDIA_TYPE` responses without exposing parser or endpoint
+internals. A cancellation caused by a disconnected request remains declined so
+the request pipeline can preserve aborted-connection behavior. Real endpoint
+proof for cancellation and replay remains gated by T027.
