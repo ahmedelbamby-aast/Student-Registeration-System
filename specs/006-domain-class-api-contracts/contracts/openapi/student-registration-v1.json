@@ -1,0 +1,3293 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Student Registration API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "testhost"
+        ],
+        "operationId": "Spec018Health",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/operations/metrics": {
+      "get": {
+        "tags": [
+          "testhost"
+        ],
+        "operationId": "Spec018OperationalMetrics",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/auth/student/login": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/student/activate": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateStudentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/staff/login": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/auth/recovery/request": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        }
+      }
+    },
+    "/api/auth/recovery/complete": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryCompleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/password/change": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/auth/sessions/revoke-all": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/auth/session/context": {
+      "put": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectRoleContextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfIdentityUserSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/imports": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityImportBatchDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/imports/{importId}": {
+      "get": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityImportBatchDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/imports/{importId}/publish": {
+      "post": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "importId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityImportPublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityImportBatchDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/status": {
+      "patch": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityUserSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/users/{userId}/roles": {
+      "put": {
+        "tags": [
+          "Spec007Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRolesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityUserSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/public/context": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContextDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/context": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppContextDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/students/me/academic-context": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "transcriptPage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "transcriptPageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "provenancePage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "provenancePageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentAcademicContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/terms": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TermState"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfAdminTermDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTermRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTermDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/terms/{termId}": {
+      "put": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTermRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTermDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/terms/{termId}/registration-windows/{windowId}/publish": {
+      "post": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "windowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRegistrationWindowRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTermDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/students": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "termId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfAdminStudentLocatorDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/students/{studentId}/academic-context": {
+      "get": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "termId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transcriptPage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "transcriptPageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "provenancePage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "provenancePageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStudentAcademicContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    },
+    "/api/admin/students/{studentId}/academic-profile": {
+      "patch": {
+        "tags": [
+          "Spec008Endpoints"
+        ],
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcademicProfileCorrectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStudentAcademicContextDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "StudentRegistration.Identity": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AcademicHoldDto": {
+        "required": [
+          "termId",
+          "code",
+          "message",
+          "blocksRegistration",
+          "effectiveFromUtc",
+          "effectiveToUtc",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "termId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "blocksRegistration": {
+            "type": "boolean"
+          },
+          "effectiveFromUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effectiveToUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperation": {
+        "required": [
+          "kind"
+        ],
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationSetGpaOperation"
+          },
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationSetEarnedCreditsOperation"
+          },
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationSetStandingOperation"
+          },
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationUpsertTranscriptAttemptOperation"
+          },
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationUpsertHoldOperation"
+          },
+          {
+            "$ref": "#/components/schemas/AcademicProfileCorrectionOperationRemoveHoldOperation"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "set-gpa": "#/components/schemas/AcademicProfileCorrectionOperationSetGpaOperation",
+            "set-earned-credits": "#/components/schemas/AcademicProfileCorrectionOperationSetEarnedCreditsOperation",
+            "set-standing": "#/components/schemas/AcademicProfileCorrectionOperationSetStandingOperation",
+            "upsert-transcript-attempt": "#/components/schemas/AcademicProfileCorrectionOperationUpsertTranscriptAttemptOperation",
+            "upsert-hold": "#/components/schemas/AcademicProfileCorrectionOperationUpsertHoldOperation",
+            "remove-hold": "#/components/schemas/AcademicProfileCorrectionOperationRemoveHoldOperation"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationRemoveHoldOperation": {
+        "required": [
+          "holdId",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "remove-hold"
+            ],
+            "type": "string"
+          },
+          "holdId": {
+            "type": "string"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationSetEarnedCreditsOperation": {
+        "required": [
+          "earnedCredits",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "set-earned-credits"
+            ],
+            "type": "string"
+          },
+          "earnedCredits": {
+            "type": "number",
+            "format": "double"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationSetGpaOperation": {
+        "required": [
+          "currentGpa",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "set-gpa"
+            ],
+            "type": "string"
+          },
+          "currentGpa": {
+            "type": "number",
+            "format": "double"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationSetStandingOperation": {
+        "required": [
+          "standingCode",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "set-standing"
+            ],
+            "type": "string"
+          },
+          "standingCode": {
+            "type": "string"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationUpsertHoldOperation": {
+        "required": [
+          "holdId",
+          "code",
+          "message",
+          "blocksRegistration",
+          "effectiveFromUtc",
+          "effectiveToUtc",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "upsert-hold"
+            ],
+            "type": "string"
+          },
+          "holdId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "blocksRegistration": {
+            "type": "boolean"
+          },
+          "effectiveFromUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effectiveToUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionOperationUpsertTranscriptAttemptOperation": {
+        "required": [
+          "supersedesAttemptId",
+          "courseCode",
+          "termCode",
+          "credits",
+          "grade",
+          "status",
+          "sourceReference"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "upsert-transcript-attempt"
+            ],
+            "type": "string"
+          },
+          "supersedesAttemptId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "courseCode": {
+            "type": "string"
+          },
+          "termCode": {
+            "type": "string"
+          },
+          "credits": {
+            "type": "number",
+            "format": "double"
+          },
+          "grade": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "sourceReference": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicProfileCorrectionRequest": {
+        "required": [
+          "termId",
+          "expectedStudentRowVersion",
+          "expectedStudentTermStateRowVersion",
+          "reason",
+          "source",
+          "operations"
+        ],
+        "type": "object",
+        "properties": {
+          "termId": {
+            "type": "string"
+          },
+          "expectedStudentRowVersion": {
+            "type": "string"
+          },
+          "expectedStudentTermStateRowVersion": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcademicProfileCorrectionOperation"
+            }
+          }
+        }
+      },
+      "AcademicProvenanceDto": {
+        "required": [
+          "source",
+          "reference",
+          "importedAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "importedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ActivateStudentRequest": {
+        "required": [
+          "universityId",
+          "initialPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "universityId": {
+            "type": "string"
+          },
+          "initialPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminAcademicHoldDto": {
+        "required": [
+          "holdId",
+          "sourceReference",
+          "termId",
+          "code",
+          "message",
+          "blocksRegistration",
+          "effectiveFromUtc",
+          "effectiveToUtc",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "holdId": {
+            "type": "string"
+          },
+          "sourceReference": {
+            "type": "string"
+          },
+          "termId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "blocksRegistration": {
+            "type": "boolean"
+          },
+          "effectiveFromUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effectiveToUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminRegistrationWindowDto": {
+        "required": [
+          "id",
+          "scopeType",
+          "scopeValue",
+          "opensAtUtc",
+          "closesAtUtc",
+          "lifecycleState",
+          "computedState",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scopeType": {
+            "$ref": "#/components/schemas/RegistrationWindowScope"
+          },
+          "scopeValue": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "opensAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closesAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lifecycleState": {
+            "$ref": "#/components/schemas/RegistrationWindowLifecycle"
+          },
+          "computedState": {
+            "$ref": "#/components/schemas/RegistrationWindowState"
+          },
+          "rowVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminStudentAcademicContextDto": {
+        "required": [
+          "studentId",
+          "termId",
+          "universityId",
+          "programCode",
+          "cohort",
+          "currentGpa",
+          "earnedCredits",
+          "standing",
+          "transcriptSummary",
+          "transcriptAttempts",
+          "activeHolds",
+          "dataVersion",
+          "dataAsOfUtc",
+          "provenance",
+          "studentRowVersion",
+          "studentTermStateRowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string"
+          },
+          "termId": {
+            "type": "string"
+          },
+          "universityId": {
+            "type": "string"
+          },
+          "programCode": {
+            "type": "string"
+          },
+          "cohort": {
+            "type": "string"
+          },
+          "currentGpa": {
+            "type": "number",
+            "format": "double"
+          },
+          "earnedCredits": {
+            "type": "number",
+            "format": "double"
+          },
+          "standing": {
+            "type": "string"
+          },
+          "transcriptSummary": {
+            "$ref": "#/components/schemas/TranscriptSummaryDto"
+          },
+          "transcriptAttempts": {
+            "$ref": "#/components/schemas/PageOfTranscriptAttemptDto"
+          },
+          "activeHolds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAcademicHoldDto"
+            }
+          },
+          "dataVersion": {
+            "type": "string"
+          },
+          "dataAsOfUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/PageOfAcademicProvenanceDto"
+          },
+          "studentRowVersion": {
+            "type": "string"
+          },
+          "studentTermStateRowVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminStudentLocatorDto": {
+        "required": [
+          "studentId",
+          "universityId",
+          "programCode",
+          "cohort",
+          "standing",
+          "dataVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string"
+          },
+          "universityId": {
+            "type": "string"
+          },
+          "programCode": {
+            "type": "string"
+          },
+          "cohort": {
+            "type": "string"
+          },
+          "standing": {
+            "type": "string"
+          },
+          "dataVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminTermDto": {
+        "required": [
+          "id",
+          "code",
+          "displayName",
+          "timeZoneId",
+          "teachingStartsOn",
+          "teachingEndsOn",
+          "state",
+          "rowVersion",
+          "windows"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "timeZoneId": {
+            "type": "string"
+          },
+          "teachingStartsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "teachingEndsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TermState"
+          },
+          "rowVersion": {
+            "type": "string"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRegistrationWindowDto"
+            }
+          }
+        }
+      },
+      "ApiError": {
+        "required": [
+          "code",
+          "message",
+          "correlationId"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "correlationId": {
+            "type": "string"
+          },
+          "fieldErrors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "currentVersion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AppContextDto": {
+        "required": [
+          "serverTimeUtc",
+          "timeZoneId",
+          "teachingTerm",
+          "registrationTerm",
+          "registrationWindowState",
+          "registrationWindow",
+          "serviceState",
+          "displayName",
+          "authorizedRoles",
+          "activeRole",
+          "sessionState",
+          "expiresAtUtc",
+          "supportReferencePath"
+        ],
+        "type": "object",
+        "properties": {
+          "serverTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeZoneId": {
+            "type": "string"
+          },
+          "teachingTerm": {
+            "$ref": "#/components/schemas/TermSummaryDto"
+          },
+          "registrationTerm": {
+            "$ref": "#/components/schemas/TermSummaryDto"
+          },
+          "registrationWindowState": {
+            "$ref": "#/components/schemas/RegistrationWindowState"
+          },
+          "registrationWindow": {
+            "$ref": "#/components/schemas/RegistrationWindowSummaryDto"
+          },
+          "serviceState": {
+            "$ref": "#/components/schemas/ServiceState"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "authorizedRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeRole": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sessionState": {
+            "$ref": "#/components/schemas/SessionState"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "supportReferencePath": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateTermRequest": {
+        "required": [
+          "clientRequestId",
+          "reason",
+          "source",
+          "term",
+          "windows"
+        ],
+        "type": "object",
+        "properties": {
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "term": {
+            "$ref": "#/components/schemas/TermInput"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermWindowInput"
+            }
+          }
+        }
+      },
+      "IdentityImportBatchDto": {
+        "required": [
+          "id",
+          "source",
+          "contentHash",
+          "state",
+          "rowVersion",
+          "errors"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "rowVersion": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityImportErrorDto"
+            }
+          }
+        }
+      },
+      "IdentityImportErrorDto": {
+        "required": [
+          "row",
+          "code",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "IdentityImportPublishRequest": {
+        "required": [
+          "expectedRowVersion",
+          "clientRequestId"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedRowVersion": {
+            "type": "string"
+          },
+          "clientRequestId": {
+            "type": "string"
+          }
+        }
+      },
+      "IdentityImportRequest": {
+        "required": [
+          "source",
+          "contentHash",
+          "clientRequestId",
+          "users"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "clientRequestId": {
+            "type": "string"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityImportUserRequest"
+            }
+          }
+        }
+      },
+      "IdentityImportUserRequest": {
+        "required": [
+          "externalReference",
+          "kind",
+          "universityId",
+          "userName",
+          "staffNumber",
+          "displayName",
+          "roles"
+        ],
+        "type": "object",
+        "properties": {
+          "externalReference": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "universityId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "userName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "staffNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "IdentityUserSummaryDto": {
+        "required": [
+          "id",
+          "displayName",
+          "loginIdentifier",
+          "enabled",
+          "roles",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "loginIdentifier": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rowVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOfAcademicProvenanceDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcademicProvenanceDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOfAdminStudentLocatorDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminStudentLocatorDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOfAdminTermDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminTermDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOfIdentityUserSummaryDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityUserSummaryDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOfTranscriptAttemptDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "totalCount",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptAttemptDto"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicContextDto": {
+        "required": [
+          "serverTimeUtc",
+          "timeZoneId",
+          "teachingTermLabel",
+          "registrationTermLabel",
+          "registrationWindowState",
+          "serviceState"
+        ],
+        "type": "object",
+        "properties": {
+          "serverTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeZoneId": {
+            "type": "string"
+          },
+          "teachingTermLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registrationTermLabel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "registrationWindowState": {
+            "$ref": "#/components/schemas/RegistrationWindowState"
+          },
+          "serviceState": {
+            "$ref": "#/components/schemas/ServiceState"
+          }
+        }
+      },
+      "PublishRegistrationWindowRequest": {
+        "required": [
+          "expectedTermRowVersion",
+          "expectedWindowRowVersion",
+          "reason",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedTermRowVersion": {
+            "type": "string"
+          },
+          "expectedWindowRowVersion": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      },
+      "RecoveryCompleteRequest": {
+        "required": [
+          "challengeToken",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "challengeToken": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "RecoveryRequest": {
+        "required": [
+          "universityIdOrUserName"
+        ],
+        "type": "object",
+        "properties": {
+          "universityIdOrUserName": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistrationWindowLifecycle": {
+        "enum": [
+          "draft",
+          "published",
+          "emergencyClosed",
+          "superseded"
+        ]
+      },
+      "RegistrationWindowScope": {
+        "enum": [
+          "all-students",
+          "program",
+          "cohort"
+        ]
+      },
+      "RegistrationWindowState": {
+        "enum": [
+          "open",
+          "upcoming",
+          "closed",
+          "none"
+        ]
+      },
+      "RegistrationWindowSummaryDto": {
+        "required": [
+          "id",
+          "state",
+          "opensAtUtc",
+          "closesAtUtc",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/RegistrationWindowState"
+          },
+          "opensAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closesAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rowVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "SelectRoleContextRequest": {
+        "required": [
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          }
+        }
+      },
+      "ServiceState": {
+        "enum": [
+          "available",
+          "maintenance",
+          "unavailable"
+        ]
+      },
+      "SessionDto": {
+        "required": [
+          "displayName",
+          "roles",
+          "activeRole",
+          "sessionState",
+          "expiresAtUtc"
+        ],
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "activeRole": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "sessionState": {
+            "type": "string"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SessionState": {
+        "enum": [
+          "active",
+          "expiring",
+          "role-selection-required"
+        ]
+      },
+      "StaffLoginRequest": {
+        "required": [
+          "userName",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "userName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "StudentAcademicContextDto": {
+        "required": [
+          "universityId",
+          "programCode",
+          "cohort",
+          "currentGpa",
+          "earnedCredits",
+          "standing",
+          "transcriptSummary",
+          "transcriptAttempts",
+          "activeHolds",
+          "dataVersion",
+          "dataAsOfUtc",
+          "provenance"
+        ],
+        "type": "object",
+        "properties": {
+          "universityId": {
+            "type": "string"
+          },
+          "programCode": {
+            "type": "string"
+          },
+          "cohort": {
+            "type": "string"
+          },
+          "currentGpa": {
+            "type": "number",
+            "format": "double"
+          },
+          "earnedCredits": {
+            "type": "number",
+            "format": "double"
+          },
+          "standing": {
+            "type": "string"
+          },
+          "transcriptSummary": {
+            "$ref": "#/components/schemas/TranscriptSummaryDto"
+          },
+          "transcriptAttempts": {
+            "$ref": "#/components/schemas/PageOfTranscriptAttemptDto"
+          },
+          "activeHolds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcademicHoldDto"
+            }
+          },
+          "dataVersion": {
+            "type": "string"
+          },
+          "dataAsOfUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/PageOfAcademicProvenanceDto"
+          }
+        }
+      },
+      "StudentLoginRequest": {
+        "required": [
+          "universityId",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "universityId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "TermInput": {
+        "required": [
+          "code",
+          "displayName",
+          "timeZoneId",
+          "teachingStartsOn",
+          "teachingEndsOn",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "timeZoneId": {
+            "type": "string"
+          },
+          "teachingStartsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "teachingEndsOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TermState"
+          }
+        }
+      },
+      "TermState": {
+        "enum": [
+          "draft",
+          "registrationOpen",
+          "registrationClosed",
+          "teaching",
+          "completed",
+          "archived"
+        ]
+      },
+      "TermSummaryDto": {
+        "required": [
+          "id",
+          "code",
+          "label",
+          "state",
+          "rowVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TermState"
+          },
+          "rowVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "TermWindowInput": {
+        "required": [
+          "id",
+          "scopeType",
+          "scopeValue",
+          "opensAtUtc",
+          "closesAtUtc",
+          "lifecycleState"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "scopeType": {
+            "$ref": "#/components/schemas/RegistrationWindowScope"
+          },
+          "scopeValue": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "opensAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closesAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lifecycleState": {
+            "$ref": "#/components/schemas/RegistrationWindowLifecycle"
+          }
+        }
+      },
+      "TranscriptAttemptDto": {
+        "required": [
+          "attemptId",
+          "supersedesAttemptId",
+          "courseCode",
+          "termCode",
+          "credits",
+          "grade",
+          "status",
+          "provenance"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string"
+          },
+          "supersedesAttemptId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "courseCode": {
+            "type": "string"
+          },
+          "termCode": {
+            "type": "string"
+          },
+          "credits": {
+            "type": "number",
+            "format": "double"
+          },
+          "grade": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "string"
+          }
+        }
+      },
+      "TranscriptSummaryDto": {
+        "required": [
+          "attemptedCredits",
+          "earnedCredits",
+          "attemptCount"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptedCredits": {
+            "type": "number",
+            "format": "double"
+          },
+          "earnedCredits": {
+            "type": "number",
+            "format": "double"
+          },
+          "attemptCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "UpdateTermRequest": {
+        "required": [
+          "expectedTermRowVersion",
+          "expectedWindowRowVersions",
+          "reason",
+          "source",
+          "term",
+          "windows"
+        ],
+        "type": "object",
+        "properties": {
+          "expectedTermRowVersion": {
+            "type": "string"
+          },
+          "expectedWindowRowVersions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "term": {
+            "$ref": "#/components/schemas/TermInput"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermWindowInput"
+            }
+          }
+        }
+      },
+      "UserRolesRequest": {
+        "required": [
+          "roles",
+          "expectedRowVersion",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expectedRowVersion": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "UserStatusRequest": {
+        "required": [
+          "enabled",
+          "expectedRowVersion",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "expectedRowVersion": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "StudentRegistration.Identity": {
+        "type": "apiKey",
+        "name": "__Host-StudentRegistration.Session",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "testhost"
+    },
+    {
+      "name": "Spec007Endpoints"
+    },
+    {
+      "name": "Spec008Endpoints"
+    }
+  ]
+}

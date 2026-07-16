@@ -1,6 +1,6 @@
 # Tasks: Domain Classes and API Contracts
 
-**Status**: T001-T048 and T052-T053 are complete and verified through 2026-07-16 (50 of 63). OpenAPI, measurable NFR, and production-release gates remain pending as listed below.
+**Status**: T001-T053 are complete and verified through 2026-07-16 (53 of 63). Measurable NFR and production-release gates remain pending as listed below.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts; unchecked tasks remain pending or dependency-gated. Every task names an exact file and traces to a requirement, criterion, edge case, route, contract type, endpoint, dependency, or gate. `[ENTITY-*]` labels are canonical governance/ownership identifiers required by the manifests; for SPEC-006 they identify non-persisted transport/value contracts, not SQL entities or aggregates.
 
@@ -134,9 +134,9 @@ T016-T024 are contract-first placeholders, not current runtime proof: create eac
 
 - [x] T047 [FR-10] [ENTITY-AppContext] [ENTITY-TermSummaryDto] [ENTITY-RegistrationWindowSummaryDto] [TYPE-RegistrationWindowSummaryDto] [WORKSTREAM-COMPOSED-APPLICATION-CONTEXT] Create the future failing composition-only AppContextDto/TermSummaryDto/RegistrationWindowSummaryDto completeness, matched-window state consistency and privacy, service/support fields, dual-role selection state, contributor ownership, authorized-role filtering, authoritative-null, and missing-contributor failure checks in tests/StudentRegistration.ContractTests/Shared/AppContextCompositionContractTests.cs.
 - [x] T048 [FR-10] [ENTITY-AppContext] [ENTITY-TermSummaryDto] [ENTITY-RegistrationWindowSummaryDto] [TYPE-RegistrationWindowSummaryDto] [WORKSTREAM-COMPOSED-APPLICATION-CONTEXT] Publish the complete contributor, authorization filtering, matched-window state consistency/privacy, authoritative-null, missing-contributor failure, and handler-ownership contract at specs/006-domain-class-api-contracts/contracts/app-context-composition.md only after T047 fails for the expected reason (depends on T047); T011 remains the sole AppContextDto/TermSummaryDto/RegistrationWindowSummaryDto shared source writer, while SPEC-008 consumes those contracts and alone writes both handlers.
-- [ ] T049 [NFR-1] [OPENAPI-BASELINE] [OPENAPI-RUNTIME-GATE] After approved version-pinned downstream handlers and a real OpenAPI generator exist, create the failing deterministic-generation and semantic-drift checks in tests/StudentRegistration.ContractTests/OpenApi/OpenApiBaselineTests.cs; keep this task unchecked until then.
-- [ ] T050 [NFR-1] [OPENAPI-BASELINE] [OPENAPI-RUNTIME-GATE] Generate and approve the deterministic baseline at specs/006-domain-class-api-contracts/contracts/openapi/student-registration-v1.json only after T049 fails against the real generated surface (depends on T049); never hand-author or approve an empty/speculative baseline.
-- [ ] T051 [NFR-1] [OPENAPI-CI] [OPENAPI-RUNTIME-GATE] Wire the semantic operation/schema/status/security drift gate at .github/scripts/Verify-OpenApi.ps1 only after T049 and T050 establish the real baseline behavior (depends on T049, T050); formatting/order-only drift is ignored and SPEC-018 retains CI workflow ownership.
+- [x] T049 [NFR-1] [OPENAPI-BASELINE] [OPENAPI-RUNTIME-GATE] After approved version-pinned downstream handlers and a real OpenAPI generator exist, create the failing deterministic-generation and semantic-drift checks in tests/StudentRegistration.ContractTests/OpenApi/OpenApiBaselineTests.cs; keep this task unchecked until then.
+- [x] T050 [NFR-1] [OPENAPI-BASELINE] [OPENAPI-RUNTIME-GATE] Generate and approve the deterministic baseline at specs/006-domain-class-api-contracts/contracts/openapi/student-registration-v1.json only after T049 fails against the real generated surface (depends on T049); never hand-author or approve an empty/speculative baseline.
+- [x] T051 [NFR-1] [OPENAPI-CI] [OPENAPI-RUNTIME-GATE] Wire the semantic operation/schema/status/security drift gate at .github/scripts/Verify-OpenApi.ps1 only after T049 and T050 establish the real baseline behavior (depends on T049, T050); formatting/order-only drift is ignored and SPEC-018 retains CI workflow ownership.
 
 ## Phase 5 - Frontend Route Tests and Integration
 
@@ -159,7 +159,7 @@ T016-T024 are contract-first placeholders, not current runtime proof: create eac
 - [ ] T062 [TRACE] [SC-1] [SC-2] [SC-3] [PRODUCTION-RELEASE-GATE] Generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-006-traceability.md only after every applicable runtime task passes; reject release if any row lacks passing evidence.
 - [ ] T063 [GATE] [PRODUCTION-RELEASE-GATE] Record Ahmed ELbamby's product-owner, domain-owner, QA, security, accessibility, data/concurrency, and operations review perspectives applicable to SPEC-006 in docs/release-evidence/SPEC-006-release-approval.md only after T062 passes; Ahmed remains the sole human approver for this demo.
 
-Verified progress: T001-T048 and T052-T053 are complete (50 of 63). T016-T024
-deliver only compiled, explicitly skipped downstream acceptance fixtures and
-do not claim passing runtime acceptance. T049-T051 and T054-T063 remain
-explicitly OpenAPI, measurable NFR, or production-release gated.
+Verified progress: T001-T053 are complete (53 of 63). T016-T024 deliver only
+compiled, explicitly skipped downstream acceptance fixtures and do not claim
+passing runtime acceptance. T054-T063 remain explicitly measurable NFR or
+production-release gated.

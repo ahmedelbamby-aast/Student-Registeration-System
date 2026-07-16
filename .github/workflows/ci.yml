@@ -45,6 +45,11 @@ jobs:
         run: |
           dotnet build StudentRegistration.slnx --no-restore --configuration Release -warnaserror
 
+      - name: Gate 03a - OpenAPI semantic drift
+        shell: pwsh
+        run: |
+          ./.github/scripts/Verify-OpenApi.ps1 -Configuration Release -NoRestore
+
       - name: Gate 04 - Unit tests
         shell: pwsh
         run: |

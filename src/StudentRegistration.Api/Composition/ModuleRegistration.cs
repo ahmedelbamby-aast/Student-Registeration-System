@@ -31,6 +31,11 @@ public static class Program
         app.MapSpec018Endpoints();
         app.MapSpec007Endpoints();
         app.MapSpec008Endpoints();
+        if (app.Environment.IsDevelopment() ||
+            app.Environment.IsEnvironment("Testing"))
+        {
+            app.MapOpenApi().AllowAnonymous();
+        }
         app.MapStudentRegistrationWebAppFallback();
         app.Run();
     }
@@ -46,6 +51,7 @@ public static class ModuleRegistration
         services.AddAuthoritativeTime();
         services.AddStudentRegistrationJsonContracts();
         services.AddSafeApiErrors();
+        services.AddStudentRegistrationOpenApi();
         services.AddStudentRegistrationObservability();
 
         return services;

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using StudentRegistration.Api.Operations;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Operations;
@@ -24,15 +25,18 @@ public static class Spec018Endpoints
 
         endpoints.MapGet(
                 "/api/health",
-                (OperationalHealthRegistry registry, TimeProvider timeProvider) =>
+                ([FromServices] OperationalHealthRegistry registry,
+                    [FromServices] TimeProvider timeProvider) =>
                     CreateHealthResult(registry, timeProvider))
             .AllowAnonymous()
             .WithName("Spec018Health");
 
         endpoints.MapGet(
                 "/api/operations/metrics",
-                (HttpContext context, OperationalTelemetry telemetry) =>
+                (HttpContext context,
+                    [FromServices] OperationalTelemetry telemetry) =>
                     CreateMetricsResult(context, telemetry))
+            .RequireAuthorization(policy => policy.RequireRole("Admin"))
             .WithName("Spec018OperationalMetrics");
 
         return endpoints;
