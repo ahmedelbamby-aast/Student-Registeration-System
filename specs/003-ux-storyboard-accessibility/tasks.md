@@ -149,7 +149,7 @@
 **Independent Test**: Execute only the AC-15 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T032 [AC-15] [FR-1] [FR-5] [FR-8] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-15Tests.cs for AC-15: Result, history, and account journeys (FR-1, FR-5, FR-8, FR-12, FR-14): Given accepted/rejected/lost-response, empty/current/history/archive, and account/session fixtures When STU-06, STU-07, and STU-08 functional journeys execute Then atomic outcome and no-partial semantics, equivalent timetable/list, history, security actions, ownership denial, and retry behavior match their owning server contracts.
+- [x] T032 [AC-15] [FR-1] [FR-5] [FR-8] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-15Tests.cs for AC-15: Result, history, and account journeys (FR-1, FR-5, FR-8, FR-12, FR-14): Given accepted/rejected/lost-response, empty/current/history/archive, and account/session fixtures When STU-06, STU-07, and STU-08 functional journeys execute Then atomic outcome and no-partial semantics, equivalent timetable/list, history, security actions, ownership denial, and retry behavior match their owning server contracts.
 ### US16 - Admin dashboard functionality (FR-1, FR-5, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-16 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -157,7 +157,7 @@
 **Independent Test**: Execute only the AC-16 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T033 [AC-16] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-16Tests.cs for AC-16: Admin dashboard functionality (FR-1, FR-5, FR-12, FR-14): Given live, paused-refresh, stale, degraded, and unauthorized metrics fixtures When ADM-01 functional journeys execute Then timestamps, staleness, text-equivalent metrics, pause/resume, warnings, and authorization behavior match SPEC-017/SPEC-018 contracts.
+- [x] T033 [AC-16] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-16Tests.cs for AC-16: Admin dashboard functionality (FR-1, FR-5, FR-12, FR-14): Given live, paused-refresh, stale, degraded, and unauthorized metrics fixtures When ADM-01 functional journeys execute Then timestamps, staleness, text-equivalent metrics, pause/resume, warnings, and authorization behavior match SPEC-017/SPEC-018 contracts.
 ### US17 - Safe system status functionality (FR-1, FR-5, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-17 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
