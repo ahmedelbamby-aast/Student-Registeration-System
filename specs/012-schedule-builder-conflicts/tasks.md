@@ -80,7 +80,7 @@ maximum on 2026-07-16. T012/T014/T016/T020/T029/T042 require server-authored
 - [x] T051 [P] [NFR-4] Produce two-editor no-lost-update evidence in tests/StudentRegistration.QualityTests/Specs/Spec012/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-012-NFR-4.md.
 - [x] T052 [OS-1] [OS-2] [OS-3] [OS-4] Record verified schedule-builder scope exclusions including the disabled demo travel-buffer rule in docs/release-evidence/SPEC-012-scope-review.md.
 - [x] T053 [TRACE] [SC-1] [SC-2] [SC-3] Generate the complete FR/NFR/AC/EC/SC/route/entity/endpoint trace matrix in docs/release-evidence/SPEC-012-traceability.md.
-- [ ] T054 [GATE] Record product, UX, Policy SME, backend, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-012-release-approval.md.
+- [x] T054 [GATE] Record product, UX, Policy SME, backend, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-012-release-approval.md.
 
 Progress is recorded only by the evidence-backed checkboxes above. Unchecked
 tasks remain incomplete.
