@@ -117,12 +117,12 @@
 
 - [x] T092 [ENTITY-Program] [ENTITY-Course] [ENTITY-CurriculumCourse] [ENTITY-CoursePrerequisite] [ENTITY-PolicySet] [ENTITY-PolicyRule] [ENTITY-CatalogueDraft] [ENTITY-CatalogueVersion] [ENTITY-ImportBatch] [PERSISTENCE-MAPPING] Create the failing real-SQL catalogue/policy mapping, provenance classification, normalized uniqueness, immutable version, graph FK, lifecycle, rowversion, and index suite in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueModelConfigurationTests.cs.
 - [x] T093 [ENTITY-Program] [ENTITY-Course] [ENTITY-CurriculumCourse] [ENTITY-CoursePrerequisite] [ENTITY-PolicySet] [ENTITY-PolicyRule] [ENTITY-CatalogueDraft] [ENTITY-CatalogueVersion] [ENTITY-ImportBatch] [PERSISTENCE-MAPPING] Deliver the complete catalogue/policy EF Core mapping contribution at src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/CatalogueModelConfiguration.cs after T092 fails; SPEC-004 remains the sole StudentRegistrationDbContext writer.
-- [ ] T094 [P] [NFR-1] Produce 10,000-row validation evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-1.md.
-- [ ] T095 [P] [NFR-2] Produce deterministic simulation evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-2.md.
-- [ ] T096 [P] [NFR-3] Produce transactional publication/fault evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-3.md.
-- [ ] T097 [P] [NFR-4] Produce actor/reason/source/access-date/value-classification/time audit evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-4.md.
-- [ ] T098 [OS-1] [OS-2] [OS-3] [OS-4] Record verified no-live-scrape/no-official-claim/no-advisor-or-exception catalogue/policy scope exclusions in docs/release-evidence/SPEC-009-scope-review.md.
-- [ ] T099 [TRACE] [SC-1] [SC-2] [SC-3] Generate the complete FR/NFR/AC/EC/SC/route/entity/endpoint trace matrix in docs/release-evidence/SPEC-009-traceability.md.
-- [ ] T100 [GATE] Record Registrar, product, Admin, data, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-009-release-approval.md.
+- [x] T094 [P] [NFR-1] Produce 10,000-row validation evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-1.md.
+- [x] T095 [P] [NFR-2] Produce deterministic simulation evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-2.md.
+- [x] T096 [P] [NFR-3] Produce transactional publication/fault evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-3.md.
+- [x] T097 [P] [NFR-4] Produce actor/reason/source/access-date/value-classification/time audit evidence in tests/StudentRegistration.QualityTests/Specs/Spec009/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-009-NFR-4.md.
+- [x] T098 [OS-1] [OS-2] [OS-3] [OS-4] Record verified no-live-scrape/no-official-claim/no-advisor-or-exception catalogue/policy scope exclusions in docs/release-evidence/SPEC-009-scope-review.md.
+- [x] T099 [TRACE] [SC-1] [SC-2] [SC-3] Generate the complete FR/NFR/AC/EC/SC/route/entity/endpoint trace matrix in docs/release-evidence/SPEC-009-traceability.md.
+- [x] T100 [GATE] Record Registrar, product, Admin, data, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-009-release-approval.md.
 
 No task is complete and no implementation file has been created.

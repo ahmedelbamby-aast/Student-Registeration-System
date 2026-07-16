@@ -19,7 +19,8 @@ public sealed record PublicationConfirmationStoreCommand(
     string CanonicalPayloadHash,
     string Reason,
     string Source,
-    string CorrelationId);
+    string CorrelationId,
+    DateTimeOffset OccurredAtUtc);
 
 public sealed record PublicationConfirmationStoreResult(
     PublicationConfirmationStoreOutcome Outcome,

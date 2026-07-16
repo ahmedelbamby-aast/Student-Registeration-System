@@ -173,7 +173,8 @@ public sealed class PublicationConfirmationService
                 canonicalPayloadHash,
                 reason,
                 source,
-                correlationId),
+                correlationId,
+                _timeProvider.GetUtcNow()),
             cancellationToken);
 
         return new(
