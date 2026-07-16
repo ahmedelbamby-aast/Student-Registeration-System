@@ -6,13 +6,13 @@
 
 ## Phase 1 - Planning Readiness and Recorded Gate A Approval
 
-- [ ] T001 [DEP-SPEC-002] Baseline approved typed rules, official-versus-demo source classifications, the 18-credit normal and 12-credit GPA-below-2.0 demo limits, and remaining unpublished policy decisions from specs/002-aastmt-policy-rulebook/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T002 [DEP-SPEC-003] Baseline ADM-05 states, components, accessibility, and functional tests from specs/003-ux-storyboard-accessibility/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T003 [DEP-SPEC-005] Baseline immutable-history, mapping, index, transaction, and audit persistence from specs/005-erd-data-lifecycle/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T004 [DEP-SPEC-006] Baseline errors, bounded pages, rowversion, idempotency, and preview conventions from specs/006-domain-class-api-contracts/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T005 [DEP-SPEC-008] Baseline program/cohort/term identifiers and academic test inputs from specs/008-academic-term-student-profile/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T006 [DEP-SPEC-018] Baseline security, load, audit, and operations gates from specs/018-quality-security-scalability-operations/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
-- [ ] T007 [GATE] Analyze and freeze the 19-course `docs/DEMO_CURRICULUM.md` official-source snapshot, URL/access-date and synthetic-field provenance, simple demo policy boundaries, ownership, draft/version/import states, contracts, publication races, route links, and task traces in specs/009-catalog-prerequisites-policy-admin/checklists/implementation-readiness.md.
+- [x] T001 [DEP-SPEC-002] Baseline approved typed rules, official-versus-demo source classifications, the 18-credit normal and 12-credit GPA-below-2.0 demo limits, and remaining unpublished policy decisions from specs/002-aastmt-policy-rulebook/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T002 [DEP-SPEC-003] Baseline ADM-05 states, components, accessibility, and functional tests from specs/003-ux-storyboard-accessibility/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T003 [DEP-SPEC-005] Baseline immutable-history, mapping, index, transaction, and audit persistence from specs/005-erd-data-lifecycle/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T004 [DEP-SPEC-006] Baseline errors, bounded pages, rowversion, idempotency, and preview conventions from specs/006-domain-class-api-contracts/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T005 [DEP-SPEC-008] Baseline program/cohort/term identifiers and academic test inputs from specs/008-academic-term-student-profile/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T006 [DEP-SPEC-018] Baseline security, load, audit, and operations gates from specs/018-quality-security-scalability-operations/ in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md.
+- [x] T007 [GATE] Analyze and freeze the 19-course `docs/DEMO_CURRICULUM.md` official-source snapshot, URL/access-date and synthetic-field provenance, simple demo policy boundaries, ownership, draft/version/import states, contracts, publication races, route links, and task traces in specs/009-catalog-prerequisites-policy-admin/checklists/implementation-readiness.md.
 - [x] T008 [GATE] Record Ahmed ELbamby's 2026-07-13 Gate A demo approval while fulfilling the Registrar/Policy SME review perspective in specs/009-catalog-prerequisites-policy-admin/checklists/approval.md; T009 and later remain blocked until T001-T007 pass.
 
 ## Phase 2 - Failing Model and Contract Tests
