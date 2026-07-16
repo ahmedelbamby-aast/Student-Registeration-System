@@ -61,7 +61,7 @@
 **Independent Test**: Execute only the AC-4 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T021 [AC-4] [FR-9] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-4Tests.cs for AC-4: Distinct identity pages (FR-9, FR-12, FR-14): Given student and staff identity journeys are rendered When their component, contract, authorization, and end-to-end tests execute Then student login/activation/recovery are distinct from shared staff login And no staff role picker is rendered And route manipulation cannot grant a server role.
+- [x] T021 [AC-4] [FR-9] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-4Tests.cs for AC-4: Distinct identity pages (FR-9, FR-12, FR-14): Given student and staff identity journeys are rendered When their component, contract, authorization, and end-to-end tests execute Then student login/activation/recovery are distinct from shared staff login And no staff role picker is rendered And route manipulation cannot grant a server role.
 ### US5 - Student discovery and group details (FR-1, FR-4, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-5 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
