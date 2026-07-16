@@ -52,7 +52,8 @@ public sealed class SystemStatusPageAccessibilityTests(AxeAccessibilityFixture f
             "Open public gateway",
             width,
             ConfigureAsync,
-            requireVisibleLabels: false);
+            requireVisibleLabels: false,
+            primaryRole: AriaRole.Link);
 
     [Fact]
     public Task Sys_01_keyboard_and_400_percent_zoom_remain_operable() =>
@@ -62,7 +63,8 @@ public sealed class SystemStatusPageAccessibilityTests(AxeAccessibilityFixture f
             "System status",
             "Open public gateway",
             ConfigureAsync,
-            expectedMainId: "system-status-main");
+            expectedMainId: "system-status-main",
+            primaryRole: AriaRole.Link);
 
     private static Task ConfigureAsync(IPage page) =>
         page.RouteAsync("**/api/health", route => route.FulfillAsync(

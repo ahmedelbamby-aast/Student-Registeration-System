@@ -183,6 +183,22 @@
       "approvedOn": "2026-07-14",
       "targetManifest": "Spec008/ADM-04/baseline-targets.json",
       "targetCount": 16
+    },
+    {
+      "routeId": "SYS-01",
+      "state": "healthy",
+      "browserName": "Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox; Playwright WebKit",
+      "browserBuild": "150.0.7871.115; 150.0.4078.65; 151.0; 26.5",
+      "engine": "Blink/Chromium; Gecko; WebKit",
+      "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
+      "viewport": [375, 768, 1280, 1920],
+      "tokenVersion": "design-token-contract/1.0",
+      "fixtureVersion": "frontend-fixture/1.0",
+      "artifactSha256": "40a3778d5d8c109147eebce28ab07685890fc4832f2d0d9185b6f682f8c318dc",
+      "approvedBy": "Ahmed ELbamby",
+      "approvedOn": "2026-07-16",
+      "targetManifest": "Spec003/SYS-01/baseline-targets.json",
+      "targetCount": 16
     }
   ]
 }

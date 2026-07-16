@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using StudentRegistration.AccessibilityTests.Infrastructure;
+using Xunit.Sdk;
 
 namespace StudentRegistration.AccessibilityTests.Routes;
 
@@ -12,7 +13,8 @@ internal static class IdentityRouteAccessibilityAssertions
         string primaryButton,
         int width,
         Func<IPage, Task>? configure = null,
-        bool requireVisibleLabels = true)
+        bool requireVisibleLabels = true,
+        AriaRole primaryRole = AriaRole.Button)
     {
         await using var context = await fixture.OpenContextAsync(width);
         var page = await OpenAsync(context, route, heading, configure);
@@ -21,7 +23,7 @@ internal static class IdentityRouteAccessibilityAssertions
         Assert.True(await page.EvaluateAsync<bool>(
             "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
         var box = await page.GetByRole(
-                AriaRole.Button,
+                primaryRole,
                 new PageGetByRoleOptions { Name = primaryButton, Exact = true })
             .BoundingBoxAsync();
         Assert.NotNull(box);
@@ -40,7 +42,8 @@ internal static class IdentityRouteAccessibilityAssertions
         string heading,
         string primaryButton,
         Func<IPage, Task>? configure = null,
-        string expectedMainId = "identity-main")
+        string expectedMainId = "identity-main",
+        AriaRole primaryRole = AriaRole.Button)
     {
         await using var context = await fixture.OpenContextAsync(
             width: 320,
@@ -60,7 +63,7 @@ internal static class IdentityRouteAccessibilityAssertions
             await page.EvaluateAsync<string>("() => document.activeElement.id"));
 
         var button = page.GetByRole(
-            AriaRole.Button,
+            primaryRole,
             new PageGetByRoleOptions { Name = primaryButton, Exact = true });
         await button.FocusAsync();
         Assert.Equal(
@@ -88,10 +91,20 @@ internal static class IdentityRouteAccessibilityAssertions
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
-        await page.GetByRole(
-                AriaRole.Heading,
-                new PageGetByRoleOptions { Name = heading, Exact = true })
-            .WaitForAsync();
+        try
+        {
+            await page.GetByRole(
+                    AriaRole.Heading,
+                    new PageGetByRoleOptions { Name = heading, Exact = true })
+                .WaitForAsync(new LocatorWaitForOptions { Timeout = 5_000 });
+        }
+        catch (TimeoutException)
+        {
+            var body = await page.Locator("body").InnerTextAsync();
+            throw new XunitException(
+                $"Route {route} did not render heading '{heading}'. Body: {body}");
+        }
+
         return page;
     }
 }
