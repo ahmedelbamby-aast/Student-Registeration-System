@@ -174,8 +174,8 @@
 - [x] T040 [EC-6] Exercise EC-6 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-6Tests.cs and assert: API returns an unknown reason code -> render the generic safe message, correlation/reference ID, and retry/support action; log no sensitive payload.
 - [x] T041 [EC-7] Exercise EC-7 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-7Tests.cs and assert: A visual baseline changes intentionally -> require UX approval, documented affected routes/states, and a versioned baseline update.
 - [x] T042 [EC-8] Exercise EC-8 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-8Tests.cs and assert: A table exceeds the viewport -> retain headers and keyboard access and provide the specified stacked/list alternative.
-- [ ] T043 [EC-9] Exercise EC-9 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-9Tests.cs and assert: Browser autofill populates identity fields -> labels remain visible, values remain reviewable, and secret values are not exposed.
-- [ ] T044 [EC-10] Exercise EC-10 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-10Tests.cs and assert: Rapid double activation of a command button -> disable while pending and rely on the command idempotency contract; only one result is presented.
+- [x] T043 [EC-9] Exercise EC-9 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-9Tests.cs and assert: Browser autofill populates identity fields -> labels remain visible, values remain reviewable, and secret values are not exposed.
+- [x] T044 [EC-10] Exercise EC-10 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec003/EdgeCases/EC-10Tests.cs and assert: Rapid double activation of a command button -> disable while pending and rely on the command idempotency contract; only one result is presented.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
