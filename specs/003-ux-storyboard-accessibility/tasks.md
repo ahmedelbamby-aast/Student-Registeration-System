@@ -69,7 +69,7 @@
 **Independent Test**: Execute only the AC-5 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T022 [AC-5] [FR-1] [FR-4] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-5Tests.cs for AC-5: Student discovery and group details (FR-1, FR-4, FR-12, FR-14): Given eligible, unavailable, full, stale, and service-error fixtures exist When STU-02 and STU-03 functional tests execute Then search/filter results, reasons, credits, capacity, Lecturer, TA, room, day/time, state changes, and retry actions match the server contracts.
+- [x] T022 [AC-5] [FR-1] [FR-4] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-5Tests.cs for AC-5: Student discovery and group details (FR-1, FR-4, FR-12, FR-14): Given eligible, unavailable, full, stale, and service-error fixtures exist When STU-02 and STU-03 functional tests execute Then search/filter results, reasons, credits, capacity, Lecturer, TA, room, day/time, state changes, and retry actions match the server contracts.
 ### US6 - Accessible schedule conflict (FR-6, FR-7, FR-8, NFR-1, NFR-2) (P3)
 
 **Goal**: Prove AC-6 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -77,7 +77,7 @@
 **Independent Test**: Execute only the AC-6 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T023 [AC-6] [FR-6] [FR-7] [FR-8] [NFR-1] [NFR-2] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-6Tests.cs for AC-6: Accessible schedule conflict (FR-6, FR-7, FR-8, NFR-1, NFR-2): Given two selected groups overlap When STU-04 and STU-05 render using keyboard and screen-reader fixtures Then a red X and the word Conflict identify the issue And subject/group/day/start/end and resolution actions are announced And equivalent calendar/list data is present And submission remains disabled with every blocking reason.
+- [x] T023 [AC-6] [FR-6] [FR-7] [FR-8] [NFR-1] [NFR-2] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-6Tests.cs for AC-6: Accessible schedule conflict (FR-6, FR-7, FR-8, NFR-1, NFR-2): Given two selected groups overlap When STU-04 and STU-05 render using keyboard and screen-reader fixtures Then a red X and the word Conflict identify the issue And subject/group/day/start/end and resolution actions are announced And equivalent calendar/list data is present And submission remains disabled with every blocking reason.
 ### US7 - Admin page functionality (FR-1, FR-5, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-7 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -85,7 +85,7 @@
 **Independent Test**: Execute only the AC-7 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T024 [AC-7] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-7Tests.cs for AC-7: Admin page functionality (FR-1, FR-5, FR-12, FR-14): Given valid, invalid, stale-rowversion, unauthorized, and concurrent-edit fixtures exist for ADM-02 through ADM-09 When their functional tests execute Then preview, validation, confirmation, pagination, conflict recovery, audit, and server-authority behaviors match the owning feature contracts.
+- [x] T024 [AC-7] [FR-1] [FR-5] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-7Tests.cs for AC-7: Admin page functionality (FR-1, FR-5, FR-12, FR-14): Given valid, invalid, stale-rowversion, unauthorized, and concurrent-edit fixtures exist for ADM-02 through ADM-09 When their functional tests execute Then preview, validation, confirmation, pagination, conflict recovery, audit, and server-authority behaviors match the owning feature contracts.
 ### US8 - Lecturer and TA page functionality (FR-1, FR-8, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-8 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -93,7 +93,7 @@
 **Independent Test**: Execute only the AC-8 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T025 [AC-8] [FR-1] [FR-8] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-8Tests.cs for AC-8: Lecturer and TA page functionality (FR-1, FR-8, FR-12, FR-14): Given Lecturer-only, TA-only, dual-role, unassigned, stale-assignment, and availability-deadline fixtures exist When STF-01 through STF-04 functional tests execute Then shared components display only server-authorized assignments and actions And timetable calendar/list content is equivalent.
+- [x] T025 [AC-8] [FR-1] [FR-8] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-8Tests.cs for AC-8: Lecturer and TA page functionality (FR-1, FR-8, FR-12, FR-14): Given Lecturer-only, TA-only, dual-role, unassigned, stale-assignment, and availability-deadline fixtures exist When STF-01 through STF-04 functional tests execute Then shared components display only server-authorized assignments and actions And timetable calendar/list content is equivalent.
 ### US9 - Responsive and accessible route matrix (FR-11, FR-12, NFR-1, NFR-2, NFR-5) (P3)
 
 **Goal**: Prove AC-9 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -101,7 +101,7 @@
 **Independent Test**: Execute only the AC-9 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T026 [AC-9] [FR-11] [FR-12] [NFR-1] [NFR-2] [NFR-5] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-9Tests.cs for AC-9: Responsive and accessible route matrix (FR-11, FR-12, NFR-1, NFR-2, NFR-5): Given each of the 27 routes is rendered at every required responsive width and at 400% zoom When keyboard, automated accessibility, and responsive functional suites run Then no critical action or reason is clipped or unreachable And focus order follows the Page Design Record And only documented table exceptions scroll in two dimensions.
+- [x] T026 [AC-9] [FR-11] [FR-12] [NFR-1] [NFR-2] [NFR-5] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-9Tests.cs for AC-9: Responsive and accessible route matrix (FR-11, FR-12, NFR-1, NFR-2, NFR-5): Given each of the 27 routes is rendered at every required responsive width and at 400% zoom When keyboard, automated accessibility, and responsive functional suites run Then no critical action or reason is clipped or unreachable And focus order follows the Page Design Record And only documented table exceptions scroll in two dimensions.
 ### US10 - Cross-browser visual gate (FR-3, FR-12, NFR-7, NFR-9) (P3)
 
 **Goal**: Prove AC-10 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -109,7 +109,7 @@
 **Independent Test**: Execute only the AC-10 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T027 [AC-10] [FR-3] [FR-12] [NFR-7] [NFR-9] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-10Tests.cs for AC-10: Cross-browser visual gate (FR-3, FR-12, NFR-7, NFR-9): Given an approved versioned visual baseline and POC browser matrix exist When primary and error states run in current stable Chrome, Edge, and Firefox plus the pinned Playwright WebKit target at every visual width Then functional assertions pass in every POC browser target, WebKit evidence is labelled WebKit rather than Safari, and any visual difference blocks the gate until approved or corrected.
+- [x] T027 [AC-10] [FR-3] [FR-12] [NFR-7] [NFR-9] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-10Tests.cs for AC-10: Cross-browser visual gate (FR-3, FR-12, NFR-7, NFR-9): Given an approved versioned visual baseline and POC browser matrix exist When primary and error states run in current stable Chrome, Edge, and Firefox plus the pinned Playwright WebKit target at every visual width Then functional assertions pass in every POC browser target, WebKit evidence is labelled WebKit rather than Safari, and any visual difference blocks the gate until approved or corrected.
 ### US11 - Server-authoritative stale response (FR-10, FR-14) (P3)
 
 **Goal**: Prove AC-11 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -117,7 +117,7 @@
 **Independent Test**: Execute only the AC-11 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T028 [AC-11] [FR-10] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-11Tests.cs for AC-11: Server-authoritative stale response (FR-10, FR-14): Given the shell shows an open window and available group from an earlier read When the server returns WINDOW_CLOSED, GROUP_FULL, or PLAN_CHANGED Then the client presents the stable reason and reference path And does not show success or enable submission from cached state.
+- [x] T028 [AC-11] [FR-10] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-11Tests.cs for AC-11: Server-authoritative stale response (FR-10, FR-14): Given the shell shows an open window and available group from an earlier read When the server returns WINDOW_CLOSED, GROUP_FULL, or PLAN_CHANGED Then the client presents the stable reason and reference path And does not show success or enable submission from cached state.
 ### US12 - Usability release gate (NFR-8, NFR-10) (P3)
 
 **Goal**: Prove AC-12 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -125,7 +125,7 @@
 **Independent Test**: Execute only the AC-12 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T029 [AC-12] [NFR-8] [NFR-10] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-12Tests.cs for AC-12: Usability release gate (NFR-8, NFR-10): Given the approved representative UAT sample completes the registration journey with localization-ready labels When completion and severity results are calculated Then at least 90% complete the journey And no critical or major core-flow usability defect remains open.
+- [x] T029 [AC-12] [NFR-8] [NFR-10] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-12Tests.cs for AC-12: Usability release gate (NFR-8, NFR-10): Given the approved representative UAT sample completes the registration journey with localization-ready labels When completion and severity results are calculated Then at least 90% complete the journey And no critical or major core-flow usability defect remains open.
 ### US13 - Frontend performance budget (NFR-6) (P3)
 
 **Goal**: Prove AC-13 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
@@ -133,7 +133,7 @@
 **Independent Test**: Execute only the AC-13 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T030 [AC-13] [NFR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-13Tests.cs for AC-13: Frontend performance budget (NFR-6): Given production-like Blazor assets, API fixtures, device/network profile, and student discovery, schedule, and review routes When page performance is measured across the approved sample Then Largest Contentful Paint is at most 2.5 seconds at p75 for each route.
+- [x] T030 [AC-13] [NFR-6] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-13Tests.cs for AC-13: Frontend performance budget (NFR-6): Given production-like Blazor assets, API fixtures, device/network profile, and student discovery, schedule, and review routes When page performance is measured across the approved sample Then Largest Contentful Paint is at most 2.5 seconds at p75 for each route.
 ### US14 - Public gateway and student dashboard (FR-1, FR-5, FR-10, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-14 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
