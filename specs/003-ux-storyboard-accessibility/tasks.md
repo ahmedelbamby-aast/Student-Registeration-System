@@ -141,7 +141,7 @@
 **Independent Test**: Execute only the AC-14 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T017.
-- [ ] T031 [AC-14] [FR-1] [FR-5] [FR-10] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-14Tests.cs for AC-14: Public gateway and student dashboard (FR-1, FR-5, FR-10, FR-12, FR-14): Given public available/maintenance fixtures and student open/upcoming/closed, hold, and incomplete-profile fixtures When AUTH-01 and STU-01 functional journeys execute Then the privacy-safe gateway shows server term/window/service state and named Student/Staff destinations And the dashboard shows only authenticated server context, academic summary, blocking reasons, and the correct start/resume action.
+- [x] T031 [AC-14] [FR-1] [FR-5] [FR-10] [FR-12] [FR-14] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec003/AC-14Tests.cs for AC-14: Public gateway and student dashboard (FR-1, FR-5, FR-10, FR-12, FR-14): Given public available/maintenance fixtures and student open/upcoming/closed, hold, and incomplete-profile fixtures When AUTH-01 and STU-01 functional journeys execute Then the privacy-safe gateway shows server term/window/service state and named Student/Staff destinations And the dashboard shows only authenticated server context, academic summary, blocking reasons, and the correct start/resume action.
 ### US15 - Result, history, and account journeys (FR-1, FR-5, FR-8, FR-12, FR-14) (P3)
 
 **Goal**: Prove AC-15 as an independently demonstrable slice of Frontend Page Design, Storyboard, Accessibility and Functional Testing.
