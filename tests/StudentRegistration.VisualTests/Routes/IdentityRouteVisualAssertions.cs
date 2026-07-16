@@ -34,7 +34,8 @@ internal static class IdentityRouteVisualAssertions
         string heading,
         string browserName,
         int width,
-        Func<IPage, Task>? configure = null)
+        Func<IPage, Task>? configure = null,
+        string baselineOwner = "Spec007")
     {
         await using var context = await fixture.OpenContextAsync(browserName, width);
         var page = await context.NewPageAsync();
@@ -58,7 +59,8 @@ internal static class IdentityRouteVisualAssertions
             FullPage = true
         });
         var fileName = $"{browserName}-{width}-default.png";
-        var folder = $"tests/StudentRegistration.VisualTests/Baselines/Spec007/{routeId}";
+        var folder =
+            $"tests/StudentRegistration.VisualTests/Baselines/{baselineOwner}/{routeId}";
         var baselinePath = RepositoryFiles.PathTo($"{folder}/{fileName}");
         if (string.Equals(
                 Environment.GetEnvironmentVariable("SPEC007_IDENTITY_BASELINE_APPROVER"),

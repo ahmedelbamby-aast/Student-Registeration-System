@@ -11,7 +11,8 @@ internal static class IdentityRouteAccessibilityAssertions
         string heading,
         string primaryButton,
         int width,
-        Func<IPage, Task>? configure = null)
+        Func<IPage, Task>? configure = null,
+        bool requireVisibleLabels = true)
     {
         await using var context = await fixture.OpenContextAsync(width);
         var page = await OpenAsync(context, route, heading, configure);
@@ -25,9 +26,12 @@ internal static class IdentityRouteAccessibilityAssertions
             .BoundingBoxAsync();
         Assert.NotNull(box);
         Assert.True(box.Height >= 44);
-        Assert.True(await page.Locator("label").CountAsync() > 0);
-        Assert.True(await page.Locator("label").EvaluateAllAsync<bool>(
-            "labels => labels.every(label => getComputedStyle(label).display !== 'none' && getComputedStyle(label).visibility !== 'hidden')"));
+        if (requireVisibleLabels)
+        {
+            Assert.True(await page.Locator("label").CountAsync() > 0);
+            Assert.True(await page.Locator("label").EvaluateAllAsync<bool>(
+                "labels => labels.every(label => getComputedStyle(label).display !== 'none' && getComputedStyle(label).visibility !== 'hidden')"));
+        }
     }
 
     internal static async Task AssertKeyboardAndZoomAsync(

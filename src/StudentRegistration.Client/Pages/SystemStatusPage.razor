@@ -1,0 +1,277 @@
+@page "/status/{Code}"
+@inject OperationsApiClient OperationsApi
+
+<PageTitle>System status</PageTitle>
+
+<main id="system-status-main"
+      class="srs-system-status"
+      tabindex="-1"
+      data-route-id="SYS-01"
+      data-state="@_state.ToString().ToLowerInvariant()">
+    <section class="srs-system-status__panel" aria-labelledby="system-status-page-heading">
+        <h1 id="system-status-page-heading">System status</h1>
+
+        <RouteStatePanel HeadingId="system-status-detail-heading"
+                         Status="@_status"
+                         State="@_state"
+                         Announcement="@_announcement"
+                         ReferenceLabel="Reference"
+                         ActionsDisabled="@_isLoading" />
+
+        @if (_health is not null)
+        {
+            <dl class="srs-system-status__health" aria-label="Safe health summary">
+                <div><dt>Status</dt><dd>@HealthStatusLabel</dd></div>
+                <div><dt>Version</dt><dd>@_health.Version</dd></div>
+                <div>
+                    <dt>Timestamp</dt>
+                    <dd>
+                        <time datetime="@_health.TimestampUtc.ToString("O")">
+                            @_health.TimestampUtc.ToString("yyyy-MM-dd HH:mm 'UTC'")
+                        </time>
+                    </dd>
+                </div>
+            </dl>
+        }
+    </section>
+</main>
+
+@code {
+    private static readonly IReadOnlyList<UiStatusAction> GatewayAction =
+        [new("gateway", "Open public gateway", "/")];
+    private static readonly IReadOnlyList<UiStatusAction> SignInActions =
+    [
+        new("student-login", "Student login", "/student/login"),
+        new("staff-login", "Staff login", "/staff/login"),
+        new("gateway", "Open public gateway", "/")
+    ];
+
+    [Parameter]
+    public string Code { get; set; } = "unexpected";
+
+    [SupplyParameterFromQuery(Name = "ref")]
+    public string? ReferenceId { get; set; }
+
+    private HealthSummary? _health;
+    private bool _isLoading;
+    private string? _loadedCode;
+    private RouteUiState _state = RouteUiState.Loading;
+    private RouteStatePanel.AnnouncementMode _announcement =
+        RouteStatePanel.AnnouncementMode.Polite;
+    private UiStatus _status = new(
+        "LOADING",
+        "Checking system status",
+        "Wait for the safe status summary.",
+        UiStatusSeverity.Information,
+        [],
+        null);
+
+    private string HealthStatusLabel => _health?.Status switch
+    {
+        HealthSummaryStatus.Healthy => "healthy",
+        HealthSummaryStatus.Degraded => "degraded",
+        HealthSummaryStatus.Unhealthy => "unhealthy",
+        _ => "unknown"
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var normalized = NormalizeCode(Code);
+        if (string.Equals(_loadedCode, normalized, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _loadedCode = normalized;
+        _health = null;
+        if (normalized is "healthy" or "degraded" or "unhealthy")
+        {
+            await LoadHealthAsync();
+            return;
+        }
+
+        ApplyLocalStatus(normalized);
+    }
+
+    private async Task LoadHealthAsync()
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _isLoading = true;
+        _state = RouteUiState.Loading;
+        _announcement = RouteStatePanel.AnnouncementMode.Polite;
+        _status = new UiStatus(
+            "LOADING",
+            "Checking system status",
+            "Wait for the safe status summary.",
+            UiStatusSeverity.Information,
+            [],
+            null);
+        try
+        {
+            var result = await OperationsApi.GetHealthAsync();
+            if (result.IsSuccess && result.Value is not null)
+            {
+                _health = result.Value;
+                ApplyHealthStatus(result.Value);
+                return;
+            }
+
+            ApplyServiceFailure(result.Error?.CorrelationId);
+        }
+        catch (HttpRequestException)
+        {
+            ApplyServiceFailure(null);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ApplyHealthStatus(HealthSummary summary)
+    {
+        var retry = new UiStatusAction(
+            "retry",
+            "Retry status",
+            $"/status/{summary.Status.ToString().ToLowerInvariant()}");
+        (_state, _announcement, _status) = summary.Status switch
+        {
+            HealthSummaryStatus.Healthy => (
+                RouteUiState.Success,
+                RouteStatePanel.AnnouncementMode.Polite,
+                new UiStatus(
+                    "HEALTHY",
+                    "Systems available",
+                    "The public health summary reports that required services are available.",
+                    UiStatusSeverity.Success,
+                    GatewayAction,
+                    null)),
+            HealthSummaryStatus.Degraded => (
+                RouteUiState.ServiceError,
+                RouteStatePanel.AnnouncementMode.Polite,
+                new UiStatus(
+                    "DEGRADED",
+                    "Service degraded",
+                    "Some non-critical capability is unavailable. Retry or continue from the public gateway.",
+                    UiStatusSeverity.Warning,
+                    [retry, .. GatewayAction],
+                    SafeReference(ReferenceId) ?? "HEALTH-DEGRADED")),
+            _ => (
+                RouteUiState.ServiceError,
+                RouteStatePanel.AnnouncementMode.Assertive,
+                new UiStatus(
+                    "UNHEALTHY",
+                    "Service unavailable",
+                    "A required service is unavailable. Retry later or use the public gateway.",
+                    UiStatusSeverity.Error,
+                    [retry, .. GatewayAction],
+                    SafeReference(ReferenceId) ?? "HEALTH-UNHEALTHY"))
+        };
+    }
+
+    private void ApplyLocalStatus(string code)
+    {
+        var reference = SafeReference(ReferenceId);
+        (_state, _announcement, _status) = code switch
+        {
+            "403" or "forbidden" => (
+                RouteUiState.Unauthorized,
+                RouteStatePanel.AnnouncementMode.Assertive,
+                new UiStatus(
+                    "FORBIDDEN",
+                    "Access unavailable",
+                    "Your current context cannot open that resource. Sign in with an authorized account or return to the public gateway.",
+                    UiStatusSeverity.Error,
+                    SignInActions,
+                    reference ?? "STATUS-403")),
+            "404" or "not-found" => (
+                RouteUiState.ServiceError,
+                RouteStatePanel.AnnouncementMode.Assertive,
+                new UiStatus(
+                    "NOT_FOUND",
+                    "Page not found",
+                    "The requested page is unavailable. No protected resource details are shown.",
+                    UiStatusSeverity.Error,
+                    GatewayAction,
+                    reference ?? "STATUS-404")),
+            "expired" or "session-expired" => (
+                RouteUiState.SessionExpired,
+                RouteStatePanel.AnnouncementMode.Assertive,
+                new UiStatus(
+                    "SESSION_EXPIRED",
+                    "Session expired",
+                    "Sign in again before returning to protected work.",
+                    UiStatusSeverity.Error,
+                    SignInActions,
+                    reference ?? "STATUS-EXPIRED")),
+            "maintenance" => (
+                RouteUiState.ServiceError,
+                RouteStatePanel.AnnouncementMode.Polite,
+                new UiStatus(
+                    "MAINTENANCE",
+                    "Maintenance in progress",
+                    "The service is temporarily unavailable for maintenance. Retry later.",
+                    UiStatusSeverity.Warning,
+                    [new("retry", "Retry status", "/status/maintenance"), .. GatewayAction],
+                    reference ?? "STATUS-MAINTENANCE")),
+            "offline" => (
+                RouteUiState.Offline,
+                RouteStatePanel.AnnouncementMode.Polite,
+                new UiStatus(
+                    "OFFLINE",
+                    "You are offline",
+                    "Reconnect before retrying. No request or registration action was queued.",
+                    UiStatusSeverity.Warning,
+                    [new("retry", "Retry status", "/status/healthy"), .. GatewayAction],
+                    reference)),
+            _ => (
+                RouteUiState.ServiceError,
+                RouteStatePanel.AnnouncementMode.Assertive,
+                new UiStatus(
+                    "UNEXPECTED",
+                    "Unexpected error",
+                    "The request could not be completed. Return to the public gateway or use the reference when requesting support.",
+                    UiStatusSeverity.Error,
+                    GatewayAction,
+                    reference ?? "STATUS-UNEXPECTED"))
+        };
+    }
+
+    private void ApplyServiceFailure(string? correlationId)
+    {
+        _state = RouteUiState.ServiceError;
+        _announcement = RouteStatePanel.AnnouncementMode.Assertive;
+        _status = new UiStatus(
+            "SERVICE_UNAVAILABLE",
+            "Service unavailable",
+            "The safe health summary could not be loaded. Retry later.",
+            UiStatusSeverity.Error,
+            [new("retry", "Retry status", "/status/healthy"), .. GatewayAction],
+            SafeReference(correlationId) ?? SafeReference(ReferenceId) ?? "HEALTH-UNAVAILABLE");
+    }
+
+    private static string NormalizeCode(string? code) =>
+        string.IsNullOrWhiteSpace(code)
+            ? "unexpected"
+            : code.Trim().ToLowerInvariant();
+
+    private static string? SafeReference(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = new string(value.Trim()
+            .Take(100)
+            .Where(character =>
+                char.IsAsciiLetterOrDigit(character) ||
+                character is '-' or '_' or '.')
+            .ToArray());
+        return normalized.Length == 0 ? null : normalized;
+    }
+}

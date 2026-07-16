@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "frontend-fixture/1.0",
+  "routeId": "SYS-01",
+  "routeTemplate": "/status/{code}",
+  "apis": [
+    { "method": "GET", "path": "/api/health" },
+    { "method": "GET", "path": "/api/public/context" }
+  ],
+  "codes": ["healthy", "degraded", "unhealthy", "403", "404", "expired", "maintenance", "offline", "unexpected"],
+  "forbiddenContent": ["stack trace", "SQL text", "credential", "connection string", "protected identifier"]
+}
