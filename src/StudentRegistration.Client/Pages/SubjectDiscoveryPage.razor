@@ -1,0 +1,571 @@
+@page "/student/subjects"
+@using System.Net
+@using StudentRegistration.Client.Components.Data
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApiClient RegistrationApi
+
+<PageTitle>Available subjects | Student Registration</PageTitle>
+
+@if (_initialLoading)
+{
+    <div class="srs-subject-discovery"
+         data-route-id="STU-02"
+         data-state="loading"
+         data-contract-state="STU-02-COMP-STATE-LOADING">
+        <a class="srs-subject-discovery__skip" href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1">
+            <h1>Available subjects</h1>
+            <section role="status" aria-live="polite" aria-busy="true">
+                <h2>Loading available subjects</h2>
+                <p>Checking the current registration term and server eligibility.</p>
+            </section>
+        </main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext"
+              MainContentId="main-content"
+              SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time"
+              TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term"
+              RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term"
+              NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window"
+              AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role"
+              SessionLabel="Session"
+              ServiceLabel="Service"
+              SupportLinkLabel="Open support"
+              LoadingLabel="Loading available subjects">
+        <Navigation>
+            <RoleNavigation AccessibleName="Student role navigation"
+                            Items="@StudentNavigation" />
+        </Navigation>
+        <ChildContent>
+            <div class="srs-subject-discovery"
+                 data-route-id="STU-02"
+                 data-state="@_state"
+                 data-result-page="@_pageNumber"
+                 data-contract-state="@ContractState">
+                <header class="srs-subject-discovery__intro">
+                    <div>
+                        <p class="srs-subject-discovery__eyebrow">Student registration</p>
+                        <h1>Available subjects</h1>
+                        <p>
+                            Search the bounded server result. Eligibility, load,
+                            capacity, and selectability are evaluated by the server.
+                        </p>
+                    </div>
+                    <a href="/student">Return to dashboard</a>
+                </header>
+
+                <SearchFilter AccessibleName="Subject discovery search and filters"
+                              InputId="subject-search"
+                              Name="q"
+                              SearchLabel="Search by course code or title"
+                              SubmitLabel="Apply search and filters"
+                              ClearLabel="Reset filters"
+                              Query="@_search"
+                              QueryChanged="SetSearch"
+                              OnSearch="ApplyFiltersAsync"
+                              OnClear="ResetFiltersAsync"
+                              IsLoading="@_requestLoading"
+                              LoadingAnnouncement="Refreshing server results">
+                    <FilterContent>
+                        <div>
+                            <label for="subject-eligibility">Eligibility</label>
+                            <select id="subject-eligibility" @bind="_eligibility">
+                                <option value="eligible">Eligible</option>
+                                <option value="unavailable">Unavailable</option>
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="subject-credits">Credits</label>
+                            <input id="subject-credits"
+                                   inputmode="decimal"
+                                   value="@_credits"
+                                   @oninput="SetCredits" />
+                        </div>
+                        <div>
+                            <label for="subject-day">Day</label>
+                            <select id="subject-day" @bind="_day">
+                                <option value="">Any day</option>
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="subject-availability">Group availability</label>
+                            <select id="subject-availability" @bind="_availability">
+                                <option value="all">All</option>
+                                <option value="available">Available</option>
+                                <option value="full">Full</option>
+                                <option value="unavailable">Unavailable</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="subject-sort">Sort</label>
+                            <select id="subject-sort" @bind="_sort">
+                                <option value="courseCode,id">Course code</option>
+                                <option value="courseCode-desc,id">Course code descending</option>
+                                <option value="title,id">Title</option>
+                                <option value="title-desc,id">Title descending</option>
+                                <option value="credits,id">Credits</option>
+                                <option value="credits-desc,id">Credits descending</option>
+                            </select>
+                        </div>
+                    </FilterContent>
+                </SearchFilter>
+
+                @if (_state == EmptyState)
+                {
+                    <section class="srs-subject-discovery__state"
+                             aria-labelledby="subject-empty-heading"
+                             role="status"
+                             aria-live="polite">
+                        <h2 id="subject-empty-heading">No subjects match these criteria</h2>
+                        <p>
+                            The server returned no results for @CriteriaSummary.
+                            This does not mean that the catalogue is empty.
+                        </p>
+                        @if (_metadata is not null)
+                        {
+                            <dl>
+                                <div><dt>Policy version</dt><dd>@ValueOrUnavailable(_metadata.PolicyVersion)</dd></div>
+                                <div><dt>Reason codes</dt><dd>@ValueOrUnavailable(_metadata.ReasonCodes)</dd></div>
+                                <div><dt>Registration window</dt><dd>@ValueOrUnavailable(_metadata.RegistrationWindowState)</dd></div>
+                            </dl>
+                            @if (EmptySupportPath is not null)
+                            {
+                                <a href="@EmptySupportPath">Open Registrar support</a>
+                            }
+                        }
+                        <button type="button" @onclick="ResetFiltersAsync">Reset filters</button>
+                        <a href="/student/schedule">Open current plan</a>
+                    </section>
+                }
+                else if (IsFailureState)
+                {
+                    <section class="srs-subject-discovery__state srs-subject-discovery__state--error"
+                             aria-labelledby="subject-error-heading"
+                             role="@(_state is UnauthorizedState or SessionExpiredState ? "alert" : "status")"
+                             aria-live="@(_state is UnauthorizedState or SessionExpiredState ? "assertive" : "polite")">
+                        <h2 id="subject-error-heading">@FailureHeading</h2>
+                        <p><strong>@_reasonCode</strong></p>
+                        <p>@_safeMessage</p>
+                        @if (!string.IsNullOrWhiteSpace(_referenceId))
+                        {
+                            <p>Reference: <span>@_referenceId</span></p>
+                        }
+                        @if (_state is ServiceErrorState or OfflineState or StaleState)
+                        {
+                            <button type="button"
+                                    disabled="@_requestLoading"
+                                    @onclick="RetryAsync">
+                                Retry subject discovery
+                            </button>
+                        }
+                        <a href="@_shellContext.SupportReferencePath">Open safe support path</a>
+                    </section>
+                }
+                else if (_page is not null)
+                {
+                    @if (_state == StaleState)
+                    {
+                        <section class="srs-subject-discovery__stale"
+                                 role="status"
+                                 aria-live="polite">
+                            <h2>Availability changed</h2>
+                            <p><strong>@_reasonCode</strong></p>
+                            <p>
+                                The displayed result is the latest server refresh.
+                                Review the changed capacity and reasons before continuing.
+                            </p>
+                            <button type="button"
+                                    disabled="@_requestLoading"
+                                    @onclick="RetryAsync">
+                                Retry subject discovery
+                            </button>
+                        </section>
+                    }
+
+                    <p class="srs-subject-discovery__summary"
+                       role="status"
+                       aria-live="polite">
+                        Showing @_page.Items.Count of @_page.TotalCount server-evaluated subjects.
+                        Applied sort: @_page.Sort.
+                    </p>
+
+                    <div class="srs-subject-discovery__grid">
+                        @foreach (var offering in _page.Items)
+                        {
+                            <article class="srs-subject-discovery__offering"
+                                     data-offering-id="@offering.OfferingId"
+                                     data-eligible="@offering.Eligible.ToString().ToLowerInvariant()">
+                                <header>
+                                    <div>
+                                        <p>@offering.CourseCode · @Credits(offering.Credits) credits</p>
+                                        <h2>@offering.Title</h2>
+                                    </div>
+                                    <StatusBadge Text="@(offering.Eligible ? "Eligible" : "Unavailable")"
+                                                 Icon="@(offering.Eligible ? "✓" : "✕")"
+                                                 Tone="@(offering.Eligible
+                                                     ? StatusBadge.BadgeTone.Success
+                                                     : StatusBadge.BadgeTone.Danger)" />
+                                </header>
+                                <EligibilityPresentation Offering="@offering"
+                                                         IdPrefix="@($"offering-{offering.OfferingId:N}")" />
+                                <a class="srs-subject-discovery__details"
+                                   href="@($"/student/subjects/{offering.OfferingId:D}")">
+                                    View @offering.CourseCode details
+                                </a>
+                            </article>
+                        }
+                    </div>
+
+                    @if (TotalPages > 1)
+                    {
+                        <Pagination AccessibleLabel="Subject result pages"
+                                    PreviousLabel="Previous page"
+                                    NextLabel="Next page"
+                                    CurrentPage="@_pageNumber"
+                                    TotalPages="@TotalPages"
+                                    VisiblePages="@VisiblePages"
+                                    PageLabel="PageLabel"
+                                    CurrentPageLabel="CurrentPageLabel"
+                                    PageChanged="ChangePageAsync"
+                                    IsLoading="@_requestLoading"
+                                    LoadingLabel="Loading subject page" />
+                    }
+
+                    <nav class="srs-subject-discovery__related" aria-label="Registration links">
+                        <a href="/student/schedule">Open current plan</a>
+                    </nav>
+                }
+            </div>
+        </ChildContent>
+    </AppShell>
+}
+else
+{
+    <main class="srs-subject-discovery srs-subject-discovery__standalone"
+          id="main-content"
+          data-route-id="STU-02"
+          data-state="@_state"
+          data-contract-state="@ContractState"
+          tabindex="-1">
+        <h1>Available subjects</h1>
+        <section role="alert" aria-live="assertive">
+            <h2>@FailureHeading</h2>
+            <p><strong>@_reasonCode</strong></p>
+            <p>@_safeMessage</p>
+            @if (!string.IsNullOrWhiteSpace(_referenceId))
+            {
+                <p>Reference: @_referenceId</p>
+            }
+            <a href="/student">Return to Student dashboard</a>
+        </section>
+    </main>
+}
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Dashboard", "/student"),
+        new("Available subjects", "/student/subjects", IsActive: true),
+        new("Current plan", "/student/schedule")
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private Page<OfferingEligibilityDto>? _page;
+    private RegistrationResponseMetadata? _metadata;
+    private string _state = LoadingState;
+    private string _search = string.Empty;
+    private string _eligibility = "eligible";
+    private string _credits = string.Empty;
+    private string _day = string.Empty;
+    private string _availability = "all";
+    private string _sort = "courseCode,id";
+    private string _reasonCode = "DISCOVERY_UNAVAILABLE";
+    private string _safeMessage = "Subject discovery could not be loaded.";
+    private string? _referenceId;
+    private Guid _termId;
+    private int _pageNumber = 1;
+    private bool _initialLoading = true;
+    private bool _requestLoading;
+
+    private bool IsFailureState => _state is
+        ValidationErrorState or ServiceErrorState or UnauthorizedState
+        or SessionExpiredState or OfflineState
+        || (_state == StaleState && _page is null);
+
+    private string? EmptySupportPath =>
+        IsCanonicalPath(_metadata?.SupportReferencePath)
+            ? _metadata!.SupportReferencePath
+            : null;
+
+    private string ContractState => _state switch
+    {
+        LoadingState => "STU-02-COMP-STATE-LOADING",
+        EmptyState => "STU-02-COMP-STATE-EMPTY",
+        SuccessState => "STU-02-COMP-STATE-SUCCESS",
+        ValidationErrorState => "STU-02-COMP-STATE-VALIDATION-ERROR",
+        ServiceErrorState => "STU-02-COMP-STATE-SERVICE-ERROR",
+        UnauthorizedState => "STU-02-COMP-STATE-UNAUTHORIZED",
+        SessionExpiredState => "STU-02-COMP-STATE-SESSION-EXPIRED",
+        StaleState => "STU-02-COMP-STATE-STALE",
+        OfflineState => "STU-02-COMP-STATE-OFFLINE",
+        _ => "STU-02-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private string FailureHeading => _state switch
+    {
+        ValidationErrorState => "Review the search or registration context",
+        UnauthorizedState => "Access denied",
+        SessionExpiredState => "Session expired",
+        StaleState => "Availability changed",
+        OfflineState => "Subject discovery is offline",
+        _ => "Subject discovery is unavailable"
+    };
+
+    private string CriteriaSummary =>
+        $"search “{(string.IsNullOrWhiteSpace(_search) ? "any" : _search)}”, " +
+        $"eligibility {_eligibility}, credits {(string.IsNullOrWhiteSpace(_credits) ? "any" : _credits)}, " +
+        $"day {(string.IsNullOrWhiteSpace(_day) ? "any" : _day)}, availability {_availability}";
+
+    private int TotalPages => _page is null
+        ? 1
+        : Math.Max(1, (int)Math.Ceiling(_page.TotalCount / (double)_page.PageSize));
+
+    private IReadOnlyList<int> VisiblePages
+    {
+        get
+        {
+            var start = Math.Max(1, _pageNumber - 2);
+            var end = Math.Min(TotalPages, start + 4);
+            start = Math.Max(1, end - 4);
+            return Enumerable.Range(start, end - start + 1).ToArray();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            var context = contextResult.Value;
+            if (!RegistrationPageSupport.IsStudentContext(context))
+            {
+                ApplyFailure(
+                    HttpStatusCode.Forbidden,
+                    new ApiError(
+                        "FORBIDDEN",
+                        "The active server role cannot open Student subject discovery.",
+                        "STU-02-AUTHORIZATION"));
+                return;
+            }
+
+            _shellContext = RegistrationPageSupport.ToShellContext(context);
+            if (context.ServiceState is not ServiceState.Available)
+            {
+                ApplyFailure(
+                    HttpStatusCode.ServiceUnavailable,
+                    new ApiError(
+                        context.ServiceState is ServiceState.Maintenance
+                            ? "MAINTENANCE"
+                            : "DISCOVERY_UNAVAILABLE",
+                        "Subject discovery is temporarily unavailable.",
+                        "STU-02-SERVICE"));
+                return;
+            }
+
+            if (context.RegistrationTerm is null ||
+                !Guid.TryParse(context.RegistrationTerm.Id, out _termId))
+            {
+                _state = EmptyState;
+                _reasonCode = "REGISTRATION_CONTEXT_NOT_FOUND";
+                _safeMessage = "The server has not supplied a current registration term.";
+                return;
+            }
+
+            await LoadOfferingsAsync();
+        }
+        catch (HttpRequestException)
+        {
+            _state = OfflineState;
+            _reasonCode = "OFFLINE";
+            _safeMessage = "The browser cannot reach subject discovery. No request was queued.";
+            _page = null;
+        }
+        finally
+        {
+            _initialLoading = false;
+        }
+    }
+
+    private Task SetSearch(string value)
+    {
+        _search = value;
+        return Task.CompletedTask;
+    }
+
+    private void SetCredits(ChangeEventArgs args) =>
+        _credits = args.Value?.ToString() ?? string.Empty;
+
+    private async Task ApplyFiltersAsync()
+    {
+        _pageNumber = 1;
+        await LoadOfferingsAsync();
+    }
+
+    private async Task ResetFiltersAsync()
+    {
+        _search = string.Empty;
+        _eligibility = "eligible";
+        _credits = string.Empty;
+        _day = string.Empty;
+        _availability = "all";
+        _sort = "courseCode,id";
+        _pageNumber = 1;
+        await LoadOfferingsAsync();
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        _pageNumber = page;
+        await LoadOfferingsAsync();
+    }
+
+    private Task RetryAsync() => LoadOfferingsAsync();
+
+    private async Task LoadOfferingsAsync()
+    {
+        if (_termId == Guid.Empty)
+        {
+            return;
+        }
+
+        _requestLoading = true;
+        _page = null;
+        _referenceId = null;
+        try
+        {
+            var result = await RegistrationApi.ListOfferingsAsync(
+                _termId,
+                new(
+                    _search,
+                    _eligibility,
+                    _credits,
+                    _day,
+                    _availability,
+                    _sort,
+                    _pageNumber,
+                    20));
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            _page = result.Value;
+            _metadata = result.Metadata;
+            _pageNumber = result.Value.PageNumber;
+            var fullReason = result.Value.Items
+                .SelectMany(item => item.Groups)
+                .SelectMany(group => group.NonSelectableReasons)
+                .FirstOrDefault(reason => reason.Code is "GROUP_FULL" or "GROUP_CHANGED");
+            if (fullReason is not null)
+            {
+                _state = StaleState;
+                _reasonCode = fullReason.Code;
+                _safeMessage = fullReason.Message;
+            }
+            else
+            {
+                _state = result.Value.Items.Count == 0 ? EmptyState : SuccessState;
+                _reasonCode = _state == EmptyState ? "NO_MATCHING_OFFERINGS" : "AVAILABLE";
+                _safeMessage = string.Empty;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _state = OfflineState;
+            _reasonCode = "OFFLINE";
+            _safeMessage = "The browser cannot reach subject discovery. No request was queued.";
+            _page = null;
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private void ApplyFailure(HttpStatusCode statusCode, ApiError? error)
+    {
+        _page = null;
+        _reasonCode = error?.Code ?? "DISCOVERY_UNAVAILABLE";
+        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _referenceId = error?.CorrelationId;
+        _state = _reasonCode switch
+        {
+            "GROUP_FULL" or "GROUP_CHANGED" or "WINDOW_CHANGED" or "STALE_VERSION" =>
+                StaleState,
+            "SESSION_EXPIRED" => SessionExpiredState,
+            _ when statusCode is HttpStatusCode.Unauthorized => SessionExpiredState,
+            _ when statusCode is HttpStatusCode.Forbidden => UnauthorizedState,
+            _ when statusCode is HttpStatusCode.BadRequest => ValidationErrorState,
+            _ => ServiceErrorState
+        };
+    }
+
+    private static string Credits(decimal value) =>
+        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string ValueOrUnavailable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "Not supplied" : value;
+
+    private static bool IsCanonicalPath(string? value) =>
+        !string.IsNullOrWhiteSpace(value)
+        && value.StartsWith("/", StringComparison.Ordinal)
+        && !value.StartsWith("//", StringComparison.Ordinal)
+        && !value.Contains('?')
+        && !value.Contains('#');
+
+    private static string PageLabel(int page) => page.ToString();
+
+    private static string CurrentPageLabel(int page, int totalPages) =>
+        $"Current page {page} of {totalPages}";
+}

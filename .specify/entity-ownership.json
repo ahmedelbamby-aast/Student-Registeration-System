@@ -1,5 +1,5 @@
 {
-  "version": "2.0.5",
+  "version": "2.0.6",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -14,11 +14,13 @@
     "CourseOffering": "010",
     "DecisionSnapshot": "014",
     "Enrollment": "014",
+    "EligibilityReason": "011",
     "GroupSummary": "011",
     "ImportBatch": "009",
     "IdentityImportBatch": "007",
     "IdentityImportCandidateRow": "007",
     "OperationalMetric": "018",
+    "OfferingEligibility": "011",
     "PolicyRule": "009",
     "PolicySet": "009",
     "Program": "009",

@@ -21,9 +21,13 @@ curated catalogue in `docs/DEMO_CURRICULUM.md`.
 - FR-1: The system MUST evaluate every relevant approved rule on the server.
   For `DEMO-POC-2026.1`, this includes configured window, standing, blocking
   hold, prerequisite, course GPA/earned-credit, current-plan load, published
-  capacity, and exact meeting-conflict checks. A normal plan targets and caps
-  at 18 credits; GPA below 2.0 caps at 12 credits. Advisor/exception workflows
-  are not evaluated because they are outside the demo.
+  capacity, repeat eligibility, and exact meeting-conflict checks. A normal
+  plan targets and caps at 18 credits; GPA below 2.0 caps at 12 credits. A
+  passed current transcript leaf for the requested course fails closed with
+  `REPEAT_POLICY_UNAVAILABLE`; no advisor/repeat/exception workflow is
+  evaluated. Plan input crosses a Registration-owned `ICurrentPlanReader`;
+  until SPEC-012 contributes its reader, the live adapter returns a versioned
+  empty plan while direct service fixtures prove 15-credit/conflict inputs.
 - FR-2: Default discovery MUST list eligible offerings having at least one
   published selectable group.
 - FR-3: Students MUST be able to search by code/title and filter by
@@ -31,24 +35,30 @@ curated catalogue in `docs/DEMO_CURRICULUM.md`.
 - FR-4: Students MUST be able to inspect unavailable offerings and every
   blocking reason.
 - FR-5: Results MUST show course code/title/credits and group capacity, staff,
-  location, activity, day and time. Each group summary MUST also carry its
-  current state, selectable flag, seats remaining, and SectionGroup rowversion
-  so the client can identify stale advisory data. Each offering MUST also show
-  current-plan credits, projected credits if selected, default target 18, and
-  the applicable maximum 18 or 12.
+  location, activity, day and time. Staff MUST remain nested under the meeting
+  they teach. Each group summary MUST also carry lifecycle-only state,
+  selectable flag, seats remaining, stable non-selectable reasons, and
+  SectionGroup rowversion; "full" is derived capacity status, not lifecycle.
+  Each offering MUST also show current-plan credits, projected credits if
+  selected, default target 18, the applicable maximum 18 or 12, and academic,
+  catalogue, PolicySet, offering, group, and current-plan dependency versions.
 - FR-6: Each evaluated rule MUST return a stable code, passed/failed and
   blocking flags, plain-language message, required/current values when safe,
-  approved PolicySet ID/version, source/effective metadata, and support/manual-
-  review path when one is approved. Missing policy/profile/provenance produces
-  a blocking `DECISION_DATA_UNAVAILABLE` reason, never accidental eligibility.
+  approved PolicySet ID/version, source reference/access date, approval
+  reference, effective start/end, `overridePossible=false` for a blocker, and
+  support/manual-review path when one is approved. The offering carries a
+  bounded privacy-safe input summary. Missing policy/profile/provenance
+  produces a blocking `DECISION_DATA_UNAVAILABLE` aggregate reason plus the
+  applicable governed unavailable code, never accidental eligibility.
 - FR-7: Client filtering MUST NOT substitute for server eligibility.
 - FR-8: Stable sorting and bounded pagination MUST be supported. Page defaults
   to 1, pageSize defaults to 20, maximum pageSize is 100, and invalid or
-  oversized values return 400 PAGE_SIZE_INVALID. The default stable order is
-  normalized course code then immutable offering ID; any selected sort adds
-  offering ID as the final tie-break. The response MUST use the canonical
-  SPEC-006 `Page<OfferingEligibilityDto>` and echo the applied canonical sort.
-  Search text is at most 100 characters.
+  oversized values return 400 PAGE_SIZE_INVALID. The exact allow-listed
+  filters/sorts and validation semantics are normative in contracts/api.md;
+  every sort adds offering ID as the final tie-break. Search is NFKC-normalized,
+  trimmed, literal, parameterized, and at most 100 characters. The response
+  MUST use canonical SPEC-006 `Page<OfferingEligibilityDto>` and echo the
+  applied canonical sort.
 
 ## Non-Functional Requirements
 
@@ -100,7 +110,9 @@ And every status has text/icon meaning independent of color.
 
 - EC-1: Policy/profile data unavailable -> safe unavailable result and support
   reference, never accidental eligibility.
-- EC-2: Group becomes full after results load -> details/submit revalidate.
+- EC-2: Group becomes full after results load -> the detail GET refreshes the
+  unavailable decision/version; final submission revalidation remains
+  SPEC-014-owned.
 - EC-3: Search contains SQL metacharacters -> treated as literal parameterized
   text.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
@@ -109,59 +121,19 @@ And every status has text/icon meaning independent of color.
 
 ## API Contracts
 
-```typescript
-interface EligibilityReasonDto {
-  code: string;
-  passed: boolean;
-  blocking: boolean;
-  message: string;
-  requiredValue?: string;
-  currentValue?: string;
-  policySetId: string;
-  policyVersion: string;
-  sourceReference: string;
-  effectiveFromUtc?: string;
-  supportReferencePath?: string;
-}
-interface GroupSummaryDto {
-  groupId: string;
-  groupCode: string;
-  state: "published" | "full" | "closed" | "cancelled";
-  selectable: boolean;
-  capacity: number;
-  enrolledCount: number;
-  seatsRemaining: number;
-  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; name: string }>;
-  meetings: Array<{ activity: "Lecture" | "Tutorial" | "Laboratory"; dayOfWeek: number; startLocal: string; endLocal: string; roomCode: string; location: string }>;
-  rowVersion: string;
-}
-interface OfferingEligibilityDto {
-  offeringId: string;
-  courseCode: string;
-  title: string;
-  credits: number;
-  currentPlanCredits: number;
-  projectedPlanCredits: number;
-  defaultTargetCredits: 18;
-  maximumAllowedCredits: 12 | 18;
-  eligible: boolean;
-  reasons: EligibilityReasonDto[];
-  groups: GroupSummaryDto[];
-  evaluatedAtUtc: string;
-  academicContextVersion: string;
-}
-```
-
-The list response is the canonical SPEC-006 `Page<OfferingEligibilityDto>`;
-its `sort` field echoes the applied canonical sort. SPEC-011 does not redefine
-the shared pagination wrapper.
+The complete normative DTO declarations, canonical
+`Page<OfferingEligibilityDto>` use, exact query allow-list, authority rules,
+and endpoint outcome matrices are defined once in
+[contracts/api.md](contracts/api.md). SPEC-011 does not redefine the shared
+pagination wrapper.
 
 Endpoint: GET /api/student/terms/{termId}/offerings with q, eligibility,
 credits, day, availability, sort, page, and pageSize; and GET
 /api/student/offerings/{offeringId}/eligibility for one complete, explained
-detail. Both resolve the authenticated student server-side and reject another
-student's identifier or an offering outside the authorized registration
-context.
+ detail. Both resolve the authenticated student server-side and reject another
+ student's identifier or an offering outside the authorized registration
+ context. The complete authorization, query, success, and error matrices are
+ normative in contracts/api.md.
 
 ## Data Models
 
@@ -169,8 +141,10 @@ context.
 |---|---|---|
 | OfferingEligibility.Course | projection | code, title, credits |
 | OfferingEligibility.Reasons | array | stable code/message per evaluated rule |
-| OfferingEligibility.Groups | array | published selectable detail only |
+| OfferingEligibility.Groups | array | bounded selectable and unavailable lifecycle/capacity detail with nested meeting staff |
 | OfferingEligibility.Policy references | projection | approved SPEC-009 PolicySet IDs/versions and SPEC-002 provenance; not owned here |
+| OfferingEligibility.Dependency versions | projection | academic, catalogue, policy, offering, group, and current-plan versions |
+| Eligibility read seams | provider ports | narrow Academics/Scheduling readers plus Registration-owned current-plan reader; no writable eligibility/plan table |
 
 ## Out of Scope
 

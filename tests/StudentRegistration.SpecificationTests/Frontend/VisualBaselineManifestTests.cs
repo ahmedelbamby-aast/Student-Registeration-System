@@ -38,13 +38,16 @@ public sealed class VisualBaselineManifestTests
     }
 
     [Fact]
-    public void Registry_contains_only_the_explicitly_approved_spec008_baseline_sets()
+    public void Registry_contains_the_explicitly_approved_spec008_baseline_sets()
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(ManifestPath));
         var root = document.RootElement;
 
         Assert.Equal("partially-approved-routes", root.GetProperty("status").GetString());
-        var baselines = root.GetProperty("baselines").EnumerateArray().ToArray();
+        var baselines = root.GetProperty("baselines").EnumerateArray()
+            .Where(item => item.GetProperty("targetManifest").GetString()!
+                .StartsWith("Spec008/", StringComparison.Ordinal))
+            .ToArray();
         Assert.Equal(
             ["AUTH-01", "STU-01", "ADM-02", "ADM-04"],
             baselines.Select(item => item.GetProperty("routeId").GetString()!).ToArray());

@@ -42,21 +42,26 @@ Deliver Eligibility and Subject Discovery inside the modular monolith while keep
 Eligibility orchestration, projections, and owner endpoints belong in
 `src/StudentRegistration.Registration/{Domain,Application,Endpoints}`. Pages
 remain in `StudentRegistration.Client`; upstream Academics/Scheduling data is
-consumed through public module interfaces, and SQL query implementations live
-in `StudentRegistration.Infrastructure.SqlServer`. No upstream entity is
-redefined in Registration.
+consumed through narrow provider `Application.Ports`, Registration owns the
+`ICurrentPlanReader` input, and SQL query implementations live in
+`StudentRegistration.Infrastructure.SqlServer`. The live reader returns a
+versioned empty plan until SPEC-012 contributes its implementation. No
+upstream entity, writable plan, or writable eligibility model is redefined in
+Registration.
 
 ## Feature Design
 
 1. Resolve one versioned academic, policy, catalogue, offering, and group input
    set for the authenticated student and authorized term.
-2. Evaluate all relevant approved rules and create complete per-rule reasons;
+2. Evaluate the governed SPEC-002 window/standing/hold/prerequisite/load/
+   repeat/capacity/conflict registry and create complete per-rule reasons;
    missing required input fails closed. The demo rule set explicitly covers
    window, standing, holds, prerequisites, course GPA/earned credits, 18-credit
    normal target/maximum, 12-credit probation maximum, capacity, and exact
    meeting conflict without advisor/exception workflows.
-3. Project current/projected/applicable load plus group activity/staff/room/
-   time/capacity/version details from upstream modules without treating
+3. Project current/projected/applicable load and complete dependency versions
+   plus lifecycle-only group state, non-selectable reasons, and nested
+   meeting/staff/room/time/capacity/version details without treating
    advisory capacity as a reservation.
 4. Apply bounded server search/filter/sort/page only after eligibility
    evaluation and expose a dedicated complete detail endpoint.

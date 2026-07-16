@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
+using StudentRegistration.Infrastructure.SqlServer.Registration;
 
 namespace StudentRegistration.Api.Composition;
 
@@ -30,6 +31,7 @@ public static class SqlServerPersistenceRegistration
                 connectionString,
                 sqlServer => sqlServer.EnableRetryOnFailure()));
         services.AddStudentRegistrationAcademicSqlServer();
+        services.AddStudentRegistrationDiscoverySqlServer();
         return services;
     }
 }

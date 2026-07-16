@@ -86,7 +86,8 @@ And every status has text/icon meaning independent of color.
 
 - EC-1: Policy/profile data unavailable -> safe unavailable result and support
   reference, never accidental eligibility.
-- EC-2: Group becomes full after results load -> details/submit revalidate.
+- EC-2: Group becomes full after results load -> detail refresh returns the
+  new unavailable/version state; final submission revalidation is SPEC-014.
 - EC-3: Search contains SQL metacharacters -> treated as literal parameterized
   text.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
@@ -100,28 +101,33 @@ And every status has text/icon meaning independent of color.
 - FR-1: The system MUST evaluate every relevant approved rule on the server.
   For `DEMO-POC-2026.1`, this includes configured window, standing, blocking
   hold, prerequisite, course GPA/earned-credit, current-plan load, published
-  capacity, and exact meeting-conflict checks. A normal plan targets and caps
-  at 18 credits; GPA below 2.0 caps at 12 credits. Advisor/exception workflows
-  are not evaluated because they are outside the demo.
+  capacity, repeat eligibility, and exact meeting-conflict checks. A normal
+  plan targets and caps at 18 credits; GPA below 2.0 caps at 12 credits. A
+  passed current transcript leaf fails closed as `REPEAT_POLICY_UNAVAILABLE`.
+  The Registration-owned current-plan port uses a versioned empty live adapter
+  until SPEC-012 contributes its reader; no advisor/exception workflow exists.
 - FR-2: Default discovery MUST list eligible offerings having at least one
   published selectable group.
 - FR-3: Students MUST be able to search by code/title and filter by
   eligibility, credits, day, and availability.
 - FR-4: Students MUST be able to inspect unavailable offerings and every
   blocking reason.
-- FR-5: Results MUST show course code/title/credits and group capacity, staff,
-  location, activity, day/time, state, seats remaining, and advisory version.
-  Each offering MUST also show current-plan credits, projected credits if
-  selected, default target 18, and the applicable maximum 18 or 12.
-- FR-6: Each decision MUST include complete stable per-rule explanations,
-  approved PolicySet/source metadata, safe required/current values, and a
-  fail-closed reason/support path when decision data is unavailable.
+- FR-5: Results MUST show course code/title/credits and lifecycle-only group
+  state, capacity, selectability, non-selectable reasons, rowversion, and
+  meetings with nested staff, activity, room/location, and day/time. Each
+  offering MUST also show current/projected/default/effective load plus
+  academic, catalogue, policy, offering, group, and current-plan versions.
+- FR-6: Each decision MUST include governed stable per-rule explanations,
+  complete approved PolicySet/source/access/approval/effective metadata, safe
+  required/current values, bounded input summary, and fail-closed
+  reason/support behavior when decision data is unavailable.
 - FR-7: Client filtering MUST NOT substitute for server eligibility.
 - FR-8: Sorting/pagination MUST use page >= 1, default 20, maximum 100,
   400 PAGE_SIZE_INVALID for invalid values, and immutable offering ID as the
   final tie-break; the response consumes canonical SPEC-006
-  `Page<OfferingEligibilityDto>` and echoes its applied sort; search text is
-  limited to 100 characters.
+  `Page<OfferingEligibilityDto>` and echoes its applied sort. The exact
+  allow-listed filters/sorts and NFKC/literal search protocol are normative in
+  contracts/api.md.
 
 ### Non-Functional Requirements
 
@@ -133,11 +139,14 @@ And every status has text/icon meaning independent of color.
 ### Key Projections and References
 
 - **OfferingEligibility**, **EligibilityReason**, and **GroupSummary** are
-  SPEC-011-owned immutable response/domain projections.
+  SPEC-011-owned immutable/keyless response/domain projections.
 - Catalogue `CourseOffering`/`SectionGroup` data is consumed from SPEC-010,
   student/context data from SPEC-008, and approved `PolicySet` versions and
   provenance from SPEC-009/SPEC-002. SPEC-011 does not own or redefine a
   separate PolicyVersion entity.
+- Academics and Scheduling expose narrow eligibility readers. Registration
+  owns `ICurrentPlanReader`; SPEC-011 owns no writable eligibility or plan
+  table.
 
 ## Success Criteria
 

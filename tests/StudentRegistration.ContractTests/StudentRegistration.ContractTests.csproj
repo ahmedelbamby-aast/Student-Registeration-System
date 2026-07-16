@@ -22,11 +22,14 @@
   <ItemGroup>
     <ProjectReference Include="../../src/StudentRegistration.Api/StudentRegistration.Api.csproj" />
     <ProjectReference Include="../../src/StudentRegistration.Contracts/StudentRegistration.Contracts.csproj" />
+    <ProjectReference Include="../../src/StudentRegistration.Registration/StudentRegistration.Registration.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
              Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../StudentRegistration.ApplicationTests/TestSupport/Spec011/**/*.cs"
+             Link="TestSupport/Spec011/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
