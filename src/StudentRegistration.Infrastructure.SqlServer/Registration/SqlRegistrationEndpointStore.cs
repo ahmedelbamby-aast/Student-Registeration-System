@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using StudentRegistration.Academics.Application;
+using StudentRegistration.Academics.Application.Ports;
 using StudentRegistration.Academics.Domain;
 using StudentRegistration.Infrastructure.SqlServer.Audit;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;

@@ -1,4 +1,4 @@
-using StudentRegistration.Academics.Application;
+using StudentRegistration.Academics.Application.Ports;
 
 namespace StudentRegistration.Registration.Application;
 
@@ -99,21 +99,21 @@ public sealed class RegistrationTransactionCoordinator
             RegistrationMutableInput.CommitBoundaryVersions
         ]);
 
-    private readonly StudentAcademicProfileService _academicProfileService;
+    private readonly IRegistrationBoundary _academicBoundary;
     private readonly IRegistrationLocalTransactionStore? _localStore;
 
     public RegistrationTransactionCoordinator(
-        StudentAcademicProfileService academicProfileService)
-        : this(academicProfileService, localStore: null)
+        IRegistrationBoundary academicBoundary)
+        : this(academicBoundary, localStore: null)
     {
     }
 
     public RegistrationTransactionCoordinator(
-        StudentAcademicProfileService academicProfileService,
+        IRegistrationBoundary academicBoundary,
         IRegistrationLocalTransactionStore? localStore)
     {
-        _academicProfileService = academicProfileService ??
-            throw new ArgumentNullException(nameof(academicProfileService));
+        _academicBoundary = academicBoundary ??
+            throw new ArgumentNullException(nameof(academicBoundary));
         _localStore = localStore;
     }
 
@@ -123,7 +123,7 @@ public sealed class RegistrationTransactionCoordinator
         string expectedStudentTermStateRowVersion,
         Func<CancellationToken, Task> transactionWork,
         CancellationToken cancellationToken = default) =>
-        _academicProfileService.ExecuteRegistrationBoundaryAsync(
+        _academicBoundary.ExecuteRegistrationBoundaryAsync(
             studentId,
             termId,
             expectedStudentTermStateRowVersion,
@@ -142,7 +142,7 @@ public sealed class RegistrationTransactionCoordinator
         ValidatePlan(plan);
         ArgumentNullException.ThrowIfNull(atomicCommit);
 
-        return _academicProfileService.ExecuteRegistrationBoundaryAsync(
+        return _academicBoundary.ExecuteRegistrationBoundaryAsync(
             plan.StudentId,
             plan.TermId,
             plan.ExpectedStudentTermStateRowVersion,

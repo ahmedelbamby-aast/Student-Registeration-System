@@ -30,6 +30,8 @@ public static class RolePolicies
     public const string OfferingsManage = "Offerings.Manage";
     public const string OfferingDetailsRead = "OfferingDetailsRead";
     public const string RegistrationSubmitOwn = "Registration.SubmitOwn";
+    public const string RegistrationRecordsReadOwn = "RegistrationRecords.ReadOwn";
+    public const string RegistrationRecordsRead = "RegistrationRecords.Read";
 
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
@@ -130,6 +132,20 @@ public static class RolePolicies
                 .RequireClaim(PermissionClaimType, RegistrationSubmitOwn));
 
         options.AddPolicy(
+            RegistrationRecordsReadOwn,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Student)
+                .RequireClaim(PermissionClaimType, RegistrationRecordsReadOwn));
+
+        options.AddPolicy(
+            RegistrationRecordsRead,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, RegistrationRecordsRead));
+
+        options.AddPolicy(
             OfferingDetailsRead,
             policy => policy
                 .RequireAuthenticatedUser()
@@ -165,7 +181,8 @@ public static class RolePolicies
             ContextRead,
             AcademicProfileReadOwn,
             CatalogueReadAvailable,
-            RegistrationSubmitOwn
+            RegistrationSubmitOwn,
+            RegistrationRecordsReadOwn
         ],
         Admin =>
         [
@@ -174,7 +191,8 @@ public static class RolePolicies
             AcademicTermsManage,
             AcademicProfilesManage,
             CataloguePolicyManage,
-            OfferingsManage
+            OfferingsManage,
+            RegistrationRecordsRead
         ],
         Lecturer or TeachingAssistant => [ContextRead],
         _ => []

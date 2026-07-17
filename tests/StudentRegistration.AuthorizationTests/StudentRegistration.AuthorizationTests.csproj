@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/StudentRegistration.IdentityAccess/StudentRegistration.IdentityAccess.csproj" />
+    <ProjectReference Include="../../src/StudentRegistration.Registration/StudentRegistration.Registration.csproj" />
   </ItemGroup>
 
   <ItemGroup>

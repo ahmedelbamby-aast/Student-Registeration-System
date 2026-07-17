@@ -46,6 +46,8 @@ public static class AcademicModuleRegistration
         services.TryAddScoped<AcademicContextResolver>();
         services.TryAddScoped<RegistrationWindowService>();
         services.TryAddScoped<StudentAcademicProfileService>();
+        services.TryAddScoped<IRegistrationBoundary>(static provider =>
+            provider.GetRequiredService<StudentAcademicProfileService>());
         services.TryAddScoped<AdminAcademicManagementService>();
         services.TryAddScoped<
             IAcademicSessionContextAdapter,

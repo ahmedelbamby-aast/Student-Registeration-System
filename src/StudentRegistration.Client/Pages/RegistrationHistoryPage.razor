@@ -1,0 +1,209 @@
+@page "/student/registrations"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Data
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Scheduling
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApiClient RegistrationApi
+@inject IJSRuntime JavaScript
+
+<PageTitle>Registration history | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STU-07" data-state="loading" data-contract-state="STU-07-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1"><h1>Registration history</h1><p role="status" aria-busy="true">Loading registration records.</p></main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext" MainContentId="main-content" SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
+              SupportLinkLabel="Open support" LoadingLabel="Loading registration history">
+        <Navigation><RoleNavigation AccessibleName="Student role navigation" Items="@StudentNavigation" /></Navigation>
+        <ChildContent>@HistoryContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@HistoryContent</main>
+}
+
+@code {
+    private const int PageSize = 20;
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [new("Dashboard", "/student"), new("Current plan", "/student/schedule"), new("Registrations", "/student/registrations", IsActive: true)];
+
+    private FrontendAppContextView? _shellContext;
+    private Page<RegistrationHistoryRowDto>? _history;
+    private RegistrationTimetableDto? _timetable;
+    private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
+    private string _state = "loading";
+    private string _reasonCode = "REGISTRATION_HISTORY_UNAVAILABLE";
+    private string _message = "Registration records could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _requesting;
+
+    private string ContractState => _state switch
+    {
+        "success" => "STU-07-COMP-STATE-SUCCESS",
+        "empty" => "STU-07-COMP-STATE-EMPTY",
+        "unauthorized" => "STU-07-COMP-STATE-UNAUTHORIZED",
+        _ => "STU-07-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private RenderFragment HistoryContent => @<article class="srs-registration-history"
+        data-route-id="STU-07" data-state="@_state" data-contract-state="@ContractState">
+        <header class="srs-registration-history__intro">
+            <div><p>Student registration</p><h1>Registrations</h1><p>Server-authored current and archived records.</p></div>
+            <button type="button" @onclick="PrintAsync">Print history</button>
+        </header>
+
+        @if (_state is "service-error" or "unauthorized")
+        {
+            <section class="srs-registration-history__state" role="@(_state == "unauthorized" ? "alert" : "status")" aria-live="polite">
+                <h2>@(_state == "unauthorized" ? "Access denied" : "Registration history is unavailable")</h2>
+                <p><strong>@_reasonCode</strong></p><p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: <span>@_reference</span></p> }
+                @if (_state == "service-error") { <button type="button" disabled="@_requesting" @onclick="() => LoadRecordsAsync(1)">Retry registration records</button> }
+                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">Open safe support path</a>
+            </section>
+        }
+        else if (_state == "empty")
+        {
+            <section class="srs-registration-history__state" role="status" aria-live="polite">
+                <h2>No registrations for @(_timetable?.Term?.DisplayName ?? "this term")</h2><p>No accepted or rejected registration has been recorded.</p>
+                @if (CanFindSubjects) { <a href="@_timetable!.SubjectDiscoveryPath">Find subjects</a> }
+            </section>
+        }
+        else if (_history is not null && _timetable is not null)
+        {
+            <nav class="srs-registration-history__selector" aria-label="Registration view">
+                <a href="#current-registration">Current timetable</a>
+                <a href="#registration-records">History records</a>
+            </nav>
+            <section id="current-registration" aria-labelledby="current-timetable-heading">
+                <h2 id="current-timetable-heading">Current registration timetable</h2>
+                @if (_meetings.Count == 0) { <p>No current registered meetings.</p> }
+                else
+                {
+                    <div class="srs-registration-history__schedule">
+                        <ScheduleCalendar Heading="Current registered timetable calendar" EquivalentListId="registration-history-list"
+                                          DayColumnLabel="Day" TimeColumnLabel="Time" MeetingColumnLabel="Meeting"
+                                          GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
+                                          TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location" ConflictLabel="Conflict" Meetings="@_meetings" />
+                        <ScheduleList ComponentId="registration-history-list" EquivalentCalendarId="registration-history-list-calendar-heading"
+                                      Heading="Current registered timetable list" GroupLabel="Group" ActivityKindLabel="Activity"
+                                      LecturerLabel="Lecturer" TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location"
+                                      DayLabel="Day" StartLabel="Starts" EndLabel="Ends" TimezoneLabel="Time zone" ConflictLabel="Conflict" Meetings="@_meetings" />
+                    </div>
+                }
+            </section>
+
+            <section id="registration-records" aria-labelledby="records-heading">
+                <h2 id="records-heading">Registration records</h2>
+                <p role="status">@_history.TotalCount registration records</p>
+                <div class="srs-registration-history__table" role="region" aria-label="Registration records table" tabindex="0">
+                    <table><caption>Current and archived registration outcomes</caption><thead><tr>
+                        <th scope="col">Reference</th><th scope="col">Term</th><th scope="col">Submitted</th>
+                        <th scope="col">Status</th><th scope="col">Groups</th><th scope="col">Credits</th><th scope="col">Details</th>
+                    </tr></thead><tbody>
+                    @foreach (var record in _history.Items)
+                    {
+                        <tr data-submission-id="@record.SubmissionId">
+                            <td>@(record.Reference ?? "Not issued")</td><td>@record.Term.DisplayName @ArchivedLabel(record)</td><td>@FormatDate(record.SubmittedAtUtc)</td>
+                            <td>@record.Status</td><td>@record.GroupCount</td><td>@record.TotalCredits.ToString("0.##", CultureInfo.InvariantCulture)</td>
+                            <td><a href="/student/registration/result/@record.SubmissionId.ToString("D")">View result</a></td>
+                        </tr>
+                    }
+                    </tbody></table>
+                </div>
+                <ol class="srs-registration-history__cards" aria-label="Registration records compact view">
+                    @foreach (var record in _history.Items)
+                    {
+                        <li><h3>Registration record</h3><p>Reference: @(record.Reference ?? "Not issued")</p><p>@record.Term.DisplayName @ArchivedLabel(record) · @FormatDate(record.SubmittedAtUtc)</p>
+                            <p>@record.GroupCount groups · @record.TotalCredits.ToString("0.##", CultureInfo.InvariantCulture) credits</p>
+                            <a href="/student/registration/result/@record.SubmissionId.ToString("D")">View result</a></li>
+                    }
+                </ol>
+                @if (TotalPages > 1)
+                {
+                    <Pagination AccessibleLabel="Registration history pages" PreviousLabel="Previous" NextLabel="Next"
+                                CurrentPage="@_history.PageNumber" TotalPages="@TotalPages" VisiblePages="@VisiblePages"
+                                PageLabel="@(page => page.ToString(CultureInfo.InvariantCulture))"
+                                CurrentPageLabel="@((page, total) => $"Page {page} of {total}")"
+                                PageChanged="LoadRecordsAsync" IsLoading="@_requesting" LoadingLabel="Loading registration records" />
+                }
+            </section>
+        }
+    </article>;
+
+    private bool CanFindSubjects => _timetable is not null
+        && string.Equals(_timetable.RegistrationWindowState, "open", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(_timetable.SubjectDiscoveryPath);
+    private int TotalPages => _history is null ? 1 : Math.Max(1, (int)Math.Ceiling(_history.TotalCount / (double)_history.PageSize));
+    private IReadOnlyList<int> VisiblePages => _history is null ? [1] : Enumerable.Range(1, TotalPages).Where(page => Math.Abs(page - _history.PageNumber) <= 2).ToArray();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var context = await AcademicApi.GetAppContextAsync();
+            if (!context.IsSuccess || context.Value is null) { ApplyFailure(context.StatusCode, context.Error); return; }
+            if (!RegistrationPageSupport.IsStudentContext(context.Value))
+            { ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "A Student session is required.", "STU-07-AUTH")); return; }
+            _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
+            await LoadRecordsAsync(1);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException) { ApplyOffline(); }
+        finally { _loading = false; }
+    }
+
+    private async Task LoadRecordsAsync(int page)
+    {
+        if (_requesting) return;
+        _requesting = true;
+        try
+        {
+            var historyTask = RegistrationApi.GetRegistrationHistoryAsync(page, PageSize);
+            var timetableTask = RegistrationApi.GetCurrentRegistrationTimetableAsync();
+            await Task.WhenAll(historyTask, timetableTask);
+            var history = await historyTask; var timetable = await timetableTask;
+            if (!history.IsSuccess || history.Value is null) { ApplyFailure(history.StatusCode, history.Error); return; }
+            if (!timetable.IsSuccess || timetable.Value is null) { ApplyFailure(timetable.StatusCode, timetable.Error); return; }
+            _history = history.Value; _timetable = timetable.Value;
+            _meetings = _timetable.Term is null ? [] : RegistrationPageSupport.ToMeetingItems(_timetable.Groups, _timetable.Term.TimeZoneId);
+            _state = _history.TotalCount == 0 && _meetings.Count == 0 ? "empty" : "success";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException) { ApplyOffline(); }
+        finally { _requesting = false; }
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _history = null; _timetable = null; _meetings = [];
+        _reasonCode = error?.Code ?? "REGISTRATION_HISTORY_UNAVAILABLE";
+        _message = error?.Message ?? "Registration records could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? "unauthorized" : "service-error";
+    }
+    private void ApplyOffline() { _history = null; _timetable = null; _meetings = []; _state = "service-error"; _reasonCode = "OFFLINE"; _message = "Reconnect, then retry registration records."; _reference = null; }
+    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture);
+    private static string ArchivedLabel(RegistrationHistoryRowDto record) =>
+        string.Equals(record.TermState, "archived", StringComparison.OrdinalIgnoreCase) ? "(Archived)" : string.Empty;
+    private Task PrintAsync() => JavaScript.InvokeVoidAsync("window.print").AsTask();
+}

@@ -39,10 +39,13 @@ public static class SqlServerPersistenceRegistration
         services.TryAddScoped<RegistrationSubmissionStore>();
         services.TryAddScoped<SqlSeatAllocator>();
         services.TryAddScoped<SqlRegistrationEndpointStore>();
+        services.TryAddScoped<SqlRegistrationRecordReader>();
         services.TryAddScoped<IRegistrationEndpointStore>(services =>
             services.GetRequiredService<SqlRegistrationEndpointStore>());
         services.TryAddScoped<IRegistrationLocalTransactionStore>(services =>
             services.GetRequiredService<SqlRegistrationEndpointStore>());
+        services.TryAddScoped<StudentRegistration.Registration.Application.Ports.IRegistrationRecordReader>(
+            services => services.GetRequiredService<SqlRegistrationRecordReader>());
         return services;
     }
 }

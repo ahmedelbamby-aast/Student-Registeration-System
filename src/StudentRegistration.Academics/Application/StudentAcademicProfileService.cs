@@ -37,30 +37,7 @@ public sealed record AcademicProfileResult<TProfile>(
     };
 }
 
-public enum RegistrationBoundaryOutcome
-{
-    Committed,
-    HoldBlocked,
-    StaleVersion,
-    NotFound,
-    ProfileNotReady,
-    StorageUnavailable
-}
-
-public sealed record RegistrationBoundaryResult(RegistrationBoundaryOutcome Outcome)
-{
-    public string? ErrorCode => Outcome switch
-    {
-        RegistrationBoundaryOutcome.HoldBlocked => "HOLD_BLOCKED",
-        RegistrationBoundaryOutcome.StaleVersion => "STALE_VERSION",
-        RegistrationBoundaryOutcome.NotFound => "PROFILE_NOT_FOUND",
-        RegistrationBoundaryOutcome.ProfileNotReady => "PROFILE_NOT_READY",
-        RegistrationBoundaryOutcome.StorageUnavailable => "CONTEXT_UNAVAILABLE",
-        _ => null
-    };
-}
-
-public sealed class StudentAcademicProfileService
+public sealed class StudentAcademicProfileService : IRegistrationBoundary
 {
     private const int DefaultPageSize = 20;
     private const int MaximumPageSize = 100;

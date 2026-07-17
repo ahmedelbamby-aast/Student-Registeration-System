@@ -1,5 +1,7 @@
 using StudentRegistration.Client.Features.Frontend.Models;
+using StudentRegistration.Client.Components.Scheduling;
 using StudentRegistration.Contracts;
+using StudentRegistration.Contracts.Registration;
 
 namespace StudentRegistration.Client.Features.Registration;
 
@@ -28,6 +30,47 @@ public static class RegistrationPageSupport
     public static string DayName(int day) => day is >= 0 and <= 6
         ? ((DayOfWeek)day).ToString()
         : $"Day {day}";
+
+    public static IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> ToMeetingItems(
+        IReadOnlyList<RegistrationRecordGroupDto> groups,
+        string timeZoneId) =>
+        groups
+            .SelectMany(group => group.Meetings.Select(meeting => new
+            {
+                Group = group,
+                Meeting = meeting
+            }))
+            .OrderBy(item => item.Meeting.DayOfWeek)
+            .ThenBy(item => item.Meeting.StartLocal, StringComparer.Ordinal)
+            .ThenBy(item => item.Meeting.EndLocal, StringComparer.Ordinal)
+            .ThenBy(item => item.Group.CourseCode, StringComparer.Ordinal)
+            .ThenBy(item => item.Group.GroupCode, StringComparer.Ordinal)
+            .ThenBy(item => item.Meeting.MeetingId)
+            .Select(item => new ScheduleCalendar.ScheduleMeetingItem(
+                item.Meeting.MeetingId.ToString("D"),
+                item.Group.CourseCode,
+                item.Group.SubjectTitle,
+                item.Group.GroupCode,
+                item.Meeting.ActivityType,
+                item.Meeting.Staff.FirstOrDefault(staff =>
+                    string.Equals(staff.Role, "Lecturer", StringComparison.OrdinalIgnoreCase))
+                    ?.DisplayName,
+                item.Meeting.Staff.Where(staff =>
+                        string.Equals(
+                            staff.Role,
+                            "TeachingAssistant",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Select(staff => staff.DisplayName)
+                    .ToArray(),
+                $"{item.Meeting.RoomCode} {item.Meeting.Location}".Trim(),
+                DayName(item.Meeting.DayOfWeek),
+                item.Meeting.StartLocal,
+                item.Meeting.EndLocal,
+                timeZoneId,
+                "No conflict",
+                $"/student/subjects/{item.Group.OfferingId:D}",
+                $"Open {item.Group.CourseCode} {item.Group.GroupCode} details"))
+            .ToArray();
 
     private static string SessionStateToken(SessionState state) => state switch
     {

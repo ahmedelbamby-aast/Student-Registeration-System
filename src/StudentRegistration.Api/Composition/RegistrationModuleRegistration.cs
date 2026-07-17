@@ -34,6 +34,8 @@ public static class RegistrationModuleRegistration
         services.TryAddScoped<RegistrationCommandFactory>();
         services.TryAddScoped<RegistrationTransactionCoordinator>();
         services.TryAddScoped<RegistrationEndpointService>();
+        services.TryAddScoped<RegistrationReceiptService>();
+        services.TryAddScoped<RegistrationRecordQueries>();
         services.TryAddScoped<ICurrentPlanReader, EmptyCurrentPlanReader>();
         return services;
     }

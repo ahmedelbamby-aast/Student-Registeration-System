@@ -1,0 +1,275 @@
+@page "/student/registration/result/{Id:guid}"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Registration
+@using StudentRegistration.Client.Components.Scheduling
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApiClient RegistrationApi
+@inject IJSRuntime JavaScript
+
+<PageTitle>Registration result | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STU-06" data-state="loading" data-contract-state="STU-06-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1">
+            <h1>Registration result</h1>
+            <p role="status" aria-live="polite" aria-busy="true">Loading the authoritative registration result.</p>
+        </main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext"
+              MainContentId="main-content"
+              SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time"
+              TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term"
+              RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term"
+              NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window"
+              AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role"
+              SessionLabel="Session"
+              ServiceLabel="Service"
+              SupportLinkLabel="Open support"
+              LoadingLabel="Loading registration result">
+        <Navigation><RoleNavigation AccessibleName="Student role navigation" Items="@StudentNavigation" /></Navigation>
+        <ChildContent>@ResultContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a>
+    <main id="main-content" tabindex="-1">@ResultContent</main>
+}
+
+@code {
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Dashboard", "/student"),
+        new("Current plan", "/student/schedule"),
+        new("Registrations", "/student/registrations", IsActive: true)
+    ];
+
+    [Parameter] public Guid Id { get; set; }
+    [SupplyParameterFromQuery] public Guid? TermId { get; set; }
+    [SupplyParameterFromQuery] public Guid? ClientRequestId { get; set; }
+
+    private FrontendAppContextView? _shellContext;
+    private RegistrationDetailDto? _detail;
+    private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
+    private string _state = "loading";
+    private string _reasonCode = "REGISTRATION_RESULT_UNAVAILABLE";
+    private string _message = "The registration result could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _retrying;
+
+    private string ContractState => _state switch
+    {
+        "success" => "STU-06-COMP-STATE-SUCCESS",
+        "validation-error" => "STU-06-COMP-STATE-VALIDATION-ERROR",
+        "unauthorized" => "STU-06-COMP-STATE-UNAUTHORIZED",
+        "stale" => "STU-06-COMP-STATE-STALE",
+        _ => "STU-06-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private RenderFragment ResultContent => @<article class="srs-registration-result"
+        data-route-id="STU-06" data-state="@_state" data-contract-state="@ContractState">
+        <header class="srs-registration-result__intro">
+            <div><p>Student registration</p><h1>Atomic registration result</h1></div>
+            <a href="/student/registrations">Registration history</a>
+        </header>
+
+        @if (_detail?.Receipt is { } receipt)
+        {
+            <section class="srs-registration-result__outcome srs-registration-result__outcome--accepted" role="status" aria-live="polite">
+                <h2>Registration accepted</h2>
+                <p>The complete registration was accepted as one transaction.</p>
+            </section>
+            <ReceiptSummary ComponentId="registration-receipt"
+                            Heading="Registration receipt"
+                            ReferenceLabel="Receipt reference"
+                            Reference="@receipt.Reference"
+                            PrintLabel="Print receipt"
+                            Items="@ReceiptItems(receipt)"
+                            OnPrint="PrintAsync" />
+            <section aria-labelledby="registered-groups-heading">
+                <h2 id="registered-groups-heading">Registered groups</h2>
+                <ul class="srs-registration-result__groups">
+                    @foreach (var group in receipt.Groups)
+                    {
+                        <li data-group-id="@group.GroupId">
+                            <h3>@group.CourseCode @group.SubjectTitle</h3>
+                            <p>Group @group.GroupCode · @group.Credits.ToString("0.##", CultureInfo.InvariantCulture) credits</p>
+                        </li>
+                    }
+                </ul>
+            </section>
+            <div class="srs-registration-result__schedule">
+                <ScheduleCalendar Heading="Registered timetable"
+                                  EquivalentListId="registration-result-list"
+                                  DayColumnLabel="Day" TimeColumnLabel="Time" MeetingColumnLabel="Meeting"
+                                  GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
+                                  TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location" ConflictLabel="Conflict"
+                                  Meetings="@_meetings" />
+                <ScheduleList ComponentId="registration-result-list"
+                              EquivalentCalendarId="registration-result-list-calendar-heading"
+                              Heading="Registered timetable list"
+                              GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
+                              TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location"
+                              DayLabel="Day" StartLabel="Starts" EndLabel="Ends" TimezoneLabel="Time zone" ConflictLabel="Conflict"
+                              Meetings="@_meetings" />
+            </div>
+        }
+        else if (_detail?.Rejection is { } rejection)
+        {
+            <section class="srs-registration-result__outcome srs-registration-result__outcome--rejected" role="alert" aria-live="assertive">
+                <h2>Registration rejected</h2>
+                <p><strong>@rejection.ResultCode</strong></p>
+                <p>@rejection.SafeMessage</p>
+                @if (rejection.NoPartialRegistration)
+                {
+                    <p><strong>No subjects were partially registered.</strong></p>
+                }
+                <p>Completed at @FormatDate(rejection.CompletedAtUtc).</p>
+                <a href="/student/schedule">Edit plan</a>
+            </section>
+        }
+        else
+        {
+            <section class="srs-registration-result__outcome" role="@(_state == "unauthorized" ? "alert" : "status")" aria-live="polite">
+                <h2>@FailureHeading</h2>
+                <p><strong>@_reasonCode</strong></p>
+                <p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: @_reference</p> }
+                @if (_state is "service-error" or "stale")
+                {
+                    <button type="button" disabled="@_retrying" @onclick="RetryAsync">Retry result lookup</button>
+                }
+                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">Open safe support path</a>
+            </section>
+        }
+    </article>;
+
+    private string FailureHeading => _state switch
+    {
+        "unauthorized" => "Access denied",
+        "stale" => "Registration result needs recovery",
+        _ => "Registration result is unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var context = await AcademicApi.GetAppContextAsync();
+            if (!context.IsSuccess || context.Value is null)
+            {
+                ApplyFailure(context.StatusCode, context.Error);
+                return;
+            }
+            if (!RegistrationPageSupport.IsStudentContext(context.Value))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "A Student session is required.", "STU-06-AUTH"));
+                return;
+            }
+            _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
+            await LoadDetailAsync();
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task LoadDetailAsync()
+    {
+        var result = await RegistrationApi.GetRegistrationDetailAsync(Id);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _detail = result.Value;
+        if (_detail.Receipt is { } receipt)
+        {
+            _state = "success";
+            _meetings = RegistrationPageSupport.ToMeetingItems(receipt.Groups, receipt.Term.TimeZoneId);
+        }
+        else if (_detail.Rejection is not null)
+        {
+            _state = "validation-error";
+            _meetings = [];
+        }
+        else
+        {
+            ApplyFailure(HttpStatusCode.ServiceUnavailable, new("INVALID_RESULT", "The server returned no authoritative outcome.", "STU-06-RESULT"));
+        }
+    }
+
+    private async Task RetryAsync()
+    {
+        if (_retrying) return;
+        _retrying = true;
+        try
+        {
+            if (TermId is { } termId && ClientRequestId is { } requestId)
+            {
+                var lookup = await RegistrationApi.LookupRegistrationAsync(termId, requestId);
+                if (!lookup.IsSuccess)
+                {
+                    ApplyFailure(lookup.StatusCode, lookup.Error);
+                    return;
+                }
+            }
+            await LoadDetailAsync();
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException) { ApplyOffline(); }
+        finally { _retrying = false; }
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _detail = null;
+        _meetings = [];
+        _reasonCode = error?.Code ?? "REGISTRATION_RESULT_UNAVAILABLE";
+        _message = error?.Message ?? "The registration result could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden or HttpStatusCode.NotFound
+            ? "unauthorized"
+            : TermId.HasValue && ClientRequestId.HasValue ? "stale" : "service-error";
+    }
+
+    private void ApplyOffline()
+    {
+        _detail = null; _meetings = []; _state = "service-error"; _reasonCode = "OFFLINE";
+        _message = "Reconnect, then retry. No registration change was made."; _reference = null;
+    }
+
+    private static IReadOnlyList<ReceiptSummary.ReceiptItem> ReceiptItems(RegistrationReceiptDto receipt) =>
+    [
+        new("Term", receipt.Term.DisplayName),
+        new("Submitted", FormatDate(receipt.SubmittedAtUtc)),
+        new("Result", receipt.ResultCode),
+        new("Total credits", $"{receipt.TotalCredits.ToString("0.##", CultureInfo.InvariantCulture)} credits"),
+        new("Policy version", receipt.PolicyVersion)
+    ];
+
+    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture);
+    private Task PrintAsync() => JavaScript.InvokeVoidAsync("window.print").AsTask();
+}

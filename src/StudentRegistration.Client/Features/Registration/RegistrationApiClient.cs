@@ -140,6 +140,35 @@ public sealed class RegistrationApiClient
             addAntiforgery: false,
             cancellationToken);
 
+    public Task<RegistrationApiResult<Page<RegistrationHistoryRowDto>>>
+        GetRegistrationHistoryAsync(
+            int page = 1,
+            int pageSize = 20,
+            Guid? termId = null,
+            CancellationToken cancellationToken = default) =>
+        GetAsync<Page<RegistrationHistoryRowDto>>(
+            Query(
+                "/api/student/registrations",
+                ("page", page.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                ("pageSize", pageSize.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                ("termId", termId?.ToString("D"))),
+            cancellationToken);
+
+    public Task<RegistrationApiResult<RegistrationDetailDto>>
+        GetRegistrationDetailAsync(
+            Guid submissionId,
+            CancellationToken cancellationToken = default) =>
+        GetAsync<RegistrationDetailDto>(
+            $"/api/student/registrations/{RequiredId(submissionId, nameof(submissionId)):D}",
+            cancellationToken);
+
+    public Task<RegistrationApiResult<RegistrationTimetableDto>>
+        GetCurrentRegistrationTimetableAsync(
+            CancellationToken cancellationToken = default) =>
+        GetAsync<RegistrationTimetableDto>(
+            "/api/student/registrations/current/timetable",
+            cancellationToken);
+
     private async Task<RegistrationCommandApiResult> SendRegistrationAsync<TRequest>(
         HttpMethod method,
         string path,

@@ -102,7 +102,8 @@ public sealed class AcademicPermissionPolicyTests
         RolePolicies.ContextRead,
         RolePolicies.AcademicProfileReadOwn,
         RolePolicies.CatalogueReadAvailable,
-        RolePolicies.RegistrationSubmitOwn)]
+        RolePolicies.RegistrationSubmitOwn,
+        RolePolicies.RegistrationRecordsReadOwn)]
     [InlineData(
         RolePolicies.Admin,
         RolePolicies.IdentityAccessManage,
@@ -110,7 +111,8 @@ public sealed class AcademicPermissionPolicyTests
         RolePolicies.AcademicTermsManage,
         RolePolicies.AcademicProfilesManage,
         RolePolicies.CataloguePolicyManage,
-        RolePolicies.OfferingsManage)]
+        RolePolicies.OfferingsManage,
+        RolePolicies.RegistrationRecordsRead)]
     [InlineData(RolePolicies.Lecturer, RolePolicies.ContextRead)]
     [InlineData(RolePolicies.TeachingAssistant, RolePolicies.ContextRead)]
     public void Permission_claims_are_derived_only_from_the_effective_role(
