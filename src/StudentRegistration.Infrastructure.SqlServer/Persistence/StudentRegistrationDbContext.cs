@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using StudentRegistration.Infrastructure.SqlServer.Audit;
+using StudentRegistration.StaffAdministration.Domain;
 
 namespace StudentRegistration.Infrastructure.SqlServer.Persistence;
 
@@ -13,6 +14,7 @@ public sealed class StudentRegistrationDbContext : DbContext, IDataProtectionKey
     }
 
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<ExportJob> ExportJobs => Set<ExportJob>();
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

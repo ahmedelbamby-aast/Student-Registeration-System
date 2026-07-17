@@ -55,7 +55,20 @@ separate.
 **Revalidated:** 2026-07-17
 **Normative approval baseline:** `025479c100b83e726c777b2311015470481a7515`
 
-The approved normative SPEC-017 files have no diff from that 2026-07-13
-baseline. Ahmed Elbamby's current instruction revalidates all demo human
-approvals. Any later accepted change to the normative baseline or its
-dependency pins returns affected work to In Review.
+At the Phase 1 T012 review, the approved normative SPEC-017 files had no diff
+from that 2026-07-13 baseline. The Phase 2 clarification below is the only
+later normative change and has its own reapproval. Any other accepted change
+to the normative baseline or dependency pins returns affected work to In
+Review.
+
+### Phase 2 contract clarification reapproval
+
+**Reapproved:** 2026-07-17 by Ahmed Elbamby under the current demo instruction
+
+During T023-T030, the canonical endpoint contract made already-required
+response, paging, metrics-alert, and export-request fields explicit. The same
+TypeScript declarations are now synchronized in `requirements.md` and
+`contracts/api.md`. This is a testability/detail clarification for existing
+FR-2/FR-3/FR-5/FR-6/FR-10 and AC-3/AC-4/AC-9, not a new endpoint, actor,
+permission bypass, mutation, or scope expansion. Ahmed's blanket approval for
+required demo human actions reapproves this clarified SPEC-017 baseline.

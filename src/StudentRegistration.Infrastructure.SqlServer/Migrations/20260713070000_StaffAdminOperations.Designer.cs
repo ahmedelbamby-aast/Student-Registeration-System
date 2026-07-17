@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 
@@ -11,9 +12,11 @@ using StudentRegistration.Infrastructure.SqlServer.Persistence;
 namespace StudentRegistration.Infrastructure.SqlServer.Migrations
 {
     [DbContext(typeof(StudentRegistrationDbContext))]
-    partial class StudentRegistrationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713070000_StaffAdminOperations")]
+    partial class StaffAdminOperations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

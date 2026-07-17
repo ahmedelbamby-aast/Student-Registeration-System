@@ -76,12 +76,13 @@ Unknown institutional audit/export retention continues to fail closed. The
 
 ## Gate A currency (T012)
 
-The approved normative SPEC-017 files last changed together in commit
-`025479c100b83e726c777b2311015470481a7515` on 2026-07-13. A direct diff from
-that commit across `spec.md`, `requirements.md`, `plan.md`, `research.md`,
-`data-model.md`, `contracts/api.md`, and `clarifications.md` is empty. The
-2026-07-13 Gate A record therefore remains current, and Ahmed Elbamby's
-2026-07-17 instruction revalidates all demo human approvals.
+The original approved normative SPEC-017 files changed together in commit
+`025479c100b83e726c777b2311015470481a7515` on 2026-07-13. During Phase 2,
+`requirements.md` and `contracts/api.md` were synchronized to make the existing
+endpoint DTO and response details testable. The recorded Phase 2 clarification
+review in `approval.md` confirms no endpoint, actor, mutation, ownership, or
+scope expansion and records Ahmed Elbamby's 2026-07-17 demo reapproval. Gate A
+therefore remains current for the clarified baseline.
 
 Any accepted change to those normative files, dependency hashes, ownership,
 routes, permissions, persistence, concurrency, privacy, or scope returns the

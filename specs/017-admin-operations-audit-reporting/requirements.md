@@ -164,15 +164,26 @@ anti-forgery checks.
 ## API Contracts
 
 ```typescript
-interface RedactedChangeSummaryDto {
-  fields: Array<{ name: string; displayValue: string }>;
-  redactionVersion: string;
+interface ApiError {
+  code: string;
+  message: string;
+  correlationId: string;
+  fieldErrors?: Record<string, string[]>;
+  currentVersion?: string;
 }
 interface AdminCommandMetadata {
   reason: string;
   expectedRowVersion: string;
   clientRequestId: string;
   previewToken?: string;
+}
+interface RedactedChangeFieldDto {
+  name: string;
+  displayValue: string;
+}
+interface RedactedChangeSummaryDto {
+  fields: RedactedChangeFieldDto[];
+  redactionVersion: string;
 }
 interface AuditEventDto {
   id: string;
@@ -188,17 +199,44 @@ interface AuditEventDto {
   correlationId: string;
   sourceStream: "audit" | "identity-security";
 }
+interface AuditEventPageDto {
+  items: AuditEventDto[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+interface OperationalMetricDto {
+  name: string;
+  value: number;
+  dimensions: Record<string, string>;
+  observedAtUtc: string;
+}
 interface RegistrationReconciliationAlertDto {
   groupId: string;
   state: "paused" | "repaired";
   detectedAtUtc: string;
+  metric: string;
+  threshold: number;
+  observedValue: number;
   supportReferencePath: string;
 }
 interface AdminOperationsMetricsDto {
   observedAtUtc: string;
   availabilityState: "live" | "stale" | "degraded";
-  metrics: OperationalMetric[];
+  metrics: OperationalMetricDto[];
   reconciliationAlerts: RegistrationReconciliationAlertDto[];
+}
+interface AuditExportFilterDto {
+  occurredFromUtc?: string;
+  occurredToUtc?: string;
+  actorId?: string;
+  action?: string;
+  sourceStream?: "audit" | "identity-security";
+}
+interface CreateExportRequest {
+  clientRequestId: string;
+  exportType: "audit";
+  filters: AuditExportFilterDto;
 }
 interface ExportJobDto {
   jobId: string;
