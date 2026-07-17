@@ -71,4 +71,6 @@ TypeScript declarations are now synchronized in `requirements.md` and
 `contracts/api.md`. This is a testability/detail clarification for existing
 FR-2/FR-3/FR-5/FR-6/FR-10 and AC-3/AC-4/AC-9, not a new endpoint, actor,
 permission bypass, mutation, or scope expansion. Ahmed's blanket approval for
-required demo human actions reapproves this clarified SPEC-017 baseline.
+required demo human actions reapproves this clarified SPEC-017 baseline. The
+clarified normative files are pinned by Phase 2 evidence commit
+`7f29e7e836dd3f5970395531830a5e74a53eb15e`.

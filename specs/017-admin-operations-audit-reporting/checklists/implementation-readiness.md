@@ -81,8 +81,10 @@ The original approved normative SPEC-017 files changed together in commit
 `requirements.md` and `contracts/api.md` were synchronized to make the existing
 endpoint DTO and response details testable. The recorded Phase 2 clarification
 review in `approval.md` confirms no endpoint, actor, mutation, ownership, or
-scope expansion and records Ahmed Elbamby's 2026-07-17 demo reapproval. Gate A
-therefore remains current for the clarified baseline.
+scope expansion and records Ahmed Elbamby's 2026-07-17 demo reapproval. The
+clarified files are pinned at
+`7f29e7e836dd3f5970395531830a5e74a53eb15e`; Gate A therefore remains current
+for this baseline.
 
 Any accepted change to those normative files, dependency hashes, ownership,
 routes, permissions, persistence, concurrency, privacy, or scope returns the
