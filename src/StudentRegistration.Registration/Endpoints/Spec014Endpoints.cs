@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -132,7 +133,8 @@ public static class Spec014Endpoints
             RegistrationEndpointOutcome.Conflict => Error(
                 context, StatusCodes.Status409Conflict,
                 result.ErrorCode ?? "REGISTRATION_CONFLICT",
-                "The registration could not be committed."),
+                "The registration could not be committed.",
+                result.CurrentVersion),
             RegistrationEndpointOutcome.NotFound => Error(
                 context, StatusCodes.Status409Conflict,
                 result.ErrorCode ?? "REGISTRATION_CONTEXT_NOT_FOUND",
@@ -145,12 +147,15 @@ public static class Spec014Endpoints
 
     private static bool TryApplicationUserId(
         HttpContext context,
-        out Guid applicationUserId) =>
-        context.User.Identity?.IsAuthenticated == true &&
-        Guid.TryParse(
-            context.User.FindFirstValue(ClaimTypes.NameIdentifier),
-            out applicationUserId) &&
-        applicationUserId != Guid.Empty;
+        out Guid applicationUserId)
+    {
+        applicationUserId = Guid.Empty;
+        return context.User.Identity?.IsAuthenticated == true &&
+            Guid.TryParse(
+                context.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                out applicationUserId) &&
+            applicationUserId != Guid.Empty;
+    }
 
     private static IResult RequestNotFound(HttpContext context) =>
         Error(context, StatusCodes.Status404NotFound,
@@ -160,9 +165,14 @@ public static class Spec014Endpoints
         HttpContext context,
         int status,
         string code,
-        string message) =>
+        string message,
+        string? currentVersion = null) =>
         Results.Json(
-            new ApiError(code, message, CorrelationId(context)),
+            new ApiError(
+                code,
+                message,
+                CorrelationId(context),
+                currentVersion: currentVersion),
             statusCode: status);
 
     private static string CorrelationId(HttpContext context) =>

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Registration.Domain;
@@ -51,6 +52,10 @@ public sealed record SubmissionClaimResult(
 {
     public bool MayExecute => Status is SubmissionClaimStatus.Claimed;
 }
+
+public sealed record RegistrationFinalObservation(
+    bool IsInProgress,
+    RegistrationSubmission? Submission);
 
 public sealed class RegistrationClaimContendedException : Exception
 {
@@ -251,6 +256,110 @@ public sealed class RegistrationSubmissionStore
             "REGISTRATION_IN_PROGRESS");
     }
 
+    public async Task<SubmissionClaimResult> ObserveScopedAsync(
+        RegistrationRequestScope scope,
+        string payloadHash,
+        TimeSpan maximumLockWait,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var normalizedHash = Required(payloadHash, nameof(payloadHash));
+        if (maximumLockWait < TimeSpan.Zero ||
+            maximumLockWait > MaximumObservationWindow)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maximumLockWait),
+                "Scoped observation must be between zero and 500 milliseconds.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var lockTimeoutMilliseconds = (int)Math.Ceiling(
+            maximumLockWait.TotalMilliseconds);
+        await _dbContext.Database.OpenConnectionAsync(cancellationToken);
+        await SetLockTimeoutAsync(lockTimeoutMilliseconds, cancellationToken);
+        try
+        {
+            var submission = await _dbContext.Set<RegistrationSubmission>()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(
+                    candidate =>
+                        candidate.StudentId == scope.StudentId &&
+                        candidate.TermId == scope.TermId &&
+                        candidate.ClientRequestId == scope.ClientRequestId,
+                    cancellationToken);
+            return submission is null
+                ? new SubmissionClaimResult(
+                    SubmissionClaimStatus.NotFound,
+                    null,
+                    "REQUEST_NOT_FOUND")
+                : Resolve(submission, normalizedHash);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception)
+            when (exception.Number == 1222)
+        {
+            return new SubmissionClaimResult(
+                SubmissionClaimStatus.InProgress,
+                null,
+                "REGISTRATION_IN_PROGRESS");
+        }
+        finally
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                "SET LOCK_TIMEOUT -1;",
+                CancellationToken.None);
+            await _dbContext.Database.CloseConnectionAsync();
+        }
+    }
+
+    public async Task<RegistrationFinalObservation> ReadFinalByRequestBoundedAsync(
+        RegistrationRequestScope scope,
+        TimeSpan maximumLockWait,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        if (maximumLockWait < TimeSpan.Zero ||
+            maximumLockWait > MaximumObservationWindow)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maximumLockWait),
+                "Scoped lookup must be between zero and 500 milliseconds.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var lockTimeoutMilliseconds = (int)Math.Ceiling(
+            maximumLockWait.TotalMilliseconds);
+        await _dbContext.Database.OpenConnectionAsync(cancellationToken);
+        await SetLockTimeoutAsync(lockTimeoutMilliseconds, cancellationToken);
+        try
+        {
+            var submission = await _dbContext.Set<RegistrationSubmission>()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(
+                    candidate =>
+                        candidate.StudentId == scope.StudentId &&
+                        candidate.TermId == scope.TermId &&
+                        candidate.ClientRequestId == scope.ClientRequestId,
+                    cancellationToken);
+            return submission?.IsFinal == true
+                ? new RegistrationFinalObservation(false, submission)
+                : new RegistrationFinalObservation(
+                    submission is not null,
+                    null);
+        }
+        catch (Microsoft.Data.SqlClient.SqlException exception)
+            when (exception.Number == 1222)
+        {
+            return new RegistrationFinalObservation(true, null);
+        }
+        finally
+        {
+            await _dbContext.Database.ExecuteSqlRawAsync(
+                "SET LOCK_TIMEOUT -1;",
+                CancellationToken.None);
+            await _dbContext.Database.CloseConnectionAsync();
+        }
+    }
+
     public Task<SubmissionClaimResult> ReplayAsync(
         RegistrationRequestScope scope,
         string payloadHash,
@@ -418,4 +527,19 @@ public sealed class RegistrationSubmissionStore
         exception.GetBaseException() is Microsoft.Data.SqlClient.SqlException sql
             ? sql.Number
             : null;
+
+    private Task<int> SetLockTimeoutAsync(
+        int lockTimeoutMilliseconds,
+        CancellationToken cancellationToken)
+    {
+        // SET LOCK_TIMEOUT does not accept a SQL parameter. Callers validate
+        // this integer to the closed 0..500 millisecond range.
+#pragma warning disable EF1002, EF1003
+        return _dbContext.Database.ExecuteSqlRawAsync(
+            "SET LOCK_TIMEOUT " +
+            lockTimeoutMilliseconds.ToString(CultureInfo.InvariantCulture) +
+            ";",
+            cancellationToken);
+#pragma warning restore EF1002, EF1003
+    }
 }

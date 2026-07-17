@@ -356,6 +356,21 @@ body {
     color: var(--srs-color-semantic-link);
 }
 
+.srs-registration-review__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--srs-spacing-primitive-3);
+}
+
+.srs-registration-review__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--srs-sizing-interactive-minimum);
+    padding-inline: var(--srs-spacing-primitive-4);
+}
+
 @keyframes srs-public-context-pulse {
     from { opacity: 0.35; }
     to { opacity: 1; }

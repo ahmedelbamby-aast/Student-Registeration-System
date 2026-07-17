@@ -21,7 +21,7 @@
 | SPEC-011 | 14 | 12 | 5 | 4 | 51 | 100 | FAIL | APPROVED |
 | SPEC-012 | 15 | 12 | 5 | 4 | 54 | 100 | FAIL | APPROVED |
 | SPEC-013 | 15 | 14 | 8 | 5 | 66 | 100 | FAIL | APPROVED |
-| SPEC-014 | 14 | 24 | 13 | 10 | 123 | 100 | PASS | APPROVED |
+| SPEC-014 | 17 | 24 | 13 | 10 | 123 | 100 | PASS | APPROVED |
 | SPEC-015 | 12 | 12 | 6 | 4 | 64 | 100 | PASS | APPROVED |
 | SPEC-016 | 12 | 14 | 8 | 5 | 84 | 100 | PASS | APPROVED |
 | SPEC-017 | 12 | 17 | 9 | 6 | 101 | 100 | PASS | APPROVED |

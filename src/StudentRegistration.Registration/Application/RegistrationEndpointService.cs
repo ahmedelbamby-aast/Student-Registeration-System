@@ -107,7 +107,8 @@ public interface IRegistrationEndpointStore
 /// </summary>
 public sealed class RegistrationEndpointService(
     RegistrationCommandFactory commandFactory,
-    IRegistrationEndpointStore store)
+    IRegistrationEndpointStore store,
+    TimeProvider timeProvider)
 {
     public async Task<RegistrationEndpointResult> SubmitAsync(
         ClaimsPrincipal principal,
@@ -125,6 +126,10 @@ public sealed class RegistrationEndpointService(
             return new(RegistrationEndpointOutcome.Unauthorized, ErrorCode: "UNAUTHORIZED");
         }
 
+        // Capture once before the first I/O. Scheduled boundaries must use
+        // authenticated ingress time, even if context resolution crosses a cutoff.
+        var receivedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
+
         var context = await store.ResolveCommandContextAsync(
             applicationUserId,
             termId,
@@ -139,7 +144,8 @@ public sealed class RegistrationEndpointService(
             principal,
             termId,
             request,
-            context.ResolvedContext);
+            context.ResolvedContext,
+            receivedAtUtc);
         if (creation.Outcome is not RegistrationCommandCreationOutcome.Created ||
             creation.Command is null)
         {
@@ -171,10 +177,13 @@ public sealed class RegistrationEndpointService(
 
     private static bool TryApplicationUserId(
         ClaimsPrincipal principal,
-        out Guid applicationUserId) =>
-        principal.Identity?.IsAuthenticated == true &&
-        Guid.TryParse(
-            principal.FindFirstValue(ClaimTypes.NameIdentifier),
-            out applicationUserId) &&
-        applicationUserId != Guid.Empty;
+        out Guid applicationUserId)
+    {
+        applicationUserId = Guid.Empty;
+        return principal.Identity?.IsAuthenticated == true &&
+            Guid.TryParse(
+                principal.FindFirstValue(ClaimTypes.NameIdentifier),
+                out applicationUserId) &&
+            applicationUserId != Guid.Empty;
+    }
 }

@@ -1,0 +1,123 @@
+{
+  "artifactVersion": "1.0.0",
+  "profileVersion": "SPEC014-SQL-REGISTRATION-1.0.0",
+  "sourceFingerprint": "5694E04567C69685FA189FC29ED834889D7B1116099BF3A1AADA61C994F8A5E6",
+  "recordedAtUtc": "2026-07-17T11:07:17.9238747+00:00",
+  "syntheticAccountCount": 25000,
+  "logicalSessionCount": 5000,
+  "logicalApplicationReplicaCount": 2,
+  "databaseEngine": "SQL Server 2022 Developer compatibility 160 (Testcontainers)",
+  "executionBoundary": "RegistrationSubmissionStore \u002B SqlSeatAllocator \u002B Enrollment/Audit atomic commit",
+  "target": {
+    "name": "required-target",
+    "startedAtUtc": "2026-07-17T10:56:04.2673652+00:00",
+    "completedAtUtc": "2026-07-17T11:06:04.2580222+00:00",
+    "durationSeconds": 600,
+    "configuredSubmissionsPerSecond": 75,
+    "replicaCount": 2,
+    "scheduledRequests": 45000,
+    "completedRequests": 45000,
+    "acceptedRequests": 31500,
+    "expectedConflictRequests": 9000,
+    "idempotentReplayRequests": 4500,
+    "inProgressRequests": 0,
+    "unexpectedFailures": 0,
+    "unexpectedFailureRatePercent": 0,
+    "submissionP95Milliseconds": 19.3534,
+    "transactionP95Milliseconds": 17.9534,
+    "maximumTransactionMilliseconds": 397.3854,
+    "invariants": {
+      "overbookedGroups": 0,
+      "duplicateActiveOfferingEnrollments": 0,
+      "partialScheduleCommits": 0,
+      "combinedPolicyOrTimetableViolations": 0,
+      "counterMismatches": 0,
+      "totalViolations": 0
+    },
+    "replicaRequestCounts": {
+      "replica-a": 22500,
+      "replica-b": 22500
+    }
+  },
+  "spike": {
+    "name": "required-200-per-second-spike",
+    "startedAtUtc": "2026-07-17T11:06:04.8857363+00:00",
+    "completedAtUtc": "2026-07-17T11:07:15.765329+00:00",
+    "durationSeconds": 60,
+    "configuredSubmissionsPerSecond": 200,
+    "replicaCount": 2,
+    "scheduledRequests": 12000,
+    "completedRequests": 12000,
+    "acceptedRequests": 8400,
+    "expectedConflictRequests": 2400,
+    "idempotentReplayRequests": 63,
+    "inProgressRequests": 1137,
+    "unexpectedFailures": 0,
+    "unexpectedFailureRatePercent": 0,
+    "submissionP95Milliseconds": 10219.702,
+    "transactionP95Milliseconds": 943.2604,
+    "maximumTransactionMilliseconds": 1023.8032,
+    "invariants": {
+      "overbookedGroups": 0,
+      "duplicateActiveOfferingEnrollments": 0,
+      "partialScheduleCommits": 0,
+      "combinedPolicyOrTimetableViolations": 0,
+      "counterMismatches": 0,
+      "totalViolations": 0
+    },
+    "replicaRequestCounts": {
+      "replica-a": 6000,
+      "replica-b": 6000
+    }
+  },
+  "collision": {
+    "concurrentRequests": 100,
+    "groupCapacity": 30,
+    "acceptedRequests": 30,
+    "expectedConflictRequests": 70,
+    "activeEnrollments": 30,
+    "finalEnrolledCount": 30,
+    "replicaCount": 2,
+    "invariants": {
+      "overbookedGroups": 0,
+      "duplicateActiveOfferingEnrollments": 0,
+      "partialScheduleCommits": 0,
+      "combinedPolicyOrTimetableViolations": 0,
+      "counterMismatches": 0,
+      "totalViolations": 0
+    }
+  },
+  "boundary": {
+    "authenticatedServiceSubmissions": 1,
+    "impersonationAttemptsRejected": 1,
+    "coordinatorBoundaryExecutions": 1,
+    "coordinatorCommitCallbacks": 1,
+    "httpUnauthorizedResponses": 1,
+    "httpAntiforgeryRejections": 1
+  },
+  "remoteTrace": {
+    "faultsInjected": 1,
+    "observedHttpActivities": 1,
+    "remoteActivitiesInsideTransactions": 0
+  },
+  "metrics": {
+    "publishedMetricNames": [
+      "registration.capacity_conflicts",
+      "registration.counter_mismatches",
+      "registration.idempotent_replays",
+      "sql.deadlocks",
+      "sql.lock_wait.duration.ms"
+    ],
+    "deadlockCount": 0,
+    "lockWaitP95Milliseconds": 837.0807,
+    "idempotentReplayCount": 4563,
+    "capacityConflictCount": 11470,
+    "reconciliationMismatchCount": 1,
+    "unsafeMetricTagCount": 0
+  },
+  "remoteDependencyTypesInsideTransactionBoundary": 0,
+  "remoteCallsInsideTransactions": 0,
+  "cancellationBeforeCommitVerified": true,
+  "privacyViolations": 0,
+  "endpointSmokeExecuted": true
+}

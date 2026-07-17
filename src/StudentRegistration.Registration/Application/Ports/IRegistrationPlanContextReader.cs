@@ -33,7 +33,9 @@ public sealed record RegistrationPlanContextSnapshot(
     string PolicyVersion,
     string PolicySourceReference,
     string CatalogueVersion,
-    IReadOnlyList<RegistrationPlanGroupSnapshot> Groups);
+    IReadOnlyList<RegistrationPlanGroupSnapshot> Groups,
+    string CatalogueScopeCode = "",
+    string PolicyScopeCode = "");
 
 public interface IRegistrationPlanContextReader
 {

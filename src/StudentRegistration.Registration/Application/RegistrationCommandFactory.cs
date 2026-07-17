@@ -53,11 +53,31 @@ public sealed class RegistrationCommandFactory(TimeProvider timeProvider)
         ClaimsPrincipal principal,
         Guid routeTermId,
         SubmitRegistrationRequest request,
-        ResolvedRegistrationContext registrationContext)
+        ResolvedRegistrationContext registrationContext) =>
+        Create(
+            principal,
+            routeTermId,
+            request,
+            registrationContext,
+            timeProvider.GetUtcNow().UtcDateTime);
+
+    public RegistrationCommandCreationResult Create(
+        ClaimsPrincipal principal,
+        Guid routeTermId,
+        SubmitRegistrationRequest request,
+        ResolvedRegistrationContext registrationContext,
+        DateTime receivedAtUtc)
     {
         ArgumentNullException.ThrowIfNull(principal);
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(registrationContext);
+
+        if (receivedAtUtc.Kind is not DateTimeKind.Utc)
+        {
+            return new(
+                RegistrationCommandCreationOutcome.InvalidRequest,
+                ErrorCode: "VALIDATION_ERROR");
+        }
 
         if (principal.Identity?.IsAuthenticated != true ||
             !Guid.TryParse(
@@ -93,8 +113,6 @@ public sealed class RegistrationCommandFactory(TimeProvider timeProvider)
                 RegistrationCommandCreationOutcome.InvalidRequest,
                 ErrorCode: "VALIDATION_ERROR");
         }
-
-        var receivedAtUtc = timeProvider.GetUtcNow().UtcDateTime;
 
         if (registrationContext.EmergencyClosed)
         {

@@ -140,9 +140,11 @@ public sealed class RegistrationPlanSqlServerAdapter(
             .Distinct()
             .Take(100)
             .ToArray();
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            IsolationLevel.RepeatableRead,
-            cancellationToken);
+        await using var transaction = dbContext.Database.CurrentTransaction is null
+            ? await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.RepeatableRead,
+                cancellationToken)
+            : null;
 
         var academic = await (
                 from student in dbContext.Set<Student>().AsNoTracking()
@@ -161,7 +163,10 @@ public sealed class RegistrationPlanSqlServerAdapter(
             .SingleOrDefaultAsync(cancellationToken);
         if (academic is null)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
             return null;
         }
 
@@ -181,12 +186,16 @@ public sealed class RegistrationPlanSqlServerAdapter(
                 {
                     policySet.Id,
                     policySet.VersionCode,
+                    policySet.ScopeCode,
                     rule.SourceReference
                 })
             .FirstOrDefaultAsync(cancellationToken);
         if (policy is null)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
             return null;
         }
 
@@ -199,11 +208,18 @@ public sealed class RegistrationPlanSqlServerAdapter(
                     version.State == CatalogueVersionState.Published &&
                     version.EffectiveFromUtc <= evaluatedAtUtc
                 orderby version.EffectiveFromUtc descending, version.Id
-                select version.VersionCode)
+                select new
+                {
+                    version.VersionCode,
+                    version.ScopeCode
+                })
             .FirstOrDefaultAsync(cancellationToken);
         if (catalogueVersion is null)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
             return null;
         }
 
@@ -277,7 +293,10 @@ public sealed class RegistrationPlanSqlServerAdapter(
                     staff.DisplayName
                 })
             .ToArrayAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
 
         var groups = rows
             .GroupBy(row => row.GroupId)
@@ -340,8 +359,10 @@ public sealed class RegistrationPlanSqlServerAdapter(
             policy.Id,
             policy.VersionCode,
             policy.SourceReference,
-            catalogueVersion,
-            groups);
+            catalogueVersion.VersionCode,
+            groups,
+            catalogueVersion.ScopeCode,
+            policy.ScopeCode);
     }
 
     private IQueryable<RegistrationPlan> PlanQuery(Guid studentId, Guid termId) =>

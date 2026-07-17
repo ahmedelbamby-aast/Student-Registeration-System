@@ -44,6 +44,9 @@ public sealed class AC_8Tests
         var endpoint = Spec014AcceptanceSource.Require(
             "src/StudentRegistration.Registration/Endpoints/Spec014Endpoints.cs",
             "The bounded in-progress and conflict HTTP mappings must be delivered before AC-8 can pass.");
+        var endpointService = Spec014AcceptanceSource.Require(
+            "src/StudentRegistration.Registration/Application/RegistrationEndpointService.cs",
+            "The bounded in-progress response contract must be delivered before AC-8 can pass.");
 
         // When the student/term/key claim contends.
         Spec014AcceptanceSource.ContainsAll(
@@ -60,9 +63,12 @@ public sealed class AC_8Tests
         Spec014AcceptanceSource.ContainsAll(
             endpoint,
             "Status202Accepted",
-            "retryAfterSeconds",
-            "resultUrl",
             "IDEMPOTENCY_KEY_REUSED",
             "Status409Conflict");
+        Spec014AcceptanceSource.ContainsAll(
+            endpointService,
+            "RegistrationInProgressResponse",
+            "RetryAfterSeconds",
+            "ResultUrl");
     }
 }

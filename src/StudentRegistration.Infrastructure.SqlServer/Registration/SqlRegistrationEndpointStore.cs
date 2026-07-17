@@ -1,6 +1,9 @@
 using System.Text.Json;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using StudentRegistration.Academics.Application;
 using StudentRegistration.Academics.Domain;
+using StudentRegistration.Infrastructure.SqlServer.Audit;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Registration.Application;
 using StudentRegistration.Registration.Application.Ports;
@@ -19,11 +22,15 @@ public sealed class SqlRegistrationEndpointStore(
     IRegistrationPlanContextReader planContextReader,
     RegistrationSubmissionStore submissionStore,
     SqlSeatAllocator seatAllocator,
+    EligibilityService eligibilityService,
     TimeProvider timeProvider) :
     IRegistrationEndpointStore,
     IRegistrationLocalTransactionStore
 {
     private string? _pendingRejectionCode;
+    private string? _pendingCurrentVersion;
+    private bool _claimContended;
+    private Guid _preflightPolicySetId;
     private RegistrationPlanContextSnapshot? _currentSnapshot;
 
     public async Task<RegistrationCommandContext?> ResolveCommandContextAsync(
@@ -36,21 +43,19 @@ public sealed class SqlRegistrationEndpointStore(
             return null;
         }
 
-        var student = await (
-                from candidate in dbContext.Set<Student>().AsNoTracking()
-                join state in dbContext.Set<StudentTermAcademicState>().AsNoTracking()
-                    on new { StudentId = candidate.Id, TermId = termId }
-                    equals new { state.StudentId, state.TermId }
-                where candidate.ApplicationUserId == applicationUserId && candidate.IsActive
-                select new
-                {
-                    candidate.Id,
-                    candidate.ProgramCode,
-                    candidate.Cohort,
-                    StateVersion = state.Version
-                })
+        var student = await dbContext.Set<Student>()
+            .AsNoTracking()
+            .Where(candidate =>
+                candidate.ApplicationUserId == applicationUserId &&
+                candidate.IsActive)
+            .Select(candidate => new
+            {
+                candidate.Id,
+                candidate.ProgramCode,
+                candidate.Cohort
+            })
             .SingleOrDefaultAsync(cancellationToken);
-        if (student is null || student.StateVersion.Length == 0)
+        if (student is null)
         {
             return null;
         }
@@ -86,7 +91,7 @@ public sealed class SqlRegistrationEndpointStore(
             window.OpensAtUtc,
             window.ClosesAtUtc,
             window.State == RegistrationWindowLifecycleState.EmergencyClosed);
-        return new(resolved, Convert.ToBase64String(student.StateVersion));
+        return new(resolved, "DEFERRED_TO_PLAN_VALIDATION");
     }
 
     public async Task<RegistrationEndpointResult> SubmitAsync(
@@ -103,9 +108,10 @@ public sealed class SqlRegistrationEndpointStore(
             command.TermId,
             command.ClientRequestId);
 
-        var visible = await submissionStore.ReplayCommittedAsync(
+        var visible = await submissionStore.ObserveScopedAsync(
             scope,
             payloadHash,
+            RegistrationSubmissionStore.MaximumObservationWindow,
             cancellationToken);
         var visibleResult = ToVisibleResult(visible, command.TermId, command.ClientRequestId);
         if (visibleResult is not null)
@@ -126,44 +132,78 @@ public sealed class SqlRegistrationEndpointStore(
             return Conflict("PLAN_CHANGED");
         }
 
+        var currentPlanVersion = Convert.ToBase64String(plan.Version);
+        if (plan.Validation is null)
+        {
+            return Conflict("PLAN_CHANGED", currentPlanVersion);
+        }
+
         _currentSnapshot = await planContextReader.ReadAsync(
             command.StudentId,
             command.TermId,
             plan.Items.Select(item => item.SelectedGroupId).ToArray(),
             command.ReceivedAtUtc,
             cancellationToken);
-        if (_currentSnapshot is null ||
-            _currentSnapshot.Groups.Count != plan.Items.Count)
+        if (_currentSnapshot is null)
         {
-            return Conflict("POLICY_CHANGED");
+            return Conflict(
+                "POLICY_CHANGED",
+                _currentSnapshot?.PolicyVersion ?? plan.Validation.PolicyVersion);
         }
 
-        var studentTermVersion = _currentSnapshot.AcademicContextVersion;
-        var scopeCode = await dbContext.Set<Student>()
-            .AsNoTracking()
-            .Where(student => student.Id == command.StudentId)
-            .Select(student => student.ProgramCode)
-            .SingleAsync(cancellationToken);
+        _preflightPolicySetId = _currentSnapshot.PolicySetId;
+
+        var selectedGroupIds = plan.Items
+            .Select(item => item.SelectedGroupId)
+            .Distinct()
+            .ToArray();
+        var existingGroupIds = await (
+                from enrollment in dbContext.Set<Enrollment>().AsNoTracking()
+                join offering in dbContext.Set<CourseOffering>().AsNoTracking()
+                    on enrollment.OfferingId equals offering.Id
+                where enrollment.StudentId == command.StudentId &&
+                    enrollment.State == EnrollmentState.Active &&
+                    offering.TermId == command.TermId
+                select enrollment.GroupId)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+        var boundaryGroupIds = selectedGroupIds
+            .Concat(existingGroupIds)
+            .Distinct()
+            .OrderBy(id => id)
+            .ToArray();
         var transactionPlan = new RegistrationTransactionPlan(
             command.StudentId,
             command.TermId,
-            studentTermVersion,
+            plan.Validation.AcademicContextVersion,
             command.PlanId,
             command.ExpectedPlanRowVersion,
             command.ExpectedRegistrationContextVersion,
             command.ReceivedAtUtc,
-            scopeCode,
-            scopeCode,
-            plan.Items.Select(item => item.SelectedGroupId).ToArray());
+            _currentSnapshot.CatalogueScopeCode,
+            _currentSnapshot.PolicyScopeCode,
+            selectedGroupIds,
+            boundaryGroupIds);
 
         RegistrationEndpointResult? transactionResult = null;
         _pendingRejectionCode = null;
+        _pendingCurrentVersion = null;
+        _claimContended = false;
         var boundary = await coordinator.ExecuteRegistrationAsync(
             transactionPlan,
             async token =>
             {
-                var claim = await submissionStore.ClaimInsideTransactionAsync(
-                    scope, payloadHash, command.ReceivedAtUtc, token);
+                SubmissionClaimResult claim;
+                try
+                {
+                    claim = await submissionStore.ClaimInsideTransactionAsync(
+                        scope, payloadHash, command.ReceivedAtUtc, token);
+                }
+                catch (RegistrationClaimContendedException)
+                {
+                    _claimContended = true;
+                    throw;
+                }
                 var existing = ToVisibleResult(claim, command.TermId, command.ClientRequestId);
                 if (existing is not null)
                 {
@@ -176,7 +216,9 @@ public sealed class SqlRegistrationEndpointStore(
                 {
                     await FinalizeRejectedAsync(
                         submission, _pendingRejectionCode, command, token);
-                    transactionResult = Conflict(_pendingRejectionCode);
+                    transactionResult = Conflict(
+                        _pendingRejectionCode,
+                        _pendingCurrentVersion);
                     return;
                 }
 
@@ -190,44 +232,74 @@ public sealed class SqlRegistrationEndpointStore(
                     return;
                 }
 
-                foreach (var group in _currentSnapshot.Groups)
+                try
                 {
-                    dbContext.Add(new Enrollment(
-                        Guid.NewGuid(),
-                        command.StudentId,
-                        group.OfferingId,
-                        group.GroupId,
-                        submission.Id,
-                        EnrollmentState.Active,
-                        command.ReceivedAtUtc));
-                }
+                    foreach (var group in _currentSnapshot.Groups)
+                    {
+                        dbContext.Add(new Enrollment(
+                            Guid.NewGuid(),
+                            command.StudentId,
+                            group.OfferingId,
+                            group.GroupId,
+                            submission.Id,
+                            EnrollmentState.Active,
+                            command.ReceivedAtUtc));
+                    }
 
-                var groups = _currentSnapshot.Groups.Select(ToGroup).ToArray();
-                var term = await dbContext.Set<AcademicTerm>()
-                    .AsNoTracking()
-                    .SingleAsync(item => item.Id == command.TermId, token);
-                var receipt = new RegistrationReceiptSnapshotDto(
-                    new(term.Id, term.Code, term.DisplayName, term.TimeZoneId),
-                    groups,
-                    _currentSnapshot.Groups.Sum(group => group.Credits),
-                    _currentSnapshot.PolicySetId,
-                    _currentSnapshot.PolicyVersion,
-                    command.ReceivedAtUtc);
-                var decision = Decision("REGISTERED", command);
-                var completedAt = timeProvider.GetUtcNow().UtcDateTime;
-                await submissionStore.FinalizeAcceptedAsync(
-                    submission,
-                    "REGISTERED",
-                    NewReference(),
-                    JsonSerializer.Serialize(receipt),
-                    JsonSerializer.Serialize(decision),
-                    completedAt,
-                    token);
-                transactionResult = new(
-                    RegistrationEndpointOutcome.Created,
-                    ToFinal(submission, receipt, decision, groups));
+                    var groups = _currentSnapshot.Groups.Select(ToGroup).ToArray();
+                    var term = await dbContext.Set<AcademicTerm>()
+                        .AsNoTracking()
+                        .SingleAsync(item => item.Id == command.TermId, token);
+                    var receipt = new RegistrationReceiptSnapshotDto(
+                        new(term.Id, term.Code, term.DisplayName, term.TimeZoneId),
+                        groups,
+                        _currentSnapshot.Groups.Sum(group => group.Credits),
+                        _currentSnapshot.PolicySetId,
+                        _currentSnapshot.PolicyVersion,
+                        command.ReceivedAtUtc);
+                    var decision = Decision("REGISTERED", command);
+                    var completedAt = timeProvider.GetUtcNow().UtcDateTime;
+                    AddAudit(submission, command, "RegistrationAccepted", "REGISTERED", completedAt);
+                    await submissionStore.FinalizeAcceptedAsync(
+                        submission,
+                        "REGISTERED",
+                        NewReference(),
+                        JsonSerializer.Serialize(receipt),
+                        JsonSerializer.Serialize(decision),
+                        completedAt,
+                        token);
+                    transactionResult = new(
+                        RegistrationEndpointOutcome.Created,
+                        ToFinal(submission, receipt, decision, groups));
+                }
+                catch (DbUpdateException exception)
+                    when (IsDuplicateEnrollment(exception))
+                {
+                    await seatAllocator.RollbackAllocationAsync(token);
+                    dbContext.ChangeTracker.Clear();
+                    var retainedClaim = await dbContext.Set<RegistrationSubmission>()
+                        .SingleAsync(candidate => candidate.Id == submission.Id, token);
+                    await FinalizeRejectedAsync(
+                        retainedClaim,
+                        "POLICY_CHANGED",
+                        command,
+                        token);
+                    transactionResult = Conflict(
+                        "POLICY_CHANGED",
+                        _currentSnapshot.AcademicContextVersion);
+                }
             },
             cancellationToken);
+
+        if (_claimContended)
+        {
+            var observed = await submissionStore.ReplayCommittedAsync(
+                scope,
+                payloadHash,
+                cancellationToken);
+            return ToVisibleResult(observed, command.TermId, command.ClientRequestId) ??
+                Processing(command.TermId, command.ClientRequestId);
+        }
 
         if (boundary.Outcome is RegistrationBoundaryOutcome.Committed &&
             transactionResult is not null)
@@ -238,7 +310,12 @@ public sealed class SqlRegistrationEndpointStore(
         return boundary.Outcome switch
         {
             RegistrationBoundaryOutcome.HoldBlocked => Conflict("HOLD_BLOCKED"),
-            RegistrationBoundaryOutcome.StaleVersion => Conflict("PLAN_CHANGED"),
+            RegistrationBoundaryOutcome.StaleVersion => Conflict(
+                "PLAN_CHANGED",
+                await CurrentAcademicVersionAsync(
+                    command.StudentId,
+                    command.TermId,
+                    cancellationToken)),
             RegistrationBoundaryOutcome.NotFound => new(
                 RegistrationEndpointOutcome.NotFound,
                 ErrorCode: "REGISTRATION_CONTEXT_NOT_FOUND"),
@@ -253,40 +330,34 @@ public sealed class SqlRegistrationEndpointStore(
         Guid clientRequestId,
         CancellationToken cancellationToken = default)
     {
-        var context = await ResolveCommandContextAsync(
-            applicationUserId, termId, cancellationToken);
-        if (context is null || clientRequestId == Guid.Empty)
+        var studentId = await dbContext.Set<Student>()
+            .AsNoTracking()
+            .Where(student =>
+                student.ApplicationUserId == applicationUserId &&
+                student.IsActive)
+            .Select(student => (Guid?)student.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (studentId is null || clientRequestId == Guid.Empty)
         {
             return new(RegistrationEndpointOutcome.NotFound, ErrorCode: "REQUEST_NOT_FOUND");
         }
 
-        try
-        {
-            await dbContext.Database.ExecuteSqlRawAsync(
-                "SET LOCK_TIMEOUT 500;", cancellationToken);
-            var submission = await dbContext.Set<RegistrationSubmission>()
-                .AsNoTracking()
-                .SingleOrDefaultAsync(candidate =>
-                    candidate.StudentId == context.ResolvedContext.StudentId &&
-                    candidate.TermId == termId &&
-                    candidate.ClientRequestId == clientRequestId,
-                    cancellationToken);
-            return submission?.IsFinal == true
-                ? new(RegistrationEndpointOutcome.Replayed,
-                    ToStoredFinal(submission))
-                : new(RegistrationEndpointOutcome.NotFound,
+        var observation = await submissionStore.ReadFinalByRequestBoundedAsync(
+            new RegistrationRequestScope(
+                studentId.Value,
+                termId,
+                clientRequestId),
+            RegistrationSubmissionStore.MaximumObservationWindow,
+            cancellationToken);
+        return observation.Submission is not null
+            ? new(
+                RegistrationEndpointOutcome.Replayed,
+                ToStoredFinal(observation.Submission))
+            : observation.IsInProgress
+                ? Processing(termId, clientRequestId)
+                : new(
+                    RegistrationEndpointOutcome.NotFound,
                     ErrorCode: "REQUEST_NOT_FOUND");
-        }
-        catch (Microsoft.Data.SqlClient.SqlException exception)
-            when (exception.Number == 1222)
-        {
-            return Processing(termId, clientRequestId);
-        }
-        finally
-        {
-            await dbContext.Database.ExecuteSqlRawAsync(
-                "SET LOCK_TIMEOUT -1;", CancellationToken.None);
-        }
     }
 
     public async Task LockRegistrationContextAsync(
@@ -311,7 +382,7 @@ public sealed class SqlRegistrationEndpointStore(
         {
             _ = await dbContext.Set<CatalogueVersion>()
                 .FromSqlInterpolated($"""
-                    SELECT * FROM [academic].[CatalogueVersions] WITH (UPDLOCK, HOLDLOCK)
+                    SELECT * FROM [academics].[CatalogueVersions] WITH (UPDLOCK, HOLDLOCK)
                     WHERE [ScopeCode] = {normalizedScopeCode}
                     """)
                 .ToArrayAsync(cancellationToken);
@@ -320,7 +391,7 @@ public sealed class SqlRegistrationEndpointStore(
 
         _ = await dbContext.Set<PolicySet>()
             .FromSqlInterpolated($"""
-                SELECT * FROM [academic].[PolicySets] WITH (UPDLOCK, HOLDLOCK)
+                SELECT * FROM [academics].[PolicySets] WITH (UPDLOCK, HOLDLOCK)
                 WHERE [ScopeCode] = {normalizedScopeCode}
                 """)
             .ToArrayAsync(cancellationToken);
@@ -346,6 +417,7 @@ public sealed class SqlRegistrationEndpointStore(
         CancellationToken cancellationToken)
     {
         _pendingRejectionCode = null;
+        _pendingCurrentVersion = null;
         var plan = await dbContext.Set<RegistrationPlan>()
             .AsNoTracking()
             .Include(candidate => candidate.Items)
@@ -354,38 +426,204 @@ public sealed class SqlRegistrationEndpointStore(
                 candidate.StudentId == validation.StudentId &&
                 candidate.TermId == validation.TermId,
                 cancellationToken);
-        if (plan is null ||
-            !string.Equals(Convert.ToBase64String(plan.Version),
-                validation.ExpectedPlanRowVersion, StringComparison.Ordinal))
+        if (plan is null)
         {
-            _pendingRejectionCode = "PLAN_CHANGED";
+            Reject("PLAN_CHANGED");
+            return;
+        }
+
+        var planVersion = Convert.ToBase64String(plan.Version);
+        if (!string.Equals(
+                planVersion,
+                validation.ExpectedPlanRowVersion,
+                StringComparison.Ordinal) ||
+            plan.Validation is null)
+        {
+            Reject("PLAN_CHANGED", planVersion);
             return;
         }
 
         if (plan.ReviewBlocked || plan.Conflicts.Count > 0)
         {
-            _pendingRejectionCode = "SCHEDULE_CONFLICT";
+            Reject("SCHEDULE_CONFLICT", planVersion);
             return;
         }
 
-        var maximumCredits = await dbContext.Set<Student>()
+        var window = await ResolveWindowForStudentAsync(
+            validation.StudentId,
+            validation.TermId,
+            cancellationToken);
+        if (window is null)
+        {
+            Reject("WINDOW_CHANGED");
+            return;
+        }
+
+        var windowVersion = Convert.ToBase64String(window.Version);
+        if (!string.Equals(
+                windowVersion,
+                validation.ExpectedRegistrationContextVersion,
+                StringComparison.Ordinal) ||
+            window.State == RegistrationWindowLifecycleState.EmergencyClosed)
+        {
+            Reject("WINDOW_CHANGED", windowVersion);
+            return;
+        }
+
+        if (validation.ReceivedAtUtc < window.OpensAtUtc ||
+            validation.ReceivedAtUtc >= window.ClosesAtUtc)
+        {
+            Reject("WINDOW_CLOSED", windowVersion);
+            return;
+        }
+
+        var snapshot = await planContextReader.ReadAsync(
+            validation.StudentId,
+            validation.TermId,
+            validation.GroupIds,
+            validation.ReceivedAtUtc,
+            cancellationToken);
+        if (snapshot is null)
+        {
+            Reject("POLICY_CHANGED", plan.Validation.PolicyVersion);
+            return;
+        }
+
+        _currentSnapshot = snapshot;
+        if (!string.Equals(
+                snapshot.AcademicContextVersion,
+                validation.ExpectedStudentTermStateRowVersion,
+                StringComparison.Ordinal))
+        {
+            Reject("PLAN_CHANGED", snapshot.AcademicContextVersion);
+            return;
+        }
+
+        if (!string.Equals(
+                snapshot.PolicyVersion,
+                plan.Validation.PolicyVersion,
+                StringComparison.Ordinal) ||
+            snapshot.PolicySetId != _preflightPolicySetId)
+        {
+            Reject("POLICY_CHANGED", snapshot.PolicyVersion);
+            return;
+        }
+
+        if (!string.Equals(
+                snapshot.CatalogueVersion,
+                plan.Validation.CatalogueVersion,
+                StringComparison.Ordinal))
+        {
+            Reject("POLICY_CHANGED", snapshot.CatalogueVersion);
+            return;
+        }
+
+        var planItems = plan.Items.ToDictionary(item => item.SelectedGroupId);
+        if (snapshot.Groups.Count != validation.GroupIds.Count ||
+            snapshot.Groups.Any(group =>
+                !planItems.TryGetValue(group.GroupId, out var item) ||
+                !string.Equals(
+                    item.CapturedOfferingVersion,
+                    group.OfferingVersion,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    item.CapturedGroupVersion,
+                    group.GroupVersion,
+                    StringComparison.Ordinal) ||
+                !string.Equals(group.State, "published", StringComparison.OrdinalIgnoreCase) ||
+                group.RegistrationPaused))
+        {
+            Reject(
+                "GROUP_CHANGED",
+                snapshot.Groups.FirstOrDefault()?.GroupVersion);
+            return;
+        }
+
+        var applicationUserId = await dbContext.Set<Student>()
             .Where(student => student.Id == validation.StudentId)
-            .Select(student => student.CurrentGpa < 2m ? 12m : 18m)
+            .Select(student => student.ApplicationUserId)
             .SingleAsync(cancellationToken);
-        if (plan.TotalCredits < 9m || plan.TotalCredits > maximumCredits)
+        var eligibility = await eligibilityService.EvaluateTermForCommitAsync(
+            applicationUserId,
+            validation.TermId,
+            validation.ReceivedAtUtc,
+            cancellationToken);
+        if (eligibility.Outcome is not EligibilityEvaluationOutcome.Found)
         {
-            _pendingRejectionCode = "POLICY_CHANGED";
+            Reject("POLICY_CHANGED", snapshot.PolicyVersion);
             return;
         }
 
-        var groups = await dbContext.Set<SectionGroup>()
-            .AsNoTracking()
-            .Where(group => validation.GroupIds.Contains(group.Id))
-            .ToArrayAsync(cancellationToken);
-        if (groups.Length != validation.GroupIds.Count ||
-            groups.Any(group => !group.IsSelectable))
+        foreach (var group in snapshot.Groups)
         {
-            _pendingRejectionCode = "GROUP_FULL";
+            var decision = eligibility.Items.SingleOrDefault(candidate =>
+                candidate.OfferingId == group.OfferingId);
+            var selected = decision?.Groups.SingleOrDefault(candidate =>
+                candidate.GroupId == group.GroupId);
+            if (decision is null ||
+                selected is null ||
+                !decision.Eligible ||
+                !selected.Selectable)
+            {
+                var codes = decision?.Reasons
+                    .Where(reason => reason.Blocking && !reason.Passed)
+                    .Select(reason => reason.Code)
+                    .Concat(selected?.NonSelectableReasons.Select(reason => reason.Code) ?? [])
+                    .ToHashSet(StringComparer.Ordinal) ?? [];
+                Reject(
+                    codes.Contains("GROUP_FULL") ? "GROUP_FULL" :
+                    codes.Contains("MEETING_CONFLICT") ? "SCHEDULE_CONFLICT" :
+                    codes.Contains("REGISTRATION_WINDOW_CLOSED") ? "WINDOW_CLOSED" :
+                    "POLICY_CHANGED",
+                    decision?.PolicyVersion ?? snapshot.PolicyVersion);
+                return;
+            }
+        }
+
+        var existing = await (
+                from enrollment in dbContext.Set<Enrollment>().AsNoTracking()
+                join offering in dbContext.Set<CourseOffering>().AsNoTracking()
+                    on enrollment.OfferingId equals offering.Id
+                join course in dbContext.Set<Course>().AsNoTracking()
+                    on offering.CourseId equals course.Id
+                where enrollment.StudentId == validation.StudentId &&
+                    enrollment.State == EnrollmentState.Active &&
+                    offering.TermId == validation.TermId
+                select new
+                {
+                    enrollment.OfferingId,
+                    enrollment.GroupId,
+                    course.Credits
+                })
+            .ToArrayAsync(cancellationToken);
+        if (existing.Any(item => snapshot.Groups.Any(group =>
+                group.OfferingId == item.OfferingId)))
+        {
+            Reject("POLICY_CHANGED", snapshot.AcademicContextVersion);
+            return;
+        }
+
+        var maximumCredits = await dbContext.Set<StudentTermAcademicState>()
+            .Where(state =>
+                state.StudentId == validation.StudentId &&
+                state.TermId == validation.TermId)
+            .Select(state => state.GpaAtStart < 2m ? 12m : 18m)
+            .SingleAsync(cancellationToken);
+        if (plan.TotalCredits < 9m ||
+            plan.TotalCredits + existing.Sum(item => item.Credits) > maximumCredits)
+        {
+            Reject("POLICY_CHANGED", snapshot.PolicyVersion);
+            return;
+        }
+
+        var existingGroupIds = existing.Select(item => item.GroupId).Distinct().ToArray();
+        if (existingGroupIds.Length > 0 &&
+            await HasTimetableConflictAsync(
+                validation.GroupIds,
+                existingGroupIds,
+                cancellationToken))
+        {
+            Reject("SCHEDULE_CONFLICT", snapshot.AcademicContextVersion);
         }
     }
 
@@ -396,13 +634,141 @@ public sealed class SqlRegistrationEndpointStore(
         CancellationToken cancellationToken)
     {
         var decision = Decision(reason, command);
+        var completedAt = timeProvider.GetUtcNow().UtcDateTime;
+        AddAudit(
+            submission,
+            command,
+            "RegistrationSubmissionRejected",
+            reason,
+            completedAt);
         await submissionStore.FinalizeRejectedAsync(
             submission,
             reason,
             JsonSerializer.Serialize(decision),
-            timeProvider.GetUtcNow().UtcDateTime,
+            completedAt,
             cancellationToken);
     }
+
+    private void AddAudit(
+        RegistrationSubmission submission,
+        RegistrationCommand command,
+        string action,
+        string reason,
+        DateTime occurredAtUtc) =>
+        dbContext.AuditEvents.Add(new AuditEvent(
+            Guid.NewGuid(),
+            $"application-user:{command.ApplicationUserId:D}",
+            $"student:{command.StudentId:D}",
+            action,
+            nameof(RegistrationSubmission),
+            submission.Id.ToString("N"),
+            reason,
+            null,
+            JsonSerializer.Serialize(new
+            {
+                termId = command.TermId,
+                resultCode = reason,
+                groupCount = _currentSnapshot?.Groups.Count ?? 0
+            }),
+            command.ClientRequestId.ToString("N"),
+            occurredAtUtc));
+
+    private void Reject(string code, string? currentVersion = null)
+    {
+        _pendingRejectionCode = code;
+        _pendingCurrentVersion = currentVersion;
+    }
+
+    private async Task<RegistrationWindow?> ResolveWindowForStudentAsync(
+        Guid studentId,
+        Guid termId,
+        CancellationToken cancellationToken)
+    {
+        var student = await dbContext.Set<Student>()
+            .AsNoTracking()
+            .Where(candidate => candidate.Id == studentId && candidate.IsActive)
+            .Select(candidate => new { candidate.ProgramCode, candidate.Cohort })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (student is null)
+        {
+            return null;
+        }
+
+        var windows = await dbContext.Set<RegistrationWindow>()
+            .AsNoTracking()
+            .Where(window => window.TermId == termId &&
+                (window.State == RegistrationWindowLifecycleState.Published ||
+                 window.State == RegistrationWindowLifecycleState.EmergencyClosed))
+            .ToArrayAsync(cancellationToken);
+        return windows
+            .OrderByDescending(candidate =>
+                candidate.ScopeType == RegistrationWindowScopeType.Cohort)
+            .ThenByDescending(candidate =>
+                candidate.ScopeType == RegistrationWindowScopeType.Program)
+            .ThenBy(candidate => candidate.Id)
+            .FirstOrDefault(candidate =>
+                candidate.ScopeType == RegistrationWindowScopeType.AllStudents ||
+                candidate.ScopeType == RegistrationWindowScopeType.Program &&
+                    string.Equals(candidate.ScopeValue, student.ProgramCode,
+                        StringComparison.OrdinalIgnoreCase) ||
+                candidate.ScopeType == RegistrationWindowScopeType.Cohort &&
+                    string.Equals(candidate.ScopeValue, student.Cohort,
+                        StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task<bool> HasTimetableConflictAsync(
+        IReadOnlyList<Guid> selectedGroupIds,
+        IReadOnlyList<Guid> existingGroupIds,
+        CancellationToken cancellationToken)
+    {
+        var allGroupIds = selectedGroupIds
+            .Concat(existingGroupIds)
+            .Distinct()
+            .ToArray();
+        var meetings = await dbContext.Set<MeetingSlot>()
+            .AsNoTracking()
+            .Where(meeting => allGroupIds.Contains(meeting.GroupId))
+            .Select(meeting => new
+            {
+                meeting.GroupId,
+                meeting.DayOfWeek,
+                meeting.StartLocal,
+                meeting.EndLocal
+            })
+            .ToArrayAsync(cancellationToken);
+        var selected = meetings
+            .Where(meeting => selectedGroupIds.Contains(meeting.GroupId))
+            .ToArray();
+        var existing = meetings
+            .Where(meeting => existingGroupIds.Contains(meeting.GroupId))
+            .ToArray();
+        return selected.Any(left => existing.Any(right =>
+            left.DayOfWeek == right.DayOfWeek &&
+            left.StartLocal < right.EndLocal &&
+            right.StartLocal < left.EndLocal));
+    }
+
+    private async Task<string?> CurrentAcademicVersionAsync(
+        Guid studentId,
+        Guid termId,
+        CancellationToken cancellationToken)
+    {
+        var version = await dbContext.Set<StudentTermAcademicState>()
+            .AsNoTracking()
+            .Where(state => state.StudentId == studentId && state.TermId == termId)
+            .Select(state => state.Version)
+            .SingleOrDefaultAsync(cancellationToken);
+        return version is { Length: > 0 }
+            ? Convert.ToBase64String(version)
+            : null;
+    }
+
+    private static bool IsDuplicateEnrollment(DbUpdateException exception) =>
+        exception.GetBaseException() is SqlException sql &&
+        sql.Number is 2601 or 2627 &&
+        sql.Message.Contains(
+            "IX_Enrollments_StudentId_OfferingId",
+            StringComparison.OrdinalIgnoreCase);
 
     private DecisionSnapshot Decision(string resultCode, RegistrationCommand command) =>
         new(
@@ -437,8 +803,13 @@ public sealed class SqlRegistrationEndpointStore(
                 1,
                 $"/api/student/terms/{termId:D}/registrations/by-request/{clientRequestId:D}"));
 
-    private static RegistrationEndpointResult Conflict(string code) =>
-        new(RegistrationEndpointOutcome.Conflict, ErrorCode: code);
+    private static RegistrationEndpointResult Conflict(
+        string code,
+        string? currentVersion = null) =>
+        new(
+            RegistrationEndpointOutcome.Conflict,
+            ErrorCode: code,
+            CurrentVersion: currentVersion);
 
     private static RegistrationFinalResult ToStoredFinal(
         RegistrationSubmission submission)

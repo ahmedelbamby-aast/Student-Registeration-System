@@ -33,7 +33,8 @@ public sealed record RegistrationTransactionPlan(
     DateTime ReceivedAtUtc,
     string CatalogueScopeCode,
     string PolicyScopeCode,
-    IReadOnlyList<Guid> GroupIds);
+    IReadOnlyList<Guid> GroupIds,
+    IReadOnlyList<Guid>? BoundaryGroupIds = null);
 
 public sealed record RegistrationFinalValidation(
     Guid StudentId,
@@ -45,7 +46,8 @@ public sealed record RegistrationFinalValidation(
     string CatalogueScopeCode,
     string PolicyScopeCode,
     IReadOnlyList<Guid> GroupIds,
-    IReadOnlyList<RegistrationMutableInput> MutableInputs);
+    IReadOnlyList<RegistrationMutableInput> MutableInputs,
+    string ExpectedStudentTermStateRowVersion = "");
 
 /// <summary>
 /// The SQL-local registration operations that run inside the canonical
@@ -180,8 +182,12 @@ public sealed class RegistrationTransactionCoordinator
             plan.CatalogueScopeCode,
             plan.PolicyScopeCode,
             cancellationToken).ConfigureAwait(false);
-        var sortedGroupIds = NormalizeGroupIds(plan.GroupIds);
-        await LockGroupVersionsAsync(sortedGroupIds, cancellationToken).ConfigureAwait(false);
+        var selectedGroupIds = NormalizeGroupIds(plan.GroupIds);
+        var boundaryGroupIds = NormalizeGroupIds(
+            plan.BoundaryGroupIds is { Count: > 0 }
+                ? plan.BoundaryGroupIds
+                : plan.GroupIds);
+        await LockGroupVersionsAsync(boundaryGroupIds, cancellationToken).ConfigureAwait(false);
 
         var catalogueScope = NormalizeScopeCode(
             plan.CatalogueScopeCode,
@@ -199,8 +205,9 @@ public sealed class RegistrationTransactionCoordinator
                 plan.ReceivedAtUtc,
                 catalogueScope,
                 policyScope,
-                sortedGroupIds,
-                RequiredMutableInputs),
+                selectedGroupIds,
+                RequiredMutableInputs,
+                plan.ExpectedStudentTermStateRowVersion),
             cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -340,6 +347,10 @@ public sealed class RegistrationTransactionCoordinator
         _ = NormalizeScopeCode(plan.CatalogueScopeCode, nameof(plan.CatalogueScopeCode));
         _ = NormalizeScopeCode(plan.PolicyScopeCode, nameof(plan.PolicyScopeCode));
         _ = NormalizeGroupIds(plan.GroupIds);
+        if (plan.BoundaryGroupIds is { Count: > 0 })
+        {
+            _ = NormalizeGroupIds(plan.BoundaryGroupIds);
+        }
     }
 
     private static IReadOnlyList<Guid> NormalizeGroupIds(IReadOnlyList<Guid> groupIds)

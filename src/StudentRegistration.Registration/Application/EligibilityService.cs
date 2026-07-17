@@ -45,9 +45,22 @@ public sealed class EligibilityService(
     public async Task<EligibilityEvaluationResult> EvaluateTermAsync(
         Guid applicationUserId,
         Guid termId,
+        CancellationToken cancellationToken = default) =>
+        await EvaluateTermAtAsync(
+            applicationUserId,
+            termId,
+            UtcNow(),
+            cancellationToken);
+
+    public async Task<EligibilityEvaluationResult> EvaluateTermAtAsync(
+        Guid applicationUserId,
+        Guid termId,
+        DateTime evaluatedAtUtc,
         CancellationToken cancellationToken = default)
     {
-        if (applicationUserId == Guid.Empty || termId == Guid.Empty)
+        if (applicationUserId == Guid.Empty ||
+            termId == Guid.Empty ||
+            evaluatedAtUtc.Kind is not DateTimeKind.Utc)
         {
             return Failure(
                 EligibilityEvaluationOutcome.ContextNotFound,
@@ -56,34 +69,11 @@ public sealed class EligibilityService(
 
         try
         {
-            var offeringSnapshots = await offerings.ListForTermAsync(
-                termId,
-                cancellationToken);
-            var academic = await academics.ReadAsync(
+            return await EvaluateTermCoreAsync(
                 applicationUserId,
                 termId,
-                offeringSnapshots.Select(item => item.CourseId).Distinct().ToArray(),
-                UtcNow(),
+                evaluatedAtUtc,
                 cancellationToken);
-            if (academic is null || academic.StudentId == Guid.Empty)
-            {
-                return Failure(
-                    EligibilityEvaluationOutcome.ContextNotFound,
-                    "REGISTRATION_CONTEXT_NOT_FOUND");
-            }
-
-            var plan = await currentPlan.ReadAsync(
-                academic.StudentId,
-                termId,
-                cancellationToken);
-            var decisions = offeringSnapshots
-                .OrderBy(item => item.OfferingId)
-                .Select(item => Evaluate(item, academic, plan))
-                .ToArray();
-            return new(
-                EligibilityEvaluationOutcome.Found,
-                decisions,
-                Metadata: Metadata(academic, decisions));
         }
         catch (OperationCanceledException)
         {
@@ -97,12 +87,82 @@ public sealed class EligibilityService(
         }
     }
 
+    public Task<EligibilityEvaluationResult> EvaluateTermForCommitAsync(
+        Guid applicationUserId,
+        Guid termId,
+        DateTime evaluatedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        if (applicationUserId == Guid.Empty ||
+            termId == Guid.Empty ||
+            evaluatedAtUtc.Kind is not DateTimeKind.Utc)
+        {
+            throw new ArgumentException(
+                "A valid authenticated registration context and UTC ingress time are required.");
+        }
+
+        return EvaluateTermCoreAsync(
+            applicationUserId,
+            termId,
+            evaluatedAtUtc,
+            cancellationToken);
+    }
+
+    private async Task<EligibilityEvaluationResult> EvaluateTermCoreAsync(
+        Guid applicationUserId,
+        Guid termId,
+        DateTime evaluatedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var offeringSnapshots = await offerings.ListForTermAsync(
+            termId,
+            cancellationToken);
+        var academic = await academics.ReadAsync(
+            applicationUserId,
+            termId,
+            offeringSnapshots.Select(item => item.CourseId).Distinct().ToArray(),
+            evaluatedAtUtc,
+            cancellationToken);
+        if (academic is null || academic.StudentId == Guid.Empty)
+        {
+            return Failure(
+                EligibilityEvaluationOutcome.ContextNotFound,
+                "REGISTRATION_CONTEXT_NOT_FOUND");
+        }
+
+        var plan = await currentPlan.ReadAsync(
+            academic.StudentId,
+            termId,
+            cancellationToken);
+        var decisions = offeringSnapshots
+            .OrderBy(item => item.OfferingId)
+            .Select(item => Evaluate(item, academic, plan, evaluatedAtUtc))
+            .ToArray();
+        return new(
+            EligibilityEvaluationOutcome.Found,
+            decisions,
+            Metadata: Metadata(academic, decisions));
+    }
+
     public async Task<EligibilityEvaluationResult> EvaluateOfferingAsync(
         Guid applicationUserId,
         Guid offeringId,
+        CancellationToken cancellationToken = default) =>
+        await EvaluateOfferingAtAsync(
+            applicationUserId,
+            offeringId,
+            UtcNow(),
+            cancellationToken);
+
+    public async Task<EligibilityEvaluationResult> EvaluateOfferingAtAsync(
+        Guid applicationUserId,
+        Guid offeringId,
+        DateTime evaluatedAtUtc,
         CancellationToken cancellationToken = default)
     {
-        if (applicationUserId == Guid.Empty || offeringId == Guid.Empty)
+        if (applicationUserId == Guid.Empty ||
+            offeringId == Guid.Empty ||
+            evaluatedAtUtc.Kind is not DateTimeKind.Utc)
         {
             return Failure(
                 EligibilityEvaluationOutcome.OfferingNotFound,
@@ -123,7 +183,7 @@ public sealed class EligibilityService(
                 applicationUserId,
                 offering.TermId,
                 [offering.CourseId],
-                UtcNow(),
+                evaluatedAtUtc,
                 cancellationToken);
             if (academic is null || academic.StudentId == Guid.Empty)
             {
@@ -136,7 +196,7 @@ public sealed class EligibilityService(
                 academic.StudentId,
                 offering.TermId,
                 cancellationToken);
-            var decision = Evaluate(offering, academic, plan);
+            var decision = Evaluate(offering, academic, plan, evaluatedAtUtc);
             return new(
                 EligibilityEvaluationOutcome.Found,
                 [decision],
@@ -158,7 +218,8 @@ public sealed class EligibilityService(
     private OfferingEligibility Evaluate(
         EligibilityOfferingSnapshot offering,
         EligibilityAcademicSnapshot academic,
-        CurrentPlanSnapshot plan)
+        CurrentPlanSnapshot plan,
+        DateTime evaluatedAtUtc)
     {
         var course = academic.Catalogue?.Courses.SingleOrDefault(
             item => item.CourseId == offering.CourseId);
@@ -265,7 +326,7 @@ public sealed class EligibilityService(
             reasons,
             groupModels,
             inputSummary,
-            UtcNow(),
+            evaluatedAtUtc,
             Encode(academic.AcademicContextVersion),
             academic.Catalogue?.VersionCode ?? "unavailable",
             policy?.PolicySetId ?? Guid.Empty,

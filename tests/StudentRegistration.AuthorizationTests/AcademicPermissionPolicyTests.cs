@@ -101,7 +101,8 @@ public sealed class AcademicPermissionPolicyTests
         RolePolicies.Student,
         RolePolicies.ContextRead,
         RolePolicies.AcademicProfileReadOwn,
-        RolePolicies.CatalogueReadAvailable)]
+        RolePolicies.CatalogueReadAvailable,
+        RolePolicies.RegistrationSubmitOwn)]
     [InlineData(
         RolePolicies.Admin,
         RolePolicies.IdentityAccessManage,

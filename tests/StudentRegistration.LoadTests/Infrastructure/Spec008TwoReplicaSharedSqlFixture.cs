@@ -31,6 +31,7 @@ using StudentRegistration.IdentityAccess.Application.Authorization;
 using StudentRegistration.IdentityAccess.Domain;
 using StudentRegistration.IdentityAccess.Endpoints;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
+using StudentRegistration.Registration.Endpoints;
 using Testcontainers.MsSql;
 
 namespace StudentRegistration.LoadTests.Infrastructure;
@@ -920,6 +921,7 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
         builder.Services.AddStudentRegistrationModules();
         builder.Services.AddProblemDetails();
         builder.Services.AddStudentRegistrationAcademicModule(builder.Configuration);
+        builder.Services.AddStudentRegistrationRegistrationModule();
 
         var application = builder.Build();
         application.Urls.Add(address.ToString());
@@ -929,6 +931,7 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
         application.UseStudentRegistrationIdentitySecurity();
         application.MapSpec007Endpoints();
         application.MapSpec008Endpoints();
+        application.MapSpec014Endpoints();
         await application.StartAsync(cancellationToken).ConfigureAwait(false);
         return application;
     }

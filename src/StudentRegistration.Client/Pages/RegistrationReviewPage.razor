@@ -61,7 +61,10 @@ else if (_shellContext is not null)
 }
 else
 {
-    @ReviewContent
+    <a href="#main-content">Skip to main content</a>
+    <main id="main-content" tabindex="-1">
+        @ReviewContent
+    </main>
 }
 
 @code {
@@ -126,11 +129,10 @@ else
         _ => "Registration review is unavailable"
     };
 
-    private RenderFragment ReviewContent => @<main id="main-content"
+    private RenderFragment ReviewContent => @<div
           data-route-id="STU-05"
           data-state="@_state"
-          data-contract-state="@ContractState"
-          tabindex="-1">
+          data-contract-state="@ContractState">
         <header>
             <p>Student registration</p>
             <h1>Registration review</h1>
@@ -255,9 +257,10 @@ else
                 </section>
             }
 
-            <div>
-                <a href="/student/schedule">Edit plan</a>
+            <div class="srs-registration-review__actions">
+                <a class="srs-registration-review__action" href="/student/schedule">Edit plan</a>
                 <button @ref="_reviewTrigger"
+                        class="srs-registration-review__action"
                         type="button"
                         aria-describedby="@(HasBlockers ? "registration-blockers review-disabled-reason" : null)"
                         disabled="@(HasBlockers || _requestLoading || _processing)"
@@ -286,7 +289,7 @@ else
                                 OnCancel="CloseConfirmation"
                                 FocusRestoreRequested="RestoreReviewFocusAsync" />
         }
-    </main>;
+    </div>;
 
     protected override async Task OnInitializedAsync()
     {
@@ -496,5 +499,7 @@ else
 
     private void CloseConfirmation() => _showConfirmation = false;
 
-    private Task RestoreReviewFocusAsync() => _reviewTrigger.FocusAsync().AsTask();
+    private Task RestoreReviewFocusAsync() => _state is StaleState or ValidationErrorState
+        ? Task.CompletedTask
+        : _reviewTrigger.FocusAsync().AsTask();
 }

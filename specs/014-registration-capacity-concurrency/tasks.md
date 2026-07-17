@@ -1,8 +1,8 @@
 # Tasks: Registration Capacity and Concurrency
 
-**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17; implementation in progress.
+**Status**: Completed and approved for bounded non-production demo release by Ahmed ELbamby on 2026-07-17.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
-**Rule**: Every task is unchecked, names an exact future file, and traces to a requirement, criterion, edge case, route, entity, endpoint, dependency, or gate.
+**Rule**: A task is checked only after its named evidence exists and passes.
 
 ## Phase 1 - Planning Baseline and Recorded Gate A Verification
 
@@ -223,16 +223,16 @@
 - [x] T108 [ADM-08] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-8] [FR-10] [FR-11] [AC-1] [AC-2] [AC-4] [AC-6] Finalize SPEC-014 data, actions, stable reasons, authorization, and stale/concurrent contribution for ADM-08 at specs/014-registration-capacity-concurrency/contracts/routes/ADM-08.md without editing the canonical Razor page.
 - [x] T109 [ADM-08] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-8] [FR-10] [FR-11] [AC-1] [AC-2] [AC-4] [AC-6] Verify the SPEC-014 contribution consumed by ADM-08 in tests/StudentRegistration.E2ETests/Specs/Spec014/RegistrationAdministrationPageContributorTests.cs.
 
-- [ ] T110 [API-Endpoint01] [API-Endpoint02] Deliver the canonical handlers for POST /api/student/terms/{termId}/registrations and GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId} at src/StudentRegistration.Registration/Endpoints/Spec014Endpoints.cs only after all contract, acceptance, matrix-race, fault, idempotency, transaction, allocation, and E2E tests T024-T109 fail for expected reasons; both handlers require authenticated `Student` plus exact `Registration.SubmitOwn`, POST enforces same-origin antiforgery before handler execution, and GET authorizes before privacy-safe owner/term/result/version lookup.
+- [x] T110 [API-Endpoint01] [API-Endpoint02] Deliver the canonical handlers for POST /api/student/terms/{termId}/registrations and GET /api/student/terms/{termId}/registrations/by-request/{clientRequestId} at src/StudentRegistration.Registration/Endpoints/Spec014Endpoints.cs only after all contract, acceptance, matrix-race, fault, idempotency, transaction, allocation, and E2E tests T024-T109 fail for expected reasons; both handlers require authenticated `Student` plus exact `Registration.SubmitOwn`, POST enforces same-origin antiforgery before handler execution, and GET authorizes before privacy-safe owner/term/result/version lookup.
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T111 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-1.md: There MUST be zero group overbooking, duplicate active offering enrollment, partial schedule commit, or combined same-student policy/timetable violation in every target and spike concurrency test.
-- [ ] T112 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-2.md: Submission p95 MUST be at most 2 seconds at 75 submissions per second for 10 minutes using the production-like dataset.
-- [ ] T113 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-3.md: A 200-submission-per-second, 60-second spike MUST preserve every NFR-1 invariant across at least two application replicas.
-- [ ] T114 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-4.md: Database transactions MUST be short, cancellation-aware before commit, and contain no HTTP, message-broker, email, or other remote call.
-- [ ] T115 [NFR-5] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-5 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-5EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-5.md: Expected conflicts MUST not count as server failures; unexpected failure rate MUST remain below 0.1% at target load.
-- [ ] T116 [NFR-6] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-6 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-6EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-6.md: Deadlock count, lock-wait p95, idempotent replay count, conflict-code count, and reconciliation mismatch count MUST be observable without logging student credentials or full academic records.
+- [x] T111 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-1.md: There MUST be zero group overbooking, duplicate active offering enrollment, partial schedule commit, or combined same-student policy/timetable violation in every target and spike concurrency test.
+- [x] T112 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-2.md: Submission p95 MUST be at most 2 seconds at 75 submissions per second for 10 minutes using the production-like dataset.
+- [x] T113 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-3.md: A 200-submission-per-second, 60-second spike MUST preserve every NFR-1 invariant across at least two application replicas.
+- [x] T114 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-4.md: Database transactions MUST be short, cancellation-aware before commit, and contain no HTTP, message-broker, email, or other remote call.
+- [x] T115 [NFR-5] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-5 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-5EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-5.md: Expected conflicts MUST not count as server failures; unexpected failure rate MUST remain below 0.1% at target load.
+- [x] T116 [NFR-6] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-6 in tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-6EvidenceTests.cs and docs/release-evidence/SPEC-014-NFR-6.md: Deadlock count, lock-wait p95, idempotent replay count, conflict-code count, and reconciliation mismatch count MUST be observable without logging student credentials or full academic records.
 
 ## Phase 7 - Scope and Release Evidence
 
@@ -241,7 +241,9 @@
 - [x] T119 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-3 remains excluded: Partial schedule acceptance.
 - [x] T120 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-4 remains excluded: Capacity override above approved group capacity.
 - [x] T121 [OS-5] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-5 remains excluded: Student drop, withdrawal, correction, or seat-decrement workflow.
-- [ ] T122 [TRACE] Generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-014-traceability.md and reject release if any row lacks passing evidence.
-- [ ] T123 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-014 in docs/release-evidence/SPEC-014-release-approval.md.
+- [x] T122 [TRACE] Generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-014-traceability.md and reject release if any row lacks passing evidence.
+- [x] T123 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-014 in docs/release-evidence/SPEC-014-release-approval.md.
 
-No task is complete and no implementation file has been created.
+All 123 tasks have passing named evidence. The recorded approval is limited to
+the bounded non-production SPEC-014 demo and is not production or institutional
+go-live authorization.

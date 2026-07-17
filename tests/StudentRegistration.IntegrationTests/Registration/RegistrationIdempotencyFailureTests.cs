@@ -211,7 +211,7 @@ public sealed class RegistrationIdempotencyFailureTests(
             observerContext,
             TimeProvider.System);
         var stopwatch = Stopwatch.StartNew();
-        var observation = await observerStore.WaitForFinalResultAsync(
+        var observation = await observerStore.ObserveScopedAsync(
             scope,
             "payload-a",
             TimeSpan.FromMilliseconds(150));
@@ -219,6 +219,15 @@ public sealed class RegistrationIdempotencyFailureTests(
 
         Assert.Equal(SubmissionClaimStatus.InProgress, observation.Status);
         Assert.Null(observation.Submission);
+        Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 500);
+
+        stopwatch.Restart();
+        var lookup = await observerStore.ReadFinalByRequestBoundedAsync(
+            scope,
+            TimeSpan.FromMilliseconds(150));
+        stopwatch.Stop();
+        Assert.True(lookup.IsInProgress);
+        Assert.Null(lookup.Submission);
         Assert.InRange(stopwatch.ElapsedMilliseconds, 100, 500);
         await winnerTransaction.RollbackAsync();
         Assert.Null(await observerStore.ReadFinalByRequestAsync(scope));

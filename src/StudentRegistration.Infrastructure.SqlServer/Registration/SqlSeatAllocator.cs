@@ -162,6 +162,15 @@ public sealed class SqlSeatAllocator
         CancellationToken cancellationToken = default) =>
         AllocateWithSavepointAsync(groupIds, cancellationToken);
 
+    public async Task RollbackAllocationAsync(
+        CancellationToken cancellationToken = default)
+    {
+        RequireCallerTransaction();
+        await _dbContext.Database.CurrentTransaction!.RollbackToSavepointAsync(
+            AllocationSavepoint,
+            cancellationToken);
+    }
+
     private void RequireCallerTransaction()
     {
         if (_dbContext.Database.CurrentTransaction is null)

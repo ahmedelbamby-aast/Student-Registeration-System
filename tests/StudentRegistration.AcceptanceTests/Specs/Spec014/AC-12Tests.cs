@@ -65,6 +65,16 @@ public sealed class AC_12Tests
         var failureEvidence = Spec014AcceptanceSource.Require(
             "tests/StudentRegistration.QualityTests/Specs/Spec014/NFR-5EvidenceTests.cs",
             "Expected-conflict classification and <0.1% failure evidence must exist before AC-12 can pass.");
-        Spec014AcceptanceSource.ContainsAll(failureEvidence, "0.1", "conflict", "unexpected");
+        Spec014AcceptanceSource.ContainsAll(
+            failureEvidence,
+            "ExpectedConflictRequests",
+            "UnexpectedFailures",
+            "UnexpectedFailureRatePercent");
+        var loadHarness = Spec014AcceptanceSource.Require(
+            "tests/StudentRegistration.QualityTests/Specs/Spec014/Spec014RegistrationLoadHarness.cs",
+            "The release evidence gate must enforce the <0.1% unexpected-failure threshold before AC-12 can pass.");
+        Spec014AcceptanceSource.ContainsAll(
+            loadHarness,
+            "UnexpectedFailureRatePercent >= 0.1");
     }
 }

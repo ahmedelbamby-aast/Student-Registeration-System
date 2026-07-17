@@ -2,16 +2,23 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
+using System.Net;
+using System.Net.Http.Json;
 using System.Reflection;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using StudentRegistration.Academics.Application;
+using StudentRegistration.Academics.Application.Ports;
 using StudentRegistration.Infrastructure.SqlServer.Audit;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Infrastructure.SqlServer.Registration;
+using StudentRegistration.IdentityAccess.Application.Authorization;
 using StudentRegistration.LoadTests.Infrastructure;
+using StudentRegistration.Registration.Application;
 using StudentRegistration.Registration.Domain;
 
 namespace StudentRegistration.QualityTests.Specs.Spec014;
@@ -43,6 +50,7 @@ public sealed record Spec014ProfileEvidence(
     int AcceptedRequests,
     int ExpectedConflictRequests,
     int IdempotentReplayRequests,
+    int InProgressRequests,
     int UnexpectedFailures,
     double UnexpectedFailureRatePercent,
     double SubmissionP95Milliseconds,
@@ -60,6 +68,29 @@ public sealed record Spec014MetricEvidence(
     long ReconciliationMismatchCount,
     int UnsafeMetricTagCount);
 
+public sealed record Spec014CollisionEvidence(
+    int ConcurrentRequests,
+    int GroupCapacity,
+    int AcceptedRequests,
+    int ExpectedConflictRequests,
+    int ActiveEnrollments,
+    int FinalEnrolledCount,
+    int ReplicaCount,
+    Spec014InvariantEvidence Invariants);
+
+public sealed record Spec014BoundaryEvidence(
+    int AuthenticatedServiceSubmissions,
+    int ImpersonationAttemptsRejected,
+    int CoordinatorBoundaryExecutions,
+    int CoordinatorCommitCallbacks,
+    int HttpUnauthorizedResponses,
+    int HttpAntiforgeryRejections);
+
+public sealed record Spec014RemoteTraceEvidence(
+    int FaultsInjected,
+    int ObservedHttpActivities,
+    int RemoteActivitiesInsideTransactions);
+
 public sealed record Spec014LoadEvidence(
     string ArtifactVersion,
     string ProfileVersion,
@@ -72,6 +103,9 @@ public sealed record Spec014LoadEvidence(
     string ExecutionBoundary,
     Spec014ProfileEvidence Target,
     Spec014ProfileEvidence Spike,
+    Spec014CollisionEvidence Collision,
+    Spec014BoundaryEvidence Boundary,
+    Spec014RemoteTraceEvidence RemoteTrace,
     Spec014MetricEvidence Metrics,
     int RemoteDependencyTypesInsideTransactionBoundary,
     int RemoteCallsInsideTransactions,
@@ -114,6 +148,10 @@ public static class Spec014RegistrationLoadHarness
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/RegistrationSubmissionStore.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/SqlSeatAllocator.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/EnrollmentCounterReconciler.cs",
+        "src/StudentRegistration.Infrastructure.SqlServer/Registration/SqlRegistrationEndpointStore.cs",
+        "src/StudentRegistration.Registration/Application/RegistrationEndpointService.cs",
+        "src/StudentRegistration.Registration/Application/RegistrationTransactionCoordinator.cs",
+        "src/StudentRegistration.Registration/Endpoints/Spec014Endpoints.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs"
     ];
@@ -157,11 +195,20 @@ public static class Spec014RegistrationLoadHarness
         };
 
         using var metrics = new RegistrationMetricCollector();
+        using var remoteTrace = new RemoteActivityTrace();
         var cancellationVerified = await VerifyCancellationBeforeCommitAsync(
             replicas[0],
             dataset,
             cancellationToken);
         var remoteDependencyTypes = CountRemoteDependencyTypes();
+        await remoteTrace.InjectFailingHttpCallAsync(cancellationToken);
+        await VerifyRetriableTransactionSmokeAsync(
+            replicas[0],
+            dataset,
+            cancellationToken);
+        var boundary = await VerifyAuthenticatedApplicationBoundaryAsync(
+            database,
+            cancellationToken);
 
         var target = await RunProfileAsync(
             "required-target",
@@ -182,6 +229,10 @@ public static class Spec014RegistrationLoadHarness
             replicas,
             dataset,
             metrics,
+            cancellationToken);
+        var collision = await RunThirtySeatCollisionAsync(
+            replicas,
+            dataset,
             cancellationToken);
 
         await ProveReconciliationMetricAndRepairAsync(
@@ -212,12 +263,254 @@ public static class Spec014RegistrationLoadHarness
             "RegistrationSubmissionStore + SqlSeatAllocator + Enrollment/Audit atomic commit",
             target,
             spike,
+            collision,
+            boundary,
+            remoteTrace.Snapshot(),
             metricEvidence,
             remoteDependencyTypes,
-            0,
+            remoteTrace.RemoteActivitiesInsideTransactions,
             cancellationVerified,
             privacyViolations,
-            EndpointSmokeExecuted: false);
+            EndpointSmokeExecuted:
+                boundary.HttpUnauthorizedResponses == 1 &&
+                boundary.HttpAntiforgeryRejections == 1);
+    }
+
+    public static async Task RunRetriableTransactionSmokeAsync(
+        CancellationToken cancellationToken = default)
+    {
+        const int smokeAccountCount = 100;
+        await using var database = new Spec008TwoReplicaSharedSqlFixture(
+            smokeAccountCount);
+        await database.InitializeAsync(cancellationToken);
+        var connectionString = database.ConnectionString ??
+            throw new InvalidOperationException("The smoke SQL fixture is not ready.");
+        var dataset = await SeedRegistrationDatasetAsync(
+            connectionString,
+            cancellationToken,
+            smokeAccountCount);
+        var replica = new LogicalRegistrationReplica("smoke-replica", connectionString);
+        using var metrics = new RegistrationMetricCollector();
+        await VerifyRetriableTransactionSmokeAsync(
+            replica,
+            dataset,
+            cancellationToken);
+        var transactionSamples = new ConcurrentBag<double>();
+        var accepted = await ExecuteRequestAsync(
+            replica,
+            dataset,
+            "smoke",
+            acceptedOfferingOffset: 0,
+            requestIndex: 0,
+            transactionSamples,
+            cancellationToken);
+        var rejected = await ExecuteRequestAsync(
+            replica,
+            dataset,
+            "smoke",
+            acceptedOfferingOffset: 0,
+            requestIndex: 7,
+            transactionSamples,
+            cancellationToken);
+        var replay = await ExecuteRequestAsync(
+            replica,
+            dataset,
+            "smoke",
+            acceptedOfferingOffset: 0,
+            requestIndex: 9,
+            transactionSamples,
+            cancellationToken);
+        await ProveReconciliationMetricAndRepairAsync(
+            replica,
+            dataset,
+            cancellationToken);
+        var invariants = await QueryInvariantsAsync(
+            connectionString,
+            cancellationToken);
+        var metricSnapshot = metrics.Snapshot();
+        if (accepted is not RegistrationLoadOutcome.Accepted ||
+            rejected is not RegistrationLoadOutcome.ExpectedConflict ||
+            replay is not RegistrationLoadOutcome.IdempotentReplay ||
+            invariants.TotalViolations != 0 ||
+            metricSnapshot.PublishedMetricNames.Count != 5 ||
+            metricSnapshot.IdempotentReplayCount < 1 ||
+            metricSnapshot.CapacityConflictCount < 1 ||
+            metricSnapshot.ReconciliationMismatchCount < 1 ||
+            metricSnapshot.UnsafeMetricTagCount != 0)
+        {
+            throw new InvalidOperationException(
+                "The fast SPEC-014 transaction/invariant/metric smoke did not satisfy its evidence contract.");
+        }
+    }
+
+    private static async Task<Spec014BoundaryEvidence>
+        VerifyAuthenticatedApplicationBoundaryAsync(
+            Spec008TwoReplicaSharedSqlFixture database,
+            CancellationToken cancellationToken)
+    {
+        var requestBody = new SubmitRegistrationRequest(
+            StableGuid("boundary:http-plan"),
+            Convert.ToBase64String([1]),
+            StableGuid("boundary:http-request"));
+        using var anonymousRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/student/terms/00000000-0000-0000-0000-000000000001/registrations")
+        {
+            Content = JsonContent.Create(requestBody)
+        };
+        using var anonymousResponse = await database.FirstReplicaClient.SendAsync(
+            anonymousRequest,
+            cancellationToken);
+        if (anonymousResponse.StatusCode is not HttpStatusCode.Unauthorized)
+        {
+            throw new InvalidOperationException(
+                $"The SPEC-014 endpoint accepted an anonymous request with status {(int)anonymousResponse.StatusCode}.");
+        }
+
+        using var missingAntiforgery = database.StudentSessions[0].CreateRequest(
+            HttpMethod.Post,
+            "/api/student/terms/00000000-0000-0000-0000-000000000001/registrations");
+        missingAntiforgery.Content = JsonContent.Create(requestBody);
+        using var antiforgeryResponse = await database.SecondReplicaClient.SendAsync(
+            missingAntiforgery,
+            cancellationToken);
+        var antiforgeryBody = await antiforgeryResponse.Content.ReadAsStringAsync(
+            cancellationToken);
+        if (antiforgeryResponse.StatusCode is not HttpStatusCode.BadRequest ||
+            !antiforgeryBody.Contains("ANTIFORGERY_INVALID", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "The authenticated SPEC-014 POST did not enforce antiforgery before handler execution.");
+        }
+
+        var applicationUserId = StableGuid("boundary:application-user");
+        var studentId = StableGuid("boundary:student");
+        var termId = StableGuid("boundary:term");
+        var planId = StableGuid("boundary:plan");
+        var groupId = StableGuid("boundary:group");
+        var endpointStore = new ProbeEndpointStore(
+            applicationUserId,
+            studentId,
+            termId,
+            groupId);
+        var boundaryStore = new ProbeAcademicBoundaryStore();
+        var coordinator = new RegistrationTransactionCoordinator(
+            new StudentAcademicProfileService(boundaryStore, TimeProvider.System),
+            endpointStore);
+        var endpointService = new RegistrationEndpointService(
+            new RegistrationCommandFactory(TimeProvider.System),
+            endpointStore,
+            TimeProvider.System);
+        var principal = StudentPrincipal(applicationUserId);
+        var accepted = await endpointService.SubmitAsync(
+            principal,
+            termId,
+            new(planId, Convert.ToBase64String([2]), StableGuid("boundary:request")),
+            coordinator,
+            cancellationToken);
+        if (accepted.Outcome is not RegistrationEndpointOutcome.Created)
+        {
+            throw new InvalidOperationException(
+                "The authenticated application-boundary probe did not reach the coordinator commit callback.");
+        }
+
+        var impersonation = await endpointService.SubmitAsync(
+            StudentPrincipal(StableGuid("boundary:impersonator")),
+            termId,
+            new(planId, Convert.ToBase64String([2]), StableGuid("boundary:impersonation")),
+            coordinator,
+            cancellationToken);
+        if (impersonation.Outcome is not RegistrationEndpointOutcome.Conflict ||
+            endpointStore.SubmitCalls != 1)
+        {
+            throw new InvalidOperationException(
+                "An application-user substitution attempt crossed the authenticated command boundary.");
+        }
+
+        return new(
+            endpointStore.SubmitCalls,
+            1,
+            boundaryStore.Executions,
+            endpointStore.AtomicCommitCallbacks,
+            1,
+            1);
+    }
+
+    private static async Task VerifyRetriableTransactionSmokeAsync(
+        LogicalRegistrationReplica replica,
+        RegistrationLoadDataset dataset,
+        CancellationToken cancellationToken)
+    {
+        var before = await CountSubmissionsAsync(
+            dataset.ConnectionString,
+            cancellationToken);
+        await using var context = replica.CreateContext();
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            context.ChangeTracker.Clear();
+            await using var transaction = await context.Database.BeginTransactionAsync(
+                cancellationToken);
+            using var transactionTrace = RemoteActivityTrace.EnterTransaction();
+            try
+            {
+                var scope = new RegistrationRequestScope(
+                    dataset.StudentIds[^1],
+                    dataset.TermId,
+                    StableGuid("spec014-load:transaction-smoke"));
+                var store = new RegistrationSubmissionStore(
+                    context,
+                    TimeProvider.System);
+                var claim = await store.ClaimInsideTransactionAsync(
+                    scope,
+                    "TRANSACTION-SMOKE",
+                    DateTime.UtcNow,
+                    cancellationToken);
+                var allocation = await new SqlSeatAllocator(context).AllocateAsync(
+                    dataset.GroupIds[5],
+                    cancellationToken);
+                if (!claim.MayExecute || claim.Submission is null ||
+                    !allocation.IsAllocated)
+                {
+                    throw new InvalidOperationException(
+                        "The pre-profile retriable transaction smoke did not reach allocation.");
+                }
+
+                await transaction.RollbackAsync(CancellationToken.None);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
+            }
+        });
+
+        var after = await CountSubmissionsAsync(
+            dataset.ConnectionString,
+            cancellationToken);
+        await using var connection = new SqlConnection(dataset.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        var groupCount = await ScalarAsync<int>(connection, null, """
+            SELECT [EnrolledCount] FROM [scheduling].[SectionGroups]
+            WHERE [Id] = @group;
+            """, cancellationToken, new SqlParameter("@group", dataset.GroupIds[5]));
+        if (before != after || groupCount != 0)
+        {
+            throw new InvalidOperationException(
+                "The pre-profile transaction smoke left durable mutation after rollback.");
+        }
+    }
+
+    private static ClaimsPrincipal StudentPrincipal(Guid applicationUserId)
+    {
+        var identity = new ClaimsIdentity(
+        [
+            new(ClaimTypes.NameIdentifier, applicationUserId.ToString("D")),
+            new(ClaimTypes.Role, RolePolicies.Student),
+            new(RolePolicies.PermissionClaimType, "Registration.SubmitOwn")
+        ],
+        "SPEC014-load-probe");
+        return new(identity);
     }
 
     public static async Task WriteLocalArtifactAsync(
@@ -230,6 +523,106 @@ public static class Spec014RegistrationLoadHarness
             "evidence",
             "SPEC-014-load-results.json");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(
+            path,
+            JsonSerializer.Serialize(evidence, JsonOptions),
+            cancellationToken);
+    }
+
+    public static void ValidateReleaseEvidence(Spec014LoadEvidence evidence)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        ValidateProfileAccounting(evidence.Target);
+        ValidateProfileAccounting(evidence.Spike);
+        if (evidence.SourceFingerprint != CalculateSourceFingerprint() ||
+            evidence.SyntheticAccountCount != AccountCount ||
+            evidence.LogicalSessionCount != LogicalSessionCount ||
+            evidence.LogicalApplicationReplicaCount != ReplicaCount ||
+            evidence.Target.ConfiguredSubmissionsPerSecond != TargetRate ||
+            evidence.Target.DurationSeconds != TargetDurationSeconds ||
+            evidence.Target.ScheduledRequests != TargetRate * TargetDurationSeconds ||
+            evidence.Target.SubmissionP95Milliseconds > 2_000 ||
+            evidence.Target.TransactionP95Milliseconds > 2_000 ||
+            evidence.Target.UnexpectedFailureRatePercent >= 0.1 ||
+            evidence.Target.Invariants.TotalViolations != 0 ||
+            evidence.Spike.ConfiguredSubmissionsPerSecond != SpikeRate ||
+            evidence.Spike.DurationSeconds != SpikeDurationSeconds ||
+            evidence.Spike.ScheduledRequests != SpikeRate * SpikeDurationSeconds ||
+            evidence.Spike.TransactionP95Milliseconds > 2_000 ||
+            evidence.Spike.UnexpectedFailures != 0 ||
+            evidence.Spike.Invariants.TotalViolations != 0 ||
+            evidence.Collision.ConcurrentRequests != 100 ||
+            evidence.Collision.GroupCapacity != 30 ||
+            evidence.Collision.AcceptedRequests != 30 ||
+            evidence.Collision.ExpectedConflictRequests != 70 ||
+            evidence.Collision.ActiveEnrollments != 30 ||
+            evidence.Collision.FinalEnrolledCount != 30 ||
+            evidence.Collision.ReplicaCount < 2 ||
+            evidence.Collision.Invariants.TotalViolations != 0 ||
+            evidence.Boundary.AuthenticatedServiceSubmissions != 1 ||
+            evidence.Boundary.ImpersonationAttemptsRejected != 1 ||
+            evidence.Boundary.CoordinatorBoundaryExecutions != 1 ||
+            evidence.Boundary.CoordinatorCommitCallbacks != 1 ||
+            !evidence.EndpointSmokeExecuted ||
+            !evidence.CancellationBeforeCommitVerified ||
+            evidence.RemoteDependencyTypesInsideTransactionBoundary != 0 ||
+            evidence.RemoteCallsInsideTransactions != 0 ||
+            evidence.RemoteTrace.FaultsInjected != 1 ||
+            evidence.RemoteTrace.ObservedHttpActivities < 1 ||
+            evidence.RemoteTrace.RemoteActivitiesInsideTransactions != 0 ||
+            evidence.Metrics.DeadlockCount < 0 ||
+            evidence.Metrics.LockWaitP95Milliseconds < 0 ||
+            evidence.Metrics.IdempotentReplayCount < 1 ||
+            evidence.Metrics.CapacityConflictCount < 1 ||
+            evidence.Metrics.ReconciliationMismatchCount < 1 ||
+            evidence.Metrics.UnsafeMetricTagCount != 0 ||
+            evidence.PrivacyViolations != 0)
+        {
+            throw new InvalidOperationException(
+                "SPEC-014 release evidence failed one or more NFR gates and cannot be published.");
+        }
+
+        var requiredMetrics = new[]
+        {
+            SqlSeatAllocator.DeadlockMetricName,
+            SqlSeatAllocator.LockWaitMetricName,
+            RegistrationSubmissionStore.IdempotentReplayMetricName,
+            SqlSeatAllocator.CapacityConflictMetricName,
+            EnrollmentCounterReconciler.CounterMismatchMetricName
+        };
+        if (requiredMetrics.Except(
+                evidence.Metrics.PublishedMetricNames,
+                StringComparer.Ordinal).Any())
+        {
+            throw new InvalidOperationException(
+                "SPEC-014 release evidence is missing a required operational metric.");
+        }
+    }
+
+    private static void ValidateProfileAccounting(Spec014ProfileEvidence profile)
+    {
+        if (profile.CompletedRequests != profile.ScheduledRequests ||
+            profile.CompletedRequests !=
+                profile.AcceptedRequests +
+                profile.ExpectedConflictRequests +
+                profile.IdempotentReplayRequests +
+                profile.InProgressRequests +
+                profile.UnexpectedFailures)
+        {
+            throw new InvalidOperationException(
+                $"SPEC-014 profile '{profile.Name}' has invalid request accounting.");
+        }
+    }
+
+    public static async Task WriteCheckedInArtifactAsync(
+        Spec014LoadEvidence evidence,
+        CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(
+            FindRepositoryRoot(),
+            Spec014LoadEvidence.CheckedInArtifactPath.Replace(
+                '/',
+                Path.DirectorySeparatorChar));
         await File.WriteAllTextAsync(
             path,
             JsonSerializer.Serialize(evidence, JsonOptions),
@@ -269,6 +662,7 @@ public static class Spec014RegistrationLoadHarness
         var accepted = 0;
         var conflicts = 0;
         var replays = 0;
+        var inProgress = 0;
         var unexpected = 0;
         var completed = 0;
         var replicaCounts = new int[replicas.Count];
@@ -315,6 +709,9 @@ public static class Spec014RegistrationLoadHarness
                         case RegistrationLoadOutcome.IdempotentReplay:
                             Interlocked.Increment(ref replays);
                             break;
+                        case RegistrationLoadOutcome.InProgress:
+                            Interlocked.Increment(ref inProgress);
+                            break;
                         default:
                             Interlocked.Increment(ref unexpected);
                             break;
@@ -354,6 +751,7 @@ public static class Spec014RegistrationLoadHarness
             accepted,
             conflicts,
             replays,
+            inProgress,
             unexpected,
             unexpected * 100d / totalRequests,
             Percentile95(samples),
@@ -397,6 +795,8 @@ public static class Spec014RegistrationLoadHarness
                     cancellationToken);
             return replay.Status is SubmissionClaimStatus.Replayed
                 ? RegistrationLoadOutcome.IdempotentReplay
+                : replay.Status is SubmissionClaimStatus.InProgress
+                    ? RegistrationLoadOutcome.InProgress
                 : RegistrationLoadOutcome.Unexpected;
         }
 
@@ -406,9 +806,14 @@ public static class Spec014RegistrationLoadHarness
             acceptedOfferingOffset,
             requestIndex);
         await using var context = replica.CreateContext();
-        var transactionStarted = Stopwatch.GetTimestamp();
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+        context.ChangeTracker.Clear();
         await using var transaction = await context.Database.BeginTransactionAsync(
             cancellationToken);
+        var transactionStarted = Stopwatch.GetTimestamp();
+        using var transactionTrace = RemoteActivityTrace.EnterTransaction();
         try
         {
             var store = new RegistrationSubmissionStore(context, TimeProvider.System);
@@ -488,6 +893,152 @@ public static class Spec014RegistrationLoadHarness
             transactionSamples.Add(
                 Stopwatch.GetElapsedTime(transactionStarted).TotalMilliseconds);
         }
+        });
+    }
+
+    private static async Task<Spec014CollisionEvidence> RunThirtySeatCollisionAsync(
+        IReadOnlyList<LogicalRegistrationReplica> replicas,
+        RegistrationLoadDataset dataset,
+        CancellationToken cancellationToken)
+    {
+        const int requestCount = 100;
+        const int groupCapacity = 30;
+        var accepted = 0;
+        var conflicts = 0;
+        await Task.WhenAll(Enumerable.Range(0, requestCount).Select(async index =>
+        {
+            var replica = replicas[index % replicas.Count];
+            var outcome = await ExecuteCollisionRequestAsync(
+                replica,
+                dataset,
+                index,
+                cancellationToken);
+            if (outcome is RegistrationLoadOutcome.Accepted)
+            {
+                Interlocked.Increment(ref accepted);
+            }
+            else if (outcome is RegistrationLoadOutcome.ExpectedConflict)
+            {
+                Interlocked.Increment(ref conflicts);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "The 100-way collision produced an unexpected outcome.");
+            }
+        }));
+
+        await using var connection = new SqlConnection(dataset.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        var activeEnrollments = await ScalarAsync<int>(connection, null, """
+            SELECT COUNT(*) FROM [registration].[Enrollments]
+            WHERE [GroupId] = @group AND [State] = 'active';
+            """, cancellationToken, new SqlParameter("@group", dataset.GroupIds[5]));
+        var finalCount = await ScalarAsync<int>(connection, null, """
+            SELECT [EnrolledCount] FROM [scheduling].[SectionGroups]
+            WHERE [Id] = @group;
+            """, cancellationToken, new SqlParameter("@group", dataset.GroupIds[5]));
+        var invariants = await QueryInvariantsAsync(
+            dataset.ConnectionString,
+            cancellationToken);
+        return new(
+            requestCount,
+            groupCapacity,
+            accepted,
+            conflicts,
+            activeEnrollments,
+            finalCount,
+            replicas.Count,
+            invariants);
+    }
+
+    private static async Task<RegistrationLoadOutcome> ExecuteCollisionRequestAsync(
+        LogicalRegistrationReplica replica,
+        RegistrationLoadDataset dataset,
+        int requestIndex,
+        CancellationToken cancellationToken)
+    {
+        var scope = new RegistrationRequestScope(
+            dataset.StudentIds[requestIndex],
+            dataset.TermId,
+            StableGuid($"request:collision:{requestIndex}"));
+        var payloadHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"collision|{requestIndex}|5")));
+        await using var context = replica.CreateContext();
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+        context.ChangeTracker.Clear();
+        await using var transaction = await context.Database.BeginTransactionAsync(
+            cancellationToken);
+        using var transactionTrace = RemoteActivityTrace.EnterTransaction();
+        try
+        {
+            var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+            var claim = await store.ClaimInsideTransactionAsync(
+                scope,
+                payloadHash,
+                DateTime.UtcNow,
+                cancellationToken);
+            var allocation = await new SqlSeatAllocator(context).AllocateAsync(
+                dataset.GroupIds[5],
+                cancellationToken);
+            var completedAt = DateTime.UtcNow;
+            if (!allocation.IsAllocated)
+            {
+                claim.Submission!.CompleteRejected(
+                    "GROUP_FULL",
+                    "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"GROUP_FULL\"}",
+                    completedAt);
+                claim.Submission.EnsureFinalForCommit();
+                await context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return RegistrationLoadOutcome.ExpectedConflict;
+            }
+
+            var reference = $"REG-COLLISION-{requestIndex:D3}";
+            claim.Submission!.CompleteAccepted(
+                "ACCEPTED",
+                reference,
+                JsonSerializer.Serialize(new
+                {
+                    reference,
+                    offering = dataset.OfferingIds[5],
+                    group = dataset.GroupIds[5]
+                }),
+                "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
+                completedAt);
+            claim.Submission.EnsureFinalForCommit();
+            context.Set<Enrollment>().Add(new Enrollment(
+                StableGuid($"enrollment:collision:{requestIndex}"),
+                scope.StudentId,
+                dataset.OfferingIds[5],
+                dataset.GroupIds[5],
+                claim.Submission.Id,
+                EnrollmentState.Active,
+                completedAt));
+            context.AuditEvents.Add(new AuditEvent(
+                StableGuid($"audit:collision:{requestIndex}"),
+                "authenticated-student",
+                "registration-owner",
+                "RegistrationAccepted",
+                "RegistrationSubmission",
+                claim.Submission.Id.ToString("N"),
+                "ACCEPTED",
+                null,
+                "{\"result\":\"accepted\"}",
+                scope.ClientRequestId.ToString("N"),
+                completedAt));
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return RegistrationLoadOutcome.Accepted;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            throw;
+        }
+        });
     }
 
     private static RegistrationRequestIdentity CreateRequestIdentity(
@@ -524,7 +1075,8 @@ public static class Spec014RegistrationLoadHarness
 
     private static async Task<RegistrationLoadDataset> SeedRegistrationDatasetAsync(
         string connectionString,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        int expectedAccountCount = AccountCount)
     {
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
@@ -533,7 +1085,7 @@ public static class Spec014RegistrationLoadHarness
             null,
             "SELECT TOP (1) [Id] FROM [academics].[AcademicTerms] ORDER BY [Code]",
             cancellationToken);
-        var students = new List<Guid>(AccountCount);
+        var students = new List<Guid>(expectedAccountCount);
         await using (var studentCommand = connection.CreateCommand())
         {
             studentCommand.CommandText =
@@ -545,21 +1097,22 @@ public static class Spec014RegistrationLoadHarness
             }
         }
 
-        if (students.Count != AccountCount)
+        if (students.Count != expectedAccountCount)
         {
             throw new InvalidOperationException(
-                $"Expected {AccountCount} synthetic students; found {students.Count}.");
+                $"Expected {expectedAccountCount} synthetic students; found {students.Count}.");
         }
 
         var draftId = StableGuid("spec014-load:catalogue-draft");
         var versionId = StableGuid("spec014-load:catalogue-version");
-        var offeringIds = Enumerable.Range(0, 5)
+        var offeringIds = Enumerable.Range(0, 6)
             .Select(index => StableGuid($"spec014-load:offering:{index}"))
             .ToArray();
-        var groupIds = Enumerable.Range(0, 5)
+        var groupIds = Enumerable.Range(0, 6)
             .Select(index => StableGuid($"spec014-load:group:{index}"))
             .ToArray();
-        var capacities = new[] { 25_000, 6_500, 8_400, 0, 2 };
+        var capacities = new[] { 25_000, 6_500, 8_400, 0, 2, 30 };
+        var roomId = StableGuid("spec014-load:room");
         await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync(
             cancellationToken);
         try
@@ -576,6 +1129,11 @@ public static class Spec014RegistrationLoadHarness
                 """, cancellationToken,
                 new SqlParameter("@id", versionId),
                 new SqlParameter("@draft", draftId));
+            await ExecuteAsync(connection, transaction, """
+                INSERT [scheduling].[Rooms]
+                  ([Id],[Code],[Location],[Capacity],[AvailabilityState])
+                VALUES (@id,'SPEC014-LOAD','Synthetic load facility',25000,'available');
+                """, cancellationToken, new SqlParameter("@id", roomId));
             for (var index = 0; index < offeringIds.Length; index++)
             {
                 var courseId = StableGuid($"spec014-load:course:{index}");
@@ -588,6 +1146,9 @@ public static class Spec014RegistrationLoadHarness
                     INSERT [scheduling].[SectionGroups]
                       ([Id],[OfferingId],[GroupCode],[Capacity],[EnrolledCount],[State],[RegistrationPaused])
                     VALUES (@group,@offering,@groupCode,@capacity,0,'published',0);
+                    INSERT [scheduling].[MeetingSlots]
+                      ([Id],[GroupId],[RoomId],[ActivityType],[DayOfWeek],[StartLocal],[EndLocal])
+                    VALUES (@meeting,@group,@room,'lecture',@day,'09:00:00','10:00:00');
                     """, cancellationToken,
                     new SqlParameter("@id", courseId),
                     new SqlParameter("@catalogue", versionId),
@@ -597,7 +1158,10 @@ public static class Spec014RegistrationLoadHarness
                     new SqlParameter("@term", termId),
                     new SqlParameter("@group", groupIds[index]),
                     new SqlParameter("@groupCode", $"LOAD-{index + 1}"),
-                    new SqlParameter("@capacity", capacities[index]));
+                    new SqlParameter("@capacity", capacities[index]),
+                    new SqlParameter("@meeting", StableGuid($"spec014-load:meeting:{index}")),
+                    new SqlParameter("@room", roomId),
+                    new SqlParameter("@day", index));
             }
 
             await transaction.CommitAsync(cancellationToken);
@@ -643,7 +1207,7 @@ public static class Spec014RegistrationLoadHarness
             OUTER APPLY (
               SELECT COUNT(*) AS AuditCount
               FROM [audit].[AuditEvents] a
-              WHERE a.[EntityId] = CONVERT(nvarchar(32), s.[Id], 2)
+            WHERE a.[EntityId] = REPLACE(CONVERT(nvarchar(36), s.[Id]), '-', '')
                 AND a.[Action] = 'RegistrationAccepted') audits
             WHERE (s.[ProcessingState] = 'accepted' AND
                     (s.[ReceiptSnapshotJson] IS NULL OR enrollments.EnrollmentCount <> 1 OR audits.AuditCount <> 1))
@@ -652,11 +1216,26 @@ public static class Spec014RegistrationLoadHarness
             """, cancellationToken);
         var combined = await ScalarAsync<int>(connection, null, """
             SELECT COUNT(*) FROM (
-              SELECT e.[StudentId]
+              SELECT e.[StudentId], 'policy' AS ViolationKind
               FROM [registration].[Enrollments] e
               WHERE e.[State] = 'active'
               GROUP BY e.[StudentId]
-              HAVING COUNT(*) * 3 > 18) AS excessive;
+              HAVING SUM(3) > 18
+              UNION ALL
+              SELECT DISTINCT firstEnrollment.[StudentId], 'timetable'
+              FROM [registration].[Enrollments] firstEnrollment
+              JOIN [scheduling].[MeetingSlots] firstMeeting
+                ON firstMeeting.[GroupId] = firstEnrollment.[GroupId]
+              JOIN [registration].[Enrollments] secondEnrollment
+                ON secondEnrollment.[StudentId] = firstEnrollment.[StudentId]
+               AND secondEnrollment.[Id] > firstEnrollment.[Id]
+               AND secondEnrollment.[State] = 'active'
+              JOIN [scheduling].[MeetingSlots] secondMeeting
+                ON secondMeeting.[GroupId] = secondEnrollment.[GroupId]
+               AND secondMeeting.[DayOfWeek] = firstMeeting.[DayOfWeek]
+               AND firstMeeting.[StartLocal] < secondMeeting.[EndLocal]
+               AND secondMeeting.[StartLocal] < firstMeeting.[EndLocal]
+              WHERE firstEnrollment.[State] = 'active') AS violations;
             """, cancellationToken);
         var mismatches = await ScalarAsync<int>(connection, null, """
             SELECT COUNT(*)
@@ -682,31 +1261,37 @@ public static class Spec014RegistrationLoadHarness
     {
         var before = await CountSubmissionsAsync(dataset.ConnectionString, cancellationToken);
         await using var context = replica.CreateContext();
-        await using var transaction = await context.Database.BeginTransactionAsync(
-            cancellationToken);
-        using var cancelled = new CancellationTokenSource();
-        cancelled.Cancel();
-        try
+        var cancellationObserved = false;
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            var scope = new RegistrationRequestScope(
-                dataset.StudentIds[0],
-                dataset.TermId,
-                StableGuid("spec014-load:cancelled"));
-            await new RegistrationSubmissionStore(context, TimeProvider.System)
-                .ClaimInsideTransactionAsync(
-                    scope,
-                    "CANCELLED-PAYLOAD",
-                    DateTime.UtcNow,
-                    cancelled.Token);
-            return false;
-        }
-        catch (OperationCanceledException)
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-        }
+            context.ChangeTracker.Clear();
+            await using var transaction = await context.Database.BeginTransactionAsync(
+                cancellationToken);
+            using var cancelled = new CancellationTokenSource();
+            cancelled.Cancel();
+            try
+            {
+                var scope = new RegistrationRequestScope(
+                    dataset.StudentIds[0],
+                    dataset.TermId,
+                    StableGuid("spec014-load:cancelled"));
+                await new RegistrationSubmissionStore(context, TimeProvider.System)
+                    .ClaimInsideTransactionAsync(
+                        scope,
+                        "CANCELLED-PAYLOAD",
+                        DateTime.UtcNow,
+                        cancelled.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                cancellationObserved = true;
+                await transaction.RollbackAsync(CancellationToken.None);
+            }
+        });
 
         var after = await CountSubmissionsAsync(dataset.ConnectionString, cancellationToken);
-        return before == after;
+        return cancellationObserved && before == after;
     }
 
     private static async Task ProveReconciliationMetricAndRepairAsync(
@@ -810,12 +1395,14 @@ public static class Spec014RegistrationLoadHarness
         SqlConnection connection,
         SqlTransaction? transaction,
         string sql,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        params SqlParameter[] parameters)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = sql;
         command.CommandTimeout = 120;
+        command.Parameters.AddRange(parameters);
         var value = await command.ExecuteScalarAsync(cancellationToken);
         return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
     }
@@ -850,7 +1437,273 @@ public static class Spec014RegistrationLoadHarness
         Accepted,
         ExpectedConflict,
         IdempotentReplay,
+        InProgress,
         Unexpected
+    }
+
+    private sealed class ProbeEndpointStore(
+        Guid applicationUserId,
+        Guid studentId,
+        Guid termId,
+        Guid groupId) :
+        IRegistrationEndpointStore,
+        IRegistrationLocalTransactionStore
+    {
+        private readonly string _stateVersion = Convert.ToBase64String([1]);
+        private int _contextLocks;
+        private int _catalogueLocks;
+        private int _policyLocks;
+        private int _groupLocks;
+        private int _revalidations;
+
+        public int SubmitCalls { get; private set; }
+
+        public int AtomicCommitCallbacks { get; private set; }
+
+        public Task<RegistrationCommandContext?> ResolveCommandContextAsync(
+            Guid ignoredApplicationUserId,
+            Guid ignoredTermId,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult<RegistrationCommandContext?>(new(
+                new(
+                    applicationUserId,
+                    studentId,
+                    termId,
+                    Convert.ToBase64String([3]),
+                    DateTime.UtcNow.AddHours(-1),
+                    DateTime.UtcNow.AddHours(1),
+                    false),
+                _stateVersion));
+        }
+
+        public async Task<RegistrationEndpointResult> SubmitAsync(
+            RegistrationCommand command,
+            RegistrationTransactionCoordinator coordinator,
+            CancellationToken cancellationToken = default)
+        {
+            SubmitCalls++;
+            var boundary = await coordinator.ExecuteRegistrationAsync(
+                new(
+                    command.StudentId,
+                    command.TermId,
+                    _stateVersion,
+                    command.PlanId,
+                    command.ExpectedPlanRowVersion,
+                    command.ExpectedRegistrationContextVersion,
+                    command.ReceivedAtUtc,
+                    "SPEC014-LOAD",
+                    "SPEC014-LOAD",
+                    [groupId]),
+                token =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    AtomicCommitCallbacks++;
+                    return Task.CompletedTask;
+                },
+                cancellationToken);
+            if (boundary.Outcome is not RegistrationBoundaryOutcome.Committed ||
+                _contextLocks != 1 ||
+                _catalogueLocks != 1 ||
+                _policyLocks != 1 ||
+                _groupLocks != 1 ||
+                _revalidations != 1 ||
+                AtomicCommitCallbacks != 1)
+            {
+                return new(RegistrationEndpointOutcome.Unavailable);
+            }
+
+            var now = DateTime.UtcNow;
+            return new(
+                RegistrationEndpointOutcome.Created,
+                new(
+                    StableGuid("boundary:submission"),
+                    "accepted",
+                    "REGISTERED",
+                    [],
+                    command.ReceivedAtUtc,
+                    now,
+                    Guid.Empty,
+                    "DEMO-POC-2026.1",
+                    command.ExpectedPlanRowVersion,
+                    "REG-BOUNDARY",
+                    null));
+        }
+
+        public Task<RegistrationEndpointResult> LookupAsync(
+            Guid ignoredApplicationUserId,
+            Guid ignoredTermId,
+            Guid ignoredClientRequestId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new RegistrationEndpointResult(
+                RegistrationEndpointOutcome.NotFound));
+
+        public Task LockRegistrationContextAsync(
+            Guid ignoredStudentId,
+            Guid ignoredTermId,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _contextLocks++;
+            return Task.CompletedTask;
+        }
+
+        public Task LockSerializablePublicationScopeRangeAsync(
+            RegistrationPublicationScope scope,
+            string ignoredScope,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (scope is RegistrationPublicationScope.Catalogue)
+            {
+                _catalogueLocks++;
+            }
+            else
+            {
+                _policyLocks++;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task LockSectionGroupVersionsAsync(
+            IReadOnlyList<Guid> ignoredGroupIds,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _groupLocks++;
+            return Task.CompletedTask;
+        }
+
+        public Task ReReadAndValidateAsync(
+            RegistrationFinalValidation ignoredValidation,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _revalidations++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ProbeAcademicBoundaryStore : IStudentAcademicProfileStore
+    {
+        public int Executions { get; private set; }
+
+        public Task<AcademicProfileStoreResult> ReadByApplicationUserIdAsync(
+            Guid applicationUserId,
+            AcademicProfileReadRequest request,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<AcademicProfileStoreResult> ReadByStudentIdAsync(
+            Guid studentId,
+            Guid termId,
+            AcademicProfileReadRequest request,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<AcademicProfileStoreResult> CorrectAsync(
+            CorrectAcademicProfileStoreCommand command,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public async Task<AcademicProfileStoreResult> ExecuteRegistrationBoundaryAsync(
+            RegistrationBoundaryStoreCommand command,
+            Func<CancellationToken, Task> commitCallback,
+            CancellationToken cancellationToken = default)
+        {
+            Executions++;
+            await commitCallback(cancellationToken);
+            return new(AcademicProfileStoreOutcome.Succeeded);
+        }
+    }
+
+    private sealed class RemoteActivityTrace : IDisposable
+    {
+        private static readonly AsyncLocal<int> TransactionDepth = new();
+        private static readonly ActivitySource ProbeSource = new("SPEC014.RemoteProbe");
+        private readonly ActivityListener _listener;
+        private int _faultsInjected;
+        private int _observedHttpActivities;
+        private int _insideTransactionActivities;
+
+        public RemoteActivityTrace()
+        {
+            _listener = new ActivityListener
+            {
+                ShouldListenTo = source =>
+                    source.Name == "SPEC014.RemoteProbe" ||
+                    source.Name.StartsWith("System.Net.Http", StringComparison.Ordinal),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
+                    ActivitySamplingResult.AllData,
+                ActivityStarted = activity =>
+                {
+                    Interlocked.Increment(ref _observedHttpActivities);
+                    if (TransactionDepth.Value > 0)
+                    {
+                        Interlocked.Increment(ref _insideTransactionActivities);
+                    }
+                }
+            };
+            ActivitySource.AddActivityListener(_listener);
+        }
+
+        public int RemoteActivitiesInsideTransactions =>
+            Volatile.Read(ref _insideTransactionActivities);
+
+        public static IDisposable EnterTransaction()
+        {
+            TransactionDepth.Value++;
+            return new TransactionTraceScope();
+        }
+
+        public async Task InjectFailingHttpCallAsync(CancellationToken cancellationToken)
+        {
+            using var client = new HttpClient(new FaultInjectingHandler());
+            try
+            {
+                _ = await client.GetAsync(
+                    "https://fault-injected.spec014.invalid/",
+                    cancellationToken);
+                throw new InvalidOperationException(
+                    "The remote-dependency fault injection unexpectedly succeeded.");
+            }
+            catch (HttpRequestException)
+            {
+                Interlocked.Increment(ref _faultsInjected);
+            }
+        }
+
+        public Spec014RemoteTraceEvidence Snapshot() => new(
+            Volatile.Read(ref _faultsInjected),
+            Volatile.Read(ref _observedHttpActivities),
+            Volatile.Read(ref _insideTransactionActivities));
+
+        public void Dispose()
+        {
+            _listener.Dispose();
+            ProbeSource.Dispose();
+        }
+
+        private sealed class TransactionTraceScope : IDisposable
+        {
+            public void Dispose() => TransactionDepth.Value--;
+        }
+
+        private sealed class FaultInjectingHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                using var activity = ProbeSource.StartActivity(
+                    "fault-injected-http",
+                    ActivityKind.Client);
+                throw new HttpRequestException(
+                    "SPEC-014 deterministic remote dependency fault.");
+            }
+        }
     }
 
     private sealed class LogicalRegistrationReplica
