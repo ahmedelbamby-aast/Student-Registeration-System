@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/StudentRegistration.IdentityAccess/StudentRegistration.IdentityAccess.csproj" />
     <ProjectReference Include="../../src/StudentRegistration.Registration/StudentRegistration.Registration.csproj" />
+    <ProjectReference Include="../../src/StudentRegistration.StaffAdministration/StudentRegistration.StaffAdministration.csproj" />
   </ItemGroup>
 
   <ItemGroup>

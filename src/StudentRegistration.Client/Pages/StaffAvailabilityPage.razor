@@ -1,0 +1,370 @@
+@page "/staff/availability"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Scheduling
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Staff
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Staff
+@using WorkspaceAvailabilityDto = StudentRegistration.Contracts.Staff.StaffTermAvailabilityDto
+@inject AcademicApiClient AcademicApi
+@inject StaffApiClient StaffApi
+
+<PageTitle>Staff availability | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STF-04" data-state="loading" data-contract-state="STF-04-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1"><h1>Staff availability</h1><p role="status" aria-busy="true">Loading owned availability.</p></main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext" MainContentId="main-content"
+              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
+              SupportLinkLabel="Open support" LoadingLabel="Loading staff availability">
+        <Navigation><RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" /></Navigation>
+        <ChildContent>@AvailabilityContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@AvailabilityContent</main>
+}
+
+@code {
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
+    [new("Staff home", "/staff"), new("Timetable", "/staff/timetable"), new("Availability", "/staff/availability", IsActive: true)];
+
+    private FrontendAppContextView? _shellContext;
+    private AppContextDto? _context;
+    private WorkspaceAvailabilityDto? _authoritative;
+    private readonly List<AvailabilityRangeEditor> _ranges = [];
+    private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
+    private IReadOnlyList<Guid> _impactAlertIds = [];
+    private readonly List<string> _validationReasons = [];
+    private string _state = "loading";
+    private string _reasonCode = "STAFF_AVAILABILITY_UNAVAILABLE";
+    private string _message = "Availability could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _requesting;
+    private bool _dirty;
+    private bool _saved;
+
+    private string ContractState => _state switch
+    {
+        "empty" => "STF-04-COMP-STATE-EMPTY",
+        "success" => "STF-04-COMP-STATE-SUCCESS",
+        "validation-error" => "STF-04-COMP-STATE-VALIDATION-ERROR",
+        "unauthorized" => "STF-04-COMP-STATE-UNAUTHORIZED",
+        "session-expired" => "STF-04-COMP-STATE-SESSION-EXPIRED",
+        "stale" => "STF-04-COMP-STATE-STALE",
+        "offline" => "STF-04-COMP-STATE-OFFLINE",
+        _ => "STF-04-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private bool DeadlinePassed => _authoritative is not null && _context is not null &&
+        _context.ServerTimeUtc >= _authoritative.DeadlineUtc;
+
+    private RenderFragment AvailabilityContent => @<article data-route-id="STF-04"
+        data-state="@_state" data-contract-state="@ContractState">
+        <header>
+            <p>Staff workspace</p><h1>Staff availability</h1>
+            @if (_authoritative is not null)
+            {
+                <p id="availability-deadline">Editing deadline: <time datetime="@_authoritative.DeadlineUtc.ToString("O")">@FormatUtc(_authoritative.DeadlineUtc)</time></p>
+                <p>Version: @_authoritative.RowVersion</p>
+            }
+        </header>
+
+        @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
+        {
+            <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
+                <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: @_reference</p> }
+                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="LoadAsync">Retry</button> }
+                <a href="/staff">Return to Staff home</a>
+            </section>
+        }
+        else if (_authoritative is not null)
+        {
+            @if (_state == "validation-error")
+            {
+                <section id="availability-validation-summary" role="alert" aria-live="assertive" tabindex="-1">
+                    <h2>Validation summary</h2><p><strong>@_reasonCode</strong></p>
+                    <ul>@foreach (var reason in _validationReasons) { <li>@reason</li> }</ul>
+                </section>
+            }
+            else if (_state == "stale")
+            {
+                <section role="alert" aria-live="polite" tabindex="-1">
+                    <h2>Availability changed</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
+                    @if (_reasonCode == "AVAILABILITY_DEADLINE_PASSED")
+                    {
+                        <p>The configured deadline is @FormatUtc(_authoritative.DeadlineUtc). Review the server time above.</p>
+                    }
+                    else
+                    {
+                        <p>The current server ranges are shown below. Refresh and reapply changes; the stale draft was not saved.</p>
+                    }
+                    <button type="button" disabled="@_requesting" @onclick="RefreshAndReapplyAsync">Refresh and review</button>
+                </section>
+            }
+            else if (_saved)
+            {
+                <section role="status" aria-live="polite">
+                    <h2>Availability saved</h2><p>The server accepted the complete range set at version @_authoritative.RowVersion.</p>
+                </section>
+            }
+            else if (_ranges.Count == 0)
+            {
+                <section aria-labelledby="empty-availability-heading">
+                    <h2 id="empty-availability-heading">No availability ranges</h2>
+                    <p>Add the complete set of available or unavailable ranges before saving.</p>
+                </section>
+            }
+
+            <section aria-labelledby="availability-editor-heading">
+                <h2 id="availability-editor-heading">Text-range editor</h2>
+                <p id="availability-editor-help">Every save replaces the complete owned range set. Times use the configured institutional time zone.</p>
+                <div role="region" aria-label="Availability range editor" tabindex="0">
+                    <table>
+                        <caption>Owned availability ranges</caption>
+                        <thead><tr><th scope="col">Day</th><th scope="col">Starts</th><th scope="col">Ends</th><th scope="col">Kind</th><th scope="col">Action</th></tr></thead>
+                        <tbody>
+                            @for (var index = 0; index < _ranges.Count; index++)
+                            {
+                                var range = _ranges[index];
+                                <tr>
+                                    <td><label for="day-@range.Key">Day</label><select id="day-@range.Key" @bind="range.DayOfWeek" @bind:after="MarkDirty" disabled="@EditingDisabled">@foreach (var day in Enum.GetValues<DayOfWeek>()) { <option value="@day">@day</option> }</select></td>
+                                    <td><label for="start-@range.Key">Start</label><input id="start-@range.Key" type="time" value="@range.StartLocal" @onchange="eventArgs => UpdateStart(range, eventArgs.Value?.ToString())" aria-describedby="availability-editor-help" disabled="@EditingDisabled" /></td>
+                                    <td><label for="end-@range.Key">End</label><input id="end-@range.Key" type="time" value="@range.EndLocal" @onchange="eventArgs => UpdateEnd(range, eventArgs.Value?.ToString())" aria-describedby="availability-editor-help" disabled="@EditingDisabled" /></td>
+                                    <td><label for="kind-@range.Key">Kind</label><select id="kind-@range.Key" @bind="range.Kind" @bind:after="MarkDirty" disabled="@EditingDisabled"><option value="available">Available</option><option value="unavailable">Unavailable</option></select></td>
+                                    <td><button type="button" disabled="@EditingDisabled" @onclick="() => RemoveRange(range.Key)">Remove range</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" disabled="@EditingDisabled" @onclick="AddRange">Add availability range</button>
+            </section>
+
+            <section aria-labelledby="availability-representations-heading">
+                <h2 id="availability-representations-heading">Availability timetable</h2>
+                <ScheduleCalendar Heading="Availability calendar" EquivalentListId="availability-list"
+                                  DayColumnLabel="Day" TimeColumnLabel="Time" MeetingColumnLabel="Range"
+                                  GroupLabel="Range" ActivityKindLabel="Kind" LecturerLabel="Staff"
+                                  TeachingAssistantsLabel="Partners" LocationLabel="Location" ConflictLabel="Status"
+                                  Meetings="@_meetings" IsDisabled="true" DisabledReason="Availability ranges are edited with the labelled text fields above." />
+                <ScheduleList ComponentId="availability-list" EquivalentCalendarId="availability-list-calendar-heading"
+                              Heading="Chronological availability list" GroupLabel="Range" ActivityKindLabel="Kind"
+                              LecturerLabel="Staff" TeachingAssistantsLabel="Partners" LocationLabel="Location"
+                              DayLabel="Day" StartLabel="Starts" EndLabel="Ends" TimezoneLabel="Time zone"
+                              ConflictLabel="Status" Meetings="@_meetings" IsDisabled="true"
+                              DisabledReason="Availability ranges are edited with the labelled text fields above." />
+            </section>
+
+            @if (_impactAlertIds.Count > 0)
+            {
+                <section role="status" aria-live="polite">
+                    <h2>Published schedule impact recorded</h2>
+                    <p>@_impactAlertIds.Count schedule impact alert(s) require revalidation.</p>
+                    <p>No class, room, or staff assignment moved automatically.</p>
+                    <a href="/staff/timetable">Review timetable impact</a>
+                </section>
+            }
+
+            <p role="status">@(_dirty ? "Unsaved draft" : _saved ? "Saved by the server" : "No unsaved changes")</p>
+            <button type="button" disabled="@(EditingDisabled || !_dirty)" @onclick="SaveAsync">Save availability</button>
+            <nav aria-label="Availability actions"><a href="/staff/timetable">Open timetable</a><a href="/staff">Return to Staff dashboard</a></nav>
+        }
+    </article>;
+
+    private bool EditingDisabled => _requesting || DeadlinePassed;
+    private string ErrorHeading => _state switch
+    {
+        "session-expired" => "Session expired", "unauthorized" => "Access denied",
+        "offline" => "You are offline", _ => "Availability unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_requesting) return;
+        _requesting = true;
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error); return;
+            }
+            if (!StaffPageSupport.HasActiveStaffContext(contextResult.Value))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "An active staff context is required.", "STF-04-AUTH")); return;
+            }
+            _context = contextResult.Value;
+            _shellContext = StaffPageSupport.ToShellContext(_context);
+            var result = await StaffApi.GetAvailabilityAsync();
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error); return;
+            }
+            ApplyAuthoritative(result.Value, replaceDraft: true);
+            _state = _ranges.Count == 0 ? "empty" : "success";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException) { ApplyOffline(); }
+        finally { _requesting = false; }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_requesting || _authoritative is null) return;
+        if (!TryBuildRanges(out var ranges))
+        {
+            _state = "validation-error"; _reasonCode = "AVAILABILITY_RANGE_INVALID"; _saved = false; return;
+        }
+        _requesting = true;
+        try
+        {
+            var result = await StaffApi.ReplaceAvailabilityAsync(new ReplaceAvailabilityRequest(
+                ExpectedStaffTermRowVersion: _authoritative.RowVersion,
+                Ranges: ranges));
+            if (!result.IsSuccess || result.Value is null)
+            {
+                _reasonCode = result.Error?.Code ?? "STAFF_AVAILABILITY_UNAVAILABLE";
+                _message = result.Error?.Message ?? "The availability update was not saved.";
+                _reference = result.Error?.CorrelationId;
+                if (result.StatusCode == HttpStatusCode.Conflict && _reasonCode is "STALE_VERSION" or "AVAILABILITY_DEADLINE_PASSED")
+                {
+                    _state = "stale";
+                    if (result.Conflict is not null)
+                    {
+                        ApplyAuthoritative(result.Conflict.CurrentAvailability, replaceDraft: false);
+                    }
+                    else
+                    {
+                        await RefreshAuthorityAsync();
+                    }
+                }
+                else { ApplyFailure(result.StatusCode, result.Error); }
+                return;
+            }
+            ApplyAuthoritative(result.Value.Availability, replaceDraft: true);
+            _impactAlertIds = result.Value.ImpactAlertIds;
+            _dirty = false; _saved = true; _state = "success";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException) { ApplyOffline(); }
+        finally { _requesting = false; }
+    }
+
+    private async Task RefreshAuthorityAsync()
+    {
+        var current = await StaffApi.GetAvailabilityAsync();
+        if (current.IsSuccess && current.Value is not null)
+        {
+            ApplyAuthoritative(current.Value, replaceDraft: false);
+        }
+    }
+
+    private async Task RefreshAndReapplyAsync()
+    {
+        if (_requesting) return;
+        _requesting = true;
+        try
+        {
+            var current = await StaffApi.GetAvailabilityAsync();
+            if (!current.IsSuccess || current.Value is null) { ApplyFailure(current.StatusCode, current.Error); return; }
+            ApplyAuthoritative(current.Value, replaceDraft: true);
+            _state = _ranges.Count == 0 ? "empty" : "success";
+        }
+        finally { _requesting = false; }
+    }
+
+    private bool TryBuildRanges(out IReadOnlyList<AvailabilityRangeDto> ranges)
+    {
+        _validationReasons.Clear();
+        var parsed = new List<AvailabilityRangeDto>();
+        foreach (var editor in _ranges)
+        {
+            if (!TimeOnly.TryParse(editor.StartLocal, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) ||
+                !TimeOnly.TryParse(editor.EndLocal, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end) || start >= end)
+            {
+                _validationReasons.Add($"{editor.DayOfWeek}: start time must be before end time.");
+                continue;
+            }
+            parsed.Add(new AvailabilityRangeDto(editor.Id, editor.DayOfWeek, start, end, editor.Kind));
+        }
+        foreach (var day in parsed.GroupBy(range => range.DayOfWeek))
+        {
+            var ordered = day.OrderBy(range => range.StartLocal).ThenBy(range => range.EndLocal).ToArray();
+            for (var index = 1; index < ordered.Length; index++)
+            {
+                if (ordered[index].StartLocal < ordered[index - 1].EndLocal)
+                    _validationReasons.Add($"{day.Key}: availability ranges overlap.");
+            }
+        }
+        if (parsed.Count == 0) _validationReasons.Add("At least one complete availability range is required.");
+        ranges = parsed;
+        return _validationReasons.Count == 0;
+    }
+
+    private void ApplyAuthoritative(WorkspaceAvailabilityDto availability, bool replaceDraft)
+    {
+        _authoritative = availability;
+        _meetings = StaffPageSupport.ToAvailabilityItems(availability.Ranges, _context?.TimeZoneId ?? "Server time zone");
+        if (replaceDraft)
+        {
+            _ranges.Clear();
+            _ranges.AddRange(availability.Ranges.Select(AvailabilityRangeEditor.From));
+            _dirty = false; _saved = false; _impactAlertIds = [];
+        }
+    }
+
+    private void AddRange()
+    {
+        _ranges.Add(new AvailabilityRangeEditor(Guid.NewGuid(), DayOfWeek.Sunday, "09:00", "10:00", "available"));
+        MarkDirty();
+        _state = "success";
+    }
+    private void RemoveRange(Guid key) { _ranges.RemoveAll(range => range.Key == key); MarkDirty(); _state = _ranges.Count == 0 ? "empty" : "success"; }
+    private void UpdateStart(AvailabilityRangeEditor range, string? value) { range.StartLocal = value ?? string.Empty; MarkDirty(); }
+    private void UpdateEnd(AvailabilityRangeEditor range, string? value) { range.EndLocal = value ?? string.Empty; MarkDirty(); }
+    private void MarkDirty() { _dirty = true; _saved = false; if (_state == "validation-error") _state = "success"; }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _reasonCode = error?.Code ?? "STAFF_AVAILABILITY_UNAVAILABLE";
+        _message = error?.Message ?? "Availability could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = status switch { HttpStatusCode.Unauthorized => "session-expired", HttpStatusCode.Forbidden => "unauthorized", HttpStatusCode.Conflict => "stale", _ => "service-error" };
+    }
+    private void ApplyOffline() { _state = "offline"; _reasonCode = "OFFLINE"; _message = "Reconnect, then retry availability."; _reference = null; }
+    private static string FormatUtc(DateTime value) => value.ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture);
+
+    private sealed class AvailabilityRangeEditor(Guid id, DayOfWeek dayOfWeek, string startLocal, string endLocal, string kind)
+    {
+        public Guid Key { get; } = id;
+        public Guid Id { get; } = id;
+        public DayOfWeek DayOfWeek { get; set; } = dayOfWeek;
+        public string StartLocal { get; set; } = startLocal;
+        public string EndLocal { get; set; } = endLocal;
+        public string Kind { get; set; } = kind;
+        public static AvailabilityRangeEditor From(AvailabilityRangeDto range) => new(range.Id, range.DayOfWeek, range.StartLocal.ToString("HH:mm"), range.EndLocal.ToString("HH:mm"), range.Kind);
+    }
+}

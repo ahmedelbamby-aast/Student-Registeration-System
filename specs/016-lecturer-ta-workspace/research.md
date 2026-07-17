@@ -13,8 +13,9 @@ aggregate.
 Keeping one aggregate owner removes the former downstream dependency cycle and
 gives availability edits and group publication one SQL serialization boundary.
 
-Admin consumes SPEC-010's bounded read-only view and may import staff-declared
-ranges into offering planning as read-only inputs. The POC deliberately has no
+Admin consumes SPEC-010's bounded read-only view and may select an aggregate ID
+and rowversion as an immutable offering-planning dependency. The POC
+deliberately has no range copy and no
 Admin availability mutation/correction/override route, permission, editable
 control, notification workflow, or correction-audit flow.
 

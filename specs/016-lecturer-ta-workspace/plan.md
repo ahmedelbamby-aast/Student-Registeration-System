@@ -10,8 +10,9 @@ Deliver shared Lecturer/TA pages and assignment-scoped queries in
 Scheduling-module application port: SPEC-010 remains canonical owner of
 `StaffTermAvailability` and `StaffAvailability`. A conflicting published
 assignment creates a durable, auditable impact alert and revalidation state; it
-never moves a class automatically. Admin may view/import declared ranges into
-offering planning as read-only inputs, with no correction/override workflow.
+never moves a class automatically. Admin may select an availability aggregate
+ID and rowversion as an immutable offering-planning dependency, with no range
+copy and no correction/override workflow.
 
 ## Technical Context
 
@@ -52,7 +53,8 @@ only University ID, display name, and enrollment state; GPA, holds, contact
 details, grades, and transcript data are forbidden.
 
 Staff own availability edits. Admin consumes only SPEC-010's bounded read-only
-view and may import staff-declared ranges into offering-planning input. No
+view and may select its aggregate ID and rowversion as an immutable
+offering-planning dependency. No
 Admin availability correction/override route, permission, editable control,
 notification workflow, or correction-audit flow is part of the POC.
 

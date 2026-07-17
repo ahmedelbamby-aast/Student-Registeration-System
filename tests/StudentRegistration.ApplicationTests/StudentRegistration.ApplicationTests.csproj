@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\StudentRegistration.Contracts\StudentRegistration.Contracts.csproj" />
     <ProjectReference Include="..\..\src\StudentRegistration.Registration\StudentRegistration.Registration.csproj" />
     <ProjectReference Include="..\..\src\StudentRegistration.Scheduling\StudentRegistration.Scheduling.csproj" />
+    <ProjectReference Include="..\..\src\StudentRegistration.StaffAdministration\StudentRegistration.StaffAdministration.csproj" />
   </ItemGroup>
 
 </Project>

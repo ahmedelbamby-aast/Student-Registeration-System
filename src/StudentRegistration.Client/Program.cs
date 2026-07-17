@@ -6,6 +6,7 @@ using StudentRegistration.Client.Features.Identity;
 using StudentRegistration.Client.Features.Operations;
 using StudentRegistration.Client.Features.Registration;
 using StudentRegistration.Client.Features.Scheduling;
+using StudentRegistration.Client.Features.Staff;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -18,5 +19,6 @@ builder.Services.AddScoped<IdentityApiClient>();
 builder.Services.AddScoped<OperationsApiClient>();
 builder.Services.AddScoped<RegistrationApiClient>();
 builder.Services.AddScoped<SchedulingApiClient>();
+builder.Services.AddScoped<StaffApiClient>();
 
 await builder.Build().RunAsync();

@@ -1,0 +1,358 @@
+@page "/staff"
+@using System.Net
+@using StudentRegistration.Client.Components.Display
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Staff
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Identity
+@using StudentRegistration.Contracts.Staff
+@inject AcademicApiClient AcademicApi
+@inject IdentityApiClient IdentityApi
+@inject StaffApiClient StaffApi
+
+<PageTitle>Staff workspace | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STF-01" data-state="loading" data-contract-state="STF-01-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1">
+            <h1>Staff workspace</h1>
+            <p role="status" aria-live="polite" aria-busy="true">Loading authorized assignments.</p>
+        </main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext" MainContentId="main-content"
+              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
+              SupportLinkLabel="Open support" LoadingLabel="Loading staff workspace">
+        <Navigation>
+            <RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" />
+        </Navigation>
+        <ChildContent>@DashboardContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a>
+    <main id="main-content" tabindex="-1">@DashboardContent</main>
+}
+
+@code {
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
+    [
+        new("Staff home", "/staff", IsActive: true),
+        new("Timetable", "/staff/timetable"),
+        new("Availability", "/staff/availability")
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private AppContextDto? _context;
+    private IReadOnlyList<StaffAssignmentDto> _assignments = [];
+    private string? _selectedRole;
+    private string _state = "loading";
+    private string _reasonCode = "STAFF_WORKSPACE_UNAVAILABLE";
+    private string _message = "The staff workspace could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _requesting;
+
+    private string ContractState => _state switch
+    {
+        "empty" => "STF-01-COMP-STATE-EMPTY",
+        "success" => "STF-01-COMP-STATE-SUCCESS",
+        "validation-error" => "STF-01-COMP-STATE-VALIDATION-ERROR",
+        "unauthorized" => "STF-01-COMP-STATE-UNAUTHORIZED",
+        "session-expired" => "STF-01-COMP-STATE-SESSION-EXPIRED",
+        "stale" => "STF-01-COMP-STATE-STALE",
+        "offline" => "STF-01-COMP-STATE-OFFLINE",
+        _ => "STF-01-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private RenderFragment DashboardContent => @<article data-route-id="STF-01"
+        data-state="@_state" data-contract-state="@ContractState">
+        <header>
+            <p>Lecturer and Teaching Assistant workspace</p>
+            <h1>Staff workspace</h1>
+            @if (_context?.ActiveRole is { } activeRole)
+            {
+                <p><strong>Role context:</strong> @RoleLabel(activeRole)</p>
+            }
+        </header>
+
+        @if (_context?.SessionState is SessionState.RoleSelectionRequired)
+        {
+            <section aria-labelledby="role-context-heading">
+                <h2 id="role-context-heading">Role selection required</h2>
+                <p>Select one server-authorized context before assignments load. Roles are never combined.</p>
+                @if (_state == "validation-error")
+                {
+                    <div role="alert" aria-live="assertive" tabindex="-1">
+                        <h3>Context selection needs attention</h3>
+                        <p><strong>@_reasonCode</strong> @_message</p>
+                    </div>
+                }
+                <label for="staff-role-context">Authorized role context</label>
+                <select id="staff-role-context" @bind="_selectedRole" disabled="@_requesting">
+                    <option value="">Select a role</option>
+                    @foreach (var role in _context.AuthorizedRoles.Where(StaffPageSupport.IsStaffRole))
+                    {
+                        <option value="@role">@RoleLabel(role)</option>
+                    }
+                </select>
+                <button type="button" disabled="@_requesting" @onclick="SwitchContextAsync">Switch context</button>
+            </section>
+        }
+        else if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
+        {
+            <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
+                <h2>@ErrorHeading</h2>
+                <p><strong>@_reasonCode</strong></p>
+                <p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference))
+                {
+                    <p>Reference: @_reference</p>
+                }
+                @if (_state is "service-error" or "offline")
+                {
+                    <button type="button" disabled="@_requesting" @onclick="LoadAsync">Retry</button>
+                }
+                <a href="/">Return to authorized home</a>
+            </section>
+        }
+        else if (_state == "stale")
+        {
+            <section role="status" aria-live="polite">
+                <h2>Assignments changed</h2>
+                <p><strong>@_reasonCode</strong> @_message</p>
+                <button type="button" disabled="@_requesting" @onclick="LoadAsync">Refresh assignments</button>
+            </section>
+        }
+        else if (_state == "empty")
+        {
+            <section aria-labelledby="no-assignments-heading">
+                <h2 id="no-assignments-heading">No authorized assignments</h2>
+                <p>No current lecture, tutorial, or laboratory assignment is available for this role context.</p>
+                <a href="/staff/availability">Open availability</a>
+            </section>
+        }
+        else
+        {
+            <section aria-labelledby="assignment-heading">
+                <h2 id="assignment-heading">Authorized assignments</h2>
+                <p role="status">@_assignments.Count assigned groups</p>
+                <div>
+                    @foreach (var assignment in _assignments)
+                    {
+                        <EntityCard HeadingId="@($"assignment-{assignment.Group.Id:D}")"
+                                    Heading="@($"{assignment.SubjectCode} — {assignment.Group.GroupCode}")">
+                            <ChildContent>
+                                <p>@assignment.SubjectTitle</p>
+                                <dl>
+                                    <div><dt>Role</dt><dd>@RoleLabel(assignment.StaffRole)</dd></div>
+                                    <div><dt>Capacity</dt><dd>@assignment.Group.Capacity</dd></div>
+                                    <div><dt>Active roster count</dt><dd>@assignment.RosterCount</dd></div>
+                                    <div><dt>Role partners</dt><dd>@PartnerNames(assignment)</dd></div>
+                                    <div><dt>Meetings</dt><dd>@MeetingSummary(assignment)</dd></div>
+                                </dl>
+                            </ChildContent>
+                            <Actions>
+                                <a href="@($"/staff/groups/{assignment.Group.Id:D}/roster")">Open assigned roster</a>
+                            </Actions>
+                        </EntityCard>
+                    }
+                </div>
+            </section>
+            <nav aria-label="Staff workspace actions">
+                <a href="/staff/timetable">Open timetable</a>
+                <a href="/staff/availability">Open availability</a>
+            </nav>
+        }
+    </article>;
+
+    private string ErrorHeading => _state switch
+    {
+        "session-expired" => "Session expired",
+        "unauthorized" => "Access denied",
+        "offline" => "You are offline",
+        _ => "Staff workspace unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_requesting)
+        {
+            return;
+        }
+
+        _requesting = true;
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            _context = contextResult.Value;
+            _shellContext = StaffPageSupport.ToShellContext(_context);
+            if (!StaffPageSupport.HasStaffRole(_context))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden,
+                    new("FORBIDDEN", "An active staff context is required.", "STF-01-AUTH"));
+                return;
+            }
+
+            if (_context.SessionState is SessionState.RoleSelectionRequired)
+            {
+                _assignments = [];
+                _state = "success";
+                _selectedRole = _context.AuthorizedRoles.FirstOrDefault(StaffPageSupport.IsStaffRole);
+                return;
+            }
+
+            if (!StaffPageSupport.HasActiveStaffContext(_context))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden,
+                    new("FORBIDDEN", "An active Lecturer or Teaching Assistant context is required.", "STF-01-AUTH"));
+                return;
+            }
+
+            var assignments = await StaffApi.GetAssignmentsAsync();
+            if (!assignments.IsSuccess || assignments.Value is null)
+            {
+                ApplyFailure(assignments.StatusCode, assignments.Error);
+                return;
+            }
+
+            _assignments = assignments.Value;
+            _state = _assignments.Count == 0 ? "empty" : "success";
+            ResetFeedback();
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requesting = false;
+        }
+    }
+
+    private async Task SwitchContextAsync()
+    {
+        if (_requesting)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_selectedRole) ||
+            _context is null ||
+            !_context.AuthorizedRoles.Contains(_selectedRole, StringComparer.Ordinal) ||
+            !StaffPageSupport.IsStaffRole(_selectedRole))
+        {
+            _state = "validation-error";
+            _reasonCode = "ROLE_CONTEXT_INVALID";
+            _message = "Select one role returned by the server.";
+            return;
+        }
+
+        _requesting = true;
+        try
+        {
+            var result = await IdentityApi.SelectRoleContextAsync(
+                new SelectRoleContextRequest(_selectedRole));
+            if (!result.IsSuccess)
+            {
+                _state = result.StatusCode == HttpStatusCode.BadRequest
+                    ? "validation-error"
+                    : "service-error";
+                _reasonCode = result.Error?.Code ?? "ROLE_CONTEXT_REJECTED";
+                _message = result.Error?.Message ?? "The role context was not changed.";
+                _reference = result.Error?.CorrelationId;
+                return;
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+            return;
+        }
+        finally
+        {
+            _requesting = false;
+        }
+
+        await LoadAsync();
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _assignments = [];
+        _reasonCode = error?.Code ?? "STAFF_WORKSPACE_UNAVAILABLE";
+        _message = error?.Message ?? "The staff workspace could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = _reasonCode is "ASSIGNMENT_CHANGED" or "STALE_VERSION"
+            ? "stale"
+            : status switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            HttpStatusCode.NotFound => "stale",
+            _ => "service-error"
+        };
+    }
+
+    private void ApplyOffline()
+    {
+        _assignments = [];
+        _state = "offline";
+        _reasonCode = "OFFLINE";
+        _message = "Reconnect, then retry the staff workspace.";
+        _reference = null;
+    }
+
+    private void ResetFeedback()
+    {
+        _reasonCode = "AVAILABLE";
+        _message = string.Empty;
+        _reference = null;
+    }
+
+    private static string RoleLabel(string role) =>
+        string.Equals(role, StaffWorkspaceContract.TeachingAssistantRole, StringComparison.Ordinal)
+            ? "Teaching Assistant"
+            : role;
+
+    private static string PartnerNames(StaffAssignmentDto assignment)
+    {
+        var names = assignment.Group.Staff
+            .Select(staff => $"{staff.Name} ({RoleLabel(staff.Role)})")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return names.Length == 0 ? "No role partners" : string.Join(", ", names);
+    }
+
+    private static string MeetingSummary(StaffAssignmentDto assignment)
+    {
+        var meetings = assignment.Group.Meetings.Select(meeting =>
+            $"{meeting.ActivityType} {meeting.DayOfWeek} {meeting.StartLocal:HH\\:mm}–{meeting.EndLocal:HH\\:mm}, {meeting.RoomCode} {meeting.Location}");
+        return string.Join("; ", meetings);
+    }
+}

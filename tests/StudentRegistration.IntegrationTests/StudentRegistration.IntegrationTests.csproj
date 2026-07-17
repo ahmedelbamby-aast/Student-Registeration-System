@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\StudentRegistration.Api\StudentRegistration.Api.csproj" />
     <ProjectReference Include="..\..\src\StudentRegistration.Client\StudentRegistration.Client.csproj" />
     <ProjectReference Include="..\..\src\StudentRegistration.Registration\StudentRegistration.Registration.csproj" />
+    <ProjectReference Include="..\..\src\StudentRegistration.StaffAdministration\StudentRegistration.StaffAdministration.csproj" />
   </ItemGroup>
 
 </Project>

@@ -14,7 +14,8 @@ Lecturers and TAs share staff components but have different assignment scopes.
 They need their timetable, partner staff, authorized group rosters, and
 availability without access to policy, user, or unrelated student data. Staff
 own availability edits; Admin use is limited to a bounded read-only view and
-importing staff-declared ranges into offering planning as read-only inputs.
+selecting a staff availability aggregate ID and rowversion as a read-only
+offering-planning dependency.
 
 ## Functional Requirements
 
@@ -37,8 +38,9 @@ importing staff-declared ranges into offering planning as read-only inputs.
   replacement; SPEC-016 MUST NOT redefine or bypass that aggregate.
 - FR-7: Lecturer and TA MUST NOT manage policy, users, capacity, terms, or
   unrelated rosters. Staff own availability edits in the POC. Admin MAY
-  consume the bounded read-only availability view and import staff-declared
-  ranges into offering planning as read-only inputs, but no Admin availability
+  consume the bounded read-only availability view and select a staff
+  availability aggregate ID and rowversion as an immutable offering-planning
+  dependency, but no Admin availability
   mutation/correction/override command, permission, editable control,
   notification workflow, or correction-audit flow exists.
 - FR-8: If an accepted availability change conflicts with a published
@@ -88,8 +90,8 @@ Then the command is rejected with deadline/server time<br>
 And existing availability remains unchanged.
 
 ### AC-4: Staff detail and privilege boundary (FR-4, FR-7)
-Given staff opens an assigned group and Admin reads/imports staff-declared
-availability into offering planning<br>
+Given staff opens an assigned group and Admin reads availability and selects
+its aggregate ID and rowversion for offering planning<br>
 When staff attempts an Admin capacity route and Admin attempts an availability
 correction or override<br>
 Then assigned group details and read-only availability inputs are returned<br>
@@ -141,9 +143,15 @@ alternative.
 
 ```typescript
 interface StaffAssignmentDto {
-  group: GroupDto;
+  subjectCode: string;
+  subjectTitle: string;
+  group: GroupDto; // canonical SPEC-010 scheduling DTO
   staffRole: "Lecturer" | "TeachingAssistant";
   rosterCount: number;
+}
+interface StaffTimetableDto {
+  roleContext: string;
+  assignments: StaffAssignmentDto[];
 }
 interface RosterRowDto {
   universityId: string;
@@ -156,9 +164,10 @@ interface AvailabilityRangeDto {
   dayOfWeek: number;
   startLocal: string;
   endLocal: string;
-  type: "available" | "unavailable" | "preferred";
+  kind: "available" | "unavailable";
 }
 interface StaffTermAvailabilityDto {
+  id: string;
   staffId: string;
   termId: string;
   deadlineUtc: string;
@@ -182,8 +191,9 @@ returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
 fails.
 
 Admin availability consumption uses SPEC-010's bounded read-only Admin view.
-Import means copying staff-declared ranges into offering-planning input; it
-does not mutate StaffTermAvailability. No Admin availability correction or
+Import means selecting the aggregate ID and rowversion as an immutable
+offering-planning dependency; it neither copies nor mutates the range set. No
+Admin availability correction or
 override endpoint, request contract, permission, editable control,
 notification workflow, or correction-audit flow belongs to this POC.
 

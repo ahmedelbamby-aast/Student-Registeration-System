@@ -2,7 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Infrastructure.SqlServer.Registration;
+using StudentRegistration.Infrastructure.SqlServer.Scheduling;
+using StudentRegistration.Infrastructure.SqlServer.StaffWorkspace;
 using StudentRegistration.Registration.Application;
+using StudentRegistration.Scheduling.Application.Ports;
+using StudentRegistration.StaffAdministration.Application;
+using StudentRegistration.StaffAdministration.Application.Ports;
 
 namespace StudentRegistration.Api.Composition;
 
@@ -46,6 +51,16 @@ public static class SqlServerPersistenceRegistration
             services.GetRequiredService<SqlRegistrationEndpointStore>());
         services.TryAddScoped<StudentRegistration.Registration.Application.Ports.IRegistrationRecordReader>(
             services => services.GetRequiredService<SqlRegistrationRecordReader>());
+        services.TryAddScoped<IStaffAvailabilityPort, SqlStaffAvailabilityPort>();
+        services.TryAddScoped<StaffAvailabilityFacade>();
+        services.TryAddScoped<SqlStaffWorkspaceAdapter>();
+        services.TryAddScoped<IStaffWorkspaceReader>(services =>
+            services.GetRequiredService<SqlStaffWorkspaceAdapter>());
+        services.TryAddScoped<IStaffWorkspaceAuditWriter>(services =>
+            services.GetRequiredService<SqlStaffWorkspaceAdapter>());
+        services.TryAddScoped<IStaffIdentityResolver>(services =>
+            services.GetRequiredService<SqlStaffWorkspaceAdapter>());
+        services.TryAddScoped<StaffWorkspaceQueries>();
         return services;
     }
 }

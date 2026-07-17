@@ -1,0 +1,212 @@
+@page "/staff/groups/{GroupId:guid}/roster"
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Data
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Staff
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Staff
+@inject AcademicApiClient AcademicApi
+@inject StaffApiClient StaffApi
+
+<PageTitle>Assigned group roster | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STF-03" data-state="loading" data-contract-state="STF-03-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1"><h1>Assigned group roster</h1><p role="status" aria-busy="true">Loading the authorized roster.</p></main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext" MainContentId="main-content"
+              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
+              SupportLinkLabel="Open support" LoadingLabel="Loading assigned roster">
+        <Navigation><RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" /></Navigation>
+        <ChildContent>@RosterContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@RosterContent</main>
+}
+
+@code {
+    private const int PageSize = 20;
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
+    [new("Staff home", "/staff"), new("Timetable", "/staff/timetable"), new("Availability", "/staff/availability")];
+
+    [Parameter] public Guid GroupId { get; set; }
+
+    private FrontendAppContextView? _shellContext;
+    private Page<RosterRowDto>? _roster;
+    private string _state = "loading";
+    private string _reasonCode = "STAFF_ROSTER_UNAVAILABLE";
+    private string _message = "The assigned roster could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _requesting;
+    private bool _hasLoadedRoster;
+
+    private string ContractState => _state switch
+    {
+        "empty" => "STF-03-COMP-STATE-EMPTY",
+        "success" => "STF-03-COMP-STATE-SUCCESS",
+        "unauthorized" => "STF-03-COMP-STATE-UNAUTHORIZED",
+        "session-expired" => "STF-03-COMP-STATE-SESSION-EXPIRED",
+        "stale" => "STF-03-COMP-STATE-STALE",
+        "offline" => "STF-03-COMP-STATE-OFFLINE",
+        _ => "STF-03-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private RenderFragment RosterContent => @<article data-route-id="STF-03"
+        data-state="@_state" data-contract-state="@ContractState">
+        <header><p>Staff workspace</p><h1>Assigned group roster</h1></header>
+
+        @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
+        {
+            <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
+                <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: @_reference</p> }
+                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="() => LoadRosterAsync(1)">Retry</button> }
+                <a href="/staff">Return to Staff home</a>
+            </section>
+        }
+        else if (_state == "stale")
+        {
+            <section role="status" aria-live="polite">
+                <h2>Assignment changed</h2><p><strong>STAFF_GROUP_NOT_FOUND</strong></p>
+                <p>The assignment was removed or changed. Roster content is no longer available.</p>
+                <a href="/staff">Return to Staff home</a>
+            </section>
+        }
+        else if (_state == "empty")
+        {
+            <section aria-labelledby="empty-roster-heading">
+                <h2 id="empty-roster-heading">No active roster entries</h2>
+                <p>The assigned group currently has no active enrollment rows.</p>
+                <a href="/staff/timetable">Return to timetable</a>
+            </section>
+        }
+        else if (_roster is not null)
+        {
+            <section aria-labelledby="roster-heading">
+                <h2 id="roster-heading">Authorized roster</h2>
+                <p role="status">@_roster.TotalCount active roster entries. Page @_roster.PageNumber of @TotalPages.</p>
+                <div role="region" aria-label="Assigned group roster table" tabindex="0">
+                    <table>
+                        <caption>Minimum authorized roster fields, sorted by display name then University ID</caption>
+                        <thead><tr><th scope="col">University ID</th><th scope="col">Display name</th><th scope="col">Enrollment state</th></tr></thead>
+                        <tbody>
+                            @foreach (var row in _roster.Items)
+                            {
+                                <tr><td>@row.UniversityId</td><td>@row.DisplayName</td><td>@row.EnrollmentState</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <ol aria-label="Roster compact view">
+                    @foreach (var row in _roster.Items)
+                    {
+                        <li><strong>@row.DisplayName</strong><span> @row.UniversityId · @row.EnrollmentState</span></li>
+                    }
+                </ol>
+                <Pagination AccessibleLabel="Roster pages" PreviousLabel="Previous" NextLabel="Next"
+                            CurrentPage="@_roster.PageNumber" TotalPages="@TotalPages" VisiblePages="@VisiblePages"
+                            PageLabel="@(page => page.ToString(CultureInfo.InvariantCulture))"
+                            CurrentPageLabel="@((page, total) => $"Page {page} of {total}")"
+                            PageChanged="LoadRosterAsync" IsLoading="@_requesting" LoadingLabel="Loading roster page" />
+            </section>
+            <nav aria-label="Roster actions"><a href="/staff/timetable">Open timetable</a><a href="/staff">Return to Staff dashboard</a></nav>
+        }
+    </article>;
+
+    private int TotalPages => _roster is null ? 1 : Math.Max(1, (int)Math.Ceiling(_roster.TotalCount / (double)_roster.PageSize));
+    private IReadOnlyList<int> VisiblePages => _roster is null ? [1] : Enumerable.Range(1, TotalPages).Where(page => Math.Abs(page - _roster.PageNumber) <= 2).ToArray();
+    private string ErrorHeading => _state switch
+    {
+        "session-expired" => "Session expired",
+        "unauthorized" => "Access denied",
+        "offline" => "You are offline",
+        _ => "Roster unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var context = await AcademicApi.GetAppContextAsync();
+            if (!context.IsSuccess || context.Value is null)
+            {
+                ApplyFailure(context.StatusCode, context.Error, initialRequest: true);
+                return;
+            }
+            if (!StaffPageSupport.HasActiveStaffContext(context.Value))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "An active staff context is required.", "STF-03-AUTH"), initialRequest: true);
+                return;
+            }
+            _shellContext = StaffPageSupport.ToShellContext(context.Value);
+            await LoadRosterAsync(1);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task LoadRosterAsync(int page)
+    {
+        if (_requesting) return;
+        _requesting = true;
+        try
+        {
+            var result = await StaffApi.GetRosterAsync(GroupId, page, PageSize);
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error, initialRequest: !_hasLoadedRoster);
+                return;
+            }
+            _roster = result.Value;
+            _hasLoadedRoster = true;
+            _state = _roster.TotalCount == 0 ? "empty" : "success";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally { _requesting = false; }
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error, bool initialRequest)
+    {
+        _roster = null;
+        _reasonCode = error?.Code ?? "STAFF_ROSTER_UNAVAILABLE";
+        _message = error?.Message ?? "The assigned roster could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = status switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            HttpStatusCode.NotFound when !initialRequest => "stale",
+            HttpStatusCode.NotFound => "unauthorized",
+            _ => "service-error"
+        };
+    }
+
+    private void ApplyOffline()
+    {
+        _roster = null; _state = "offline"; _reasonCode = "OFFLINE";
+        _message = "Reconnect, then retry the assigned roster."; _reference = null;
+    }
+}

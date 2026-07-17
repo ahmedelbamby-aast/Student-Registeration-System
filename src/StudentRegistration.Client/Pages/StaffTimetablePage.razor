@@ -1,0 +1,219 @@
+@page "/staff/timetable"
+@using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Scheduling
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Staff
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Staff
+@inject AcademicApiClient AcademicApi
+@inject StaffApiClient StaffApi
+
+<PageTitle>Staff timetable | Student Registration</PageTitle>
+
+@if (_loading)
+{
+    <div data-route-id="STF-02" data-state="loading" data-contract-state="STF-02-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1"><h1>Staff timetable</h1><p role="status" aria-busy="true">Loading authorized timetable.</p></main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext" MainContentId="main-content"
+              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
+              SupportLinkLabel="Open support" LoadingLabel="Loading staff timetable">
+        <Navigation><RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" /></Navigation>
+        <ChildContent>@TimetableContent</ChildContent>
+    </AppShell>
+}
+else
+{
+    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@TimetableContent</main>
+}
+
+@code {
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
+    [
+        new("Staff home", "/staff"),
+        new("Timetable", "/staff/timetable", IsActive: true),
+        new("Availability", "/staff/availability")
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private StaffTimetableDto? _timetable;
+    private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
+    private string _state = "loading";
+    private string _reasonCode = "STAFF_TIMETABLE_UNAVAILABLE";
+    private string _message = "The authorized timetable could not be loaded safely.";
+    private string? _reference;
+    private bool _loading = true;
+    private bool _requesting;
+
+    private string ContractState => _state switch
+    {
+        "empty" => "STF-02-COMP-STATE-EMPTY",
+        "success" => "STF-02-COMP-STATE-SUCCESS",
+        "unauthorized" => "STF-02-COMP-STATE-UNAUTHORIZED",
+        "session-expired" => "STF-02-COMP-STATE-SESSION-EXPIRED",
+        "stale" => "STF-02-COMP-STATE-STALE",
+        "offline" => "STF-02-COMP-STATE-OFFLINE",
+        _ => "STF-02-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private RenderFragment TimetableContent => @<article data-route-id="STF-02"
+        data-state="@_state" data-contract-state="@ContractState">
+        <header>
+            <p>Staff workspace</p>
+            <h1>Staff timetable</h1>
+            @if (_timetable is not null)
+            {
+                <p><strong>Role context:</strong> @RoleLabel(_timetable.RoleContext)</p>
+            }
+        </header>
+
+        @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
+        {
+            <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
+                <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: @_reference</p> }
+                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="LoadAsync">Retry</button> }
+                <a href="/staff">Return to Staff home</a>
+            </section>
+        }
+        else if (_state == "stale")
+        {
+            <section role="status" aria-live="polite">
+                <h2>Timetable changed</h2><p><strong>@_reasonCode</strong> @_message</p>
+                <button type="button" disabled="@_requesting" @onclick="LoadAsync">Refresh timetable</button>
+            </section>
+        }
+        else if (_state == "empty")
+        {
+            <section aria-labelledby="empty-timetable-heading">
+                <h2 id="empty-timetable-heading">No authorized timetable assignments</h2>
+                <p>No current assignment is available for the active role context. No broad assignment search is provided.</p>
+                <a href="/staff/availability">Open availability</a>
+                <a href="/staff">Return to Staff home</a>
+            </section>
+        }
+        else
+        {
+            <nav aria-label="Timetable period">
+                <span aria-current="page">Current authorized timetable</span>
+            </nav>
+            <div>
+                <ScheduleCalendar Heading="Current authorized timetable calendar"
+                                  EquivalentListId="staff-timetable-list"
+                                  DayColumnLabel="Day" TimeColumnLabel="Time" MeetingColumnLabel="Assignment"
+                                  GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
+                                  TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location"
+                                  ConflictLabel="Assignment status" Meetings="@_meetings" />
+                <ScheduleList ComponentId="staff-timetable-list"
+                              EquivalentCalendarId="staff-timetable-list-calendar-heading"
+                              Heading="Chronological timetable list"
+                              GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
+                              TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location"
+                              DayLabel="Day" StartLabel="Starts" EndLabel="Ends" TimezoneLabel="Time zone"
+                              ConflictLabel="Assignment status" Meetings="@_meetings" />
+            </div>
+            <nav aria-label="Timetable actions">
+                <a href="/staff/availability">Open availability</a>
+                <a href="/staff">Return to Staff dashboard</a>
+            </nav>
+        }
+    </article>;
+
+    private string ErrorHeading => _state switch
+    {
+        "session-expired" => "Session expired",
+        "unauthorized" => "Access denied",
+        "offline" => "You are offline",
+        _ => "Staff timetable unavailable"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        _loading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_requesting) return;
+        _requesting = true;
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            if (!StaffPageSupport.HasActiveStaffContext(contextResult.Value))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden,
+                    new("FORBIDDEN", "An active staff context is required.", "STF-02-AUTH"));
+                return;
+            }
+
+            _shellContext = StaffPageSupport.ToShellContext(contextResult.Value);
+            var result = await StaffApi.GetTimetableAsync();
+            if (!result.IsSuccess || result.Value is null)
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+                return;
+            }
+
+            _timetable = result.Value;
+            _meetings = StaffPageSupport.ToMeetingItems(
+                _timetable.Assignments,
+                contextResult.Value.TimeZoneId);
+            _state = _meetings.Count == 0 ? "empty" : "success";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requesting = false;
+        }
+    }
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _timetable = null; _meetings = [];
+        _reasonCode = error?.Code ?? "STAFF_TIMETABLE_UNAVAILABLE";
+        _message = error?.Message ?? "The authorized timetable could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = _reasonCode is "ASSIGNMENT_CHANGED" or "STALE_VERSION"
+            ? "stale"
+            : status switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            HttpStatusCode.NotFound or HttpStatusCode.Conflict => "stale",
+            _ => "service-error"
+        };
+    }
+
+    private void ApplyOffline()
+    {
+        _timetable = null; _meetings = []; _state = "offline"; _reasonCode = "OFFLINE";
+        _message = "Reconnect, then refresh the authorized timetable."; _reference = null;
+    }
+
+    private static string RoleLabel(string role) =>
+        string.Equals(role, StaffWorkspaceContract.TeachingAssistantRole, StringComparison.Ordinal)
+            ? "Teaching Assistant"
+            : role;
+}

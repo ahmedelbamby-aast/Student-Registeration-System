@@ -7,7 +7,8 @@
 - [x] Assumptions, dependencies, and out-of-scope boundaries are explicit.
 - [x] Key entities are identified and refined in data-model.md.
 - [x] Security, accessibility, concurrency, scale, and failure behavior are addressed where applicable.
-- [x] Staff-owned availability edits, read-only Admin view/import, excluded
+- [x] Staff-owned availability edits, read-only Admin aggregate-ID/rowversion
+  planning dependency, excluded range-copy and
   correction/override/notification/audit-correction flows, and retained
   schedule-impact alerts are explicit and testable.
 - [x] This package contains planning artifacts only.

@@ -12,7 +12,8 @@ Lecturers and TAs share staff components but have different assignment scopes.
 They need their timetable, partner staff, authorized group rosters, and
 availability without access to policy, user, or unrelated student data. Staff
 own availability edits; Admin use is limited to a bounded read-only view and
-importing staff-declared ranges into offering planning as read-only inputs.
+selecting a staff availability aggregate ID and rowversion as a read-only
+offering-planning dependency.
 
 ## User Scenarios and Testing
 
@@ -62,8 +63,8 @@ As a Lecturer or Teaching Assistant, I need the Staff detail and privilege bound
 
 **Acceptance Scenario (AC-4)**
 
-Given staff opens an assigned group and Admin reads/imports staff-declared
-availability into offering planning<br>
+Given staff opens an assigned group and Admin reads availability and selects
+its aggregate ID and rowversion for offering planning<br>
 When staff attempts an Admin capacity route and Admin attempts an availability
 correction or override<br>
 Then assigned group details and read-only availability inputs are returned<br>
@@ -158,8 +159,9 @@ alternative.
   replacement; SPEC-016 MUST NOT redefine or bypass that aggregate.
 - FR-7: Lecturer and TA MUST NOT manage policy, users, capacity, terms, or
   unrelated rosters. Staff own availability edits in the POC. Admin MAY
-  consume the bounded read-only availability view and import staff-declared
-  ranges into offering planning as read-only inputs, but no Admin availability
+  consume the bounded read-only availability view and select a staff
+  availability aggregate ID and rowversion as an immutable offering-planning
+  dependency, but no Admin availability
   mutation/correction/override command, permission, editable control,
   notification workflow, or correction-audit flow exists.
 - FR-8: If an accepted availability change conflicts with a published
