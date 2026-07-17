@@ -15,7 +15,7 @@
   first run; artificial production changes are forbidden merely to force red.
 - A document task is checkable only when the named record contains the review
   date, baseline commit, result, and links to the supporting commands or tests.
-- The final commit and pushed commit ID for each phase are recorded in
+- The phase evidence commit and matching pushed remote commit ID are recorded in
   `docs/release-evidence/SPEC-017-phase-ledger.md`. No checkbox is evidence by
   itself.
 
