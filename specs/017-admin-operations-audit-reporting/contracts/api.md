@@ -265,5 +265,8 @@ download return 410 and makes artifact bytes inaccessible.
 commands, not a request accepted by a generic SPEC-017 endpoint. Admin pages
 call SPEC-007 through SPEC-010/014 owner endpoints directly. Role changes use
 SPEC-007's `AdminSecurityGuard`; SPEC-017 exposes no RoleAssignment writer.
+Delegated owner conflicts remain HTTP 409 with their canonical stable result:
+`STALE_PREVIEW`, `STALE_VERSION`, `FINAL_ADMIN_REQUIRED`, or
+`IDEMPOTENCY_KEY_REUSED`. SPEC-017 does not translate these results.
 Enrollment correction, drop, withdrawal, seat decrement, break-glass, and
 Admin availability mutation/correction/override endpoints do not exist.

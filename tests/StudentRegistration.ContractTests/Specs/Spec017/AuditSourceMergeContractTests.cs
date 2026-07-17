@@ -29,7 +29,9 @@ public sealed class AuditSourceMergeContractTests
             RepositoryFiles.Exists(DeliveryPath),
             $"Expected-red: the merged read projection is deferred to T070 at {DeliveryPath}.");
 
-        var source = RepositoryFiles.Read(DeliveryPath);
+        var source = RepositoryFiles.Read(DeliveryPath)
+            + RepositoryFiles.Read(
+                "src/StudentRegistration.Infrastructure.SqlServer/Admin/SqlAdminAuditReader.cs");
         RepositoryFiles.ContainsAll(
             source,
             "AuditEvent",
