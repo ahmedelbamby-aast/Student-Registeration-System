@@ -65,7 +65,7 @@
 **Independent Test**: Execute only the AC-1 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T032 [SC-1] [AC-1] [FR-2] [FR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-1Tests.cs for AC-1: Reasoned sensitive mutation (FR-2, FR-4): Given Admin has the owning feature permission and provides a valid reason When a safe feature-spec master-data mutation is committed Then the invariant remains valid And an append-only event records actor, reason, time and before/after summary.
+- [x] T032 [SC-1] [AC-1] [FR-2] [FR-4] Create and execute Given/When/Then conformance coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-1Tests.cs for AC-1: Given Admin has the owning feature permission and provides a valid reason When a safe owner-feature master-data mutation is committed Then the invariant remains valid And an append-only event records actor, reason, time and before/after summary. Canonical upstream behavior may pass immediately.
 ### US2 - Capacity bypass rejected (FR-4, FR-9) (P1)
 
 **Goal**: Prove AC-2 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -73,7 +73,7 @@
 **Independent Test**: Execute only the AC-2 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T033 [SC-2] [AC-2] [FR-4] [FR-9] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-2Tests.cs for AC-2: Capacity bypass rejected (FR-4, FR-9): Given a group has active enrollments at its current capacity When Admin attempts a SPEC-010 capacity reduction below EnrolledCount Then the owning feature command rejects it And no capacity/enrollment state changes.
+- [x] T033 [SC-2] [AC-2] [FR-4] [FR-9] Create and execute Given/When/Then conformance coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-2Tests.cs for AC-2: Given a group has active enrollments at its current capacity When Admin attempts a SPEC-010 capacity reduction below EnrolledCount Then the owning feature command rejects it And no capacity/enrollment state changes. Canonical SPEC-010 behavior may pass immediately.
 ### US3 - Audit export scope (FR-5, FR-7) (P2)
 
 **Goal**: Prove AC-3 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -81,7 +81,7 @@
 **Independent Test**: Execute only the AC-3 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T034 [AC-3] [FR-5] [FR-7] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-3Tests.cs for AC-3: Audit export scope (FR-5, FR-7): Given Admin lacks permission for restricted security events When an audit export is requested Then restricted rows/fields are omitted or request denied And the export action itself is audited.
+- [x] T034 [AC-3] [FR-5] [FR-7] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-3Tests.cs for AC-3: Audit export scope (FR-5, FR-7): Given Admin lacks permission for restricted security events When an audit export is requested Then restricted rows/fields are omitted or request denied And the export action itself is audited.
 ### US4 - Monitor degradation (FR-3) (P2)
 
 **Goal**: Prove AC-4 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -89,7 +89,7 @@
 **Independent Test**: Execute only the AC-4 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T035 [SC-3] [AC-4] [FR-3] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-4Tests.cs for AC-4: Monitor degradation (FR-3): Given server failures or capacity conflicts spike above configured threshold When the admin dashboard refreshes Then a timestamped alert identifies metric, threshold and investigation link.
+- [x] T035 [SC-3] [AC-4] [FR-3] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-4Tests.cs for AC-4: Monitor degradation (FR-3): Given server failures or capacity conflicts spike above configured threshold When the admin dashboard refreshes Then a timestamped alert identifies metric, threshold and investigation link.
 ### US5 - Governed bounded master-data command (FR-1, FR-6, FR-8) (P3)
 
 **Goal**: Prove AC-5 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -97,7 +97,7 @@
 **Independent Test**: Execute only the AC-5 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T036 [AC-5] [FR-1] [FR-6] [FR-8] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-5Tests.cs for AC-5: Given authorized Admin filters a large master-data list and previews a change When the bounded request and confirmed owner-feature mutation execute Then only a paged parameterized result is returned, the command is validated/audited, staff availability is viewed/imported only as immutable planning input, StaffTermAvailability is unchanged, and no Admin availability correction/override permission, control, notification, or correction-audit workflow exists.
+- [x] T036 [AC-5] [FR-1] [FR-6] [FR-8] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-5Tests.cs for AC-5: Given authorized Admin filters a large master-data list and previews a change When the bounded request and confirmed owner-feature mutation execute Then only a paged parameterized result is returned, the command is validated/audited, staff availability is viewed/imported only as immutable planning input, StaffTermAvailability is unchanged, and no Admin availability correction/override permission, control, notification, or correction-audit workflow exists.
 ### US6 - Stale preview confirmation (FR-8, FR-10, FR-11) (P3)
 
 **Goal**: Prove AC-6 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -105,7 +105,7 @@
 **Independent Test**: Execute only the AC-6 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T037 [AC-6] [FR-8] [FR-10] [FR-11] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-6Tests.cs for AC-6: Stale preview confirmation (FR-8, FR-10, FR-11): Given an Admin previews an offering publication and its dependency version changes When the admin confirms the old token twice with the same idempotency key Then both responses report 409 STALE_PREVIEW And no publication or duplicate audit event commits.
+- [x] T037 [AC-6] [FR-8] [FR-10] [FR-11] Create and execute Given/When/Then conformance coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-6Tests.cs for AC-6: Given an Admin previews an offering publication and its dependency version changes When the Admin confirms the old token twice with the same idempotency key Then both responses report 409 STALE_PREVIEW And no publication or duplicate audit event commits. Canonical owner behavior may pass immediately.
 ### US7 - Audit failure rolls back mutation (FR-2, FR-12) (P3)
 
 **Goal**: Prove AC-7 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -113,7 +113,7 @@
 **Independent Test**: Execute only the AC-7 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T038 [AC-7] [FR-2] [FR-12] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-7Tests.cs for AC-7: Audit failure rolls back mutation (FR-2, FR-12): Given a sensitive change passes validation When audit-event persistence is fault-injected to fail Then the business mutation rolls back And the API returns a generic correlated failure without reporting success.
+- [x] T038 [AC-7] [FR-2] [FR-12] Create and execute Given/When/Then conformance coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-7Tests.cs for AC-7: Given a sensitive owner-feature change passes validation When audit-event persistence is fault-injected to fail Then the business mutation rolls back And the API returns a generic correlated failure without reporting success. Canonical SPEC-004 writer behavior may pass immediately.
 ### US8 - Final Admin safeguard (FR-13) (P3)
 
 **Goal**: Prove AC-8 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -121,7 +121,7 @@
 **Independent Test**: Execute only the AC-8 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T039 [AC-8] [FR-13] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-8Tests.cs for AC-8: Final Admin safeguard (FR-13): Given exactly two active Admin assignments remain When two replicas concurrently revoke different assignments Then both serialize through AdminSecurityGuard, at most one commits, the loser returns 409 FINAL_ADMIN_REQUIRED, and at least one active Admin remains.
+- [x] T039 [AC-8] [FR-13] Create and execute Given/When/Then conformance coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-8Tests.cs for AC-8: Given exactly two active Admin assignments remain When two replicas concurrently revoke different assignments Then both serialize through AdminSecurityGuard, at most one commits, the loser returns 409 FINAL_ADMIN_REQUIRED, and at least one active Admin remains. Canonical SPEC-007 behavior may pass immediately.
 ### US9 - Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4) (P3)
 
 **Goal**: Prove AC-9 as an independently demonstrable slice of Admin Operations, Audit, and Reporting.
@@ -129,13 +129,13 @@
 **Independent Test**: Execute only the AC-9 Given/When/Then fixture with its declared data and dependency doubles.
 
 **Dependencies**: Approval/dependency/model/API baseline through T031.
-- [ ] T040 [AC-9] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-9Tests.cs for AC-9: Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4): Given target operational metrics, a production-size audit dataset, large export, and positive/negative/concurrent admin command matrix When admin quality tests execute Then metrics are no more than 60 seconds stale and show observation time And audit first page returns within 1 second p95 And two replicas competing for one export publish exactly one artifact through a durable lease with authorized status/download, secure expiry, and audit And every admin action passes authorization, audit, concurrency, and anti-forgery checks.
-- [ ] T041 [EC-1] Create the future failing EC-1 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-1Tests.cs and assert: Metrics backend unavailable -> show stale timestamp/degraded state, not fabricated zero.
-- [ ] T042 [EC-2] Create the future failing EC-2 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-2Tests.cs and assert: Export fails/expires -> safe status and authorized retry.
-- [ ] T043 [EC-3] Create and execute the EC-3 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-3Tests.cs and assert: Concurrent owner-feature Admin edit -> 409 current version, no lost update; it may pass immediately when the upstream owner behavior already exists.
-- [ ] T044 [EC-4] Create and execute the EC-4 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-4Tests.cs and assert: Bulk import partially invalid -> preview errors; publish all-or-nothing; it may pass immediately when the upstream owner behavior already exists.
-- [ ] T045 [EC-5] Create and execute the EC-5 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-5Tests.cs and assert: Admin disables own final Admin role -> the Identity owner preserves at least one active Admin and returns FINAL_ADMIN_REQUIRED; it may pass immediately when the upstream owner behavior already exists.
-- [ ] T046 [EC-6] Create the future failing EC-6 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-6Tests.cs and assert: The same idempotency key is reused with a different admin export payload -> return 409 IDEMPOTENCY_KEY_REUSED and execute neither new payload.
+- [x] T040 [AC-9] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec017/AC-9Tests.cs for AC-9: Admin operations quality gate (NFR-1, NFR-2, NFR-3, NFR-4): Given target operational metrics, a production-size audit dataset, large export, and positive/negative/concurrent admin command matrix When admin quality tests execute Then metrics are no more than 60 seconds stale and show observation time And audit first page returns within 1 second p95 And two replicas competing for one export publish exactly one artifact through a durable lease with authorized status/download, secure expiry, and audit And every admin action passes authorization, audit, concurrency, and anti-forgery checks.
+- [x] T041 [EC-1] Create the future failing EC-1 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-1Tests.cs and assert: Metrics backend unavailable -> show stale timestamp/degraded state, not fabricated zero.
+- [x] T042 [EC-2] Create the future failing EC-2 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-2Tests.cs and assert: Export fails/expires -> safe status and authorized retry.
+- [x] T043 [EC-3] Create and execute the EC-3 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-3Tests.cs and assert: Concurrent owner-feature Admin edit -> 409 current version, no lost update; it may pass immediately when the upstream owner behavior already exists.
+- [x] T044 [EC-4] Create and execute the EC-4 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-4Tests.cs and assert: Bulk import partially invalid -> preview errors; publish all-or-nothing; it may pass immediately when the upstream owner behavior already exists.
+- [x] T045 [EC-5] Create and execute the EC-5 conformance test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-5Tests.cs and assert: Admin disables own final Admin role -> the Identity owner preserves at least one active Admin and returns FINAL_ADMIN_REQUIRED; it may pass immediately when the upstream owner behavior already exists.
+- [x] T046 [EC-6] Create the future failing EC-6 fault/boundary test in tests/StudentRegistration.IntegrationTests/Specs/Spec017/EdgeCases/EC-6Tests.cs and assert: The same idempotency key is reused with a different admin export payload -> return 409 IDEMPOTENCY_KEY_REUSED and execute neither new payload.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
