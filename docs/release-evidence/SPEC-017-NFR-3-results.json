@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "spec017-nfr3-results/1.0",
+  "implementationCommit": "e3c567f43e608597a66b9d8e5f1f0bcfc4b04594",
+  "executedAtUtc": "2026-07-17T20:43:00Z",
+  "environment": {
+    "os": "Microsoft Windows 10.0.26200",
+    "runtime": ".NET 10.0.9",
+    "dataClassification": "synthetic demo fixtures only"
+  },
+  "fixture": {
+    "rows": 10000,
+    "replicas": 2,
+    "sourceStream": "audit",
+    "pageSize": 100,
+    "maximumArtifactBytes": 10485760
+  },
+  "measurement": {
+    "elapsedMilliseconds": 119.1840,
+    "artifactBytes": 2949000,
+    "successfulPublications": 1,
+    "leaseUnavailablePublications": 1,
+    "artifactsBeforeExpiry": 1,
+    "artifactsAfterExpiry": 0,
+    "leaseSeconds": 60,
+    "retentionSeconds": 60,
+    "expiredAfterSeconds": 61
+  },
+  "realSqlEvidence": {
+    "source": "tests/StudentRegistration.IntegrationTests/Admin/AuditExportSqlConcurrencyTests.cs",
+    "database": "pinned SQL Server 2022 Developer container",
+    "checks": 2,
+    "failed": 0,
+    "covers": [
+      "two-replica conditional claim",
+      "idempotency replay",
+      "shared artifact",
+      "lease loss",
+      "retry limit",
+      "secure expiry"
+    ]
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "spec017-nfr4-results/1.0",
+  "implementationCommit": "e3c567f43e608597a66b9d8e5f1f0bcfc4b04594",
+  "executedAtUtc": "2026-07-17T19:42:04Z",
+  "environment": {
+    "os": "Windows",
+    "runtime": ".NET 10",
+    "database": "SQL Server 2022 container for real-SQL checks",
+    "replicas": 2,
+    "dataClassification": "synthetic demo fixtures only"
+  },
+  "matrix": [
+    {
+      "control": "authorization",
+      "evidence": "Spec017EndpointAuthorizationTests plus AdminCommandInvariantTests",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "control": "audit",
+      "evidence": "AuditAggregationConformanceTests, AuditExportSqlConcurrencyTests, AuditAtomicityTests",
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "control": "concurrency",
+      "evidence": "AdminConfirmationConcurrencyTests, two-replica export, final-Admin serialization",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "control": "anti-forgery",
+      "evidence": "POST /api/admin/exports endpoint metadata and route authorization matrix",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "control": "validation",
+      "evidence": "SPEC-017 API contracts and application behavior matrix",
+      "passed": 23,
+      "failed": 0
+    }
+  ],
+  "phase5Regression": {
+    "contract": 16,
+    "application": 7,
+    "authorization": 8,
+    "integration": 16,
+    "acceptanceExcludingDownstreamNfr": 8,
+    "e2e": 21,
+    "clientContract": 3,
+    "component": 5,
+    "accessibility": 9,
+    "visual": 8,
+    "architecture": 1,
+    "migration": 1,
+    "failed": 0
+  },
+  "result": "PASS"
+}

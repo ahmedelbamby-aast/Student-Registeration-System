@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "spec017-nfr1/1.0",
+  "requirement": "SPEC-017 NFR-1",
+  "measuredCommit": "e3c567f43e608597a66b9d8e5f1f0bcfc4b04594",
+  "measuredAtUtc": "2026-07-17T12:00:00Z",
+  "command": "dotnet test tests/StudentRegistration.QualityTests/StudentRegistration.QualityTests.csproj --no-restore --filter \"FullyQualifiedName~StudentRegistration.QualityTests.Specs.Spec017.NFR_1EvidenceTests\" --logger \"console;verbosity=minimal\" -m:1 -p:BuildInParallel=false",
+  "environment": {
+    "operatingSystem": "Microsoft Windows 10.0.26200",
+    "architecture": "X64",
+    "dotnetSdk": "10.0.301",
+    "targetFramework": "net10.0",
+    "timeZone": "Africa/Cairo",
+    "executionMode": "deterministic fixed-time in-process application query"
+  },
+  "fixture": {
+    "clockUtc": "2026-07-17T12:00:00Z",
+    "caseCount": 4,
+    "metricSeriesPerCase": 8,
+    "totalMetricObservations": 32
+  },
+  "measurements": [
+    {
+      "id": "fresh-0-seconds",
+      "sourceState": "Available",
+      "observationAgeSeconds": 0,
+      "expectedAvailability": "Live",
+      "actualAvailability": "Live",
+      "expectedObservedAtUtc": "2026-07-17T12:00:00Z",
+      "actualObservedAtUtc": "2026-07-17T12:00:00Z"
+    },
+    {
+      "id": "fresh-boundary-60-seconds",
+      "sourceState": "Available",
+      "observationAgeSeconds": 60,
+      "expectedAvailability": "Live",
+      "actualAvailability": "Live",
+      "expectedObservedAtUtc": "2026-07-17T11:59:00Z",
+      "actualObservedAtUtc": "2026-07-17T11:59:00Z"
+    },
+    {
+      "id": "stale-61-seconds",
+      "sourceState": "Available",
+      "observationAgeSeconds": 61,
+      "expectedAvailability": "Stale",
+      "actualAvailability": "Stale",
+      "expectedObservedAtUtc": "2026-07-17T11:58:59Z",
+      "actualObservedAtUtc": "2026-07-17T11:58:59Z"
+    },
+    {
+      "id": "unavailable-300-seconds",
+      "sourceState": "Unavailable",
+      "observationAgeSeconds": 300,
+      "expectedAvailability": "Degraded",
+      "actualAvailability": "Degraded",
+      "expectedObservedAtUtc": "2026-07-17T11:55:00Z",
+      "actualObservedAtUtc": "2026-07-17T11:55:00Z"
+    }
+  ],
+  "calculation": {
+    "limitSeconds": 60,
+    "maxAgePresentedAsLiveSeconds": 60,
+    "firstAgeClassifiedStaleSeconds": 61,
+    "timestampsPreserved": true,
+    "result": "PASS"
+  }
+}

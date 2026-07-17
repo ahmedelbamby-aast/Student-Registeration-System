@@ -192,10 +192,10 @@
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T092 [NFR-1] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-1.md, including command, commit, environment, fixture volume, raw measurement artifact, threshold calculation, and result: metrics are no more than 60 seconds stale and show observation timestamp (depends on T091).
-- [ ] T093 [NFR-2] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-2.md using the approved demo profile and recording command, commit, environment, fixture volume, raw samples, p95 calculation, and result: audit first page returns within 1 second p95 (depends on T091).
-- [ ] T094 [NFR-3] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-3.md using the approved demo profile and recording command, commit, two-replica setup, fixture/export size, raw artifact, lease/expiry measurements, and result: export is asynchronous/bounded, one artifact is published, and it expires securely (depends on T091).
-- [ ] T095 [NFR-4] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-4.md, including command, commit, test matrix, raw result artifact, and result: Admin actions have authorization, audit, concurrency, anti-forgery, and validation coverage (depends on T091).
+- [x] T092 [NFR-1] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-1.md, including command, commit, environment, fixture volume, raw measurement artifact, threshold calculation, and result: metrics are no more than 60 seconds stale and show observation timestamp (depends on T091).
+- [x] T093 [NFR-2] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-2.md using the approved demo profile and recording command, commit, environment, fixture volume, raw samples, p95 calculation, and result: audit first page returns within 1 second p95 (depends on T091).
+- [x] T094 [NFR-3] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-3.md using the approved demo profile and recording command, commit, two-replica setup, fixture/export size, raw artifact, lease/expiry measurements, and result: export is asynchronous/bounded, one artifact is published, and it expires securely (depends on T091).
+- [x] T095 [NFR-4] [AUTOMATED-EVIDENCE] After T091, produce reproducible automated evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec017/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-017-NFR-4.md, including command, commit, test matrix, raw result artifact, and result: Admin actions have authorization, audit, concurrency, anti-forgery, and validation coverage (depends on T091).
 
 ## Phase 7 - Scope and Release Evidence
 
@@ -206,6 +206,6 @@
 - [ ] T100 [TRACE] After T001-T099, generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-017-traceability.md and verify its schema/completeness in tests/StudentRegistration.SpecificationTests/Spec017TraceabilityTests.cs; reject release if any row lacks passing evidence (depends on T001-T099).
 - [ ] T101 [GATE] After green T100, record Ahmed Elbamby's separate product owner, domain owner, QA, security, accessibility, data/concurrency, and operations review perspectives with dates and evidence links in docs/release-evidence/SPEC-017-release-approval.md; explicitly do not claim Gate D, production, or official AASTMT approval (depends on T100).
 
-Phases 1-4 tasks T001-T072 are complete from their recorded evidence. Phase 5
-route and composition work T073-T091 remains pending and is not implied by the
-bounded Phase 4 application/query/store delivery.
+Phases 1-6 tasks T001-T095 are complete from their recorded evidence. Phase 7
+scope, traceability, and release-review tasks T096-T101 remain pending and are
+not implied by the measurable NFR evidence.
