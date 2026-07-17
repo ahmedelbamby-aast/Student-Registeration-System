@@ -29,6 +29,7 @@ public static class RolePolicies
     public const string CatalogueReadAvailable = "Catalogue.ReadAvailable";
     public const string OfferingsManage = "Offerings.Manage";
     public const string OfferingDetailsRead = "OfferingDetailsRead";
+    public const string RegistrationSubmitOwn = "Registration.SubmitOwn";
 
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
@@ -122,6 +123,13 @@ public static class RolePolicies
                 .RequireClaim(PermissionClaimType, OfferingsManage));
 
         options.AddPolicy(
+            RegistrationSubmitOwn,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Student)
+                .RequireClaim(PermissionClaimType, RegistrationSubmitOwn));
+
+        options.AddPolicy(
             OfferingDetailsRead,
             policy => policy
                 .RequireAuthenticatedUser()
@@ -152,7 +160,13 @@ public static class RolePolicies
 
     public static IReadOnlyList<string> PermissionsForRole(string role) => role switch
     {
-        Student => [ContextRead, AcademicProfileReadOwn, CatalogueReadAvailable],
+        Student =>
+        [
+            ContextRead,
+            AcademicProfileReadOwn,
+            CatalogueReadAvailable,
+            RegistrationSubmitOwn
+        ],
         Admin =>
         [
             IdentityAccessManage,

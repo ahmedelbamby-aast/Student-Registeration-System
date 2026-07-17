@@ -78,17 +78,17 @@ Given a reviewed migration bundle and production-like backup<br>
 When deployment rehearsal runs<br>
 Then migration is applied as a controlled step rather than app startup<br>
 And rollback instructions restore the prior verified state.
-### User Story 6 - Database-backed registration and idempotency guards (FR-2, FR-4, FR-9) (P3)
+### User Story 6 - Database-backed registration serialization and idempotency (FR-2, FR-4, FR-9) (P3)
 
-As a Data Lead, I need the Database-backed registration and idempotency guards (FR-2, FR-4, FR-9) behavior so that ERD and Data Lifecycle produces a verifiable outcome.
+As a Data Lead, I need the Database-backed registration serialization and idempotency (FR-2, FR-4, FR-9) behavior so that ERD and Data Lifecycle produces a verifiable outcome.
 
 **Independent Test**: Execute AC-6 in requirements.md without relying on another story in this feature.
 
 **Acceptance Scenario (AC-6)**
 
 Given the Code First model is migrated to SQL Server<br>
-When parallel transactions claim one student-term guard and one idempotency
-key<br>
+When parallel transactions lock the shared StudentTermAcademicState boundary
+and claim one idempotency key<br>
 Then database uniqueness and concurrency controls permit one canonical owner
 and payload<br>
 And a different payload cannot reuse that key<br>
@@ -157,8 +157,9 @@ And sensitive fields are absent from unsafe logs.
   loaded into either demo profile. Seed is idempotent for the same profile
   version; destructive reset is a separate explicit operation guarded to
   Development/Testing and MUST reject every other environment.
-- FR-9: The ERD MUST model a unique student-term registration guard and MUST
-  use `RegistrationSubmission` as the single registration-submission
+- FR-9: The ERD MUST model the unique SPEC-008 `StudentTermAcademicState` as
+  the shared student-term registration boundary and MUST use
+  `RegistrationSubmission` as the single registration-submission
   idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
   deterministic result, `ReceivedAtUtc` as its creation instant,
@@ -195,8 +196,9 @@ And sensitive fields are absent from unsafe logs.
 - **SPEC-009 owned**: Program, Course, PolicySet.
 - **SPEC-010 owned**: CourseOffering, SectionGroup.
 - **SPEC-012 owned**: RegistrationPlan.
-- **SPEC-014 owned**: StudentTermRegistrationGuard, RegistrationSubmission,
-  and Enrollment. `RegistrationSubmission` is the idempotency record.
+- **SPEC-014 owned**: RegistrationSubmission and Enrollment.
+  `RegistrationSubmission` is the idempotency record. SPEC-014 consumes the
+  SPEC-008-owned StudentTermAcademicState boundary without redefining it.
 - **SPEC-004 owned**: AuditEvent. SPEC-017 owns authorized audit query/export,
   not the transaction-aware write model.
 

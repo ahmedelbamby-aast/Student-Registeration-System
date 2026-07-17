@@ -1397,6 +1397,52 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.ToView("OfferingEligibility", "registration");
                 });
 
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.Enrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RegisteredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.HasIndex("OfferingId", "GroupId");
+
+                    b.HasIndex("StudentId", "OfferingId")
+                        .IsUnique();
+
+                    b.ToTable("Enrollments", "registration", t =>
+                        {
+                            t.HasCheckConstraint("CK_Enrollments_State", "[State] IN ('active')");
+                        });
+                });
+
             modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1484,6 +1530,76 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.HasIndex("PlanId", "SelectedGroupId");
 
                     b.ToTable("RegistrationPlanItems", "registration");
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClientRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DecisionSnapshotJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PayloadHash")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ProcessingState")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ReceiptSnapshotJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ReceivedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ResultCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TermId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasFilter("[Reference] IS NOT NULL");
+
+                    b.HasIndex("TermId");
+
+                    b.HasIndex("StudentId", "TermId", "ClientRequestId")
+                        .IsUnique();
+
+                    b.ToTable("RegistrationSubmissions", "registration", t =>
+                        {
+                            t.HasCheckConstraint("CK_RegistrationSubmissions_DecisionSnapshotJson", "[DecisionSnapshotJson] IS NULL OR ISJSON([DecisionSnapshotJson]) = 1");
+
+                            t.HasCheckConstraint("CK_RegistrationSubmissions_ReceiptSnapshotJson", "[ReceiptSnapshotJson] IS NULL OR ISJSON([ReceiptSnapshotJson]) = 1");
+
+                            t.HasCheckConstraint("CK_RegistrationSubmissions_ResultShape", "[UpdatedAtUtc] >= [ReceivedAtUtc] AND ([CompletedAtUtc] IS NULL OR [CompletedAtUtc] >= [ReceivedAtUtc]) AND (([ProcessingState] = 'processing' AND [ResultCode] IS NULL AND [Reference] IS NULL AND [ReceiptSnapshotJson] IS NULL AND [DecisionSnapshotJson] IS NULL AND [CompletedAtUtc] IS NULL) OR ([ProcessingState] = 'accepted' AND [ResultCode] IS NOT NULL AND [Reference] IS NOT NULL AND [ReceiptSnapshotJson] IS NOT NULL AND [DecisionSnapshotJson] IS NOT NULL AND [CompletedAtUtc] IS NOT NULL) OR ([ProcessingState] = 'rejected' AND [ResultCode] IS NOT NULL AND [Reference] IS NULL AND [ReceiptSnapshotJson] IS NULL AND [DecisionSnapshotJson] IS NOT NULL AND [CompletedAtUtc] IS NOT NULL))");
+
+                            t.HasCheckConstraint("CK_RegistrationSubmissions_State", "[ProcessingState] IN ('processing', 'accepted', 'rejected')");
+                        });
                 });
 
             modelBuilder.Entity("StudentRegistration.Scheduling.Domain.CourseOffering", b =>
@@ -2234,6 +2350,28 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.Enrollment", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Registration.Domain.RegistrationSubmission", null)
+                        .WithMany()
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Scheduling.Domain.SectionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId", "GroupId")
+                        .HasPrincipalKey("OfferingId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlan", b =>
                 {
                     b.HasOne("StudentRegistration.Academics.Domain.Student", null)
@@ -2258,7 +2396,7 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .IsRequired();
 
                     b.HasOne("StudentRegistration.Registration.Domain.RegistrationPlan", null)
-                        .WithMany()
+                        .WithMany("Items")
                         .HasForeignKey("PlanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2267,6 +2405,21 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .WithMany()
                         .HasForeignKey("OfferingId", "SelectedGroupId")
                         .HasPrincipalKey("OfferingId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationSubmission", b =>
+                {
+                    b.HasOne("StudentRegistration.Academics.Domain.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("StudentRegistration.Academics.Domain.AcademicTerm", null)
+                        .WithMany()
+                        .HasForeignKey("TermId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -2373,6 +2526,11 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .HasForeignKey("TermId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("StudentRegistration.Registration.Domain.RegistrationPlan", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("StudentRegistration.Scheduling.Domain.SectionGroup", b =>

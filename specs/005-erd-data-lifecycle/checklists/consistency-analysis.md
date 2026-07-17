@@ -23,8 +23,7 @@
 | Finding | Severity | Resolution |
 |---|---|---|
 | FR-9 required creation/update/completion timestamps while the ERD omitted an update field. | High | `ReceivedAtUtc` is explicitly the creation instant; `UpdatedAtUtc` was added and `CompletedAtUtc` is nullable. |
-| The SPEC-005 manifest omitted `StudentTermRegistrationGuard` and shortened SC-2. | Medium | The entity and complete deterministic synthetic-seed/provenance criterion are restored in spec manifest `2.0.1`. |
-| Restoring the guard exposed no tagged schema-conformance task for its canonical SPEC-014 source path. | High | T026/T027 now govern RegistrationSubmission and StudentTermRegistrationGuard as one cohesive registration-transaction reference pair. |
+| The earlier baseline modeled both `StudentTermRegistrationGuard` and `StudentTermAcademicState` for the same student-term serialization purpose. | High | The duplicate SPEC-014 row was removed; T026/T027 now govern RegistrationSubmission while consuming the one SPEC-008 StudentTermAcademicState boundary. |
 | T055 referenced a MigrationTests project with no creation task. | High | T055 now creates/registers the minimal project shell when absent before adding its failing test. |
 | Deferred runtime fixtures could be mistaken for passing release evidence at T069. | High | A mandatory downstream activation prerequisite now blocks T069 until every owner/mapping is approved, pinned, active, and passing. |
 | T006-T031 wording could require not-yet-owned downstream source files. | Medium | Test tasks now validate design-time ERD reference contracts and their declared canonical source paths without loading or requiring runtime files. |
@@ -33,7 +32,7 @@
 
 - [x] `RegistrationSubmission` remains the sole idempotency record; no second
   IdempotencyRecord entity is introduced.
-- [x] `StudentTermRegistrationGuard`, capacity, unique enrollment,
+- [x] Shared `StudentTermAcademicState` serialization, capacity, unique enrollment,
   offering/group consistency, rowversion, immutable history, provenance, and
   synthetic-only Development/Testing rules remain explicit.
 - [x] SQL Server 2022 Developer compatibility 160, Docker Development, and

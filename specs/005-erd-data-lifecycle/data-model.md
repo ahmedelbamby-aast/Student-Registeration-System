@@ -9,7 +9,7 @@
 | SPEC-009 | Program, Course, PolicySet |
 | SPEC-010 | CourseOffering, SectionGroup |
 | SPEC-012 | RegistrationPlan |
-| SPEC-014 | StudentTermRegistrationGuard, RegistrationSubmission, Enrollment |
+| SPEC-014 | RegistrationSubmission, Enrollment; consumes SPEC-008 StudentTermAcademicState |
 | SPEC-004 | AuditEvent |
 
 SPEC-005 owns the ERD, ownership matrix, invariant catalogue, and lifecycle
@@ -36,7 +36,7 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | ImportedRecord.Source | owning import feature | string | required provenance |
 | Non-production seed profile | SPEC-005 contract; canonical owners write their rows | configuration, not an entity | SQL Server 2022 Developer compatibility 160; Docker Development persists until guarded reset; Testcontainers Testing is disposed per run; wholly synthetic versioned deterministic fixture; idempotent seed; no real data |
 | ApplicationUser password credential | SPEC-007 | password hash | ASP.NET Identity hash only; no plaintext PIN/password persistence |
-| StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
+| StudentTermAcademicState | SPEC-008, consumed by SPEC-014 | entity | unique student + term; shared serialization boundary advanced in the registration transaction |
 | RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, ReceivedAtUtc creation instant, UpdatedAtUtc, nullable CompletedAtUtc |
 
 ## Integrity Rules

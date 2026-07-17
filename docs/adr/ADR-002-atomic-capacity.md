@@ -18,8 +18,9 @@ Within one short SQL Server transaction:
 
 - After beginning the transaction, atomically claim the
   student/term/idempotency key and compare a server-canonical payload hash.
-- Lock the StudentTermRegistrationGuard, registration context/version records,
-  and sorted SectionGroup rows in that stable order.
+- Enter the SPEC-008 `StudentTermAcademicState` transaction boundary through
+  `ExecuteRegistrationBoundaryAsync`, then lock the remaining registration
+  context/version records and sorted SectionGroup rows in that stable order.
 - Revalidate term, policy, profile/holds, conflicts, ownership, group versions,
   credit load, and duplicates after acquiring those boundaries.
 - Create an allocation savepoint after the claim and revalidation, before the
@@ -44,7 +45,8 @@ lookup returns REQUEST_NOT_FOUND and the original POST may be retried.
 
 Scheduled cutoff uses one authoritative server ReceivedAtUtc. Emergency closure
 or context-version change before commit blocks the request. Use rowversion for
-ordinary editing, not as the only seat or student-term guard.
+ordinary editing, not as the seat allocator. Student-term serialization uses
+the unique StudentTermAcademicState row and its transaction protocol.
 
 ## Consequences
 
@@ -58,7 +60,8 @@ Positive:
 Accepted costs:
 
 - Popular groups briefly serialize on one database row.
-- Mutations for one student/term briefly serialize on one guard row.
+- Mutations for one student/term briefly serialize on the shared academic-state
+  row.
 - EnrolledCount must be maintained and reconciled with enrollment rows.
 
 ## Rejected alternatives

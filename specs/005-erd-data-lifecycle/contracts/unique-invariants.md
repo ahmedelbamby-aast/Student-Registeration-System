@@ -1,6 +1,6 @@
 # Unique and Alternate-Key Invariants
 
-**Contract version:** `unique-invariants/1.0`<br>
+**Contract version:** `unique-invariants/1.1`<br>
 **Requirement:** FR-2<br>
 **Bounded delivery:** design-time contract only<br>
 **Runtime source dependency:** None<br>
@@ -40,10 +40,11 @@ inspection result, or production approval.
   idempotency key to one student and term.
 - `RegistrationSubmission.Reference` is unique when non-null and accepted;
   rejected and processing results do not invent a receipt reference.
-- Unique `StudentTermRegistrationGuard(StudentId, TermId)` supplies one
-  serialization boundary per student and term.
-- `StudentTermAcademicState(StudentId, TermId)`,
-  `StaffTermAvailability(StaffId, TermId)`, and
+- Unique `StudentTermAcademicState(StudentId, TermId)` supplies the shared
+  academic/registration serialization boundary per student and term.
+- `StudentTermAcademicState` is owned by SPEC-008 and consumed, not remapped,
+  by SPEC-014.
+- `StaffTermAvailability(StaffId, TermId)` and
   `RegistrationPlanItem(PlanId, OfferingId)` are unique.
 - `TranscriptAttempt.SupersedesAttemptId` has a filtered unique index when
   non-null, so an immutable attempt can have at most one direct successor.

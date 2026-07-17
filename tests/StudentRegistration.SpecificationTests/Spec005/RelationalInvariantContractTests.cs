@@ -18,7 +18,7 @@ public sealed class RelationalInvariantContractTests
         var contract = Spec005ContractTestSupport.ReadBoundedContract(UniquePath);
         Spec005ContractTestSupport.AssertContainsNormalized(
             contract,
-            "unique-invariants/1.0",
+            "unique-invariants/1.1",
             "FR-2",
             "Staff.StaffNumber", "CatalogueVersion.VersionCode",
             "AcademicTerm.Code", "Room.Code",
@@ -41,7 +41,7 @@ public sealed class RelationalInvariantContractTests
             "Alternate key SectionGroup(Id, OfferingId)",
             "Unique Enrollment(StudentId, OfferingId)",
             "Unique RegistrationSubmission(StudentId, TermId, ClientRequestId)",
-            "Unique StudentTermRegistrationGuard(StudentId, TermId)");
+            "Unique StudentTermAcademicState(StudentId, TermId)");
     }
 
     [Fact]
@@ -86,13 +86,15 @@ public sealed class RelationalInvariantContractTests
         Assert.NotEmpty(rowVersionEntities);
         Spec005ContractTestSupport.AssertContainsNormalized(
             contract,
-            "concurrency-tokens/1.0",
+            "concurrency-tokens/1.1",
             "FR-4",
             "409 STALE_VERSION", "current version", "no lost update",
             "ExportJob uses compare-and-set rowversion plus an expiring lease",
             "Final-Admin mutation locks AdminSecurityGuard",
             "rowversion is not the capacity allocator",
-            "rowversion is not the sole student-term serialization mechanism");
+            "StudentTermAcademicState row plus the SPEC-008",
+            "ExecuteRegistrationBoundaryAsync transaction protocol provide student-term serialization",
+            "SPEC-014 does not add a second guard");
         foreach (var entity in rowVersionEntities)
         {
             Spec005ContractTestSupport.AssertContainsNormalized(

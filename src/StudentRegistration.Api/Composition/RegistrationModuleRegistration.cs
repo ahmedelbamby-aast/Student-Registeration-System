@@ -31,6 +31,9 @@ public static class RegistrationModuleRegistration
         services.TryAddScoped<ScheduleOptimizer>();
         services.TryAddScoped<OptimizationCoordinator>();
         services.TryAddScoped<RecommendationApplicationService>();
+        services.TryAddScoped<RegistrationCommandFactory>();
+        services.TryAddScoped<RegistrationTransactionCoordinator>();
+        services.TryAddScoped<RegistrationEndpointService>();
         services.TryAddScoped<ICurrentPlanReader, EmptyCurrentPlanReader>();
         return services;
     }

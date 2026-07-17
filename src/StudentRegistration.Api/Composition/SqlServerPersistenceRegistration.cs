@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Infrastructure.SqlServer.Registration;
+using StudentRegistration.Registration.Application;
 
 namespace StudentRegistration.Api.Composition;
 
@@ -34,6 +36,13 @@ public static class SqlServerPersistenceRegistration
         services.AddStudentRegistrationDiscoverySqlServer();
         services.AddStudentRegistrationPlansSqlServer();
         services.AddScheduleRecommendationsSqlServer();
+        services.TryAddScoped<RegistrationSubmissionStore>();
+        services.TryAddScoped<SqlSeatAllocator>();
+        services.TryAddScoped<SqlRegistrationEndpointStore>();
+        services.TryAddScoped<IRegistrationEndpointStore>(services =>
+            services.GetRequiredService<SqlRegistrationEndpointStore>());
+        services.TryAddScoped<IRegistrationLocalTransactionStore>(services =>
+            services.GetRequiredService<SqlRegistrationEndpointStore>());
         return services;
     }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Registration Capacity and Concurrency
 
 **Branch**: 014-registration-capacity-concurrency | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17 (Gate A).
 
 ## Summary
 
@@ -37,8 +37,10 @@ no claim or partial state.
    ELbamby's recorded 2026-07-13 Gate A approval.
 3. Write failing schema, contract, acceptance, every-row concurrency-matrix,
    fault-injection, and load tests against real SQL Server.
-4. Implement the authenticated command, student-term guard, canonical payload
-   hash, and in-transaction idempotency claim.
+4. Implement the authenticated command, consume SPEC-008's
+   `StudentTermAcademicState` boundary through
+   `ExecuteRegistrationBoundaryAsync`, and add the canonical payload hash and
+   in-transaction idempotency claim.
 5. Implement sorted conditional group updates, savepoint rollback, enrollment,
    receipt/reference snapshot, audit, and final-result commit.
 6. Implement bounded same-key observation, deterministic replay,
@@ -50,8 +52,9 @@ no claim or partial state.
 
 ### Linearization Order
 
-`StudentTermRegistrationGuard` -> registration-context/version rows ->
-published policy/version boundary -> `SectionGroup` rows sorted by ID.
+SPEC-008 `StudentTermAcademicState` via `ExecuteRegistrationBoundaryAsync` ->
+remaining registration-context/version rows -> published policy/version
+boundary -> `SectionGroup` rows sorted by ID.
 Mutable inputs are re-read after these boundaries. There are no HTTP calls,
 messages, email, or other remote work inside the transaction.
 

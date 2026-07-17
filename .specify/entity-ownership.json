@@ -1,5 +1,5 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.8",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -39,7 +39,6 @@
     "StudentActivation": "007",
     "StaffTermAvailability": "010",
     "StaffAvailability": "010",
-    "StudentTermRegistrationGuard": "014",
     "OptimizationDiagnostic": "013",
     "OptimizerConfiguration": "013",
     "Student": "008",

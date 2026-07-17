@@ -979,7 +979,8 @@ foreach ($item in $manifest.specs) {
         $matrixText = if (Test-Path $matrixPath) { Get-Content $matrixPath -Raw } else { '' }
         $concurrencyEvidence = "$requirements`n$tasks`n$matrixText"
         foreach ($term in @(
-            'StudentTermRegistrationGuard','IDEMPOTENCY_KEY_REUSED','payload hash',
+            'StudentTermAcademicState','ExecuteRegistrationBoundaryAsync',
+            'IDEMPOTENCY_KEY_REUSED','payload hash',
             'same student','two replicas','emergency closure','conditional atomic SQL',
             'allocation savepoint','RegistrationInProgressResponse',
             'no submissionId','500 ms','REQUEST_NOT_FOUND','deadlock','reconciliation'
@@ -995,7 +996,7 @@ foreach ($item in $manifest.specs) {
         if ($raceRows.Count -ne $raceTaskMatches.Count) { Add-Failure "SPEC-014 concurrency matrix has $($raceRows.Count) rows but $($raceTaskMatches.Count) RACE tasks." }
         for ($raceIndex = 0; $raceIndex -lt $raceRows.Count; $raceIndex++) {
             $raceId = 'RACE-R{0:d2}' -f ($raceIndex + 1)
-            $raceTestPath = "tests/StudentRegistration.ConcurrencyTests/Specs/Spec014/ConcurrencyMatrix/RaceR$('{0:d2}' -f ($raceIndex + 1))Tests.cs"
+            $raceTestPath = "tests/StudentRegistration.IntegrationTests/Specs/Spec014/ConcurrencyMatrix/RaceR$('{0:d2}' -f ($raceIndex + 1))Tests.cs"
             $raceTasks = @($raceTaskMatches | Where-Object { $_.Groups[2].Value -match "\[$raceId\]" -and $_.Groups[2].Value -match [regex]::Escape($raceTestPath) })
             if ($raceTasks.Count -ne 1) { Add-Failure "SPEC-014 $raceId must have exactly one exact real-SQL test task at $raceTestPath; found $($raceTasks.Count)."; continue }
             $cells = @($raceRows[$raceIndex].Trim('|').Split('|') | ForEach-Object { One-Line $_ })
@@ -1139,7 +1140,7 @@ if (-not $implementationMode -and $implementationFiles.Count -gt 0) {
 $erdPath = Join-Path $root 'docs/diagrams/ERD.md'
 $erd = if (Test-Path $erdPath) { Get-Content $erdPath -Raw } else { '' }
 foreach ($term in @(
-    'StudentTermRegistrationGuard', 'PayloadHash', 'ProcessingState',
+    'StudentTermAcademicState', 'PayloadHash', 'ProcessingState',
     'ReceivedAtUtc', 'CompletedAtUtc', 'RegistrationPaused',
     'RegistrationWindow', 'StaffTermAvailability', 'RegistrationReceipt',
     'CatalogueVersion', 'AccountRecoveryChallenge', 'RoleAssignment',

@@ -9,19 +9,20 @@
   lifecycle, and task contracts are consistent.
 - [x] `ReceivedAtUtc`, `UpdatedAtUtc`, and nullable `CompletedAtUtc` form the
   explicit RegistrationSubmission timestamp contract.
-- [x] `StudentTermRegistrationGuard` and the complete deterministic seed
-  provenance success criterion are synchronized in specification manifest
-  `2.0.1`.
-- [x] T026/T027 provide exactly one design-time schema/reference pair for the
-  SPEC-014-owned RegistrationSubmission and StudentTermRegistrationGuard
-  transaction boundary.
+- [x] The shared SPEC-008 `StudentTermAcademicState` boundary, SPEC-014-owned
+  RegistrationSubmission, and the complete deterministic seed provenance
+  success criterion are synchronized in specification manifest `2.0.5`.
+- [x] T026/T027 provide one design-time RegistrationSubmission reference and
+  consume the canonical StudentTermAcademicState boundary without a duplicate
+  Registration-owned row.
 - [x] T006-T031 validate design-time reference contracts without requiring
   downstream runtime source.
 - [x] T055 creates the minimal MigrationTests project shell before its test,
   and T069 cannot execute before every deferred runtime fixture is activated
   and passing against approved, exact owner/mapping pins.
 - [x] The one-DbContext modular-monolith boundary, canonical entity owners,
-  registration transaction guard, and AuditEvent ownership remain unchanged.
+  shared registration transaction boundary, and AuditEvent ownership remain
+  explicit.
 - [x] Development and Testing use synthetic-only, migration-first,
   deterministic, idempotent profiles with guarded reset/disposal behavior.
 - [x] Production edition/topology, deployment window, retention, backup

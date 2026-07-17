@@ -2,7 +2,7 @@
 
 **Feature Branch**: 014-registration-capacity-concurrency
 **Created**: 2026-07-12
-**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17
 **Owner**: Data/Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -111,7 +111,8 @@ Given two plans for one student/term are individually valid but jointly exceed
 credit load or overlap<br>
 When different idempotency keys submit them concurrently<br>
 Then only one plan may commit<br>
-And the loser revalidates after acquiring the student-term guard and receives
+And the loser revalidates after acquiring the shared StudentTermAcademicState
+boundary and receives
 409 POLICY_CHANGED or SCHEDULE_CONFLICT<br>
 And the combined enrollment remains valid.
 ### User Story 8 - Atomic idempotency claim and payload mismatch (FR-7, FR-13) (P3)
@@ -249,8 +250,9 @@ And a fault after commit replays the stored final result.
   update that succeeds only when the published group is selectable and
   EnrolledCount is less than Capacity.
 - FR-5: Registration MUST acquire database serialization boundaries in this
-  stable order: student-term guard, registration-context/version records, then
-  SectionGroup rows sorted by group ID.
+  stable order: the SPEC-008 `StudentTermAcademicState` boundary through
+  `ExecuteRegistrationBoundaryAsync`, the remaining registration-context/
+  version records, then SectionGroup rows sorted by group ID.
 - FR-6: After the idempotency claim and final validation but before the first
   seat mutation, the transaction MUST create an allocation savepoint. A
   deterministic allocation/invariant rejection MUST roll back to that
@@ -283,9 +285,11 @@ And a fault after commit replays the stored final result.
   operations identity using a GroupId/rowversion/evidence-hash idempotency
   scope. Repair MUST recompute from active Enrollment, audit atomically, and
   verify before resume; no Admin/public repair endpoint exists in MVP.
-- FR-12: Every registration mutation for one student and term MUST serialize
-  through a database-backed StudentTermRegistrationGuard; in-memory locks are
-  prohibited because multiple application replicas are supported.
+- FR-12: Every registration mutation for one student and term MUST consume the
+  database-backed SPEC-008 `StudentTermAcademicState` boundary through
+  `ExecuteRegistrationBoundaryAsync`; the successful transaction advances its
+  version, and in-memory or duplicate Registration-owned guards are prohibited
+  because multiple application replicas are supported.
 - FR-13: RegistrationSubmission is the sole idempotency claim/final-result
   record. Its database uniqueness scope MUST be (StudentId, TermId,
   ClientRequestId), and it MUST atomically store that owner/scope, canonical
@@ -338,7 +342,9 @@ And a fault after commit replays the stored final result.
 - **Enrollment**: SPEC-014/Registration-owned active enrollment entity.
 - **SectionGroup**: Consumed Scheduling aggregate owned by SPEC-010; SPEC-014 may only allocate through its published concurrency contract.
 - **DecisionSnapshot**: SPEC-014/Registration-owned immutable decision evidence.
-- **StudentTermRegistrationGuard**: SPEC-014/Registration-owned database serialization row.
+- **StudentTermAcademicState**: SPEC-008/Academics-owned database serialization
+  row consumed through `ExecuteRegistrationBoundaryAsync`; SPEC-014 does not
+  redefine or remap it.
 
 ## Success Criteria
 

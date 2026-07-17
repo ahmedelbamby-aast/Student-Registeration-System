@@ -48,8 +48,9 @@ proposed model is in docs/diagrams/ERD.md.
   loaded into either demo profile. Seed is idempotent for the same profile
   version; destructive reset is a separate explicit operation guarded to
   Development/Testing and MUST reject every other environment.
-- FR-9: The ERD MUST model a unique student-term registration guard and MUST
-  use `RegistrationSubmission` as the single registration-submission
+- FR-9: The ERD MUST model the unique SPEC-008 `StudentTermAcademicState` as
+  the shared student-term registration boundary and MUST use
+  `RegistrationSubmission` as the single registration-submission
   idempotency record containing
   owner/scope/key, canonical payload hash, processing state, immutable
   deterministic result, `ReceivedAtUtc` as its creation instant,
@@ -114,10 +115,10 @@ When deployment rehearsal runs<br>
 Then migration is applied as a controlled step rather than app startup<br>
 And rollback instructions restore the prior verified state.
 
-### AC-6: Database-backed registration and idempotency guards (FR-2, FR-4, FR-9)
+### AC-6: Database-backed registration serialization and idempotency (FR-2, FR-4, FR-9)
 Given the Code First model is migrated to SQL Server<br>
-When parallel transactions claim one student-term guard and one idempotency
-key<br>
+When parallel transactions lock the shared StudentTermAcademicState boundary
+and claim one idempotency key<br>
 Then database uniqueness and concurrency controls permit one canonical owner
 and payload<br>
 And a different payload cannot reuse that key<br>
@@ -185,7 +186,7 @@ lifecycle are normative in docs/diagrams/ERD.md after approval.
 | ImportedRecord.Source | owning import feature | string | required provenance |
 | Non-production seed profile | SPEC-005 contract; canonical owners write their rows | configuration, not an entity | Development or per-run Testing only; versioned deterministic logical fixture; idempotent seed; explicit guarded reset |
 | ApplicationUser password credential | SPEC-007 | password hash | ASP.NET Identity hash only; no plaintext PIN/password persistence |
-| StudentTermRegistrationGuard | SPEC-014 | entity | unique student + term; serialization boundary |
+| StudentTermAcademicState | SPEC-008, consumed by SPEC-014 | entity | unique student + term; shared serialization boundary advanced in the registration transaction |
 | RegistrationSubmission | SPEC-014 | entity and idempotency record | unique owner + scope + key; payload hash, state, result, ReceivedAtUtc creation instant, UpdatedAtUtc, nullable CompletedAtUtc |
 
 Each canonical owner implements its entity and EF configuration in its module.

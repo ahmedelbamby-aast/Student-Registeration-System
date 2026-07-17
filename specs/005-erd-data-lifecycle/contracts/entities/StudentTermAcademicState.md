@@ -2,8 +2,8 @@
 
 - Runtime source dependency: None
 - ERD source: `docs/diagrams/ERD.md`
-- Ownership source: `.specify/entity-ownership.json` version `2.0.5`
-- Persistence source: `.specify/persistence-manifest.json` version `2.1.1`
+- Ownership source: `.specify/entity-ownership.json` version `2.0.8`
+- Persistence source: `.specify/persistence-manifest.json` version `2.1.2`
 
 ### StudentTermAcademicState
 
@@ -31,8 +31,9 @@
 - `STUDENT ||--o{ STUDENT_TERM_ACADEMIC_STATE : has`
 - `ACADEMIC_TERM ||--o{ STUDENT_TERM_ACADEMIC_STATE : scopes`
 - `StudentTermAcademicState(StudentId, TermId)` is unique.
-- Hold/profile mutations and registration submission lock this row before
-  reading decision inputs and advance its version in the same transaction.
+- Hold/profile mutations and registration submission lock this row through
+  `ExecuteRegistrationBoundaryAsync` before reading decision inputs and
+  advance its version in the same transaction.
 
 #### Ownership boundary
 

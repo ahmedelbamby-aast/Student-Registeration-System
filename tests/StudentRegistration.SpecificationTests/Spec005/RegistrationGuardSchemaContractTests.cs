@@ -8,11 +8,11 @@ public sealed class RegistrationGuardSchemaContractTests
     private const string ContractPath = "docs/data/registration-transaction-schema.md";
 
     [Fact]
-    public void Fr9_contract_defines_durable_guard_and_payload_bound_submission()
+    public void Fr9_contract_reuses_academic_boundary_and_defines_payload_bound_submission()
     {
         var contract = Spec005ContractTestSupport.ReadBoundedContract(ContractPath);
         Spec005ContractTestSupport.AssertWorkstream(
-            "Registration guard and idempotency persistence",
+            "Registration serialization and idempotency persistence",
             ContractPath,
             "tests/StudentRegistration.SpecificationTests/Spec005/RegistrationGuardSchemaContractTests.cs",
             "FR-9");
@@ -21,12 +21,14 @@ public sealed class RegistrationGuardSchemaContractTests
             RepositoryFiles.Read(".specify/entity-ownership.json"));
         var owners = ownership.RootElement.GetProperty("canonicalOwners");
         Assert.Equal("014", owners.GetProperty("RegistrationSubmission").GetString());
-        Assert.Equal("014", owners.GetProperty("StudentTermRegistrationGuard").GetString());
+        Assert.Equal("008", owners.GetProperty("StudentTermAcademicState").GetString());
+        Assert.False(owners.TryGetProperty("StudentTermRegistrationGuard", out _));
         Assert.DoesNotContain("IdempotencyRecord", ownership.RootElement.ToString(), StringComparison.Ordinal);
 
         using var persistence = JsonDocument.Parse(
             RepositoryFiles.Read(".specify/persistence-manifest.json"));
         var contribution = persistence.RootElement.GetProperty("contributions").GetProperty("014");
+        var academicContribution = persistence.RootElement.GetProperty("contributions").GetProperty("008");
         Assert.Equal("writable-transactional", contribution.GetProperty("mode").GetString());
         Assert.DoesNotContain("IdempotencyRecord", persistence.RootElement.ToString(), StringComparison.Ordinal);
         var entities = contribution.GetProperty("entities")
@@ -34,15 +36,23 @@ public sealed class RegistrationGuardSchemaContractTests
             .Select(entity => entity.GetString())
             .ToArray();
         Assert.Contains("RegistrationSubmission", entities);
-        Assert.Contains("StudentTermRegistrationGuard", entities);
+        Assert.DoesNotContain("StudentTermRegistrationGuard", entities);
+        Assert.Contains(
+            "StudentTermAcademicState",
+            academicContribution.GetProperty("entities")
+                .EnumerateArray()
+                .Select(entity => entity.GetString()));
 
         Spec005ContractTestSupport.AssertContainsNormalized(
             contract,
-            "registration-transaction-schema/1.0",
+            "registration-transaction-schema/1.1",
             "FR-9",
             "Canonical owner: SPEC-014",
             contribution.GetProperty("path").GetString()!,
-            "Guard fields: Id, StudentId, TermId, Version rowversion",
+            "StudentTermAcademicState is canonically owned and mapped by SPEC-008",
+            "Unique StudentTermAcademicState(StudentId, TermId)",
+            "ExecuteRegistrationBoundaryAsync",
+            "A duplicate Registration-owned row or in-memory lock is not a substitute",
             "StudentId: owner",
             "TermId: scope",
             "ClientRequestId: key",
@@ -65,7 +75,7 @@ public sealed class RegistrationGuardSchemaContractTests
             "Unique RegistrationSubmission(StudentId, TermId, ClientRequestId)",
             "RegistrationSubmission.ReceivedAtUtc is its immutable creation instant",
             "CompletedAtUtc is nullable until a final outcome",
-            "Unique StudentTermRegistrationGuard(StudentId, TermId)",
+            "Unique StudentTermAcademicState(StudentId, TermId)",
             "RegistrationSubmission idempotency claim, final result, decision snapshot, audit event, and any successful counters/enrollments commit in one SQL transaction",
             "a Processing claim cannot be committed on its own");
     }

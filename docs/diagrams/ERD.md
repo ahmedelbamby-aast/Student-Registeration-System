@@ -57,8 +57,6 @@ erDiagram
 
   STUDENT ||--o{ REGISTRATION_SUBMISSION : submits
   ACADEMIC_TERM ||--o{ REGISTRATION_SUBMISSION : for
-  STUDENT ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes
-  ACADEMIC_TERM ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes
   REGISTRATION_SUBMISSION ||--o{ ENROLLMENT : creates
   STUDENT ||--o{ ENROLLMENT : owns
   COURSE_OFFERING ||--o{ ENROLLMENT : registers
@@ -399,12 +397,6 @@ erDiagram
     datetime2 UpdatedAtUtc
     datetime2 CompletedAtUtc "nullable"
   }
-  STUDENT_TERM_REGISTRATION_GUARD {
-    uniqueidentifier Id PK
-    uniqueidentifier StudentId FK
-    uniqueidentifier TermId FK
-    rowversion Version
-  }
   ENROLLMENT {
     uniqueidentifier Id PK
     uniqueidentifier StudentId FK
@@ -509,7 +501,6 @@ Required constraints/indexes:
   outcome.
 - Unique non-null RegistrationSubmission.Reference; it and
   ReceiptSnapshotJson exist only for an accepted final submission.
-- Unique StudentTermRegistrationGuard(StudentId, TermId).
 - Unique StudentTermAcademicState(StudentId, TermId).
 - Unique filtered non-null TranscriptAttempt.SupersedesAttemptId, so an
   immutable attempt has at most one direct successor.

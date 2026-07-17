@@ -416,7 +416,7 @@ public sealed partial class PageDesignRecordSchemaTests
                     RepositoryFiles.Read(
                         "specs/012-schedule-builder-conflicts/contracts/api.md"),
                     "defaultTargetCredits: 18",
-                    "maximumAllowedCredits: 12 | 18",
+                    "maximumAllowedCredits: 18",
                     "loadReasons: LoadPolicyReasonDto[]",
                     "policyVersion",
                     "sourceReference");

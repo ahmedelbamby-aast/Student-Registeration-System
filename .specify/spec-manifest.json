@@ -1,5 +1,5 @@
 {
-  "version": "2.0.4",
+  "version": "2.0.5",
   "specs": [
     {
       "id": "001",
@@ -114,7 +114,7 @@
         "SectionGroup",
         "RegistrationPlan",
         "RegistrationSubmission",
-        "StudentTermRegistrationGuard",
+        "StudentTermAcademicState",
         "Enrollment",
         "AuditEvent"
       ],
@@ -403,7 +403,7 @@
         "Enrollment",
         "SectionGroup",
         "DecisionSnapshot",
-        "StudentTermRegistrationGuard"
+        "StudentTermAcademicState"
       ],
       "successCriteria": [
         "Concurrent submissions never overbook a group or duplicate an active course enrollment.",

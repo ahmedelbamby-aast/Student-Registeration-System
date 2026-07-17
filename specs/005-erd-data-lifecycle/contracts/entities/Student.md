@@ -33,7 +33,8 @@
 
 - `STUDENT ||--o{ TRANSCRIPT_ATTEMPT : has`
 - `STUDENT ||--o{ REGISTRATION_PLAN : prepares`
-- Student also relates to term academic state, holds, submissions, the student-term guard, and enrollments.
+- Student also relates to the shared term academic state, holds, submissions,
+  and enrollments; registration consumes that one academic-state boundary.
 - ApplicationUserId is unique, allowing at most one academic profile per identity.
 - ProgramCode is a stable imported source code and has no FK to the downstream
   SPEC-009 Program definition.

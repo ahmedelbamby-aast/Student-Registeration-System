@@ -1,6 +1,6 @@
 # Registration Transaction Schema Contract
 
-**Contract:** `registration-transaction-schema/1.0`<br>
+**Contract:** `registration-transaction-schema/1.1`<br>
 **Requirement:** FR-9<br>
 **Canonical owner:** SPEC-014<br>
 **EF contribution:** `src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs` (`writable-transactional`)<br>
@@ -8,17 +8,20 @@
 **Runtime source dependency:** None<br>
 **Fail-closed boundary:** unapproved production behavior remains blocked
 
-SPEC-005 governs this persistence contract. SPEC-014 alone implements the
-runtime entities, EF mapping, and registration transaction; this document does
-not activate or require that downstream runtime source.
+SPEC-005 governs this persistence contract. SPEC-014 implements its owned
+runtime entities, EF mapping, and registration transaction while consuming the
+SPEC-008 academic boundary; this document does not activate or require
+downstream runtime source.
 
-## Student-term serialization guard
+## Shared student-term serialization boundary
 
-- Guard fields: Id, StudentId, TermId, Version rowversion.
-- `Unique StudentTermRegistrationGuard(StudentId, TermId)` permits one durable
+- `StudentTermAcademicState` is canonically owned and mapped by SPEC-008.
+- `Unique StudentTermAcademicState(StudentId, TermId)` provides the one durable
   serialization boundary for a student in an academic term.
-- The guard row and its `rowversion` participate in the same short SQL
-  transaction as the submission outcome. An in-memory lock is not a substitute.
+- SPEC-014 consumes that row through `ExecuteRegistrationBoundaryAsync`; its
+  `rowversion` advances in the same short SQL transaction as a successful
+  submission outcome. A duplicate Registration-owned row or in-memory lock is
+  not a substitute.
 
 ## RegistrationSubmission record
 
@@ -76,6 +79,6 @@ waits for at most 500 ms for a visible final result. The bounded 500 ms HTTP 202
 response is transport-only, contains no SubmissionId, and persists no result
 row. It is retry guidance, not evidence of a committed Processing claim.
 
-Any unknown state, mismatched payload, missing guard, or unapproved attempt to
-bypass these constraints fails closed without seat, enrollment, receipt, or
-idempotency mutation.
+Any unknown state, mismatched payload, missing shared academic boundary, or
+unapproved attempt to bypass these constraints fails closed without seat,
+enrollment, receipt, or idempotency mutation.

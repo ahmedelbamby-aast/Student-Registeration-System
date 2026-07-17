@@ -4,12 +4,16 @@
 
 ### SQL Server is the linearization authority
 
-**Decision**: Use database-backed StudentTermRegistrationGuard and stable lock
-order, then conditional SectionGroup updates and unique/check constraints.
-Process-local or distributed application locks are prohibited.
+**Decision**: Consume SPEC-008's database-backed `StudentTermAcademicState`
+boundary through `ExecuteRegistrationBoundaryAsync`, then use stable lock
+order, conditional SectionGroup updates, and unique/check constraints. A
+duplicate Registration-owned student-term guard and process-local or
+distributed application locks are prohibited.
 
 **Rationale**: SQL Server is already required and coordinates every stateless
-API replica. Check-then-write application logic cannot protect the final seat.
+API replica. Reusing the Academics-owned boundary serializes registration with
+profile/hold mutations without a second student-term row. Check-then-write
+application logic cannot protect the final seat.
 
 ### Scoped idempotency record
 

@@ -235,6 +235,49 @@ domain navigation or IdentityAccess implementation dependency. Computed
 open/upcoming/closed/none window state is not a seventh entity or a persisted
 lifecycle.
 
+## Delivered SPEC-013 and planned SPEC-014 extension
+
+```mermaid
+classDiagram
+  direction LR
+
+  class RecommendationApplicationService
+  class OptimizationCoordinator
+  class ScheduleOptimizer
+  class ScheduleScorer
+  class RegistrationCommandFactory
+  class IRegistrationTransactionCoordinator {
+    <<Registration application port>>
+    +ExecuteAsync(CancellationToken)
+  }
+  class RegistrationTransactionCoordinator {
+    <<Registration application coordinator>>
+  }
+  class SqlSeatAllocator {
+    <<SQL infrastructure adapter>>
+  }
+  class RegistrationSubmissionStore {
+    <<SQL infrastructure adapter>>
+  }
+  class CancellationToken
+
+  RecommendationApplicationService --> OptimizationCoordinator
+  OptimizationCoordinator --> ScheduleOptimizer
+  OptimizationCoordinator --> ScheduleScorer
+  RegistrationCommandFactory --> IRegistrationTransactionCoordinator
+  RegistrationTransactionCoordinator ..|> IRegistrationTransactionCoordinator
+  RegistrationTransactionCoordinator --> CancellationToken
+  SqlSeatAllocator --> StudentRegistrationDbContext
+  RegistrationSubmissionStore --> StudentRegistrationDbContext
+```
+
+The SPEC-013 recommendation types are delivered in the Registration module.
+The SPEC-014 types are the approved test-first design: command and transaction
+coordination stay in Registration application code, while seat allocation and
+submission persistence stay in Infrastructure.SqlServer and use the existing
+shared `StudentRegistrationDbContext`. No second context or cross-module domain
+dependency is introduced.
+
 ## Dependency direction and deliberate exclusions
 
 ```text

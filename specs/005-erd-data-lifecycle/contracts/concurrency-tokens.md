@@ -1,6 +1,6 @@
 # Concurrency Token Catalogue
 
-**Contract version:** `concurrency-tokens/1.0`<br>
+**Contract version:** `concurrency-tokens/1.1`<br>
 **Requirement:** FR-4<br>
 **Bounded delivery:** design-time contract only<br>
 **Runtime source dependency:** None<br>
@@ -52,7 +52,9 @@ no lost update; it never silently overwrites the newer aggregate.
   Admins and committing the protected role change.
 
 rowversion is not the capacity allocator; the database-checked seat predicate
-and transaction provide allocation correctness. Likewise, rowversion is not
-the sole student-term serialization mechanism; the unique StudentTermRegistrationGuard
-and transaction remain authoritative. Future owner-mapping and real-SQL tests
-must prove token configuration, stale-write mapping, and aggregate advancement.
+and transaction provide allocation correctness. The unique
+`StudentTermAcademicState` row plus the SPEC-008
+`ExecuteRegistrationBoundaryAsync` transaction protocol provide student-term
+serialization; SPEC-014 does not add a second guard. Future owner-mapping and
+real-SQL tests must prove token configuration, stale-write mapping, and
+aggregate advancement.

@@ -2,8 +2,8 @@
 
 - Runtime source dependency: None
 - ERD source: `docs/diagrams/ERD.md`
-- Ownership source: `.specify/entity-ownership.json` version `2.0.0`
-- Persistence source: `.specify/persistence-manifest.json` version `2.1.0`
+- Ownership source: `.specify/entity-ownership.json` version `2.0.8`
+- Persistence source: `.specify/persistence-manifest.json` version `2.1.2`
 - EF contribution: `src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs` (`writable-transactional`)
 
 ### RegistrationSubmission
@@ -40,26 +40,40 @@
 - A Processing claim cannot be committed as a standalone durable row; HTTP 202 is transport-only and persists no SubmissionId.
 - `A separate IdempotencyRecord table and a seventh SPEC-008 idempotency entity are prohibited`.
 
-### StudentTermRegistrationGuard
+### Consumed StudentTermAcademicState boundary
 
-- Canonical entity: StudentTermRegistrationGuard
-- Canonical owner: SPEC-014
-- Canonical source path: `src/StudentRegistration.Registration/Domain/StudentTermRegistrationGuard.cs`
+- Canonical entity: StudentTermAcademicState
+- Canonical owner: SPEC-008
+- Canonical source path: `src/StudentRegistration.Academics/Domain/StudentTermAcademicState.cs`
+- Canonical reference: `specs/005-erd-data-lifecycle/contracts/entities/StudentTermAcademicState.md`
+- EF contribution: `src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AcademicContextModelConfiguration.cs` (`writable`)
 
 #### Fields
 
 - `uniqueidentifier Id PK`
 - `uniqueidentifier StudentId FK`
 - `uniqueidentifier TermId FK`
+- `decimal GpaAtStart`
+- `decimal EarnedCreditsAtStart`
+- `string StandingAtStart`
+- `string Source`
+- `string SourceReference`
+- `string DataVersion`
+- `datetime2 DataAsOfUtc`
 - `rowversion Version`
 
 #### Relationships and invariants
 
-- `STUDENT ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes`
-- `ACADEMIC_TERM ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes`
-- `Unique StudentTermRegistrationGuard(StudentId, TermId)`.
-- The guard is the database serialization boundary for one student's term registration; it is part of the same transaction as the submission outcome.
+- `STUDENT ||--o{ STUDENT_TERM_ACADEMIC_STATE : has`
+- `ACADEMIC_TERM ||--o{ STUDENT_TERM_ACADEMIC_STATE : scopes`
+- `StudentTermAcademicState(StudentId, TermId)` is unique.
+- Hold/profile mutations and registration submission lock this row through
+  `ExecuteRegistrationBoundaryAsync` before reading decision inputs and
+  advance its version in the same transaction.
 
 #### Ownership boundary
 
-This is a design-time reference only. SPEC-014 alone may implement or change either runtime entity or its EF mapping.
+This is a design-time reference only. SPEC-014 alone may implement or change
+RegistrationSubmission and its mapping. SPEC-008 alone owns
+StudentTermAcademicState; SPEC-014 consumes that public boundary without a
+second entity or mapping.

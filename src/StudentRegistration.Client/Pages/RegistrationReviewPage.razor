@@ -1,0 +1,500 @@
+@page "/student/review"
+@using System.Net
+@using Microsoft.JSInterop
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Overlay
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApiClient RegistrationApi
+@inject NavigationManager Navigation
+
+<PageTitle>Registration review | Student Registration</PageTitle>
+
+@if (_initialLoading)
+{
+    <div data-route-id="STU-05"
+         data-state="loading"
+         data-contract-state="STU-05-COMP-STATE-LOADING">
+        <a href="#main-content">Skip to main content</a>
+        <main id="main-content" tabindex="-1">
+            <h1>Registration review</h1>
+            <section role="status" aria-live="polite" aria-busy="true">
+                <h2>Loading registration review</h2>
+                <p>Loading the current server-authored plan.</p>
+            </section>
+        </main>
+    </div>
+}
+else if (_shellContext is not null)
+{
+    <AppShell Context="@_shellContext"
+              MainContentId="main-content"
+              SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time"
+              TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term"
+              RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term"
+              NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window"
+              AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role"
+              SessionLabel="Session"
+              ServiceLabel="Service"
+              SupportLinkLabel="Open support"
+              LoadingLabel="Loading registration review">
+        <Navigation>
+            <RoleNavigation AccessibleName="Student role navigation"
+                            Items="@StudentNavigation" />
+        </Navigation>
+        <ChildContent>
+            @ReviewContent
+        </ChildContent>
+    </AppShell>
+}
+else
+{
+    @ReviewContent
+}
+
+@code {
+    private const string LoadingState = "loading";
+    private const string EmptyState = "empty";
+    private const string SuccessState = "success";
+    private const string ValidationErrorState = "validation-error";
+    private const string ServiceErrorState = "service-error";
+    private const string UnauthorizedState = "unauthorized";
+    private const string SessionExpiredState = "session-expired";
+    private const string StaleState = "stale";
+    private const string OfflineState = "offline";
+
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Dashboard", "/student"),
+        new("Current plan", "/student/schedule"),
+        new("Registration review", "/student/review", IsActive: true)
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private RegistrationPlanDto? _plan;
+    private Guid _termId;
+    private Guid _clientRequestId = Guid.NewGuid();
+    private string _state = LoadingState;
+    private string _reasonCode = "REGISTRATION_REVIEW_UNAVAILABLE";
+    private string _safeMessage = "The registration review could not be completed.";
+    private string? _referenceId;
+    private bool _initialLoading = true;
+    private bool _requestLoading;
+    private bool _showConfirmation;
+    private bool _processing;
+    private ElementReference _reviewTrigger;
+    private ElementReference _stateHeading;
+    private bool _focusStateHeading;
+
+    private string ContractState => _state switch
+    {
+        LoadingState => "STU-05-COMP-STATE-LOADING",
+        EmptyState => "STU-05-COMP-STATE-EMPTY",
+        SuccessState => "STU-05-COMP-STATE-SUCCESS",
+        ValidationErrorState => "STU-05-COMP-STATE-VALIDATION-ERROR",
+        ServiceErrorState => "STU-05-COMP-STATE-SERVICE-ERROR",
+        UnauthorizedState => "STU-05-COMP-STATE-UNAUTHORIZED",
+        SessionExpiredState => "STU-05-COMP-STATE-SESSION-EXPIRED",
+        StaleState => "STU-05-COMP-STATE-STALE",
+        OfflineState => "STU-05-COMP-STATE-OFFLINE",
+        _ => "STU-05-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private bool HasBlockers => _plan is null
+        || _plan.ReviewBlocked
+        || _plan.SelectionIssues.Any(issue => issue.Blocking);
+
+    private string FailureHeading => _state switch
+    {
+        UnauthorizedState => "Access denied",
+        SessionExpiredState => "Session expired",
+        StaleState => "Registration context changed",
+        ValidationErrorState => "Registration could not be accepted",
+        OfflineState => "Registration review is offline",
+        _ => "Registration review is unavailable"
+    };
+
+    private RenderFragment ReviewContent => @<main id="main-content"
+          data-route-id="STU-05"
+          data-state="@_state"
+          data-contract-state="@ContractState"
+          tabindex="-1">
+        <header>
+            <p>Student registration</p>
+            <h1>Registration review</h1>
+            <p>Review the current plan. The server rechecks every rule and seat at submission.</p>
+        </header>
+
+        @if (_state is UnauthorizedState or SessionExpiredState or ServiceErrorState or OfflineState)
+        {
+            <section role="@(_state is UnauthorizedState or SessionExpiredState ? "alert" : "status")"
+                     aria-live="@(_state is UnauthorizedState or SessionExpiredState ? "assertive" : "polite")">
+                <h2 @ref="_stateHeading" tabindex="-1">@FailureHeading</h2>
+                <p><strong>@_reasonCode</strong></p>
+                <p>@_safeMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_referenceId))
+                {
+                    <p>Reference: @_referenceId</p>
+                }
+                @if (_state is ServiceErrorState or OfflineState)
+                {
+                    <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
+                        Retry registration review
+                    </button>
+                }
+                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">Open safe support path</a>
+            </section>
+        }
+        else if (_plan is null || _state == EmptyState)
+        {
+            <section role="status" aria-live="polite">
+                <h2>No reviewable registration plan</h2>
+                <p>Add subjects and groups before submission.</p>
+                <a href="/student/schedule">Add or edit plan</a>
+            </section>
+        }
+        else
+        {
+            @if (_state is StaleState or ValidationErrorState)
+            {
+                <section role="@(_state == ValidationErrorState ? "alert" : "status")"
+                         aria-live="@(_state == ValidationErrorState ? "assertive" : "polite")">
+                    <h2 @ref="_stateHeading" tabindex="-1">@FailureHeading</h2>
+                    <p><strong>@_reasonCode</strong></p>
+                    <p>@_safeMessage</p>
+                    <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
+                        Refresh and review
+                    </button>
+                </section>
+            }
+
+            @if (_processing)
+            {
+                <section role="status" aria-live="polite" aria-busy="true">
+                    <h2>Registration is still processing</h2>
+                    <p>No result is assumed until the server returns one authoritative outcome.</p>
+                    <button type="button" disabled="@_requestLoading" @onclick="LookupResultAsync">
+                        Retry result lookup
+                    </button>
+                </section>
+            }
+
+            <section aria-labelledby="selected-groups-heading">
+                <h2 id="selected-groups-heading">Selected groups</h2>
+                <ul>
+                    @foreach (var group in _plan.SelectedGroups)
+                    {
+                        <li data-group-id="@group.GroupId">
+                            <h3>@group.CourseCode @group.SubjectTitle</h3>
+                            <p>Group @group.GroupCode · @group.Credits.ToString("0.##") credits</p>
+                            <p>Advisory capacity: @group.EnrolledCount of @group.Capacity enrolled.</p>
+                        </li>
+                    }
+                </ul>
+            </section>
+
+            <section aria-labelledby="schedule-heading">
+                <h2 id="schedule-heading">Chronological schedule</h2>
+                <ol>
+                    @foreach (var meeting in Meetings())
+                    {
+                        <li>
+                            <strong>@meeting.Group.CourseCode @meeting.Group.GroupCode</strong>
+                            <span>@RegistrationPageSupport.DayName(meeting.Meeting.DayOfWeek)</span>
+                            <time>@meeting.Meeting.StartLocal.ToString("HH:mm")</time>
+                            <span>–</span>
+                            <time>@meeting.Meeting.EndLocal.ToString("HH:mm")</time>
+                            <span>@meeting.Meeting.Timezone · @meeting.Meeting.RoomCode @meeting.Meeting.Location</span>
+                        </li>
+                    }
+                </ol>
+            </section>
+
+            <section aria-labelledby="policy-heading">
+                <h2 id="policy-heading">Credit and policy checks</h2>
+                <dl>
+                    <div><dt>Total credits</dt><dd>@_plan.TotalCredits.ToString("0.##")</dd></div>
+                    <div><dt>Maximum allowed</dt><dd>@_plan.MaximumAllowedCredits.ToString("0.##")</dd></div>
+                    <div><dt>Policy version</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
+                </dl>
+            </section>
+
+            @if (_plan.SelectionIssues.Count > 0 || _plan.Conflicts.Count > 0)
+            {
+                <section id="registration-blockers" role="alert" aria-live="assertive" tabindex="-1">
+                    <h2>Conflict</h2>
+                    <ul>
+                        @foreach (var issue in _plan.SelectionIssues)
+                        {
+                            <li>
+                                <strong>@issue.Code</strong>
+                                <p>@issue.Message</p>
+                            </li>
+                        }
+                        @foreach (var conflict in _plan.Conflicts)
+                        {
+                            <li>
+                                <strong>@conflict.Code</strong>
+                                <p>@conflict.Message</p>
+                                <p>@RegistrationPageSupport.DayName(conflict.DayOfWeek) @conflict.OverlapStartLocal.ToString("HH:mm")–@conflict.OverlapEndLocal.ToString("HH:mm")</p>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            <div>
+                <a href="/student/schedule">Edit plan</a>
+                <button @ref="_reviewTrigger"
+                        type="button"
+                        aria-describedby="@(HasBlockers ? "registration-blockers review-disabled-reason" : null)"
+                        disabled="@(HasBlockers || _requestLoading || _processing)"
+                        @onclick="ReviewAsync">
+                    Review and submit
+                </button>
+                @if (HasBlockers)
+                {
+                    <p id="review-disabled-reason">Resolve every blocker before submission.</p>
+                }
+            </div>
+
+            <ConfirmationDialog IsOpen="@_showConfirmation"
+                                DialogId="registration-confirmation"
+                                TitleId="registration-confirmation-title"
+                                DescriptionId="registration-confirmation-description"
+                                Title="Confirm registration"
+                                Message="Submit this complete plan for one atomic server decision?"
+                                ConfirmLabel="Confirm registration"
+                                CancelLabel="Cancel"
+                                IsBusy="@_requestLoading"
+                                BusyLabel="Submitting one registration request."
+                                IsConfirmDisabled="@_processing"
+                                ErrorMessage="@(_showConfirmation && _state is StaleState or ValidationErrorState ? _safeMessage : null)"
+                                OnConfirm="SubmitAsync"
+                                OnCancel="CloseConfirmation"
+                                FocusRestoreRequested="RestoreReviewFocusAsync" />
+        }
+    </main>;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            var context = contextResult.Value;
+            if (!RegistrationPageSupport.IsStudentContext(context))
+            {
+                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "A Student session is required.", "STU-05-AUTH"));
+                return;
+            }
+
+            if (context.RegistrationTerm is null
+                || !Guid.TryParse(context.RegistrationTerm.Id, out _termId))
+            {
+                ApplyFailure(HttpStatusCode.NotFound, new("REGISTRATION_CONTEXT_NOT_FOUND", "No authorized registration term is available.", "STU-05-CONTEXT"));
+                return;
+            }
+
+            _shellContext = RegistrationPageSupport.ToShellContext(context);
+            await LoadPlanAsync();
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _initialLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusStateHeading)
+        {
+            _focusStateHeading = false;
+            await _stateHeading.FocusAsync();
+        }
+    }
+
+    private async Task LoadPlanAsync()
+    {
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.GetRegistrationPlanAsync(_termId);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+            }
+            else
+            {
+                ApplyFailure(result.StatusCode, result.Error);
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or JSException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private async Task ReviewAsync()
+    {
+        if (_plan is null || HasBlockers || _requestLoading) return;
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.ValidateRegistrationPlanAsync(_termId);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+                _showConfirmation = !HasBlockers;
+            }
+            else
+            {
+                ApplyFailure(result.StatusCode, result.Error, preservePlan: true);
+            }
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_plan is null || _requestLoading || _processing) return;
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.SubmitRegistrationAsync(
+                _termId,
+                new(_plan.Id, _plan.RowVersion, _clientRequestId));
+            HandleCommandResult(result);
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private async Task LookupResultAsync()
+    {
+        if (_requestLoading) return;
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.LookupRegistrationAsync(_termId, _clientRequestId);
+            HandleCommandResult(result);
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private void HandleCommandResult(RegistrationCommandApiResult result)
+    {
+        if (result.IsSuccess && result.SubmissionId is { } submissionId)
+        {
+            _showConfirmation = false;
+            _processing = false;
+            Navigation.NavigateTo($"/student/registration/result/{submissionId:D}");
+            return;
+        }
+
+        if (result.IsSuccess && result.IsProcessing)
+        {
+            _showConfirmation = false;
+            _processing = true;
+            return;
+        }
+
+        _processing = false;
+        ApplyFailure(result.StatusCode, result.Error, preservePlan: true);
+    }
+
+    private void ApplyPlan(RegistrationPlanDto plan)
+    {
+        _plan = plan;
+        _state = plan.SelectedGroups.Count == 0
+            ? EmptyState
+            : plan.ReviewBlocked || plan.SelectionIssues.Any(issue => issue.Blocking)
+                ? ValidationErrorState
+                : SuccessState;
+        if (_state == ValidationErrorState)
+        {
+            _reasonCode = plan.SelectionIssues.FirstOrDefault(issue => issue.Blocking)?.Code
+                ?? plan.Conflicts.FirstOrDefault()?.Code
+                ?? "REGISTRATION_BLOCKED";
+            _safeMessage = "Resolve every server-reported blocker before submission.";
+        }
+    }
+
+    private void ApplyFailure(HttpStatusCode statusCode, ApiError? error, bool preservePlan = false)
+    {
+        if (!preservePlan) _plan = null;
+        _reasonCode = error?.Code ?? "REGISTRATION_REVIEW_UNAVAILABLE";
+        _safeMessage = error?.Message ?? "The registration review could not be completed safely.";
+        _referenceId = error?.CorrelationId;
+        _state = _reasonCode == "SESSION_EXPIRED"
+            ? SessionExpiredState
+            : statusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
+                ? UnauthorizedState
+                : _reasonCode is "POLICY_CHANGED" or "WINDOW_CLOSED" or "PLAN_CHANGED" or "STALE_VERSION"
+                    ? StaleState
+                    : statusCode == HttpStatusCode.Conflict
+                        ? ValidationErrorState
+                        : statusCode == HttpStatusCode.NotFound && preservePlan
+                            ? ValidationErrorState
+                            : ServiceErrorState;
+        _showConfirmation = false;
+        _focusStateHeading = _state is UnauthorizedState or SessionExpiredState or StaleState or ValidationErrorState;
+    }
+
+    private void ApplyOffline()
+    {
+        _plan = null;
+        _state = OfflineState;
+        _reasonCode = "OFFLINE";
+        _safeMessage = "Reconnect, then retry. No registration was queued.";
+        _referenceId = null;
+        _showConfirmation = false;
+    }
+
+    private IEnumerable<(RegistrationPlanGroupDto Group, RegistrationPlanMeetingDto Meeting)> Meetings() =>
+        _plan?.SelectedGroups
+            .SelectMany(group => group.Meetings.Select(meeting => (Group: group, Meeting: meeting)))
+            .OrderBy(item => item.Meeting.DayOfWeek)
+            .ThenBy(item => item.Meeting.StartLocal)
+            .ThenBy(item => item.Group.CourseCode, StringComparer.Ordinal)
+        ?? Enumerable.Empty<(RegistrationPlanGroupDto Group, RegistrationPlanMeetingDto Meeting)>();
+
+    private void CloseConfirmation() => _showConfirmation = false;
+
+    private Task RestoreReviewFocusAsync() => _reviewTrigger.FocusAsync().AsTask();
+}

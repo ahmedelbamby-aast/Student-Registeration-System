@@ -1,7 +1,7 @@
 # Spec Kit Readiness Audit
 
-**Date**: 2026-07-14
-**Overall automated result**: PASS
+**Date**: 2026-07-17
+**Overall automated result**: FAIL
 **Scope**: 18 connected specifications and their implementation gates
 **Human approval**: Gate A APPROVED by Ahmed ELbamby for demo implementation
 
@@ -12,16 +12,16 @@
 | SPEC-003 | 59 | 24 | 17 | 10 | 276 | 100 | PASS | APPROVED |
 | SPEC-004 | 18 | 13 | 7 | 3 | 50 | 100 | PASS | APPROVED |
 | SPEC-005 | 36 | 13 | 7 | 4 | 70 | 100 | PASS | APPROVED |
-| SPEC-006 | 20 | 14 | 9 | 4 | 63 | 100 | PASS | APPROVED |
+| SPEC-006 | 21 | 14 | 9 | 4 | 63 | 100 | PASS | APPROVED |
 | SPEC-018 | 14 | 18 | 7 | 5 | 74 | 100 | PASS | APPROVED |
 | SPEC-007 | 17 | 18 | 10 | 6 | 133 | 100 | PASS | APPROVED |
 | SPEC-008 | 14 | 15 | 9 | 7 | 91 | 100 | PASS | APPROVED |
-| SPEC-009 | 12 | 14 | 7 | 5 | 100 | 100 | PASS | APPROVED |
-| SPEC-010 | 12 | 14 | 9 | 5 | 110 | 100 | PASS | APPROVED |
-| SPEC-011 | 12 | 12 | 5 | 4 | 51 | 100 | PASS | APPROVED |
-| SPEC-012 | 12 | 12 | 5 | 4 | 54 | 100 | PASS | APPROVED |
-| SPEC-013 | 12 | 14 | 8 | 5 | 66 | 100 | PASS | APPROVED |
-| SPEC-014 | 13 | 24 | 13 | 10 | 123 | 100 | PASS | APPROVED |
+| SPEC-009 | 14 | 14 | 7 | 5 | 100 | 100 | FAIL | APPROVED |
+| SPEC-010 | 15 | 14 | 9 | 5 | 110 | 100 | FAIL | APPROVED |
+| SPEC-011 | 14 | 12 | 5 | 4 | 51 | 100 | FAIL | APPROVED |
+| SPEC-012 | 15 | 12 | 5 | 4 | 54 | 100 | FAIL | APPROVED |
+| SPEC-013 | 15 | 14 | 8 | 5 | 66 | 100 | FAIL | APPROVED |
+| SPEC-014 | 14 | 24 | 13 | 10 | 123 | 100 | PASS | APPROVED |
 | SPEC-015 | 12 | 12 | 6 | 4 | 64 | 100 | PASS | APPROVED |
 | SPEC-016 | 12 | 14 | 8 | 5 | 84 | 100 | PASS | APPROVED |
 | SPEC-017 | 12 | 17 | 9 | 6 | 101 | 100 | PASS | APPROVED |
@@ -40,4 +40,15 @@
 
 ## Failures
 
-None.
+- SPEC-009 requirements API declarations drift from contracts/api.md.
+- SPEC-010 requirements API declarations drift from contracts/api.md.
+- SPEC-010 documents unregistered endpoint literal PUT /api/admin/staff/{staffId}/terms/{termId}/availability.
+- SPEC-010 documents unregistered endpoint literal POST /api/admin/staff/{staffId}/terms/{termId}/availability.
+- SPEC-010 documents unregistered endpoint literal PATCH /api/admin/staff/{staffId}/terms/{termId}/availability.
+- SPEC-010 documents unregistered endpoint literal DELETE /api/admin/staff/{staffId}/terms/{termId}/availability.
+- SPEC-011 requirements omit the canonical TypeScript API contract block.
+- SPEC-012 requirements API declarations drift from contracts/api.md.
+- SPEC-013 endpoint POST /api/student/terms/{termId}/registration-plan/recommendations must have exactly one handler task at src/StudentRegistration.Registration/Endpoints/Spec013Endpoints.cs; found 0.
+- SPEC-013 endpoint PUT /api/student/terms/{termId}/registration-plan/recommended-option must have exactly one handler task at src/StudentRegistration.Registration/Endpoints/Spec013Endpoints.cs; found 0.
+- Canonical source path src/StudentRegistration.Api/Operations/ObservabilityExtensions.cs has delivery writers in multiple specs: SPEC-018/T046, SPEC-018/T048, SPEC-013/T056.
+- Canonical source path src/StudentRegistration.Client/Pages/ScheduleBuilderPage.razor has delivery writers in multiple specs: SPEC-012/T043, SPEC-013/T056.

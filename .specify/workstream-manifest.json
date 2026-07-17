@@ -1,5 +1,5 @@
 {
-  "version": "2.0.3",
+  "version": "2.0.4",
   "specs": {
     "001": [
       { "name": "Role and authorization boundaries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-5"], "deliveryPath": "specs/001-product-charter-rbac/contracts/rbac-matrix.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs", "testFocus": "student/staff entry separation, server-derived claims, direct-route denials, dual-role and no-role contexts without pre-implementing SPEC-007" },
@@ -31,7 +31,7 @@
       { "name": "Relational invariants", "requirements": ["FR-2", "FR-3", "FR-4", "FR-5", "FR-6"], "deliveryPath": "docs/data/relational-invariants.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec005/RelationalInvariantContractTests.cs", "testFocus": "unique, check, alternate-key, foreign-key, rowversion and history contracts for owner-spec persistence mappings" },
       { "name": "Controlled migrations", "requirements": ["FR-7"], "deliveryPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/README.md", "testPath": "tests/StudentRegistration.MigrationTests/MigrationBundleTests.cs", "testFocus": "reviewed bundle, no startup migration, rehearsal and rollback" },
       { "name": "Imported provenance", "requirements": ["FR-8"], "deliveryPath": "docs/data/import-provenance-contract.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec005/ImportedProvenanceContractTests.cs", "testFocus": "required source, batch, actor and timestamp required of owner-spec mappings" },
-      { "name": "Registration guard and idempotency persistence", "requirements": ["FR-9"], "deliveryPath": "docs/data/registration-transaction-schema.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec005/RegistrationGuardSchemaContractTests.cs", "testFocus": "student-term guard and RegistrationSubmission owner/scope/key/payload/state/result/timestamp uniqueness and durability" }
+      { "name": "Registration serialization and idempotency persistence", "requirements": ["FR-9"], "deliveryPath": "docs/data/registration-transaction-schema.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec005/RegistrationGuardSchemaContractTests.cs", "testFocus": "shared StudentTermAcademicState serialization plus RegistrationSubmission owner/scope/key/payload/state/result/timestamp uniqueness and durability" }
     ],
     "006": [
       { "name": "Focused application service boundary", "requirements": ["FR-1"], "deliveryPath": "docs/architecture/application-service-boundary.md", "testPath": "tests/StudentRegistration.ArchitectureTests/ApplicationServiceBoundaryTests.cs", "testFocus": "endpoints delegate to module-owned use cases and domain code stays infrastructure independent" },
@@ -78,7 +78,7 @@
     ],
     "012": [
       { "name": "Versioned registration plan", "requirements": ["FR-1", "FR-6", "FR-7", "FR-8"], "deliveryPath": "src/StudentRegistration.Registration/Application/RegistrationPlanService.cs", "testPath": "tests/StudentRegistration.IntegrationTests/Registration/RegistrationPlanConcurrencyTests.cs", "testFocus": "GET, validate and versioned add/change/remove with one group per offering and lost-update rejection" },
-      { "name": "Interval conflict detector", "requirements": ["FR-2", "FR-3"], "deliveryPath": "src/StudentRegistration.Registration/Domain/ScheduleConflictDetector.cs", "testPath": "tests/StudentRegistration.DomainTests/Registration/ScheduleConflictDetectorTests.cs", "testFocus": "strict overlap, adjacency, multi-slot conflicts, both subjects, intervals and stable resolution actions" },
+      { "name": "Interval conflict detector", "requirements": ["FR-2", "FR-3"], "deliveryPath": "src/StudentRegistration.Registration/Domain/ScheduleConflictDetector.cs", "testPath": "tests/StudentRegistration.ApplicationTests/Registration/ScheduleConflictDetectorTests.cs", "testFocus": "strict overlap, adjacency, multi-slot conflicts, both subjects, intervals and stable resolution actions" },
       { "name": "Accessible blocking conflict state", "requirements": ["FR-4", "FR-5"], "deliveryPath": "src/StudentRegistration.Client/Features/Scheduling/ConflictStateMapper.cs", "testPath": "tests/StudentRegistration.Client.UnitTests/Scheduling/ConflictStateMapperTests.cs", "testFocus": "red-X plus text, blocked review/submit and accessible reasons/actions" }
     ],
     "013": [

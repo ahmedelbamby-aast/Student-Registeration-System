@@ -1,10 +1,12 @@
+using StudentRegistration.TestSupport;
+
 namespace StudentRegistration.SpecificationTests.Specs.Spec005.Entities;
 
 public sealed class RegistrationTransactionErdContractTests
 {
     [Fact]
-    public void Reference_declares_both_owners_sources_fields_and_invariants() =>
-        ErdReferenceContractAssertions.AssertReferences(
+    public void Reference_declares_submission_owner_source_fields_and_invariants() =>
+        ErdReferenceContractAssertions.AssertReference(
             "specs/005-erd-data-lifecycle/contracts/entities/RegistrationTransaction.md",
             new(
                 "RegistrationSubmission",
@@ -26,19 +28,26 @@ public sealed class RegistrationTransactionErdContractTests
                     "Unique non-null RegistrationSubmission.Reference",
                     "RegistrationSubmission idempotency claim, final result, decision snapshot, audit event, and any successful counters/enrollments commit in one SQL transaction",
                     "A separate IdempotencyRecord table and a seventh SPEC-008 idempotency entity are prohibited"
-                ]),
-            new(
-                "StudentTermRegistrationGuard",
-                "STUDENT_TERM_REGISTRATION_GUARD",
-                "SPEC-014",
-                "src/StudentRegistration.Registration/Domain/StudentTermRegistrationGuard.cs",
-                [
-                    "uniqueidentifier Id PK", "uniqueidentifier StudentId FK",
-                    "uniqueidentifier TermId FK", "rowversion Version"
-                ],
-                [
-                    "STUDENT ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes",
-                    "ACADEMIC_TERM ||--o{ STUDENT_TERM_REGISTRATION_GUARD : serializes",
-                    "Unique StudentTermRegistrationGuard(StudentId, TermId)"
                 ]));
+
+    [Fact]
+    public void Reference_consumes_the_spec008_boundary_without_a_duplicate_guard()
+    {
+        var reference = RepositoryFiles.Read(
+            "specs/005-erd-data-lifecycle/contracts/entities/RegistrationTransaction.md");
+        var ownership = RepositoryFiles.Read(".specify/entity-ownership.json");
+        var persistence = RepositoryFiles.Read(".specify/persistence-manifest.json");
+
+        RepositoryFiles.ContainsAll(
+            reference,
+            "Consumed StudentTermAcademicState boundary",
+            "Canonical owner: SPEC-008",
+            "src/StudentRegistration.Academics/Domain/StudentTermAcademicState.cs",
+            "ExecuteRegistrationBoundaryAsync",
+            "SPEC-014 consumes that public boundary without a",
+            "second entity or mapping");
+        Assert.DoesNotContain("StudentTermRegistrationGuard", reference, StringComparison.Ordinal);
+        Assert.DoesNotContain("StudentTermRegistrationGuard", ownership, StringComparison.Ordinal);
+        Assert.DoesNotContain("StudentTermRegistrationGuard", persistence, StringComparison.Ordinal);
+    }
 }

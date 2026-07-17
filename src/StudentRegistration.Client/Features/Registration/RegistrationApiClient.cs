@@ -115,6 +115,102 @@ public sealed class RegistrationApiClient
             request,
             cancellationToken);
 
+    public Task<RegistrationCommandApiResult> SubmitRegistrationAsync(
+        Guid termId,
+        SubmitRegistrationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return SendRegistrationAsync(
+            HttpMethod.Post,
+            $"/api/student/terms/{RequiredId(termId, nameof(termId)):D}/registrations",
+            request,
+            addAntiforgery: true,
+            cancellationToken);
+    }
+
+    public Task<RegistrationCommandApiResult> LookupRegistrationAsync(
+        Guid termId,
+        Guid clientRequestId,
+        CancellationToken cancellationToken = default) =>
+        SendRegistrationAsync<object?>(
+            HttpMethod.Get,
+            $"/api/student/terms/{RequiredId(termId, nameof(termId)):D}/registrations/by-request/{RequiredId(clientRequestId, nameof(clientRequestId)):D}",
+            null,
+            addAntiforgery: false,
+            cancellationToken);
+
+    private async Task<RegistrationCommandApiResult> SendRegistrationAsync<TRequest>(
+        HttpMethod method,
+        string path,
+        TRequest request,
+        bool addAntiforgery,
+        CancellationToken cancellationToken)
+    {
+        using var message = new HttpRequestMessage(method, path);
+        if (request is not null)
+        {
+            message.Content = JsonContent.Create(request);
+        }
+
+        if (addAntiforgery)
+        {
+            await AddAntiforgeryAsync(message, cancellationToken);
+        }
+
+        using var response = await _httpClient.SendAsync(
+            message,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return RegistrationCommandApiResult.Failure(
+                await ReadErrorAsync(response, cancellationToken),
+                response.StatusCode);
+        }
+
+        try
+        {
+            using var document = await JsonDocument.ParseAsync(
+                await response.Content.ReadAsStreamAsync(cancellationToken),
+                cancellationToken: cancellationToken);
+            var root = document.RootElement;
+            var status = String(root, "status");
+            var submissionId = GuidValue(root, "submissionId");
+            return new(
+                true,
+                string.Equals(status, "processing", StringComparison.OrdinalIgnoreCase),
+                submissionId,
+                status,
+                String(root, "resultCode"),
+                String(root, "reference"),
+                String(root, "resultUrl"),
+                Int32(root, "retryAfterSeconds"),
+                null,
+                response.StatusCode);
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or JsonException or ArgumentException)
+        {
+            return RegistrationCommandApiResult.Failure(null, response.StatusCode);
+        }
+    }
+
+    private static string? String(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
+
+    private static Guid? GuidValue(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.TryGetGuid(out var parsed)
+            ? parsed
+            : null;
+
+    private static int? Int32(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.TryGetInt32(out var parsed)
+            ? parsed
+            : null;
+
     private async Task<RegistrationApiResult<TResponse>> SendAsync<TRequest, TResponse>(
         HttpMethod method,
         string path,
@@ -401,4 +497,27 @@ public sealed record RegistrationPlanApiResult(
         RegistrationPlanDto currentPlan,
         System.Net.HttpStatusCode statusCode) =>
         new(false, null, error, statusCode, currentPlan);
+}
+
+public sealed record SubmitRegistrationRequest(
+    Guid PlanId,
+    string ExpectedPlanRowVersion,
+    Guid ClientRequestId);
+
+public sealed record RegistrationCommandApiResult(
+    bool IsSuccess,
+    bool IsProcessing,
+    Guid? SubmissionId,
+    string? Status,
+    string? ResultCode,
+    string? Reference,
+    string? ResultUrl,
+    int? RetryAfterSeconds,
+    ApiError? Error,
+    System.Net.HttpStatusCode StatusCode)
+{
+    public static RegistrationCommandApiResult Failure(
+        ApiError? error,
+        System.Net.HttpStatusCode statusCode) =>
+        new(false, false, null, null, null, null, null, null, error, statusCode);
 }

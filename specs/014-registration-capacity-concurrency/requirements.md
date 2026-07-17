@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17<br>
 **Owner:** Data/Backend Lead<br>
 **Reviewers:** Security, QA, DevOps, Registrar<br>
 **Target:** Sprint 6<br>
@@ -37,8 +37,9 @@ define the required ordering and winner/loser outcomes.
   update that succeeds only when the published group is selectable and
   EnrolledCount is less than Capacity.
 - FR-5: Registration MUST acquire database serialization boundaries in this
-  stable order: student-term guard, registration-context/version records, then
-  SectionGroup rows sorted by group ID.
+  stable order: the SPEC-008 `StudentTermAcademicState` boundary through
+  `ExecuteRegistrationBoundaryAsync`, the remaining registration-context/
+  version records, then SectionGroup rows sorted by group ID.
 - FR-6: After the idempotency claim and final validation but before the first
   seat mutation, the transaction MUST create an allocation savepoint. A
   deterministic allocation/invariant rejection MUST roll back to that
@@ -75,9 +76,11 @@ define the required ordering and winner/loser outcomes.
   Enrollment, write the shared audit event in the same transaction, and clear
   the pause only after the invariant passes. Admin UI is observation-only in
   MVP; no public repair endpoint exists.
-- FR-12: Every registration mutation for one student and term MUST serialize
-  through a database-backed StudentTermRegistrationGuard; in-memory locks are
-  prohibited because multiple application replicas are supported.
+- FR-12: Every registration mutation for one student and term MUST consume the
+  database-backed SPEC-008 `StudentTermAcademicState` boundary through
+  `ExecuteRegistrationBoundaryAsync`; the successful transaction advances its
+  version, and in-memory or duplicate Registration-owned guards are prohibited
+  because multiple application replicas are supported.
 - FR-13: RegistrationSubmission is the sole idempotency claim/final-result
   record. Its database uniqueness scope MUST be (StudentId, TermId,
   ClientRequestId), and it MUST atomically store that owner/scope, canonical
@@ -175,7 +178,8 @@ Given two plans for one student/term are individually valid but jointly exceed
 credit load or overlap<br>
 When different idempotency keys submit them concurrently<br>
 Then only one plan may commit<br>
-And the loser revalidates after acquiring the student-term guard and receives
+And the loser revalidates after acquiring the shared StudentTermAcademicState
+boundary and receives
 409 POLICY_CHANGED or SCHEDULE_CONFLICT<br>
 And the combined enrollment remains valid.
 
@@ -263,6 +267,20 @@ And a fault after commit replays the stored final result.
 ## API Contracts
 
 ```typescript
+interface RegistrationMeetingStaffSnapshotDto {
+  role: "Lecturer" | "TeachingAssistant";
+  displayName: string;
+}
+interface RegistrationMeetingSnapshotDto {
+  meetingId: string;
+  activityType: "Lecture" | "Tutorial" | "Laboratory";
+  dayOfWeek: number;
+  startLocal: string;
+  endLocal: string;
+  roomCode: string;
+  location: string;
+  staff: RegistrationMeetingStaffSnapshotDto[];
+}
 interface RegistrationGroupSnapshotDto {
   offeringId: string;
   courseCode: string;
@@ -270,13 +288,13 @@ interface RegistrationGroupSnapshotDto {
   groupId: string;
   groupCode: string;
   credits: number;
-  staff: Array<{ role: "Lecturer" | "TeachingAssistant"; displayName: string }>;
-  meetings: Array<{ dayOfWeek: number; startLocal: string; endLocal: string; roomCode: string; location: string }>;
+  meetings: RegistrationMeetingSnapshotDto[];
 }
 interface RegistrationReceiptSnapshotDto {
   term: TermSummaryDto;
   groups: RegistrationGroupSnapshotDto[];
   totalCredits: number;
+  policySetId: string;
   policyVersion: string;
   submittedAtUtc: string;
 }
@@ -292,6 +310,7 @@ interface RegistrationFinalResult {
   registeredGroups: RegistrationGroupSnapshotDto[];
   receivedAtUtc: string;
   completedAtUtc: string;
+  policySetId: string;
   policyVersion: string;
   planRowVersion: string;
   reference?: string;
@@ -319,7 +338,7 @@ not evidence of a separately committed Processing row.
 
 | Field/entity | Type | Constraints |
 |---|---|---|
-| StudentTermRegistrationGuard | aggregate row | unique student + term; database serialization/version boundary |
+| StudentTermAcademicState | consumed SPEC-008 aggregate row | unique student + term; shared database serialization/version boundary invoked through ExecuteRegistrationBoundaryAsync and advanced by a successful registration transaction |
 | RegistrationSubmission.ClientRequestId | UUID | unique with student + term |
 | RegistrationSubmission.PayloadHash | fixed hash | canonical server-computed payload; immutable |
 | RegistrationSubmission.State | enum | Processing, Accepted, Rejected; deterministic final result stored |

@@ -1,5 +1,5 @@
 {
-  "version": "2.1.1",
+  "version": "2.1.2",
   "dbContext": {
     "owner": "004",
     "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
@@ -50,7 +50,7 @@
     },
     "014": {
       "mode": "writable-transactional",
-      "entities": ["RegistrationSubmission", "Enrollment", "DecisionSnapshot", "StudentTermRegistrationGuard"],
+      "entities": ["RegistrationSubmission", "Enrollment", "DecisionSnapshot"],
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs",
       "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/RegistrationModelConfigurationTests.cs"
     },
@@ -119,10 +119,10 @@
     {
       "id": "S6Registration",
       "kind": "incremental",
-      "owner": "015",
+      "owner": "014",
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs",
       "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
-      "prerequisiteSpecs": ["014", "015"]
+      "prerequisiteSpecs": ["014"]
     },
     {
       "id": "S7StaffAdminOperations",
