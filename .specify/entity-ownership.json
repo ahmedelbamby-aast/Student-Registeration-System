@@ -1,5 +1,5 @@
 {
-  "version": "2.0.6",
+  "version": "2.0.7",
   "canonicalOwners": {
     "AcademicTerm": "008",
     "AccountRecoveryChallenge": "007",
@@ -32,11 +32,16 @@
     "SecurityEvent": "007",
     "SectionGroup": "010",
     "ScheduleImpactAlert": "010",
+    "ScheduleOption": "013",
+    "SchedulePreferences": "013",
+    "ScoreComponent": "013",
     "Staff": "007",
     "StudentActivation": "007",
     "StaffTermAvailability": "010",
     "StaffAvailability": "010",
     "StudentTermRegistrationGuard": "014",
+    "OptimizationDiagnostic": "013",
+    "OptimizerConfiguration": "013",
     "Student": "008",
     "StudentTermAcademicState": "008",
     "StudentHold": "008",
@@ -70,6 +75,11 @@
     "018:HealthSummary": "src/StudentRegistration.Contracts/Operations/HealthSummary.cs",
     "018:OperationalMetric": "src/StudentRegistration.Contracts/Operations/OperationalMetric.cs",
     "018:BackupEvidence": "docs/release-evidence/schemas/backup-evidence.schema.json",
-    "018:ReleaseEvidence": "docs/release-evidence/schemas/release-evidence.schema.json"
+    "018:ReleaseEvidence": "docs/release-evidence/schemas/release-evidence.schema.json",
+    "013:SchedulePreferences": "src/StudentRegistration.Registration/Domain/SchedulePreferences.cs",
+    "013:ScheduleOption": "src/StudentRegistration.Registration/Domain/ScheduleOption.cs",
+    "013:ScoreComponent": "src/StudentRegistration.Registration/Domain/ScoreComponent.cs",
+    "013:OptimizerConfiguration": "src/StudentRegistration.Registration/Domain/OptimizerConfiguration.cs",
+    "013:OptimizationDiagnostic": "src/StudentRegistration.Registration/Domain/OptimizationDiagnostic.cs"
   }
 }

@@ -188,7 +188,8 @@ public static class IdentitySecurityRegistration
                          IdentityRateLimitPolicies.StudentActivation,
                          IdentityRateLimitPolicies.RecoveryRequest,
                          IdentityRateLimitPolicies.RecoveryCompletion,
-                         IdentityRateLimitPolicies.PasswordChange
+                         IdentityRateLimitPolicies.PasswordChange,
+                         "registration-schedule-recommendations"
                      })
             {
                 options.AddPolicy(

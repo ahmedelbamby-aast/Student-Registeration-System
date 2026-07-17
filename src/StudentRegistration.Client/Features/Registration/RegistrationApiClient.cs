@@ -94,6 +94,73 @@ public sealed class RegistrationApiClient
             null,
             cancellationToken);
 
+    public Task<RegistrationApiResult<OptimizationResultDto>>
+        RecommendScheduleAsync(
+            Guid termId,
+            RecommendScheduleRequest request,
+            CancellationToken cancellationToken = default) =>
+        SendAsync<RecommendScheduleRequest, OptimizationResultDto>(
+            HttpMethod.Post,
+            $"{PlanPath(termId)}/recommendations",
+            request,
+            cancellationToken);
+
+    public Task<RegistrationPlanApiResult> ApplyRecommendedOptionAsync(
+        Guid termId,
+        ApplyScheduleOptionRequest request,
+        CancellationToken cancellationToken = default) =>
+        SendPlanAsync(
+            HttpMethod.Put,
+            $"{PlanPath(termId)}/recommended-option",
+            request,
+            cancellationToken);
+
+    private async Task<RegistrationApiResult<TResponse>> SendAsync<TRequest, TResponse>(
+        HttpMethod method,
+        string path,
+        TRequest request,
+        CancellationToken cancellationToken)
+    {
+        using var message = new HttpRequestMessage(method, path)
+        {
+            Content = JsonContent.Create(request)
+        };
+        await AddAntiforgeryAsync(message, cancellationToken);
+        using var response = await _httpClient.SendAsync(
+            message,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+        if (response.IsSuccessStatusCode)
+        {
+            try
+            {
+                var value = await response.Content.ReadFromJsonAsync<TResponse>(
+                    ResponseJsonOptions,
+                    cancellationToken);
+                return value is null
+                    ? RegistrationApiResult<TResponse>.Failure(
+                        null,
+                        response.StatusCode)
+                    : RegistrationApiResult<TResponse>.Success(
+                        value,
+                        response.StatusCode,
+                        ReadMetadata(response));
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException or NotSupportedException or
+                    JsonException or ArgumentException)
+            {
+                return RegistrationApiResult<TResponse>.Failure(
+                    null,
+                    response.StatusCode);
+            }
+        }
+
+        return RegistrationApiResult<TResponse>.Failure(
+            await ReadErrorAsync(response, cancellationToken),
+            response.StatusCode);
+    }
+
     private async Task<RegistrationPlanApiResult> SendPlanAsync<TRequest>(
         HttpMethod method,
         string path,
@@ -106,22 +173,31 @@ public sealed class RegistrationApiClient
             message.Content = JsonContent.Create(request);
         }
 
-        if (_javascript is not null)
-        {
-            var token = await _javascript.InvokeAsync<string>(
-                AntiforgeryInterop,
-                cancellationToken);
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                message.Headers.TryAddWithoutValidation(AntiforgeryHeader, token);
-            }
-        }
+        await AddAntiforgeryAsync(message, cancellationToken);
 
         using var response = await _httpClient.SendAsync(
             message,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
         return await ReadPlanAsync(response, cancellationToken);
+    }
+
+    private async Task AddAntiforgeryAsync(
+        HttpRequestMessage message,
+        CancellationToken cancellationToken)
+    {
+        if (_javascript is null)
+        {
+            return;
+        }
+
+        var token = await _javascript.InvokeAsync<string>(
+            AntiforgeryInterop,
+            cancellationToken);
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            message.Headers.TryAddWithoutValidation(AntiforgeryHeader, token);
+        }
     }
 
     private static async Task<RegistrationPlanApiResult> ReadPlanAsync(

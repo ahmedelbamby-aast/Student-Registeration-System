@@ -17,6 +17,20 @@ public static class RegistrationModuleRegistration
         services.TryAddScoped<OfferingSearchQuery>();
         services.TryAddScoped<ScheduleConflictDetector>();
         services.TryAddScoped<RegistrationPlanService>();
+        services.TryAddSingleton(
+            new OptimizerConfiguration(
+                "1.0.0",
+                [
+                    ScoreFactor.PreferenceViolations,
+                    ScoreFactor.IdleMinutes,
+                    ScoreFactor.TeachingDays,
+                    ScoreFactor.StableGroupTuple
+                ],
+                "SPEC-013-GATE-A-2026-07-13"));
+        services.TryAddScoped<ScheduleScorer>();
+        services.TryAddScoped<ScheduleOptimizer>();
+        services.TryAddScoped<OptimizationCoordinator>();
+        services.TryAddScoped<RecommendationApplicationService>();
         services.TryAddScoped<ICurrentPlanReader, EmptyCurrentPlanReader>();
         return services;
     }

@@ -130,6 +130,7 @@ public sealed class OperationalTelemetry : IDisposable
             "operations-metrics",
             "plan",
             "registration-record",
+            "schedule-recommendations",
             "timetable"
         };
 
@@ -146,6 +147,9 @@ public sealed class OperationalTelemetry : IDisposable
             "IDEMPOTENCY_KEY_REUSED",
             "PAGE_SIZE_INVALID",
             "PLAN_CHANGED",
+            "STALE_INPUT",
+            "INVALID_OPTION_TOKEN",
+            "OPTION_EXPIRED",
             "POLICY_CHANGED",
             "POLICY_REJECTED",
             "PREREQUISITE_NOT_MET",

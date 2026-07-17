@@ -138,6 +138,10 @@ And optimizer branch coverage is at least 90%.
 - FR-2: It MUST enforce all hard meeting, availability, completeness,
   eligibility, and credit constraints. The approved simple demo policy
   disables travel-buffer constraints and MUST NOT guess a duration or matrix.
+  Recommendations replace groups only for the existing selected course set and
+  preserve the canonical SPEC-012 fixed 18/18 target and maximum; they MUST NOT
+  introduce a GPA-derived branch, overload path, omitted course, or duplicate
+  course.
 - FR-3: It MUST order constrained courses first and prune invalid partial
   schedules.
 - FR-4: It SHOULD return up to three distinct feasible schedules.
@@ -156,12 +160,14 @@ And optimizer branch coverage is at least 90%.
 - FR-8: Final submission MUST revalidate all results; a recommendation does not
   reserve seats.
 - FR-9: A recommendation request MUST include the expected plan rowversion and
-  request correlation ID; each result MUST identify the captured plan,
-  catalogue/group, policy, and optimizer-configuration versions. Every option
-  MUST carry an authenticated, encrypted, expiring option token binding the
-  authenticated student, plan, complete group selection, captured versions,
-  correlation ID, issued time, and expiry so any stateless replica can
-  validate it without server memory or a durable option table.
+  request correlation ID; each result MUST identify the captured plan ID and
+  rowversion, academic-context version, catalogue version, PolicySet ID and
+  version, exact offering/group versions, and optimizer-configuration version.
+  Every option MUST carry an authenticated, encrypted, expiring option token
+  binding the authenticated student, term, plan, complete group selection,
+  those captured versions, correlation ID, issued time, and expiry so any
+  stateless replica can validate it without server memory or a durable option
+  table.
 - FR-10: Applying an option MUST submit that option token and the current
   expected plan rowversion, validate signature/expiry/owner/plan/payload and
   dependency versions, and perform one atomic versioned plan mutation. A
@@ -208,7 +214,7 @@ And optimizer branch coverage is at least 90%.
 
 | Route ID | Route template | Future Blazor page | Responsibility |
 |---|---|---|---|
-| STU-04 | /student/schedule | ScheduleBuilderPage.razor | Feature contract contributor; does not edit page; design SPEC-003, implementation SPEC-012 |
+| STU-04 | /student/schedule | ScheduleBuilderPage.razor | Feature contract contributor; may add only the bounded recommendation client/panel integration required by this spec without taking page ownership or redesigning the SPEC-012 page; design SPEC-003, canonical implementation ownership SPEC-012 |
 
 ## Out of Scope
 

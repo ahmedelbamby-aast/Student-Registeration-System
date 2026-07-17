@@ -20,14 +20,15 @@ a service or generic-layer project.
 
 **Decision**: Protect the complete option payload with ASP.NET Core Data
 Protection purpose `Registration.ScheduleOption.v1`. Bind authenticated
-student, plan, plan rowversion, group selection, catalogue/group/policy/
-configuration versions, request correlation ID, issued time, and a 10-minute
-expiry.
+student, term, plan ID/rowversion, group selection, academic-context,
+catalogue, PolicySet, exact offering/group, and configuration versions,
+request correlation ID, issued time, and a 10-minute expiry.
 
 **Rationale**: A bare transient option ID cannot be resolved after load
 balancing or process restart. A short-lived protected token is stateless,
 tamper evident, confidential, and works across replicas using SPEC-018's shared
-key repository.
+POC SQL-backed key repository and external local certificate. Production key
+custody remains undecided.
 
 **Rejected**: sticky sessions, process-memory option caches, a new option
 table, and trusting client-supplied group payloads.

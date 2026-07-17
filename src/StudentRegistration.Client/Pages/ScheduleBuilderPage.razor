@@ -10,6 +10,7 @@
 @using StudentRegistration.Client.Features.Scheduling
 @using StudentRegistration.Contracts
 @using StudentRegistration.Contracts.Registration
+@implements IDisposable
 @inject AcademicApiClient AcademicApi
 @inject RegistrationApiClient RegistrationApi
 @inject NavigationManager Navigation
@@ -270,6 +271,18 @@ else if (_shellContext is not null)
                             </section>
                         }
 
+                        <ScheduleRecommendationsPanel
+                            FindLabel="Find schedule alternatives"
+                            RequestCorrelationId="@RequestCorrelationId"
+                            PlanRowVersion="@PlanRowVersion"
+                            Result="@_recommendationResult"
+                            Loading="@_recommendationLoading"
+                            Disabled="@(_requestLoading || _recommendationLoading)"
+                            Error="@_recommendationError"
+                            ErrorMessage="@_recommendationErrorMessage"
+                            Find="FindRecommendationsAsync"
+                            Apply="ApplyRecommendationAsync" />
+
                         <section aria-labelledby="validation-snapshot-heading">
                             <h2 id="validation-snapshot-heading">Validation snapshot</h2>
                             <dl>
@@ -351,6 +364,13 @@ else
     private string? _referenceId;
     private bool _initialLoading = true;
     private bool _requestLoading;
+    private OptimizationResultDto? _recommendationResult;
+    private bool _recommendationLoading;
+    private string? _recommendationError;
+    private string? _recommendationErrorMessage;
+    private CancellationTokenSource? _recommendationCancellation;
+    private string? RequestCorrelationId { get; set; }
+    private string? PlanRowVersion { get; set; }
 
     private bool IsFailureState => _state is
         ServiceErrorState or UnauthorizedState or SessionExpiredState or OfflineState;
@@ -496,6 +516,7 @@ else
             return;
         }
 
+        ClearRecommendations();
         _requestLoading = true;
         try
         {
@@ -532,6 +553,107 @@ else
             _requestLoading = false;
         }
     }
+
+    private async Task FindRecommendationsAsync()
+    {
+        if (_plan is null)
+        {
+            return;
+        }
+
+        ClearRecommendations();
+        _recommendationCancellation = new CancellationTokenSource();
+        RequestCorrelationId = Guid.NewGuid().ToString("N");
+        PlanRowVersion = _plan.RowVersion;
+        _recommendationLoading = true;
+        try
+        {
+            var result = await RegistrationApi.RecommendScheduleAsync(
+                _termId,
+                new(
+                    PlanRowVersion,
+                    RequestCorrelationId,
+                    new([], null, null)),
+                _recommendationCancellation.Token);
+            if (result.IsSuccess &&
+                result.Value is not null &&
+                result.Value.RequestCorrelationId == RequestCorrelationId &&
+                result.Value.PlanRowVersion == _plan?.RowVersion)
+            {
+                _recommendationResult = result.Value;
+            }
+            else if (!result.IsSuccess)
+            {
+                _recommendationError = result.Error?.Code ??
+                    "RECOMMENDATIONS_UNAVAILABLE";
+                _recommendationErrorMessage = result.Error?.Message ??
+                    "Schedule alternatives could not be loaded.";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // A later request or plan edit owns the current display.
+        }
+        finally
+        {
+            _recommendationLoading = false;
+        }
+    }
+
+    private async Task ApplyRecommendationAsync(ScheduleOptionDto option)
+    {
+        if (_plan is null ||
+            _recommendationResult is null ||
+            string.IsNullOrWhiteSpace(RequestCorrelationId))
+        {
+            return;
+        }
+
+        _requestLoading = true;
+        try
+        {
+            var result = await RegistrationApi.ApplyRecommendedOptionAsync(
+                _termId,
+                new(
+                    option.OptionToken,
+                    _plan.RowVersion,
+                    RequestCorrelationId));
+            if (result.IsSuccess && result.Value is not null)
+            {
+                ApplyPlan(result.Value);
+                ClearRecommendations();
+                return;
+            }
+
+            _recommendationError = result.Error?.Code ??
+                "RECOMMENDATIONS_UNAVAILABLE";
+            _recommendationErrorMessage = result.Error?.Message ??
+                "The schedule option could not be applied.";
+            if (_recommendationError is
+                "PLAN_CHANGED" or "STALE_INPUT" or "OPTION_EXPIRED")
+            {
+                _recommendationResult = null;
+            }
+        }
+        finally
+        {
+            _requestLoading = false;
+        }
+    }
+
+    private void ClearRecommendations()
+    {
+        _recommendationCancellation?.Cancel();
+        _recommendationCancellation?.Dispose();
+        _recommendationCancellation = null;
+        _recommendationResult = null;
+        _recommendationError = null;
+        _recommendationErrorMessage = null;
+        RequestCorrelationId = null;
+        PlanRowVersion = null;
+    }
+
+    public void Dispose() => ClearRecommendations();
 
     private async Task ResolveConflictAsync(ConflictResolutionRequest request)
     {

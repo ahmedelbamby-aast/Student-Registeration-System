@@ -33,6 +33,7 @@ public static class SqlServerPersistenceRegistration
         services.AddStudentRegistrationAcademicSqlServer();
         services.AddStudentRegistrationDiscoverySqlServer();
         services.AddStudentRegistrationPlansSqlServer();
+        services.AddScheduleRecommendationsSqlServer();
         return services;
     }
 }

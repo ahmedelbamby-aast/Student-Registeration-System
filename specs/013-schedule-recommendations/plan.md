@@ -22,10 +22,15 @@ registration-plan version check.
 - **Persistence**: no durable ScheduleOption table; current plan/version data
   uses the existing SQL Server/EF Core infrastructure.
 - **Replica safety**: option tokens use ASP.NET Core Data Protection with the
-  shared production key repository required by SPEC-018.
+  shared POC SQL-backed key repository and external local certificate required
+  by SPEC-018. Production key custody remains undecided and fail closed.
 - **Performance**: p95 <= 500 ms for eight courses with ten groups each.
 - **Accessibility**: SPEC-003 owns the canonical page; this spec contributes
   deterministic states, reasons, and actions to STU-04.
+- **Frontend integration**: SPEC-012 retains canonical page ownership.
+  SPEC-013 may add only the small recommendation API client/panel integration
+  required to consume its approved contributor contract; it does not redesign
+  the page or duplicate schedule state.
 
 ## Workstreams and Order
 
@@ -45,8 +50,11 @@ registration-plan version check.
 - `ScheduleOption`, `ScoreComponent`, `OptimizerConfiguration`, and `OptimizationDiagnostic` are
   transient Registration-module values, not EF entities.
 - The signed token binds student, plan, plan rowversion, option groups,
-  catalogue/group/policy/configuration versions, correlation ID, issued time,
-  and expiry. Any mismatch or signature failure is rejected before mutation.
+  academic-context, catalogue, PolicySet, offering, group, and configuration
+  versions, correlation ID, issued time, and expiry. Any mismatch or signature
+  failure is rejected before mutation.
+- Recommendations swap groups only for the existing selected course set and
+  preserve the canonical SPEC-012 fixed 18/18 plan credit contract.
 - A blocking set is inclusion-minimal: removing any member from that set makes
   that reported hard conflict no longer hold. Results are deterministically
   ordered by set size and stable course/group identifiers.

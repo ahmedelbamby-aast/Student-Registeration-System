@@ -1,0 +1,113 @@
+@using StudentRegistration.Contracts.Registration
+
+<section aria-labelledby="schedule-alternatives-heading"
+         data-current-request="@RequestCorrelationId"
+         data-current-plan-version="@PlanRowVersion">
+    <h2 id="schedule-alternatives-heading">Schedule alternatives</h2>
+
+    @if (Loading)
+    {
+        <p role="status" aria-live="polite" aria-busy="true">
+            Finding schedule alternatives
+        </p>
+    }
+    else if (Error is not null)
+    {
+        <div role="alert" aria-live="assertive">
+            <p><strong>@Error</strong></p>
+            <p>@ErrorMessage</p>
+        </div>
+    }
+    else if (Result is not null)
+    {
+        @if (Result.Status == "time-budget")
+        {
+            <p role="status" aria-live="polite">
+                Recommendation time budget reached
+            </p>
+        }
+        @if (Result.Status == "no-solution")
+        {
+            <p>No complete schedule alternative was found</p>
+        }
+        @if (Result.Options.Count > 0)
+        {
+            <p>Optimizer configuration: @Result.OptimizerConfigurationVersion</p>
+            <ol>
+                @foreach (var option in Result.Options.OrderBy(option => option.Rank))
+                {
+                    <li>
+                        <h3>Option @option.Rank</h3>
+                        <ul>
+                            @foreach (var group in option.Groups)
+                            {
+                                <li>
+                                    Group @group.GroupCode · advisory capacity
+                                    @group.EnrolledCount of @group.Capacity
+                                </li>
+                            }
+                        </ul>
+                        <dl>
+                            @foreach (var score in option.ScoreExplanation)
+                            {
+                                <div>
+                                    <dt>@score.Factor</dt>
+                                    <dd>@score.Value — @score.Message</dd>
+                                </div>
+                            }
+                        </dl>
+                        <button type="button"
+                                disabled="@Disabled"
+                                @onclick="() => ApplyOptionAsync(option)">
+                            Apply option @option.Rank
+                        </button>
+                    </li>
+                }
+            </ol>
+        }
+        @if (Result.Diagnostics.Count > 0)
+        {
+            <ul>
+                @foreach (var diagnostic in Result.Diagnostics)
+                {
+                    <li>
+                        <p><strong>@diagnostic.ReasonCode</strong></p>
+                        <p>@diagnostic.Minimality</p>
+                        <ul>
+                            @foreach (var member in diagnostic.Members)
+                            {
+                                <li>
+                                    @member.CourseId · @member.GroupId · @member.Action
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+            </ul>
+        }
+    }
+
+    <button type="button"
+            disabled="@Disabled"
+            @onclick="FindAsync">
+        @FindLabel
+    </button>
+</section>
+
+@code {
+    [Parameter] public OptimizationResultDto? Result { get; set; }
+    [Parameter] public string FindLabel { get; set; } = "Find schedule alternatives";
+    [Parameter] public string? RequestCorrelationId { get; set; }
+    [Parameter] public string? PlanRowVersion { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public EventCallback Find { get; set; }
+    [Parameter] public EventCallback<ScheduleOptionDto> Apply { get; set; }
+
+    private Task ApplyOptionAsync(ScheduleOptionDto option) =>
+        Apply.InvokeAsync(option);
+
+    private Task FindAsync() => Find.InvokeAsync();
+}
