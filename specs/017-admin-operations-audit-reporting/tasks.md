@@ -199,13 +199,13 @@
 
 ## Phase 7 - Scope and Release Evidence
 
-- [ ] T096 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-1 remains excluded: Unrestricted super-admin and unaudited direct database edits.
-- [ ] T097 [OS-2] Inspect source, contracts, migrations, routes, permissions, controls, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-2 remains excluded: break-glass capacity/conflict override; enrollment correction, drop, withdrawal, or seat decrement; and every Admin availability mutation/correction/override endpoint, permission, editable control, notification workflow, or correction-audit path.
-- [ ] T098 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-3 remains excluded: Business-intelligence warehouse.
-- [ ] T099 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-4 remains excluded: Long-term report replica until primary impact is measured.
-- [ ] T100 [TRACE] After T001-T099, generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-017-traceability.md and verify its schema/completeness in tests/StudentRegistration.SpecificationTests/Spec017TraceabilityTests.cs; reject release if any row lacks passing evidence (depends on T001-T099).
-- [ ] T101 [GATE] After green T100, record Ahmed Elbamby's separate product owner, domain owner, QA, security, accessibility, data/concurrency, and operations review perspectives with dates and evidence links in docs/release-evidence/SPEC-017-release-approval.md; explicitly do not claim Gate D, production, or official AASTMT approval (depends on T100).
+- [x] T096 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-1 remains excluded: Unrestricted super-admin and unaudited direct database edits.
+- [x] T097 [OS-2] Inspect source, contracts, migrations, routes, permissions, controls, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-2 remains excluded: break-glass capacity/conflict override; enrollment correction, drop, withdrawal, or seat decrement; and every Admin availability mutation/correction/override endpoint, permission, editable control, notification workflow, or correction-audit path.
+- [x] T098 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-3 remains excluded: Business-intelligence warehouse.
+- [x] T099 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-017-scope-review.md that OS-4 remains excluded: Long-term report replica until primary impact is measured.
+- [x] T100 [TRACE] After T001-T099, generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-017-traceability.md and verify its schema/completeness in tests/StudentRegistration.SpecificationTests/Spec017TraceabilityTests.cs; reject release if any row lacks passing evidence (depends on T001-T099).
+- [x] T101 [GATE] After green T100, record Ahmed Elbamby's separate product owner, domain owner, QA, security, accessibility, data/concurrency, and operations review perspectives with dates and evidence links in docs/release-evidence/SPEC-017-release-approval.md; explicitly do not claim Gate D, production, or official AASTMT approval (depends on T100).
 
-Phases 1-6 tasks T001-T095 are complete from their recorded evidence. Phase 7
-scope, traceability, and release-review tasks T096-T101 remain pending and are
-not implied by the measurable NFR evidence.
+Phases 1-7 tasks T001-T101 are complete from their recorded evidence. This is
+a demo implementation result only and does not claim Gate D, production, or
+official AASTMT approval.
