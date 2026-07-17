@@ -12,7 +12,10 @@ public sealed class Endpoint02BehaviorTests
     {
         var query = Spec017BehaviorFiles.FutureSource(
             QueryPath,
-            "Expected red for T028: AuditEventQueries is intentionally absent until T070.");
+            "Expected red for T028: AuditEventQueries is intentionally absent until T070.")
+            + Spec017BehaviorFiles.FutureSource(
+                "src/StudentRegistration.Infrastructure.SqlServer/Admin/SqlAdminAuditReader.cs",
+                "Expected red for T028: SqlAdminAuditReader is intentionally absent until T070.");
 
         Spec017BehaviorFiles.ContainsAll(
             query,

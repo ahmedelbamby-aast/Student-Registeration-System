@@ -32,6 +32,10 @@ public static class RolePolicies
     public const string RegistrationSubmitOwn = "Registration.SubmitOwn";
     public const string RegistrationRecordsReadOwn = "RegistrationRecords.ReadOwn";
     public const string RegistrationRecordsRead = "RegistrationRecords.Read";
+    public const string AdminOperationsMetricsRead = "AdminOperations.Metrics.Read";
+    public const string AdminAuditRead = "AdminAudit.Read";
+    public const string AdminAuditExport = "AdminAudit.Export";
+    public const string AdminAuditExportReadAll = "AdminAudit.Export.ReadAll";
 
     public const string PermissionClaimType = "permission";
     public const string AvailableRoleClaimType = "available_role";
@@ -145,6 +149,11 @@ public static class RolePolicies
                 .RequireRole(Admin)
                 .RequireClaim(PermissionClaimType, RegistrationRecordsRead));
 
+        AddAdminPermissionPolicy(options, AdminOperationsMetricsRead);
+        AddAdminPermissionPolicy(options, AdminAuditRead);
+        AddAdminPermissionPolicy(options, AdminAuditExport);
+        AddAdminPermissionPolicy(options, AdminAuditExportReadAll);
+
         options.AddPolicy(
             OfferingDetailsRead,
             policy => policy
@@ -192,7 +201,11 @@ public static class RolePolicies
             AcademicProfilesManage,
             CataloguePolicyManage,
             OfferingsManage,
-            RegistrationRecordsRead
+            RegistrationRecordsRead,
+            AdminOperationsMetricsRead,
+            AdminAuditRead,
+            AdminAuditExport,
+            AdminAuditExportReadAll
         ],
         Lecturer or TeachingAssistant => [ContextRead],
         _ => []
@@ -204,6 +217,16 @@ public static class RolePolicies
             policy => policy
                 .RequireAuthenticatedUser()
                 .RequireRole(role));
+
+    private static void AddAdminPermissionPolicy(
+        AuthorizationOptions options,
+        string permission) =>
+        options.AddPolicy(
+            permission,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, permission));
 }
 
 /// <summary>

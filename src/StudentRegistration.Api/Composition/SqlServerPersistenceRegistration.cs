@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using StudentRegistration.Infrastructure.SqlServer.Admin;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Infrastructure.SqlServer.Registration;
 using StudentRegistration.Infrastructure.SqlServer.Scheduling;
@@ -61,6 +62,16 @@ public static class SqlServerPersistenceRegistration
         services.TryAddScoped<IStaffIdentityResolver>(services =>
             services.GetRequiredService<SqlStaffWorkspaceAdapter>());
         services.TryAddScoped<StaffWorkspaceQueries>();
+        services.TryAddScoped<IAdminAuditReader, SqlAdminAuditReader>();
+        services.TryAddScoped<IAdminExportStore, SqlAdminExportStore>();
+        services.TryAddSingleton<IAdminExportArtifactStore>(_ =>
+            new SharedFileAdminExportArtifactStore(
+                Path.GetFullPath(
+                    configuration["AdminOperations:ExportArtifactRoot"]
+                    ?? Path.Combine(
+                        AppContext.BaseDirectory,
+                        "App_Data",
+                        "admin-exports"))));
         return services;
     }
 }

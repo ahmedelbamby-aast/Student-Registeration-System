@@ -70,6 +70,9 @@ public sealed class AdministrationAuditModelConfiguration :
         builder.Property(job => job.RequestHash)
             .HasMaxLength(200)
             .IsRequired();
+        builder.Property(job => job.FilterJson)
+            .HasMaxLength(ExportJob.MaximumFilterJsonLength)
+            .IsRequired();
         builder.Property(job => job.State)
             .HasConversion(StateConverter)
             .HasMaxLength(20)

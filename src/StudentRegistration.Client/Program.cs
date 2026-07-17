@@ -17,6 +17,7 @@ builder.Services.AddScoped<AcademicApiClient>();
 builder.Services.AddScoped<CatalogueApiClient>();
 builder.Services.AddScoped<IdentityApiClient>();
 builder.Services.AddScoped<OperationsApiClient>();
+builder.Services.AddScoped<AdminOperationsApiClient>();
 builder.Services.AddScoped<RegistrationApiClient>();
 builder.Services.AddScoped<SchedulingApiClient>();
 builder.Services.AddScoped<StaffApiClient>();

@@ -1,7 +1,10 @@
 using StudentRegistration.Api.Endpoints;
 using StudentRegistration.Api.Operations;
 using StudentRegistration.Academics.Endpoints;
+using StudentRegistration.Contracts.Operations;
 using StudentRegistration.IdentityAccess.Endpoints;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using StudentRegistration.StaffAdministration.Application;
 using StudentRegistration.Registration.Endpoints;
 using StudentRegistration.Scheduling.Endpoints;
 using StudentRegistration.StaffAdministration.Endpoints;
@@ -43,6 +46,7 @@ public static class Program
         app.MapSpec014Endpoints();
         app.MapSpec015Endpoints();
         app.MapSpec016Endpoints();
+        app.MapSpec017Endpoints();
         if (app.Environment.IsDevelopment() ||
             app.Environment.IsEnvironment("Testing"))
         {
@@ -65,6 +69,12 @@ public static class ModuleRegistration
         services.AddSafeApiErrors();
         services.AddStudentRegistrationOpenApi();
         services.AddStudentRegistrationObservability();
+        services.TryAddScoped<IOperationalMetricReader, OperationalMetricReader>();
+        services.TryAddScoped<AdminMetricsQuery>();
+        services.TryAddScoped<AuditEventQueries>();
+        services.TryAddScoped<AuditExportService>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, AdminExportWorker>());
 
         return services;
     }

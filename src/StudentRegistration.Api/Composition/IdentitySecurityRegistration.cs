@@ -163,7 +163,7 @@ public static class IdentitySecurityRegistration
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.OnRejected = static (context, _) =>
+            options.OnRejected = static async (context, cancellationToken) =>
             {
                 if (string.Equals(
                         context.HttpContext.Request.Path.Value,
@@ -177,9 +177,14 @@ public static class IdentitySecurityRegistration
                 else
                 {
                     context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    context.HttpContext.Response.Headers["Retry-After"] = "1";
+                    await context.HttpContext.Response.WriteAsJsonAsync(
+                        new ApiError(
+                            "RATE_LIMITED",
+                            "The request rate limit was exceeded.",
+                            context.HttpContext.TraceIdentifier),
+                        cancellationToken);
                 }
-
-                return ValueTask.CompletedTask;
             };
             foreach (var policyName in new[]
                      {
@@ -189,7 +194,10 @@ public static class IdentitySecurityRegistration
                          IdentityRateLimitPolicies.RecoveryRequest,
                          IdentityRateLimitPolicies.RecoveryCompletion,
                          IdentityRateLimitPolicies.PasswordChange,
-                         "registration-schedule-recommendations"
+                         "registration-schedule-recommendations",
+                         "AdminOperationsRead",
+                         "AdminExportCreate",
+                         "AdminExportDownload"
                      })
             {
                 options.AddPolicy(

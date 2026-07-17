@@ -70,6 +70,9 @@ public sealed record AdminMetricsThresholds(
 
 public sealed class AdminMetricsQuery
 {
+    // Dashboard categories remain explicit: traffic, expected rejection,
+    // server failure, fill rate, lock wait, and data-quality; API availability
+    // tokens remain lowercase: live, stale, degraded.
     public const int MaximumMetricSeries = 100;
     public static readonly TimeSpan FreshnessWindow = TimeSpan.FromSeconds(60);
 

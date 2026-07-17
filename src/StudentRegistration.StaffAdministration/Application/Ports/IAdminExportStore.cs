@@ -37,6 +37,11 @@ public interface IAdminExportStore
         DateTime claimedAtUtc,
         CancellationToken cancellationToken = default);
 
+    Task<ExportJob?> TryClaimNextAsync(
+        string leaseOwnerId,
+        DateTime claimedAtUtc,
+        CancellationToken cancellationToken = default);
+
     Task<bool> RenewLeaseAsync(
         Guid jobId,
         string leaseOwnerId,

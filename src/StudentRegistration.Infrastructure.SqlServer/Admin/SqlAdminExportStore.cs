@@ -137,6 +137,40 @@ public sealed class SqlAdminExportStore : IAdminExportStore
             .ConfigureAwait(false);
     }
 
+    public async Task<ExportJob?> TryClaimNextAsync(
+        string leaseOwnerId,
+        DateTime claimedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _dbContext.Database
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)
+            .ConfigureAwait(false);
+        var candidate = await _dbContext.ExportJobs
+            .FromSqlInterpolated($$"""
+                SELECT TOP(1) *
+                FROM [administration].[ExportJobs] WITH (UPDLOCK, READPAST, ROWLOCK)
+                WHERE [AttemptCount] < 3
+                  AND
+                  (
+                      [State] = N'pending'
+                      OR ([State] = N'running' AND [LeaseExpiresAtUtc] <= {{claimedAtUtc}})
+                  )
+                ORDER BY [CreatedAtUtc], [JobId]
+                """)
+            .SingleOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (candidate is null || !candidate.TryClaim(leaseOwnerId, claimedAtUtc))
+        {
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        _dbContext.ChangeTracker.Clear();
+        return candidate;
+    }
+
     public async Task<bool> RenewLeaseAsync(
         Guid jobId,
         string leaseOwnerId,

@@ -1,0 +1,152 @@
+@page "/admin/audit"
+
+<PageTitle>Audit administration | Student Registration</PageTitle>
+
+<div class="srs-audit-admin"
+     data-route-id="ADM-09"
+     data-state="loading"
+     data-supported-states="loading empty success validation-error service-error unauthorized session-expired stale offline queued ready failed expired restricted">
+    <a class="srs-audit-admin__skip" href="#main-content">Skip to main content</a>
+
+    <header class="srs-audit-admin__header" role="banner">
+        <a href="/admin" aria-label="Administration home">
+            <strong>AASTMT</strong>
+            <span>Student Registration</span>
+        </a>
+        <nav aria-label="Administration navigation">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/registrations">Registrations</a>
+            <a href="/admin/audit" aria-current="page">Audit</a>
+        </nav>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+        <section class="srs-audit-admin__intro" aria-labelledby="audit-administration-heading">
+            <p class="srs-audit-admin__eyebrow">Immutable administrative evidence</p>
+            <h1 id="audit-administration-heading">Scoped audit search</h1>
+            <p>
+                Search only events visible in the current server scope and follow an
+                asynchronous, expiring export lifecycle.
+            </p>
+        </section>
+
+        <section class="srs-audit-admin__state"
+                 role="status"
+                 aria-live="polite"
+                 aria-busy="true">
+            <h2>Loading audit events</h2>
+            <p>No scoped event or export result has been accepted by the server.</p>
+        </section>
+
+        <section class="srs-audit-admin__filters" aria-labelledby="audit-filter-heading">
+            <h2 id="audit-filter-heading">Scope and search filters</h2>
+            <form role="search" aria-label="Scoped audit filters">
+                <label>
+                    Actor
+                    <input type="search" name="actorId" maxlength="100" />
+                </label>
+                <label>
+                    Action
+                    <input type="search" name="action" maxlength="100" />
+                </label>
+                <label>
+                    Source
+                    <select name="sourceStream">
+                        <option value="">All authorized sources</option>
+                        <option value="audit">Audit</option>
+                        <option value="identity-security">Identity security</option>
+                    </select>
+                </label>
+                <label>
+                    Page size
+                    <input type="number" name="pageSize" min="1" max="100" value="20" />
+                </label>
+                <button type="button" disabled>Search audit</button>
+                <button type="reset">Clear filters</button>
+            </form>
+        </section>
+
+        <div class="srs-audit-admin__workspace">
+            <section aria-labelledby="audit-results-heading">
+                <h2 id="audit-results-heading">Paged immutable events</h2>
+                <div class="srs-audit-admin__table-region"
+                     role="region"
+                     aria-label="Scoped audit results"
+                     tabindex="0">
+                    <table data-testid="audit-event-table">
+                        <caption>No server-authorized audit rows are loaded.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Occurred</th>
+                                <th scope="col">Actor</th>
+                                <th scope="col">Action</th>
+                                <th scope="col">Target</th>
+                                <th scope="col">Correlation</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6">No audit events match the current authorized filters.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="srs-audit-admin__semantic-alternative"
+                     data-testid="audit-event-card-list"
+                     aria-label="Audit results semantic alternative">
+                    <h3>Audit event summaries</h3>
+                    <p>No audit events match the current authorized filters.</p>
+                </div>
+
+                <nav class="srs-audit-admin__pagination" aria-label="Audit result pages">
+                    <button type="button" disabled>Previous page</button>
+                    <span>Page 1 of 1</span>
+                    <button type="button" disabled>Next page</button>
+                </nav>
+            </section>
+
+            <aside class="srs-audit-admin__detail" aria-labelledby="immutable-event-detail-heading">
+                <h2 id="immutable-event-detail-heading">Immutable event detail</h2>
+                <p>Select an authorized event to view its redacted before and after summaries.</p>
+                <dl>
+                    <div><dt>Actor</dt><dd>Not selected</dd></div>
+                    <div><dt>Reason</dt><dd>Not selected</dd></div>
+                    <div><dt>Correlation</dt><dd>Not selected</dd></div>
+                    <div><dt>Source</dt><dd>Not selected</dd></div>
+                </dl>
+                <button type="button" disabled>Open event detail</button>
+            </aside>
+        </div>
+
+        <section class="srs-audit-admin__export" aria-labelledby="export-lifecycle-heading">
+            <div>
+                <h2 id="export-lifecycle-heading">Scoped export lifecycle</h2>
+                <p>
+                    Export status may be queued, ready, failed, or expired. Restricted
+                    jobs reveal no event or job detail.
+                </p>
+            </div>
+            <dl>
+                <div><dt>Job</dt><dd>Not requested</dd></div>
+                <div><dt>Status</dt><dd>Not loaded</dd></div>
+                <div><dt>Expiry</dt><dd>Not loaded</dd></div>
+            </dl>
+            <div class="srs-audit-admin__actions">
+                <button type="button" disabled>Request export</button>
+                <button type="button" disabled>Refresh export status</button>
+                <button type="button" disabled>Download ready export</button>
+                <button type="button" disabled>Request a new export</button>
+            </div>
+            <p class="srs-audit-admin__authorization-note">
+                Only the server can authorize a scoped download. A ready status never
+                broadens the current actor or row permissions.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="/status/support">Open safe support</a>
+    </footer>
+</div>

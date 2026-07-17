@@ -49,6 +49,7 @@ public sealed class AuditExportSqlConcurrencyTests
             var created = await replicaOne.RequestAsync(request);
             Assert.Equal(AdminExportOutcome.Created, created.Outcome);
             var jobId = created.Job!.Id;
+            Assert.Equal(filter, AuditExportService.DeserializeFilter(created.Job.FilterJson));
 
             var replay = await replicaTwo.RequestAsync(request);
             Assert.Equal(AdminExportOutcome.Replay, replay.Outcome);
@@ -146,6 +147,11 @@ public sealed class AuditExportSqlConcurrencyTests
             Assert.Equal(
                 StudentRegistration.StaffAdministration.Domain.ExportJobState.Expired,
                 terminalReplay.Job.State);
+
+            var nextClaim = await replicaOne.TryClaimNextAsync("replica-next");
+            Assert.NotNull(nextClaim);
+            Assert.Equal(newKeyRetry.Job.Id, nextClaim.Id);
+            Assert.Equal("replica-next", nextClaim.LeaseOwnerId);
 
             Assert.True(AuditExportService.IsValidPage(1, 100));
             Assert.False(AuditExportService.IsValidPage(0, 20));

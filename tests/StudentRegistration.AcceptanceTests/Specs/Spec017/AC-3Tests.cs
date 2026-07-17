@@ -39,10 +39,12 @@ public sealed class AC_3Tests
             "ScopeHash",
             "RequestHash",
             "Redact",
+            "ProhibitedSummaryFields",
+            "\"password\"",
+            "IsSafeSummary",
             "Audit",
             "Pending",
             "CancellationToken");
-        Assert.DoesNotContain("Password", service, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("SecurityStamp", service, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("MetadataJson", service, StringComparison.Ordinal);
     }

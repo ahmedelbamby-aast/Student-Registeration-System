@@ -113,6 +113,7 @@ public sealed class AuditExportService
             return Invalid("EXPORT_REQUEST_INVALID");
         }
 
+        var filterJson = SerializeFilter(request.Filter);
         var requestHash = ComputeRequestHash(request.Filter);
         var job = new ExportJob(
             Guid.NewGuid(),
@@ -120,7 +121,8 @@ public sealed class AuditExportService
             request.ClientRequestId,
             request.ScopeHash,
             requestHash,
-            request.RequestedAtUtc);
+            request.RequestedAtUtc,
+            filterJson);
         if (job.State is not ExportJobState.Pending)
         {
             throw new InvalidOperationException("A new export job must start Pending.");
@@ -256,6 +258,11 @@ public sealed class AuditExportService
         CancellationToken cancellationToken = default) =>
         _store.TryClaimAsync(jobId, leaseOwnerId, UtcNow(), cancellationToken);
 
+    public Task<ExportJob?> TryClaimNextAsync(
+        string leaseOwnerId,
+        CancellationToken cancellationToken = default) =>
+        _store.TryClaimNextAsync(leaseOwnerId, UtcNow(), cancellationToken);
+
     public Task<bool> RenewLeaseAsync(
         Guid jobId,
         string leaseOwnerId,
@@ -276,7 +283,6 @@ public sealed class AuditExportService
         if (claimedJob.State is not ExportJobState.Running
             || !string.Equals(claimedJob.LeaseOwnerId, leaseOwnerId, StringComparison.Ordinal)
             || claimedJob.LeaseExpiresAtUtc is null
-            || claimedJob.LeaseExpiresAtUtc <= UtcNow()
             || claimedJob.AttemptCount is < 1 or > 3
             || ExportJob.LeaseDuration != TimeSpan.FromSeconds(60)
             || !IsValidFilter(filter)
@@ -357,7 +363,14 @@ public sealed class AuditExportService
     public static string ComputeRequestHash(AdminExportFilter filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        var canonical = JsonSerializer.Serialize(
+        var canonical = SerializeFilter(filter);
+        return $"SHA256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))}";
+    }
+
+    public static string SerializeFilter(AdminExportFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        return JsonSerializer.Serialize(
             new
             {
                 occurredFromUtc = filter.OccurredFromUtc?.ToUniversalTime().ToString("O"),
@@ -367,7 +380,24 @@ public sealed class AuditExportService
                 sourceStream = filter.SourceStream?.Trim().ToLowerInvariant()
             },
             JsonOptions);
-        return $"SHA256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))}";
+    }
+
+    public static AdminExportFilter DeserializeFilter(string filterJson)
+    {
+        if (string.IsNullOrWhiteSpace(filterJson)
+            || filterJson.Length > ExportJob.MaximumFilterJsonLength)
+        {
+            throw new ArgumentException("The persisted export filter is invalid.", nameof(filterJson));
+        }
+
+        var filter = JsonSerializer.Deserialize<AdminExportFilter>(filterJson, JsonOptions)
+            ?? throw new ArgumentException("The persisted export filter is invalid.", nameof(filterJson));
+        if (!IsValidFilter(filter))
+        {
+            throw new ArgumentException("The persisted export filter is invalid.", nameof(filterJson));
+        }
+
+        return filter;
     }
 
     private async Task<bool> ExpireIfRequiredAsync(

@@ -1977,6 +1977,11 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("FilterJson")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<DateTime?>("LeaseExpiresAtUtc")
                         .HasColumnType("datetime2");
 

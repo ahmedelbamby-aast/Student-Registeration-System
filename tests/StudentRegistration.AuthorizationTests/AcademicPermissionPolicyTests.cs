@@ -112,7 +112,11 @@ public sealed class AcademicPermissionPolicyTests
         RolePolicies.AcademicProfilesManage,
         RolePolicies.CataloguePolicyManage,
         RolePolicies.OfferingsManage,
-        RolePolicies.RegistrationRecordsRead)]
+        RolePolicies.RegistrationRecordsRead,
+        RolePolicies.AdminOperationsMetricsRead,
+        RolePolicies.AdminAuditRead,
+        RolePolicies.AdminAuditExport,
+        RolePolicies.AdminAuditExportReadAll)]
     [InlineData(RolePolicies.Lecturer, RolePolicies.ContextRead)]
     [InlineData(RolePolicies.TeachingAssistant, RolePolicies.ContextRead)]
     public void Permission_claims_are_derived_only_from_the_effective_role(

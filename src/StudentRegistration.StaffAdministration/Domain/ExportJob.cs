@@ -18,6 +18,7 @@ public sealed class ExportJob
 {
     public const int MaximumAttempts = 3;
     public const int MaximumFailureCodeLength = 100;
+    public const int MaximumFilterJsonLength = 2_000;
     public static readonly TimeSpan LeaseDuration = TimeSpan.FromSeconds(60);
 
     private ExportJob()
@@ -30,7 +31,8 @@ public sealed class ExportJob
         Guid clientRequestId,
         string scopeHash,
         string requestHash,
-        DateTime createdAtUtc)
+        DateTime createdAtUtc,
+        string filterJson = "{}")
     {
         RequiredIdentifier(id, nameof(id));
         RequiredIdentifier(ownerId, nameof(ownerId));
@@ -42,6 +44,10 @@ public sealed class ExportJob
         ClientRequestId = clientRequestId;
         ScopeHash = Required(scopeHash, nameof(scopeHash), 200);
         RequestHash = Required(requestHash, nameof(requestHash), 200);
+        FilterJson = Required(
+            filterJson,
+            nameof(filterJson),
+            MaximumFilterJsonLength);
         CreatedAtUtc = createdAtUtc;
         State = ExportJobState.Pending;
     }
@@ -55,6 +61,8 @@ public sealed class ExportJob
     public string ScopeHash { get; private set; } = string.Empty;
 
     public string RequestHash { get; private set; } = string.Empty;
+
+    public string FilterJson { get; private set; } = "{}";
 
     public ExportJobState State { get; private set; }
 

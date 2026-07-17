@@ -1,0 +1,525 @@
+@page "/admin"
+@implements IAsyncDisposable
+@using System.Globalization
+@using System.Net
+@using StudentRegistration.Client.Components.Display
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Operations
+@using StudentRegistration.Contracts
+@using StudentRegistration.Contracts.Admin
+@inject AcademicApiClient AcademicApi
+@inject AdminOperationsApiClient AdminApi
+
+<PageTitle>Admin dashboard | Student Registration</PageTitle>
+
+<div class="srs-admin-dashboard-host">
+    @if (_loading)
+    {
+        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">Skip to main content</a>
+        <main id="admin-dashboard-main" tabindex="-1"
+              data-route-id="ADM-01" data-state="loading"
+              data-contract-state="ADM-01-COMP-STATE-LOADING">
+            <h1>Admin dashboard</h1>
+            <p role="status" aria-live="polite" aria-busy="true">
+                Loading authoritative operational metrics.
+            </p>
+        </main>
+    }
+    else if (_shellContext is not null)
+    {
+        <AppShell Context="@_shellContext" MainContentId="admin-dashboard-main"
+                  SkipLinkLabel="Skip to main content"
+                  BrandLogoSource="/brand/aastmt-logo.png"
+                  BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+                  ServerDateTimeLabel="Server date and time"
+                  TeachingTermLabel="Teaching term"
+                  RegistrationTermLabel="Registration term"
+                  RegistrationWindowLabel="Registration window"
+                  NoTeachingTermLabel="No current teaching term"
+                  NoRegistrationTermLabel="No current registration term"
+                  NoRegistrationWindowLabel="No registration window"
+                  AuthorizedRolesLabel="Authorized roles"
+                  ActiveRoleLabel="Active role"
+                  SessionLabel="Session"
+                  ServiceLabel="Service"
+                  SupportLinkLabel="Open support"
+                  LoadingLabel="Loading Admin dashboard">
+            <Navigation>
+                <RoleNavigation AccessibleName="Administration navigation"
+                                Items="@AdminNavigation" />
+            </Navigation>
+            <ChildContent>@DashboardContent</ChildContent>
+        </AppShell>
+    }
+    else
+    {
+        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">Skip to main content</a>
+        <main id="admin-dashboard-main" tabindex="-1">@DashboardContent</main>
+    }
+</div>
+
+@code {
+    private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdminNavigation =
+    [
+        new("Dashboard", "/admin", IsActive: true),
+        new("Terms", "/admin/terms"),
+        new("Users", "/admin/users"),
+        new("Students", "/admin/students"),
+        new("Catalogue", "/admin/catalogue"),
+        new("Offerings", "/admin/offerings"),
+        new("Resources", "/admin/resources"),
+        new("Registrations", "/admin/registrations"),
+        new("Audit", "/admin/audit")
+    ];
+    private static readonly IReadOnlyDictionary<string, string> MetricLabels =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["http.request.throughput"] = "Registration traffic",
+            ["registration.submissions.succeeded"] = "Successful registrations",
+            ["registration.business_rejections"] = "Expected rejections",
+            ["http.request.unexpected_errors"] = "Server failures",
+            ["registration.group.fill_rate"] = "Group fill rate",
+            ["sql.lock_wait.duration.ms"] = "Database lock wait",
+            ["registration.counter_mismatches"] = "Data-quality alerts",
+            ["registration.capacity_conflicts"] = "Capacity conflicts"
+        };
+
+    private readonly CancellationTokenSource _pollingCancellation = new();
+    private FrontendAppContextView? _shellContext;
+    private AppContextDto? _context;
+    private AdminOperationsMetricsDto? _snapshot;
+    private Task? _pollingTask;
+    private bool _loading = true;
+    private bool _requesting;
+    private bool _paused;
+    private bool _disposed;
+    private string _state = "loading";
+    private string _reasonCode = "ADMIN_METRICS_UNAVAILABLE";
+    private string _message = "Operational metrics could not be loaded safely.";
+    private string? _reference;
+
+    private string ContractState => _state switch
+    {
+        "success" => "ADM-01-COMP-STATE-SUCCESS",
+        "unauthorized" => "ADM-01-COMP-STATE-UNAUTHORIZED",
+        "session-expired" => "ADM-01-COMP-STATE-SESSION-EXPIRED",
+        "stale" => "ADM-01-COMP-STATE-STALE",
+        "offline" => "ADM-01-COMP-STATE-OFFLINE",
+        _ => "ADM-01-COMP-STATE-SERVICE-ERROR"
+    };
+
+    private string RefreshState => _paused ? "paused" : "running";
+
+    private string MetricsStatusLabel => _paused
+        ? "Refresh paused"
+        : _state switch
+        {
+            "success" => "Live metrics",
+            "stale" => "Stale metrics",
+            _ => "Degraded metrics"
+        };
+
+    private bool HasDisplayableSnapshot => _snapshot is not null
+        && _state is "success" or "stale" or "service-error";
+
+    private IEnumerable<string> MissingMetricLabels => MetricLabels
+        .Where(expected => _snapshot?.Metrics?.Any(metric =>
+            string.Equals(metric.Name, expected.Key, StringComparison.Ordinal)) != true)
+        .Select(expected => expected.Value);
+
+    private RenderFragment DashboardContent => @<article class="srs-admin-dashboard"
+        data-route-id="ADM-01" data-state="@_state"
+        data-contract-state="@ContractState" data-refresh-state="@RefreshState">
+        <header class="srs-admin-dashboard__intro">
+            <div>
+                <p class="srs-admin-dashboard__eyebrow">Administration operations</p>
+                <h1>Admin dashboard</h1>
+                <p>Monitor the current registration window from timestamped server observations.</p>
+            </div>
+            <div class="srs-admin-dashboard__controls" aria-label="Metric refresh controls">
+                @if (_paused)
+                {
+                    <button type="button" disabled="@_requesting" @onclick="ResumeRefreshAsync">
+                        Resume refresh
+                    </button>
+                }
+                else
+                {
+                    <button type="button" disabled="@_requesting" @onclick="PauseRefresh">
+                        Pause refresh
+                    </button>
+                    <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
+                        Refresh metrics
+                    </button>
+                }
+            </div>
+        </header>
+
+        @if (_state is "unauthorized" or "session-expired" or "offline"
+            || (_state == "service-error" && _snapshot is null))
+        {
+            <section class="srs-admin-dashboard__failure" role="alert" aria-live="assertive">
+                <h2>@FailureHeading</h2>
+                <p><strong>@_reasonCode</strong></p>
+                <p>@_message</p>
+                @if (!string.IsNullOrWhiteSpace(_reference))
+                {
+                    <p>Reference: @_reference</p>
+                }
+                @if (_state is "service-error" or "offline")
+                {
+                    <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
+                        Retry metrics
+                    </button>
+                }
+                <a href="/">Return to authorized home</a>
+            </section>
+        }
+        else if (HasDisplayableSnapshot)
+        {
+            <section class="srs-admin-dashboard__observation" aria-live="polite"
+                     aria-labelledby="admin-metrics-status">
+                <div>
+                    <h2 id="admin-metrics-status">@MetricsStatusLabel</h2>
+                    @if (_paused)
+                    {
+                        <p>Refresh paused; metrics are not live and remain at the last server observation.</p>
+                    }
+                    else if (_state == "stale")
+                    {
+                        <p>The server marked this snapshot stale. Refresh and review before acting.</p>
+                    }
+                    else if (_state == "service-error")
+                    {
+                        <p>Service degraded. The last safe server snapshot remains visible.</p>
+                    }
+                </div>
+                <p>
+                    <strong>Snapshot observed:</strong>
+                    <time datetime="@_snapshot!.ObservedAtUtc.ToString("O")">
+                        @FormatTimestamp(_snapshot.ObservedAtUtc)
+                    </time>
+                </p>
+            </section>
+
+            <section aria-labelledby="operational-metrics-heading">
+                <h2 id="operational-metrics-heading">Operational metrics</h2>
+                <div class="srs-admin-dashboard__metrics" aria-label="Operational metrics">
+                    @foreach (var metric in _snapshot!.Metrics)
+                    {
+                        <EntityCard HeadingId="@MetricHeadingId(metric)"
+                                    Heading="@MetricLabel(metric.Name)">
+                            <ChildContent>
+                                <dl class="srs-admin-dashboard__metric-text">
+                                    <div><dt>Value</dt><dd>@FormatMetric(metric)</dd></div>
+                                    <div>
+                                        <dt>Observed</dt>
+                                        <dd>
+                                            <time datetime="@metric.ObservedAtUtc.ToString("O")">
+                                                @FormatTimestamp(metric.ObservedAtUtc)
+                                            </time>
+                                        </dd>
+                                    </div>
+                                    <div><dt>Status</dt><dd>@MetricAvailability(metric)</dd></div>
+                                </dl>
+                            </ChildContent>
+                        </EntityCard>
+                    }
+                </div>
+                @if (MissingMetricLabels.Any())
+                {
+                    <div class="srs-admin-dashboard__missing" role="status" aria-live="polite">
+                        <h3>Metrics not reported</h3>
+                        <p>Not reported by the server; no zero value has been assumed.</p>
+                        <ul>
+                            @foreach (var label in MissingMetricLabels)
+                            {
+                                <li>@label</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </section>
+
+            @if (_snapshot.ReconciliationAlerts is { Count: > 0 })
+            {
+                <section class="srs-admin-dashboard__warnings" aria-labelledby="admin-warning-heading">
+                    <h2 id="admin-warning-heading">Operational warnings</h2>
+                    <ul>
+                        @foreach (var warning in _snapshot.ReconciliationAlerts!)
+                        {
+                            <li>
+                                <strong>@MetricLabel(warning.Metric)</strong>
+                                observed @FormatNumber(warning.ObservedValue), above threshold
+                                @FormatNumber(warning.Threshold).
+                                <time datetime="@warning.ObservedAtUtc.ToString("O")">
+                                    @FormatTimestamp(warning.ObservedAtUtc)
+                                </time>
+                                <a href="@SafeSupportPath(warning.SupportReferencePath)">Investigate warning</a>
+                            </li>
+                        }
+                    </ul>
+                </section>
+            }
+
+            <nav class="srs-admin-dashboard__modules" aria-label="Administration modules">
+                <h2>Administration modules</h2>
+                <ul>
+                    @foreach (var item in AdminNavigation.Where(item => !item.IsActive))
+                    {
+                        <li><a href="@item.Href">Open @item.Label.ToLowerInvariant()</a></li>
+                    }
+                </ul>
+            </nav>
+        }
+    </article>;
+
+    private string FailureHeading => _state switch
+    {
+        "unauthorized" => "Access denied",
+        "session-expired" => "Session expired",
+        "offline" => "You are offline",
+        _ => "Service degraded"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInitialAsync();
+        _loading = false;
+        _pollingTask = PollAsync(_pollingCancellation.Token);
+    }
+
+    private async Task LoadInitialAsync()
+    {
+        if (_requesting)
+        {
+            return;
+        }
+
+        _requesting = true;
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.StatusCode, contextResult.Error);
+                return;
+            }
+
+            _context = contextResult.Value;
+            _shellContext = AcademicContextViewMapper.ToView(_context);
+            if (!string.Equals(_context.ActiveRole, "Admin", StringComparison.Ordinal)
+                || !_context.AuthorizedRoles.Contains("Admin", StringComparer.Ordinal))
+            {
+                ApplyFailure(
+                    HttpStatusCode.Forbidden,
+                    new("FORBIDDEN", "An active Admin context is required.", "ADM-01-AUTH"));
+                return;
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            ApplyOffline();
+            return;
+        }
+        finally
+        {
+            _requesting = false;
+        }
+
+        await LoadMetricsAsync();
+    }
+
+    private async Task LoadMetricsAsync()
+    {
+        if (_requesting || _disposed)
+        {
+            return;
+        }
+
+        _requesting = true;
+        try
+        {
+            if (_context?.RegistrationTerm is null
+                || _context.RegistrationWindow is null
+                || !Guid.TryParse(_context.RegistrationTerm.Id, out var termId)
+                || !Guid.TryParse(_context.RegistrationWindow.Id, out var registrationWindowId))
+            {
+                ApplyServiceFailure("REGISTRATION_WINDOW_NOT_FOUND", null);
+                return;
+            }
+
+            var result = await AdminApi.GetMetricsAsync(
+                termId,
+                registrationWindowId,
+                _pollingCancellation.Token);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                var snapshot = result.Value;
+                if (snapshot.ObservedAtUtc.Kind is not DateTimeKind.Utc
+                    || string.IsNullOrWhiteSpace(snapshot.AvailabilityState)
+                    || snapshot.Metrics.Any(metric => metric.ObservedAtUtc.Kind is not DateTimeKind.Utc)
+                    || snapshot.ReconciliationAlerts.Any(alert =>
+                        alert.ObservedAtUtc.Kind is not DateTimeKind.Utc))
+                {
+                    ApplyServiceFailure("METRICS_RESPONSE_INVALID", null);
+                    return;
+                }
+
+                _snapshot = snapshot;
+                _reference = null;
+                _reasonCode = snapshot.AvailabilityState;
+                _message = string.Empty;
+                _state = snapshot.AvailabilityState.Trim().ToLowerInvariant() switch
+                {
+                    "live" => "success",
+                    "stale" => "stale",
+                    _ => "service-error"
+                };
+                return;
+            }
+
+            ApplyFailure(result.StatusCode, result.Error);
+        }
+        catch (OperationCanceledException) when (_pollingCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            ApplyOffline();
+        }
+        finally
+        {
+            _requesting = false;
+        }
+    }
+
+    private async Task PollAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(RefreshInterval);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                if (!_paused)
+                {
+                    await InvokeAsync(LoadMetricsAsync);
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private void PauseRefresh() => _paused = true;
+
+    private async Task ResumeRefreshAsync()
+    {
+        _paused = false;
+        await LoadMetricsAsync();
+    }
+
+    private Task RefreshMetricsAsync() => LoadMetricsAsync();
+
+    private void ApplyFailure(HttpStatusCode status, ApiError? error)
+    {
+        _reasonCode = error?.Code ?? "ADMIN_METRICS_UNAVAILABLE";
+        _message = error?.Message ?? "Operational metrics could not be loaded safely.";
+        _reference = error?.CorrelationId;
+        _state = status switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            _ when _snapshot is not null => "service-error",
+            _ => "service-error"
+        };
+        if (_state is "unauthorized" or "session-expired")
+        {
+            _snapshot = null;
+        }
+    }
+
+    private void ApplyServiceFailure(string code, string? reference)
+    {
+        _state = "service-error";
+        _reasonCode = code;
+        _message = "The server metrics response was unavailable or invalid.";
+        _reference = reference;
+    }
+
+    private void ApplyOffline()
+    {
+        _state = "offline";
+        _reasonCode = "OFFLINE";
+        _message = "Reconnect, then refresh metrics. No action was queued.";
+        _reference = null;
+    }
+
+    private static string MetricLabel(string name) =>
+        MetricLabels.TryGetValue(name, out var label) ? label : "Operational metric";
+
+    private static string MetricHeadingId(AdminOperationalMetricDto metric) =>
+        $"metric-{new string(metric.Name.Select(character =>
+            char.IsAsciiLetterOrDigit(character) ? character : '-').ToArray())}";
+
+    private string MetricAvailability(AdminOperationalMetricDto metric) =>
+        string.IsNullOrWhiteSpace(_snapshot?.AvailabilityState)
+            ? "Timestamped observation"
+            : _snapshot.AvailabilityState.Trim().ToLowerInvariant() switch
+            {
+                "live" => "Live observation",
+                "stale" => "Stale observation",
+                _ => "Degraded observation"
+            };
+
+    private static string FormatMetric(AdminOperationalMetricDto metric)
+    {
+        var value = FormatNumber(metric.Value);
+        return metric.Name switch
+        {
+            "registration.group.fill_rate" => $"{value}%",
+            "sql.lock_wait.duration.ms" => $"{value} ms",
+            "http.request.throughput" => $"{value} requests",
+            "registration.submissions.succeeded" => $"{value} registrations",
+            "registration.business_rejections" => $"{value} rejections",
+            "http.request.unexpected_errors" => $"{value} failures",
+            "registration.counter_mismatches" => $"{value} alerts",
+            "registration.capacity_conflicts" => $"{value} conflicts",
+            _ => value
+        };
+    }
+
+    private static string FormatNumber(double value) =>
+        value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string FormatTimestamp(DateTime value) =>
+        value.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
+
+    private static string SafeSupportPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path)
+        && path.StartsWith("/admin/audit", StringComparison.Ordinal)
+        && !path.StartsWith("//", StringComparison.Ordinal)
+            ? path
+            : "/admin/audit";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _pollingCancellation.Cancel();
+        if (_pollingTask is not null)
+        {
+            await _pollingTask;
+        }
+        _pollingCancellation.Dispose();
+    }
+
+}
