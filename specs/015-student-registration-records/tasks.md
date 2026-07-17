@@ -110,28 +110,28 @@
 
 ## Phase 5 - Frontend Route Tests and Integration
 
-- [ ] T050 [STU-06] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-7] [AC-1] [AC-2] [AC-4] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for STU-06 in tests/StudentRegistration.E2ETests/Specs/Spec015/RegistrationResultPageFeatureTests.cs.
-- [ ] T051 [STU-06] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-7] [AC-1] [AC-2] [AC-4] Deliver the sole canonical Blazor implementation for STU-06 at src/StudentRegistration.Client/Pages/RegistrationResultPage.razor after T050 and the SPEC-003 contract/component checks fail for expected reasons (depends on T050).
-- [ ] T052 [STU-07] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-7] [FR-8] [AC-4] [AC-5] [AC-6] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for STU-07 in tests/StudentRegistration.E2ETests/Specs/Spec015/RegistrationHistoryPageFeatureTests.cs.
-- [ ] T053 [STU-07] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-7] [FR-8] [AC-4] [AC-5] [AC-6] Deliver the sole canonical Blazor implementation for STU-07 at src/StudentRegistration.Client/Pages/RegistrationHistoryPage.razor after T052 and the SPEC-003 contract/component checks fail for expected reasons (depends on T052).
+- [X] T050 [STU-06] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-7] [AC-1] [AC-2] [AC-4] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for STU-06 in tests/StudentRegistration.E2ETests/Specs/Spec015/RegistrationResultPageFeatureTests.cs.
+- [X] T051 [STU-06] [UI-CONTRACT-SPEC-003] [FR-1] [FR-2] [FR-3] [FR-7] [AC-1] [AC-2] [AC-4] Deliver the sole canonical Blazor implementation for STU-06 at src/StudentRegistration.Client/Pages/RegistrationResultPage.razor after T050 and the SPEC-003 contract/component checks fail for expected reasons (depends on T050).
+- [X] T052 [STU-07] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-7] [FR-8] [AC-4] [AC-5] [AC-6] Create the future failing primary, negative, stale/concurrent, authorization, and server-reason journeys for STU-07 in tests/StudentRegistration.E2ETests/Specs/Spec015/RegistrationHistoryPageFeatureTests.cs.
+- [X] T053 [STU-07] [UI-CONTRACT-SPEC-003] [FR-4] [FR-6] [FR-7] [FR-8] [AC-4] [AC-5] [AC-6] Deliver the sole canonical Blazor implementation for STU-07 at src/StudentRegistration.Client/Pages/RegistrationHistoryPage.razor after T052 and the SPEC-003 contract/component checks fail for expected reasons (depends on T052).
 
-- [ ] T054 [API-Endpoint01] [API-Endpoint02] [API-Endpoint03] [API-Endpoint04] [API-Endpoint05] Deliver the canonical read-only handlers for GET /api/student/registrations, GET /api/student/registrations/{submissionId}, GET /api/student/registrations/current/timetable, GET /api/admin/students/{studentId}/terms/{termId}/registrations, and GET /api/admin/students/{studentId}/terms/{termId}/registrations/{submissionId} at src/StudentRegistration.Registration/Endpoints/Spec015Endpoints.cs only after all contract, ownership, snapshot, acceptance, accessibility, action-exclusion, and E2E tests T015-T053 fail for expected reasons.
+- [X] T054 [API-Endpoint01] [API-Endpoint02] [API-Endpoint03] [API-Endpoint04] [API-Endpoint05] Deliver the canonical read-only handlers for GET /api/student/registrations, GET /api/student/registrations/{submissionId}, GET /api/student/registrations/current/timetable, GET /api/admin/students/{studentId}/terms/{termId}/registrations, and GET /api/admin/students/{studentId}/terms/{termId}/registrations/{submissionId} at src/StudentRegistration.Registration/Endpoints/Spec015Endpoints.cs only after all contract, ownership, snapshot, acceptance, accessibility, action-exclusion, and E2E tests T015-T053 fail for expected reasons.
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T055 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-1.md: Receipt retrieval SHOULD respond within 300 ms p95.
-- [ ] T056 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-2.md: Record access MUST have ownership/role-scope tests.
-- [ ] T057 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-3.md: Printed/exported views MUST be accessible and minimize PII.
-- [ ] T058 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-4.md: Historical records MUST be durable under the approved retention plan.
+- [X] T055 [NFR-1] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-1 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-1.md: Receipt retrieval SHOULD respond within 300 ms p95.
+- [X] T056 [NFR-2] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-2 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-2.md: Record access MUST have ownership/role-scope tests.
+- [X] T057 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-3.md: Printed/exported views MUST be accessible and minimize PII.
+- [X] T058 [NFR-4] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-4 in tests/StudentRegistration.QualityTests/Specs/Spec015/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-015-NFR-4.md: Historical records MUST be durable under the approved retention plan.
 
 ## Phase 7 - Scope and Release Evidence
 
-- [ ] T059 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-1 remains excluded: Drop/withdraw/correction workflow until AASTMT approves SPEC changes.
-- [ ] T060 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-2 remains excluded: Email/SMS receipt.
-- [ ] T061 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-3 remains excluded: Public/shareable receipt link.
-- [ ] T062 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-4 remains excluded: Transcript replacement.
-- [ ] T063 [TRACE] Generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-015-traceability.md and reject release if any row lacks passing evidence.
-- [ ] T064 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-015 in docs/release-evidence/SPEC-015-release-approval.md.
+- [X] T059 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-1 remains excluded: Drop/withdraw/correction workflow until AASTMT approves SPEC changes.
+- [X] T060 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-2 remains excluded: Email/SMS receipt.
+- [X] T061 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-3 remains excluded: Public/shareable receipt link.
+- [X] T062 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-015-scope-review.md that OS-4 remains excluded: Transcript replacement.
+- [X] T063 [TRACE] Generate the completed FR/NFR/SC/AC/EC/route-to-test evidence matrix at docs/release-evidence/SPEC-015-traceability.md and reject release if any row lacks passing evidence.
+- [X] T064 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-015 in docs/release-evidence/SPEC-015-release-approval.md.
 
 Task completion is recorded only after each named artifact and its required
 expected-red or passing evidence exists.

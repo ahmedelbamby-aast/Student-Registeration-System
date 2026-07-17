@@ -91,3 +91,22 @@ aggregate; SPEC-015 exposes bounded, authorized read projections and the
 canonical STU-06/STU-07 pages; SPEC-018 owns cross-cutting release evidence.
 No queue, reporting database, duplicate receipt table, drop/correction
 workflow, public receipt link, or distributed component is introduced.
+
+## STU-06/STU-07 downstream contributor pin
+
+**Pinned:** 2026-07-17
+**Result:** PASS
+
+- SPEC-003 immutable STU-06 Page Design Record SHA-256:
+  `0f5b7018989afd96dab5c672f708fa18d9bfb37496ae8b28ee944bfc4876ab3b`.
+- SPEC-003 immutable STU-07 Page Design Record SHA-256:
+  `f4789fe8d69e5cc95764c8d63d795f2e4eb16183f56680f847b9e85d92169ba4`.
+- Finalized SPEC-014 registration API contract SHA-256:
+  `9f222078261d4be486de20e9cb101e6ea102ac5bcf63dc52c90bc70ef25cfb07`.
+- Finalized SPEC-015 registration-record API contract SHA-256:
+  `0814f0aa9a80ac17a5c48b93e1ca68eb594a610988cf1ae4a9e271859aa16648`.
+- The immutable SPEC-003 records retain design-only provenance. This
+  downstream owner pin authorizes the canonical SPEC-015 route implementation
+  without rewriting the upstream design records.
+- Verification evidence: component `2/2`, route contract `2/2`, visual
+  contract `2/2`, accessibility `5/5`, and SPEC-015 browser journeys `9/9`.

@@ -164,7 +164,11 @@ public sealed class SqlRegistrationRecordReader(
             on submission.TermId equals term.Id
         where submission.ProcessingState == RegistrationSubmissionState.Accepted ||
             submission.ProcessingState == RegistrationSubmissionState.Rejected
-        select new SubmissionTermRow(submission, term);
+        select new SubmissionTermRow
+        {
+            Submission = submission,
+            Term = term
+        };
 
     private async Task<Guid?> StudentIdAsync(Guid applicationUserId, CancellationToken token) =>
         await dbContext.Set<Student>().AsNoTracking()
@@ -222,7 +226,10 @@ public sealed class SqlRegistrationRecordReader(
             _ => false
         };
 
-    private sealed record SubmissionTermRow(
-        RegistrationSubmission Submission,
-        AcademicTerm Term);
+    private sealed class SubmissionTermRow
+    {
+        public required RegistrationSubmission Submission { get; init; }
+
+        public required AcademicTerm Term { get; init; }
+    }
 }

@@ -36,8 +36,9 @@
 - [x] Calendar and chronological list/table remain equivalent; STU-06/STU-07
   inherit the approved responsive, focus, keyboard, WCAG 2.2 AA, browser,
   visual, and manual assistive-technology obligations.
-- [x] STU-06/STU-07 route work remains blocked until finalized SPEC-014 and
-  SPEC-015 contributor hashes are recorded in the downstream route pin.
+- [x] STU-06/STU-07 route work was blocked until the finalized SPEC-014 and
+  SPEC-015 contributor hashes were recorded in the downstream route pin; that
+  pin now exists in `dependency-baseline.md` with its passing route evidence.
 - [x] Historical receipt and decision snapshots preserve original term,
   course/group, credits, meeting-bound Lecturer/TA, room/location, day/time,
   PolicySet/version, and server-time meaning after later catalogue edits.
@@ -85,8 +86,9 @@
 
 - T015, T018, and T021 must freeze the final endpoint contracts before their
   linked contract/behavior tests and T054 handler.
-- T050-T053 must wait for the downstream exact contributor pin; a `design-only`
-  or `not-pinned` dependency record is not route implementation authority.
+- T050-T053 passed only after the downstream exact contributor pin was
+  recorded; a `design-only` or `not-pinned` dependency record remains
+  insufficient route implementation authority.
 - The SPEC-014 load artifact fingerprint must be refreshed from an actual
   harness run before final repository-wide quality evidence is claimed.
 - Gate B-D, production deployment, official AASTMT authorization, real-data
