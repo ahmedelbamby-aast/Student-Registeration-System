@@ -2,21 +2,21 @@
 @inject IdentityApiClient IdentityApi
 @inject NavigationManager Navigation
 
-<PageTitle>Student account</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Student account")</PageTitle>
 
 <div class="srs-account-page">
-    <a class="srs-skip-link" href="#student-account-main">Skip to main content</a>
+    <a class="srs-skip-link" href="#student-account-main">@LocalizedUiText.Get("Skip to main content")</a>
     <header class="srs-account-page__header">
         <img src="brand/aastmt-logo.png"
-             alt="Arab Academy for Science, Technology and Maritime Transport" />
-        <a href="/student">Student dashboard</a>
+             alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
+        <a href="/student">@LocalizedUiText.Get("Student dashboard")</a>
     </header>
 
     <main id="student-account-main" tabindex="-1">
-        <h1>Student account</h1>
+        <h1>@LocalizedUiText.Get("Student account")</h1>
 
         <IdentityFeedback IsBusy="@(_isLoading || _isChangingPassword || _isRevoking || _isLoggingOut)"
-                          BusyMessage="Updating your account securely."
+                          BusyMessage="@(LocalizedUiText.Get("Updating your account securely."))"
                           IsError="@_feedbackIsError"
                           Heading="@_feedbackHeading"
                           Message="@_feedbackMessage"
@@ -27,25 +27,25 @@
         @if (_session is not null)
         {
             <section class="srs-account-summary" aria-labelledby="institutional-identity-heading">
-                <h2 id="institutional-identity-heading">Institutional identity</h2>
+                <h2 id="institutional-identity-heading">@LocalizedUiText.Get("Institutional identity")</h2>
                 <dl>
-                    <div><dt>Name</dt><dd>@_session.DisplayName</dd></div>
-                    <div><dt>Authorized role</dt><dd>@_session.ActiveRole</dd></div>
-                    <div><dt>Session state</dt><dd>@_session.SessionState</dd></div>
-                    <div><dt>Expires</dt><dd><time datetime="@_session.ExpiresAtUtc.ToString("O")">@_session.ExpiresAtUtc.ToLocalTime().ToString("g")</time></dd></div>
+                    <div><dt>@LocalizedUiText.Get("Name")</dt><dd>@_session.DisplayName</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Authorized role")</dt><dd>@_session.ActiveRole</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Session state")</dt><dd>@_session.SessionState</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Expires")</dt><dd><time datetime="@_session.ExpiresAtUtc.ToString("O")">@_session.ExpiresAtUtc.ToLocalTime().ToString("g")</time></dd></div>
                 </dl>
             </section>
 
             <section class="srs-account-security" aria-labelledby="password-change-heading">
-                <h2 id="password-change-heading">Change password</h2>
+                <h2 id="password-change-heading">@LocalizedUiText.Get("Change password")</h2>
                 <form @onsubmit="ChangePasswordAsync" @onsubmit:preventDefault data-testid="password-change-form">
                     <AccessibleValidationSummary SummaryId="password-change-errors"
-                                                 Heading="Review the password details"
+                                                 Heading="@(LocalizedUiText.Get("Review the password details"))"
                                                  Errors="@_validationErrors" />
 
                     <FormField InputId="account-current-password"
                                Name="currentPassword"
-                               Label="Current password"
+                               Label="@(LocalizedUiText.Get("Current password"))"
                                Type="password"
                                autocomplete="current-password"
                                AllowSecretReveal="true"
@@ -56,8 +56,8 @@
 
                     <FormField InputId="account-new-password"
                                Name="newPassword"
-                               Label="New password"
-                               Description="Use 15 to 128 characters. Spaces and Unicode are allowed."
+                               Label="@(LocalizedUiText.Get("New password"))"
+                               Description="@(LocalizedUiText.Get("Use 15 to 128 characters. Spaces and Unicode are allowed."))"
                                Type="password"
                                autocomplete="new-password"
                                AllowSecretReveal="true"
@@ -68,7 +68,7 @@
 
                     <FormField InputId="account-confirm-password"
                                Name="confirmPassword"
-                               Label="Confirm new password"
+                               Label="@(LocalizedUiText.Get("Confirm new password"))"
                                Type="password"
                                autocomplete="new-password"
                                AllowSecretReveal="true"
@@ -78,23 +78,23 @@
                                @bind-Value="_confirmPassword" />
 
                     <button class="srs-identity-command" type="submit" disabled="@IsBusy">
-                        @(_isChangingPassword ? "Changing…" : "Change password")
+                        @(_isChangingPassword ? LocalizedUiText.Get("Changing…") : LocalizedUiText.Get("Change password"))
                     </button>
                 </form>
             </section>
 
             <section class="srs-account-sessions" aria-labelledby="session-actions-heading">
-                <h2 id="session-actions-heading">Session actions</h2>
-                <p>Revoking all sessions signs this browser and every other earlier session out.</p>
+                <h2 id="session-actions-heading">@LocalizedUiText.Get("Session actions")</h2>
+                <p>@LocalizedUiText.Get("Revoking all sessions signs this browser and every other earlier session out.")</p>
                 <div class="srs-account-sessions__actions">
                     <button id="revoke-all-sessions"
                             type="button"
                             disabled="@IsBusy"
                             @onclick="OpenRevokeConfirmation">
-                        Revoke all sessions
+                        @LocalizedUiText.Get("Revoke all sessions")
                     </button>
                     <button type="button" disabled="@IsBusy" @onclick="LogoutAsync">
-                        Sign out
+                        @LocalizedUiText.Get("Sign out")
                     </button>
                 </div>
             </section>
@@ -106,12 +106,12 @@
                     DialogId="revoke-all-dialog"
                     TitleId="revoke-all-dialog-title"
                     DescriptionId="revoke-all-dialog-description"
-                    Title="Revoke all sessions?"
-                    Message="You will need to sign in again on every device."
-                    ConfirmLabel="Revoke all sessions"
-                    CancelLabel="Cancel"
+                    Title="@(LocalizedUiText.Get("Revoke all sessions?"))"
+                    Message="@(LocalizedUiText.Get("You will need to sign in again on every device."))"
+                    ConfirmLabel="@(LocalizedUiText.Get("Revoke all sessions"))"
+                    CancelLabel="@(LocalizedUiText.Get("Cancel"))"
                     IsBusy="@_isRevoking"
-                    BusyLabel="Revoking sessions…"
+                    BusyLabel="@(LocalizedUiText.Get("Revoking sessions…"))"
                     IsDisabled="@_isLoggingOut"
                     OnConfirm="RevokeAllSessionsAsync"
                     OnCancel="CloseRevokeConfirmation" />
@@ -123,7 +123,7 @@
     private string _confirmPassword = string.Empty;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Account status";
+    private string _feedbackHeading = LocalizedUiText.Get("Account status");
     private string? _feedbackState;
     private string? _correlationId;
     private bool _feedbackIsError;
@@ -184,8 +184,8 @@
             ClearPasswords();
             if (result.IsSuccess)
             {
-                _feedbackHeading = "Password changed";
-                _feedbackMessage = "Your password changed and earlier sessions are no longer valid.";
+                _feedbackHeading = LocalizedUiText.Get("Password changed");
+                _feedbackMessage = LocalizedUiText.Get("Your password changed and earlier sessions are no longer valid.");
                 _feedbackState = "success";
                 _feedbackIsError = false;
                 return;
@@ -281,17 +281,17 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrEmpty(_currentPassword))
         {
-            errors.Add(new("account-current-password", "Enter your current password."));
+            errors.Add(new("account-current-password", LocalizedUiText.Get("Enter your current password.")));
         }
 
         if (_newPassword.Length is < 15 or > 128)
         {
-            errors.Add(new("account-new-password", "Use a password from 15 to 128 characters."));
+            errors.Add(new("account-new-password", LocalizedUiText.Get("Use a password from 15 to 128 characters.")));
         }
 
         if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
         {
-            errors.Add(new("account-confirm-password", "The new passwords must match."));
+            errors.Add(new("account-confirm-password", LocalizedUiText.Get("The new passwords must match.")));
         }
 
         _validationErrors = errors;
@@ -305,10 +305,10 @@
     {
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode == "CURRENT_PASSWORD_INVALID"
-            ? "Password change not accepted"
+            ? LocalizedUiText.Get("Password change not accepted")
             : _feedbackCode is "SESSION_EXPIRED" or "UNAUTHORIZED"
-                ? "Session expired"
-                : "Account service unavailable";
+                ? LocalizedUiText.Get("Session expired")
+                : LocalizedUiText.Get("Account service unavailable");
         _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
         _feedbackState = IdentityPageFeedback.MapFailure(
             IdentityRouteStateMapper.StudentAccountRecord,

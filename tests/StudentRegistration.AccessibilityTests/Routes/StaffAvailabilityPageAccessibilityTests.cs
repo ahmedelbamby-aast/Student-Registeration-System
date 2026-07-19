@@ -19,10 +19,11 @@ public sealed class StaffAvailabilityPageAccessibilityFrozenContractTests
 [Collection(AxeAccessibilityCollection.CollectionName)]
 public sealed class StaffAvailabilityPageAccessibilityTests(AxeAccessibilityFixture fixture)
 {
-    [Fact]
-    public async Task Stf_04_time_range_editor_and_table_alternative_are_accessible()
+    [Theory]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Stf_04_time_range_editor_and_table_alternative_are_accessible(int width, float scale)
     {
-        await using var context = await fixture.OpenContextAsync(375, 1000);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/**", route => Spec016BrowserData.Path(route) switch
         {
@@ -60,5 +61,7 @@ public sealed class StaffAvailabilityPageAccessibilityTests(AxeAccessibilityFixt
             .BoundingBoxAsync();
         Assert.NotNull(save);
         Assert.True(save.Height >= 44);
+        Assert.True(await page.EvaluateAsync<bool>(
+            "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
     }
 }

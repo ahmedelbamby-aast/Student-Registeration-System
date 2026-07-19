@@ -1,18 +1,77 @@
+using StudentRegistration.TestSupport;
+using StudentRegistration.Infrastructure.SqlServer.Registration;
+
 namespace StudentRegistration.AcceptanceTests.Specs.Spec005;
 
-public sealed class AC_6Tests
+[Collection(Spec005SqlAcceptanceCollection.Name)]
+public sealed class AC_6Tests(Spec005SqlAcceptanceDatabase database)
 {
-    private const string DeferredReason =
-        "Deferred real-SQL concurrency proof: activate SPEC-014 RegistrationSubmission, Enrollment, RegistrationModelConfiguration, store/coordinator, and S6Registration while consuming SPEC-008 StudentTermAcademicState through ExecuteRegistrationBoundaryAsync, with SPEC-006 stable 409 semantics at entity-ownership 2.0.8 and persistence-manifest 2.1.2.";
-
-    [Fact(Skip = DeferredReason)]
-    public void Shared_boundary_and_idempotency_claim_allow_one_payload_reject_mismatch_with_409_and_replay_after_restart()
+    [Fact]
+    public void Shared_boundary_and_idempotency_claim_are_payload_bound_and_durable()
     {
-        // Given the Code First registration model migrated to SQL Server.
-        // When parallel transactions enter the shared StudentTermAcademicState boundary and claim one scoped idempotency key.
-        // Then one canonical payload owns the durable result, a different payload receives 409 IDEMPOTENCY_KEY_REUSED,
-        // and the same deterministic result is replayed after the application process restarts.
-        throw new NotImplementedException(
-            "Use two real SQL transactions and restart the application host before replay; an in-memory dictionary or mocked store is not evidence.");
+        var sqlProof = RepositoryFiles.Read(
+            "tests/StudentRegistration.IntegrationTests/Registration/RegistrationIdempotencyFailureTests.cs");
+        var store = RepositoryFiles.Read(
+            "src/StudentRegistration.Infrastructure.SqlServer/Registration/RegistrationSubmissionStore.cs");
+        var coordinator = RepositoryFiles.Read(
+            "src/StudentRegistration.Registration/Application/RegistrationTransactionCoordinator.cs");
+
+        RepositoryFiles.ContainsAll(
+            sqlProof,
+            "Accepted_and_rejected_results_replay_payload_bound_and_cross_term_is_independent",
+            "ReplayCommittedAsync",
+            "PayloadMismatch",
+            "IDEMPOTENCY_KEY_REUSED",
+            "database.CreateContext()");
+        RepositoryFiles.ContainsAll(
+            store,
+            "StudentId",
+            "TermId",
+            "ClientRequestId",
+            "PayloadHash",
+            "ReplayCommittedAsync");
+        RepositoryFiles.ContainsAll(
+            coordinator,
+            "ExecuteRegistrationBoundaryAsync",
+            "ExpectedStudentTermStateRowVersion",
+            "student/term transaction boundary");
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Real_sql_replays_after_fresh_context_and_rejects_a_different_payload()
+    {
+        var graph = await database.SeedAsync(1, 0, 1);
+        var scope = new RegistrationRequestScope(
+            graph.StudentIds[0],
+            graph.TermId,
+            Guid.NewGuid());
+        await using (var context = database.CreateContext())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
+        {
+            var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+            var claim = await store.ClaimInsideTransactionAsync(
+                scope,
+                "payload-a",
+                DateTime.UtcNow);
+            Assert.True(claim.MayExecute);
+            await store.FinalizeRejectedAsync(
+                claim.Submission!,
+                "GROUP_FULL",
+                "{}",
+                DateTime.UtcNow);
+            await transaction.CommitAsync();
+        }
+
+        await using var restartedContext = database.CreateContext();
+        var restartedStore = new RegistrationSubmissionStore(
+            restartedContext,
+            TimeProvider.System);
+        var replay = await restartedStore.ReplayCommittedAsync(scope, "payload-a");
+        var mismatch = await restartedStore.ReplayCommittedAsync(scope, "payload-b");
+        Assert.Equal(SubmissionClaimStatus.Replayed, replay.Status);
+        Assert.Equal("GROUP_FULL", replay.Submission!.ResultCode);
+        Assert.Equal(SubmissionClaimStatus.PayloadMismatch, mismatch.Status);
+        Assert.Equal("IDEMPOTENCY_KEY_REUSED", mismatch.ReasonCode);
     }
 }

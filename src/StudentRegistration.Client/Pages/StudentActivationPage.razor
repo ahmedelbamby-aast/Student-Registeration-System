@@ -2,13 +2,13 @@
 @inject IdentityApiClient IdentityApi
 @inject NavigationManager Navigation
 
-<PageTitle>Activate Student account</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Activate Student account")</PageTitle>
 
 <IdentityPageShell HeadingId="student-activation-heading"
-                   Heading="Activate Student account"
-                   Introduction="Use the University ID and initial credential issued for this demo, then choose your own password.">
+                   Heading="@(LocalizedUiText.Get("Activate Student account"))"
+                   Introduction="@(LocalizedUiText.Get("Use the University ID and initial credential issued for this demo, then choose your own password."))">
     <IdentityFeedback IsBusy="IsSubmitting"
-                      BusyMessage="Activating the account once."
+                      BusyMessage="@(LocalizedUiText.Get("Activating the account once."))"
                       IsError="@(!string.IsNullOrWhiteSpace(_feedbackCode))"
                       Heading="@_feedbackHeading"
                       Message="@_feedbackMessage"
@@ -18,12 +18,12 @@
 
     <form @onsubmit="SubmitAsync" @onsubmit:preventDefault data-testid="student-activation-form">
         <AccessibleValidationSummary SummaryId="student-activation-errors"
-                                     Heading="Review the activation details"
+                                     Heading="@(LocalizedUiText.Get("Review the activation details"))"
                                      Errors="@_validationErrors" />
 
         <FormField InputId="activation-university-id"
                    Name="universityId"
-                   Label="University ID"
+                   Label="@(LocalizedUiText.Get("University ID"))"
                    Type="text"
                    autocomplete="username"
                    Required="true"
@@ -33,8 +33,8 @@
 
         <FormField InputId="activation-initial-password"
                    Name="initialPassword"
-                   Label="Initial PIN / password"
-                   Description="This is a first-use activation credential, not a second factor."
+                   Label="@(LocalizedUiText.Get("Initial PIN / password"))"
+                   Description="@(LocalizedUiText.Get("This is a first-use activation credential, not a second factor."))"
                    Type="password"
                    autocomplete="current-password"
                    AllowSecretReveal="true"
@@ -45,8 +45,8 @@
 
         <FormField InputId="activation-new-password"
                    Name="newPassword"
-                   Label="New password"
-                   Description="Use 15 to 128 characters. Spaces and Unicode are allowed."
+                   Label="@(LocalizedUiText.Get("New password"))"
+                   Description="@(LocalizedUiText.Get("Use 15 to 128 characters. Spaces and Unicode are allowed."))"
                    Type="password"
                    autocomplete="new-password"
                    AllowSecretReveal="true"
@@ -57,7 +57,7 @@
 
         <FormField InputId="activation-confirm-password"
                    Name="confirmPassword"
-                   Label="Confirm new password"
+                   Label="@(LocalizedUiText.Get("Confirm new password"))"
                    Type="password"
                    autocomplete="new-password"
                    AllowSecretReveal="true"
@@ -69,7 +69,7 @@
         <button class="srs-identity-command"
                 type="submit"
                 disabled="@IsSubmitting">
-            @(IsSubmitting ? "Activating…" : "Activate account")
+            @(IsSubmitting ? LocalizedUiText.Get("Activating…") : LocalizedUiText.Get("Activate account"))
         </button>
     </form>
 </IdentityPageShell>
@@ -81,7 +81,7 @@
     private string _confirmPassword = string.Empty;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Activation status";
+    private string _feedbackHeading = LocalizedUiText.Get("Activation status");
     private string? _feedbackState;
     private string? _correlationId;
     private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
@@ -130,22 +130,22 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrWhiteSpace(_universityId))
         {
-            errors.Add(new("activation-university-id", "Enter your University ID."));
+            errors.Add(new("activation-university-id", LocalizedUiText.Get("Enter your University ID.")));
         }
 
         if (string.IsNullOrEmpty(_initialPassword))
         {
-            errors.Add(new("activation-initial-password", "Enter the issued initial credential."));
+            errors.Add(new("activation-initial-password", LocalizedUiText.Get("Enter the issued initial credential.")));
         }
 
         if (_newPassword.Length is < 15 or > 128)
         {
-            errors.Add(new("activation-new-password", "Use a password from 15 to 128 characters."));
+            errors.Add(new("activation-new-password", LocalizedUiText.Get("Use a password from 15 to 128 characters.")));
         }
 
         if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
         {
-            errors.Add(new("activation-confirm-password", "The new passwords must match."));
+            errors.Add(new("activation-confirm-password", LocalizedUiText.Get("The new passwords must match.")));
         }
 
         _validationErrors = errors;
@@ -159,8 +159,8 @@
     {
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode is "ACTIVATION_FAILED" or "PASSWORD_REJECTED"
-            ? "Activation not accepted"
-            : "Activation service unavailable";
+            ? LocalizedUiText.Get("Activation not accepted")
+            : LocalizedUiText.Get("Activation service unavailable");
         _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
         _feedbackState = IdentityPageFeedback.MapFailure(
             IdentityRouteStateMapper.StudentActivationRecord,

@@ -3,12 +3,12 @@
 <section aria-labelledby="schedule-alternatives-heading"
          data-current-request="@RequestCorrelationId"
          data-current-plan-version="@PlanRowVersion">
-    <h2 id="schedule-alternatives-heading">Schedule alternatives</h2>
+    <h2 id="schedule-alternatives-heading">@LocalizedUiText.Get("Schedule alternatives")</h2>
 
     @if (Loading)
     {
         <p role="status" aria-live="polite" aria-busy="true">
-            Finding schedule alternatives
+            @LocalizedUiText.Get("Finding schedule alternatives")
         </p>
     }
     else if (Error is not null)
@@ -23,27 +23,27 @@
         @if (Result.Status == "time-budget")
         {
             <p role="status" aria-live="polite">
-                Recommendation time budget reached
+                @LocalizedUiText.Get("Recommendation time budget reached")
             </p>
         }
         @if (Result.Status == "no-solution")
         {
-            <p>No complete schedule alternative was found</p>
+            <p>@LocalizedUiText.Get("No complete schedule alternative was found")</p>
         }
         @if (Result.Options.Count > 0)
         {
-            <p>Optimizer configuration: @Result.OptimizerConfigurationVersion</p>
+            <p>@LocalizedUiText.Get("Optimizer configuration:") @Result.OptimizerConfigurationVersion</p>
             <ol>
                 @foreach (var option in Result.Options.OrderBy(option => option.Rank))
                 {
                     <li>
-                        <h3>Option @option.Rank</h3>
+                        <h3>@LocalizedUiText.Get("Option") @option.Rank</h3>
                         <ul>
                             @foreach (var group in option.Groups)
                             {
                                 <li>
-                                    Group @group.GroupCode · advisory capacity
-                                    @group.EnrolledCount of @group.Capacity
+                                    @LocalizedUiText.Get("Group") @group.GroupCode @LocalizedUiText.Get("· advisory capacity")
+                                    @group.EnrolledCount @LocalizedUiText.Get("of") @group.Capacity
                                 </li>
                             }
                         </ul>
@@ -59,7 +59,7 @@
                         <button type="button"
                                 disabled="@Disabled"
                                 @onclick="() => ApplyOptionAsync(option)">
-                            Apply option @option.Rank
+                            @LocalizedUiText.Get("Apply option") @option.Rank
                         </button>
                     </li>
                 }
@@ -96,7 +96,7 @@
 
 @code {
     [Parameter] public OptimizationResultDto? Result { get; set; }
-    [Parameter] public string FindLabel { get; set; } = "Find schedule alternatives";
+    [Parameter] public string FindLabel { get; set; } = LocalizedUiText.Get("Find schedule alternatives");
     [Parameter] public string? RequestCorrelationId { get; set; }
     [Parameter] public string? PlanRowVersion { get; set; }
     [Parameter] public bool Loading { get; set; }

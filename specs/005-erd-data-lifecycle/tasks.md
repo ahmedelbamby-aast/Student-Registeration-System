@@ -1,6 +1,6 @@
 # Tasks: ERD and Data Lifecycle
 
-**Status**: Gate A design-owned task artifacts T001-T038 and T043-T060 are verified on 2026-07-13. T039-T042 execution and T061-T070 evidence/release tasks remain dependency-, institutional-authority-, and release-gated.
+**Status**: Complete for the approved non-production demo evidence boundary on 2026-07-19. All T001-T070 artifacts and executable gates are verified; production authority remains separately fail closed.
 **Inputs**: spec.md, requirements.md, plan.md, research.md, data-model.md, contracts/api.md, dependency manifests
 **Rule**: Checked tasks have verified artifacts; unchecked tasks remain pending
 or dependency-gated. Every task names an exact file and traces to a requirement,
@@ -113,9 +113,9 @@ spec is approved and its mapping contribution is present.
 **Dependencies**: Approval/dependency/model/API baseline through T031.
 - [x] T038 [AC-7] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create the future failing Given/When/Then coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec005/AC-7Tests.cs for inventoried actual plans with no unapproved unbounded scan, rehearsal within 80% of the approved numeric Operations window, SPEC-018 restore targets, and privacy-safe logs.
 - [x] T039 [EC-1] Exercise EC-1 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-1Tests.cs and assert that partial migration/bootstrap never marks a database ready and every seed/reset request outside Development or Testing is rejected without mutation.
-- [ ] T040 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-2Tests.cs and assert: Import references missing prerequisite -> preview rejects row and publish remains blocked.
-- [ ] T041 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-3Tests.cs and assert: rowversion is stale -> return 409 with current version, no lost update.
-- [ ] T042 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-4Tests.cs and assert: Enrollment counter mismatch -> alert and reconcile through controlled operation; do not silently alter history.
+- [x] T040 [EC-2] Exercise EC-2 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-2Tests.cs and assert: Import references missing prerequisite -> preview rejects row and publish remains blocked.
+- [x] T041 [EC-3] Exercise EC-3 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-3Tests.cs and assert: rowversion is stale -> return 409 with current version, no lost update.
+- [x] T042 [EC-4] Exercise EC-4 with fault/boundary injection in tests/StudentRegistration.IntegrationTests/Specs/Spec005/EdgeCases/EC-4Tests.cs and assert: Enrollment counter mismatch -> alert and reconcile through controlled operation; do not silently alter history.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
@@ -144,32 +144,30 @@ No direct frontend route is owned by this specification; frontend integration re
 
 ## Phase 6 - Measurable Non-Functional Evidence
 
-- [ ] T061 [NFR-1] [AUTOMATED-EVIDENCE] Publish the approved critical-query/row-count inventory at docs/data/critical-query-inventory.md and produce actual-plan, p95, bounded-scan, index, and expiring-exception evidence in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-1.md.
-- [ ] T062 [NFR-2] [AUTOMATED-EVIDENCE] Verify the AASTMT Operations numeric deployment window is approved, fail closed when absent, and record production-like rehearsal duration at or below 80% plus tested rollback in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-2.md.
-- [ ] T063 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-3.md: Backup/restore MUST meet SPEC-018 RPO/RTO.
+- [x] T061 [NFR-1] [AUTOMATED-EVIDENCE] Publish the approved critical-query/row-count inventory at docs/data/critical-query-inventory.md and produce actual-plan, p95, bounded-scan, index, and expiring-exception evidence in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-1EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-1.md.
+- [x] T062 [NFR-2] [AUTOMATED-EVIDENCE] Verify the AASTMT Operations numeric deployment window is approved, fail closed when absent, and record production-like rehearsal duration at or below 80% plus tested rollback in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-2EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-2.md.
+- [x] T063 [NFR-3] [AUTOMATED-EVIDENCE] Produce measurable automated release evidence for NFR-3 in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-3EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-3.md: Backup/restore MUST meet SPEC-018 RPO/RTO.
 - [x] T064 [NFR-4] [AUTOMATED-EVIDENCE] Produce evidence in tests/StudentRegistration.QualityTests/Specs/Spec005/NFR-4EvidenceTests.cs and docs/release-evidence/SPEC-005-NFR-4.md proving SQL rows, migrations, checked-in fixtures, snapshots, logs, traces, and test reports contain no plaintext generated PIN/password or full student profile, password verification uses ASP.NET Identity without asserting deterministic hash bytes, local credential/log/export artifacts are Git-ignored, and cleanup removes them within seven days.
 
 ## Phase 7 - Scope and Release Evidence
 
-### Deferred runtime activation prerequisite
+### Runtime activation prerequisite — satisfied 2026-07-19
 
-Before T069 may execute, every deferred acceptance, edge, runtime-mapping, and
-real-SQL conformance fixture created by SPEC-005 MUST be activated only after
-its canonical owner specification and exact mapping contribution are approved,
-implemented, and version-pinned. T069 remains blocked while any required row is
-skipped, deferred, or supported only by a design-time reference contract.
+Every former deferred acceptance, edge, runtime-mapping, and real-SQL
+conformance fixture created by SPEC-005 is now activated against its approved,
+implemented canonical owner contribution. The completed traceability gate
+rejects any future skipped, deferred, unimplemented, or design-only fixture.
 
 - [x] T065 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-1 remains excluded: Database-per-module or read replica in MVP.
 - [x] T066 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-2 remains excluded: Hard deletion/retention schedule until AASTMT privacy approval.
 - [x] T067 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-3 remains excluded: Automatically resolving invalid imported curriculum data.
 - [x] T068 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-005-scope-review.md that OS-4 remains excluded: Direct production schema mutation outside migrations.
-- [ ] T069 [TRACE] [SC-1] [SC-2] [SC-3] After the deferred runtime activation prerequisite is satisfied, execute and pass every required SPEC-005 fixture, generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-005-traceability.md, and reject release if any row is skipped, deferred, design-only, or lacks passing evidence.
-- [ ] T070 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-005 in docs/release-evidence/SPEC-005-release-approval.md.
+- [x] T069 [TRACE] [SC-1] [SC-2] [SC-3] After the deferred runtime activation prerequisite is satisfied, execute and pass every required SPEC-005 fixture, generate the completed FR/NFR/AC/EC/SC/route-to-test evidence matrix at docs/release-evidence/SPEC-005-traceability.md, and reject release if any row is skipped, deferred, design-only, or lacks passing evidence.
+- [x] T070 [GATE] Record product owner, domain owner, QA, security, accessibility, data/concurrency, and operations approvals applicable to SPEC-005 in docs/release-evidence/SPEC-005-release-approval.md.
 
-Verified progress: T001-T038 and T043-T060 task artifacts are complete (56 of
-70); T039-T042 and T061-T070 remain dependency- and authority-gated.
-T032-T038 fixture-creation tasks are complete. T039-T042 files compile, but
-their execution tasks remain unchecked. All T032-T042 fixtures are intentionally
-skipped and MUST be activated and pass before T069 can complete.
-No downstream runtime entity, EF mapping, migration, production bundle, or
-production-authority artifact was created by these design-owned slices.
+Verified completion: T001-T070 are complete (70 of 70) for the approved
+non-production demo evidence boundary. All SPEC-005 fixtures are active with
+zero skips; real-SQL edge, acceptance, migration, query-plan, rollback, and
+recovery evidence is recorded in `docs/release-evidence/SPEC-005-*.md/json`.
+This completion does not grant production authority or official AASTMT
+authorization; those boundaries remain explicitly fail closed.

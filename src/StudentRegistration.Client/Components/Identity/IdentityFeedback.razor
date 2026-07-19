@@ -5,7 +5,7 @@
              aria-live="polite"
              aria-busy="true"
              data-state="loading">
-        <h2>Request in progress</h2>
+        <h2>@LocalizedUiText.Get("Request in progress")</h2>
         <p>@BusyMessage</p>
     </section>
 }
@@ -21,7 +21,7 @@ else if (!string.IsNullOrWhiteSpace(Message))
         @if (!string.IsNullOrWhiteSpace(CorrelationId))
         {
             <p class="srs-identity-feedback__reference">
-                Reference: @CorrelationId
+                @LocalizedUiText.Get("Reference:") @CorrelationId
             </p>
         }
     </section>
@@ -32,13 +32,13 @@ else if (!string.IsNullOrWhiteSpace(Message))
     public bool IsBusy { get; set; }
 
     [Parameter]
-    public string BusyMessage { get; set; } = "Please wait.";
+    public string BusyMessage { get; set; } = LocalizedUiText.Get("Please wait.");
 
     [Parameter]
     public bool IsError { get; set; }
 
     [Parameter]
-    public string Heading { get; set; } = "Status";
+    public string Heading { get; set; } = LocalizedUiText.Get("Status");
 
     [Parameter]
     public string? Message { get; set; }

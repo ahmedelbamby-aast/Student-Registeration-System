@@ -239,7 +239,7 @@
     }
 
     private static string FormatTime(TimeOnly value) =>
-        value.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+        value.ToString("t", System.Globalization.CultureInfo.CurrentCulture);
 
     private Task RequestResolutionAsync(ConflictResolutionLinkView link) =>
         ResolutionRequested.InvokeAsync(new ConflictResolutionRequest(

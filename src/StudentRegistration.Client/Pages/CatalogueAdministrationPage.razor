@@ -8,35 +8,33 @@
 @using StudentRegistration.Contracts.Academics
 @inject CatalogueApiClient CatalogueApi
 
-<PageTitle>Catalogue administration | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Catalogue administration | Student Registration")</PageTitle>
 
 <div class="srs-catalogue"
      data-route-id="ADM-05"
      data-state="@_state"
      data-contract-state="@CurrentStateFixture">
-    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
     <header class="srs-catalogue__header" role="banner">
-        <a class="srs-catalogue__brand" href="/admin" aria-label="Administration home">
+        <a class="srs-catalogue__brand" href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
             <img src="/brand/aastmt-logo.png"
-                 alt="Arab Academy for Science, Technology and Maritime Transport" />
-            <span><strong>AASTMT</strong><small>Student Registration</small></span>
+                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
+            <span><strong>@LocalizedUiText.Get("AASTMT")</strong><small>@LocalizedUiText.Get("Student Registration")</small></span>
         </a>
-        <RoleNavigation AccessibleName="Administration navigation"
+        <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
                         Items="@AdministrationNavigation" />
     </header>
 
     <main id="main-content" tabindex="-1" data-testid="catalogue-administration-page">
         <section class="srs-catalogue__intro"
                  aria-labelledby="catalogue-administration-heading">
-            <p class="srs-catalogue__eyebrow">Governed academic master data</p>
+            <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Governed academic master data")</p>
             <h1 id="catalogue-administration-heading" tabindex="-1">
-                Catalogue and policy administration
+                @LocalizedUiText.Get("Catalogue and policy administration")
             </h1>
             <p>
-                Review a curated programme subset, keep field provenance beside every
-                value, validate prerequisite and typed-policy rules, simulate without
-                saving, and publish only after server confirmation.
+                @LocalizedUiText.Get("Review a curated programme subset, keep field provenance beside every value, validate prerequisite and typed-policy rules, simulate without saving, and publish only after server confirmation.")
             </p>
         </section>
 
@@ -46,8 +44,8 @@
                      role="status"
                      aria-live="polite"
                      aria-busy="true">
-                <h2>Loading catalogue and policy versions</h2>
-                <p>The bounded owner APIs are being requested once.</p>
+                <h2>@LocalizedUiText.Get("Loading catalogue and policy versions")</h2>
+                <p>@LocalizedUiText.Get("The bounded owner APIs are being requested once.")</p>
             </section>
         }
         else if (_state is UnauthorizedState or SessionExpiredState)
@@ -56,12 +54,12 @@
                      role="alert"
                      aria-live="assertive">
                 <h2 @ref="_stateHeading" tabindex="-1">
-                    @(_state is SessionExpiredState ? "Session expired" : "Catalogue access denied")
+                    @(_state is SessionExpiredState ? LocalizedUiText.Get("Session expired") : LocalizedUiText.Get("Catalogue access denied"))
                 </h2>
                 <p class="srs-catalogue__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
                 <a href="@(_state is SessionExpiredState ? "/staff/login" : "/admin")">
-                    @(_state is SessionExpiredState ? "Sign in again" : "Return to authorized home")
+                    @(_state is SessionExpiredState ? LocalizedUiText.Get("Sign in again") : LocalizedUiText.Get("Return to authorized home"))
                 </a>
             </section>
         }
@@ -79,11 +77,11 @@
                 <p>@_safeMessage</p>
                 @if (!string.IsNullOrWhiteSpace(_referenceId))
                 {
-                    <p>Reference <strong>@_referenceId</strong></p>
+                    <p>@LocalizedUiText.Get("Reference") <strong>@_referenceId</strong></p>
                 }
                 <div class="srs-catalogue__actions">
-                    <button type="button" @onclick="LoadAsync">Retry</button>
-                    <a href="/status/support">Open safe support path</a>
+                    <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
+                    <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
                 </div>
             </section>
         }
@@ -93,9 +91,9 @@
             {
                 <section class="srs-catalogue__panel" aria-labelledby="catalogue-empty-heading">
                     <h2 id="catalogue-empty-heading" @ref="_stateHeading" tabindex="-1">
-                        No catalogue versions are available
+                        @LocalizedUiText.Get("No catalogue versions are available")
                     </h2>
-                    <p>Retry after an authorized draft or version has been created.</p>
+                    <p>@LocalizedUiText.Get("Retry after an authorized draft or version has been created.")</p>
                 </section>
             }
 
@@ -105,16 +103,16 @@
                          role="status"
                          aria-live="polite">
                     <h2 @ref="_stateHeading" tabindex="-1">
-                        Publication confirmation is stale
+                        @LocalizedUiText.Get("Publication confirmation is stale")
                     </h2>
                     <p class="srs-catalogue__code">@_reasonCode</p>
                     <p>@_safeMessage</p>
                     @if (!string.IsNullOrWhiteSpace(_currentVersion))
                     {
-                        <p>Current version <code>@_currentVersion</code></p>
+                        <p>@LocalizedUiText.Get("Current version") <code>@_currentVersion</code></p>
                     }
                     <button type="button" @onclick="RefreshAndRevalidateAsync">
-                        Refresh and revalidate
+                        @LocalizedUiText.Get("Refresh and revalidate")
                     </button>
                 </section>
             }
@@ -124,7 +122,7 @@
                 <section class="srs-catalogue__panel srs-catalogue__panel--success"
                          role="status"
                          aria-live="polite">
-                    <h2>Server-confirmed result</h2>
+                    <h2>@LocalizedUiText.Get("Server-confirmed result")</h2>
                     <p>@_successAnnouncement</p>
                 </section>
             }
@@ -137,7 +135,7 @@
                          role="alert"
                          aria-live="assertive"
                          tabindex="-1">
-                    <h2>Review catalogue or policy values</h2>
+                    <h2>@LocalizedUiText.Get("Review catalogue or policy values")</h2>
                     <p class="srs-catalogue__code">@_reasonCode</p>
                     <ul>
                         @foreach (var issue in _validationIssues)
@@ -151,27 +149,26 @@
             <section class="srs-catalogue__panel" aria-labelledby="version-list-heading">
                 <div class="srs-catalogue__heading-row">
                     <div>
-                        <p class="srs-catalogue__eyebrow">Immutable history</p>
-                        <h2 id="version-list-heading">Version and status list</h2>
+                        <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Immutable history")</p>
+                        <h2 id="version-list-heading">@LocalizedUiText.Get("Version and status list")</h2>
                     </div>
                     <span class="srs-catalogue__disclaimer">
-                        Curated demo subset — locally assigned credits and fixture flags
-                        remain explicitly synthetic.
+                        @LocalizedUiText.Get("Curated demo subset — locally assigned credits and fixture flags remain explicitly synthetic.")
                     </span>
                 </div>
                 <div class="srs-catalogue__table-region"
                      role="region"
-                     aria-label="Catalogue versions"
+                     aria-label="@(LocalizedUiText.Get("Catalogue versions"))"
                      tabindex="0">
                     <table>
-                        <caption>@_versions.Count catalogue versions</caption>
+                        <caption>@_versions.Count @LocalizedUiText.Get("catalogue versions")</caption>
                         <thead>
                             <tr>
-                                <th scope="col">Version</th>
-                                <th scope="col">Scope</th>
-                                <th scope="col">Lifecycle</th>
-                                <th scope="col">Source</th>
-                                <th scope="col">Published</th>
+                                <th scope="col">@LocalizedUiText.Get("Version")</th>
+                                <th scope="col">@LocalizedUiText.Get("Scope")</th>
+                                <th scope="col">@LocalizedUiText.Get("Lifecycle")</th>
+                                <th scope="col">@LocalizedUiText.Get("Source")</th>
+                                <th scope="col">@LocalizedUiText.Get("Published")</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -194,18 +191,18 @@
                 <section class="srs-catalogue__panel" aria-labelledby="catalogue-draft-heading">
                     <div class="srs-catalogue__heading-row">
                         <div>
-                            <p class="srs-catalogue__eyebrow">Catalogue draft</p>
-                            <h2 id="catalogue-draft-heading">@_draft?.Scope programme snapshot</h2>
+                            <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Catalogue draft")</p>
+                            <h2 id="catalogue-draft-heading">@_draft?.Scope @LocalizedUiText.Get("programme snapshot")</h2>
                         </div>
                         <span class="srs-catalogue__status">@_draft?.State</span>
                     </div>
                     <dl class="srs-catalogue__facts">
-                        <div><dt>Draft version</dt><dd><code>@_draft?.RowVersion</code></dd></div>
-                        <div><dt>Content hash</dt><dd><code>@_draft?.CanonicalContentHash</code></dd></div>
-                        <div><dt>Courses</dt><dd>@(_draft?.Courses.Count ?? 0)</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Draft version")</dt><dd><code>@_draft?.RowVersion</code></dd></div>
+                        <div><dt>@LocalizedUiText.Get("Content hash")</dt><dd><code>@_draft?.CanonicalContentHash</code></dd></div>
+                        <div><dt>@LocalizedUiText.Get("Courses")</dt><dd>@(_draft?.Courses.Count ?? 0)</dd></div>
                     </dl>
 
-                    <div class="srs-catalogue__course-list" aria-label="Curated courses">
+                    <div class="srs-catalogue__course-list" aria-label="@(LocalizedUiText.Get("Curated courses"))">
                         @foreach (var course in _draft?.Courses ?? [])
                         {
                             <article class="srs-catalogue__course"
@@ -213,14 +210,14 @@
                                      data-testid="catalogue-course">
                                 <div>
                                     <h3>@course.Code — @course.Title</h3>
-                                    <p>@course.Credits credits · @(course.Active ? "Active" : "Inactive")</p>
+                                    <p>@course.Credits @LocalizedUiText.Get("credits ·") @(course.Active ? LocalizedUiText.Get("Active") : LocalizedUiText.Get("Inactive"))</p>
                                 </div>
                                 <div class="srs-catalogue__provenance">
                                     <strong>@SourceKindLabel(course.Provenance.SourceKind)</strong>
-                                    <span>Accessed @course.Provenance.AccessedOn.ToString("dd MMM yyyy", CultureInfo.CurrentCulture)</span>
-                                    <a href="@course.Provenance.SourceReference">Open source reference</a>
+                                    <span>@LocalizedUiText.Get("Accessed") @course.Provenance.AccessedOn.ToString("dd MMM yyyy", CultureInfo.CurrentCulture)</span>
+                                    <a href="@course.Provenance.SourceReference">@LocalizedUiText.Get("Open source reference")</a>
                                     <span>
-                                        Synthetic fields:
+                                        @LocalizedUiText.Get("Synthetic fields:")
                                         @string.Join(", ", course.Provenance.SyntheticFields)
                                     </span>
                                 </div>
@@ -231,17 +228,17 @@
                     <form class="srs-catalogue__subpanel"
                           @onsubmit="CreateImportAsync"
                           @onsubmit:preventDefault>
-                        <h3>Import catalogue evidence</h3>
+                        <h3>@LocalizedUiText.Get("Import catalogue evidence")</h3>
                         <div class="srs-catalogue__field-grid">
                             <label class="srs-catalogue__field srs-catalogue__field--wide">
-                                Source URL or reference
+                                @LocalizedUiText.Get("Source URL or reference")
                                 <input id="catalogue-import-source"
                                        type="url"
                                        required
                                        @bind="_importSource" />
                             </label>
                             <label class="srs-catalogue__field">
-                                Access date
+                                @LocalizedUiText.Get("Access date")
                                 <input id="catalogue-import-accessed-on"
                                        type="date"
                                        required
@@ -249,30 +246,29 @@
                                        @oninput="eventArgs => _importAccessedOn = eventArgs.Value?.ToString() ?? string.Empty" />
                             </label>
                             <label class="srs-catalogue__field">
-                                Server-verifiable content hash
+                                @LocalizedUiText.Get("Server-verifiable content hash")
                                 <input id="catalogue-import-hash"
                                        required
                                        @bind="_importHash" />
                             </label>
                             <label class="srs-catalogue__field srs-catalogue__field--wide">
-                                Synthetic field manifest
+                                @LocalizedUiText.Get("Synthetic field manifest")
                                 <input id="catalogue-import-synthetic-fields"
                                        aria-describedby="synthetic-field-help"
                                        @bind="_importSyntheticFields" />
                                 <span id="synthetic-field-help">
-                                    Comma-separated field names; do not hide local gap values.
+                                    @LocalizedUiText.Get("Comma-separated field names; do not hide local gap values.")
                                 </span>
                             </label>
                         </div>
                         <button type="submit" disabled="@_isImporting">
-                            @(_isImporting ? "Creating import…" : "Create import")
+                            @(_isImporting ? LocalizedUiText.Get("Creating import…") : LocalizedUiText.Get("Create import"))
                         </button>
                         @if (_currentImport is not null)
                         {
                             <p>
-                                Current import <code>@_currentImport.Id</code>:
-                                <strong>@_currentImport.State</strong>,
-                                rowversion <code>@_currentImport.RowVersion</code>
+                                @LocalizedUiText.Get("Current import") <code>@_currentImport.Id</code>:
+                                <strong>@_currentImport.State</strong>@LocalizedUiText.Get(", rowversion") <code>@_currentImport.RowVersion</code>
                             </p>
                         }
                     </form>
@@ -281,13 +277,13 @@
                         <button type="button"
                                 disabled="@(_isValidating || _draft is null)"
                                 @onclick="ValidateCatalogueAsync">
-                            @(_isValidating ? "Validating…" : "Validate catalogue")
+                            @(_isValidating ? LocalizedUiText.Get("Validating…") : LocalizedUiText.Get("Validate catalogue"))
                         </button>
                         <button type="button"
                                 @ref="_publishTrigger"
                                 disabled="@(_previewToken is null || _isPublishing)"
                                 @onclick="OpenPublishConfirmation">
-                            Publish catalogue
+                            @LocalizedUiText.Get("Publish catalogue")
                         </button>
                     </div>
                 </section>
@@ -295,19 +291,18 @@
                 <section class="srs-catalogue__panel" aria-labelledby="policy-editor-heading">
                     <div class="srs-catalogue__heading-row">
                         <div>
-                            <p class="srs-catalogue__eyebrow">Typed policy</p>
+                            <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Typed policy")</p>
                             <h2 id="policy-editor-heading">@_policy?.Version</h2>
                         </div>
                         <span class="srs-catalogue__status">@_policy?.State</span>
                     </div>
                     <p>
-                        Values are typed data only. Scripts and executable expressions
-                        are not accepted.
+                        @LocalizedUiText.Get("Values are typed data only. Scripts and executable expressions are not accepted.")
                     </p>
                     <form @onsubmit="SavePolicyAsync" @onsubmit:preventDefault>
                         <div class="srs-catalogue__field-grid">
                             <label class="srs-catalogue__field">
-                                Normal maximum credits
+                                @LocalizedUiText.Get("Normal maximum credits")
                                 <input id="normal-max-credits"
                                        inputmode="decimal"
                                        aria-invalid="@InvalidAria("normal-max-credits")"
@@ -316,7 +311,7 @@
                                 @FieldError("normal-max-credits")
                             </label>
                             <label class="srs-catalogue__field">
-                                GPA-below-2.0 maximum credits
+                                @LocalizedUiText.Get("GPA-below-2.0 maximum credits")
                                 <input id="probation-max-credits"
                                        inputmode="decimal"
                                        aria-invalid="@InvalidAria("probation-max-credits")"
@@ -326,21 +321,21 @@
                             </label>
                         </div>
                         <button type="submit" disabled="@_isSavingPolicy">
-                            @(_isSavingPolicy ? "Saving…" : "Save policy draft")
+                            @(_isSavingPolicy ? LocalizedUiText.Get("Saving…") : LocalizedUiText.Get("Save policy draft"))
                         </button>
                     </form>
 
                     <section class="srs-catalogue__subpanel" aria-labelledby="simulation-heading">
-                        <h3 id="simulation-heading">Deterministic policy simulation</h3>
+                        <h3 id="simulation-heading">@LocalizedUiText.Get("Deterministic policy simulation")</h3>
                         <div class="srs-catalogue__field-grid">
                             <label class="srs-catalogue__field">
-                                Student context fixture
+                                @LocalizedUiText.Get("Student context fixture")
                                 <input id="simulation-fixture"
                                        required
                                        @bind="_simulationFixture" />
                             </label>
                             <label class="srs-catalogue__field">
-                                Requested course codes
+                                @LocalizedUiText.Get("Requested course codes")
                                 <input id="simulation-courses"
                                        @bind="_simulationCourses" />
                             </label>
@@ -348,16 +343,16 @@
                         <button type="button"
                                 disabled="@(_isSimulating || _policy is null)"
                                 @onclick="SimulatePolicyAsync">
-                            @(_isSimulating ? "Simulating…" : "Simulate policy")
+                            @(_isSimulating ? LocalizedUiText.Get("Simulating…") : LocalizedUiText.Get("Simulate policy"))
                         </button>
-                        <p>Simulation does not publish or save changes.</p>
+                        <p>@LocalizedUiText.Get("Simulation does not publish or save changes.")</p>
                         @if (_simulation is not null)
                         {
                             <div class="srs-catalogue__simulation"
                                  role="status"
                                  aria-live="polite">
-                                <h4>@(_simulation.Eligible ? "Eligible" : "Not eligible")</h4>
-                                <p>Policy version @_simulation.PolicyVersion</p>
+                                <h4>@(_simulation.Eligible ? LocalizedUiText.Get("Eligible") : LocalizedUiText.Get("Not eligible"))</h4>
+                                <p>@LocalizedUiText.Get("Policy version") @_simulation.PolicyVersion</p>
                                 <ul>
                                     @foreach (var rule in _simulation.RuleResults)
                                     {
@@ -399,7 +394,7 @@
                                             {
                                                 <a data-testid="cycle-edit-link"
                                                    href="@($"#course-{courseCode}")">
-                                                    Edit @courseCode
+                                                    @LocalizedUiText.Get("Edit") @courseCode
                                                 </a>
                                             }
                                         </span>
@@ -411,8 +406,7 @@
                     @if (_catalogueValidation.Valid)
                     {
                         <p>
-                            Preview is bound to actor, scope, content hash, dependencies,
-                            rowversion, and expiry. It is not publication authority.
+                            @LocalizedUiText.Get("Preview is bound to actor, scope, content hash, dependencies, rowversion, and expiry. It is not publication authority.")
                         </p>
                     }
                 </section>
@@ -427,12 +421,12 @@
                                 DialogId="publish-catalogue-dialog"
                                 TitleId="publish-catalogue-dialog-title"
                                 DescriptionId="publish-catalogue-dialog-description"
-                                Title="Publish catalogue"
-                                Message="Publish one immutable version using the current draft rowversion and bound preview? The server will revalidate and choose one winner."
-                                ConfirmLabel="Confirm publish"
-                                CancelLabel="Cancel"
+                                Title="@(LocalizedUiText.Get("Publish catalogue"))"
+                                Message="@(LocalizedUiText.Get("Publish one immutable version using the current draft rowversion and bound preview? The server will revalidate and choose one winner."))"
+                                ConfirmLabel="@(LocalizedUiText.Get("Confirm publish"))"
+                                CancelLabel="@(LocalizedUiText.Get("Cancel"))"
                                 IsBusy="@_isPublishing"
-                                BusyLabel="Publishing catalogue…"
+                                BusyLabel="@(LocalizedUiText.Get("Publishing catalogue…"))"
                                 OnConfirm="PublishCatalogueAsync"
                                 OnCancel="ClosePublishConfirmation"
                                 FocusRestoreRequested="RestorePublishFocusAsync" />
@@ -459,10 +453,10 @@
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem>
         AdministrationNavigation =
         [
-            new("Dashboard", "/admin"),
-            new("Terms", "/admin/terms"),
-            new("Catalogue", "/admin/catalogue", IsActive: true),
-            new("Offerings", "/admin/offerings")
+            new(LocalizedUiText.Get("Dashboard"), "/admin"),
+            new(LocalizedUiText.Get("Terms"), "/admin/terms"),
+            new(LocalizedUiText.Get("Catalogue"), "/admin/catalogue", IsActive: true),
+            new(LocalizedUiText.Get("Offerings"), "/admin/offerings")
         ];
 
     private readonly List<CatalogueVersionSummaryDto> _versions = [];
@@ -472,7 +466,7 @@
     private ElementReference _publishTrigger;
     private string _state = LoadingState;
     private string _reasonCode = "SERVICE_UNAVAILABLE";
-    private string _safeMessage = "Catalogue administration could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Catalogue administration could not be loaded.");
     private string? _referenceId;
     private string? _currentVersion;
     private string? _successAnnouncement;
@@ -487,7 +481,7 @@
     private string _importSource = string.Empty;
     private string _importAccessedOn = "2026-07-13";
     private string _importHash = string.Empty;
-    private string _importSyntheticFields = "Credits, IsActive";
+    private string _importSyntheticFields = LocalizedUiText.Get("Credits, IsActive");
     private string _simulationFixture = "ACTIVE-96-CREDITS";
     private string _simulationCourses = "DS413";
     private bool _isImporting;
@@ -574,7 +568,7 @@
         {
             _state = OfflineState;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach catalogue administration. No action was queued.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach catalogue administration. No action was queued.");
         }
     }
 
@@ -595,7 +589,7 @@
                 [
                     new(
                         "catalogue-import-source",
-                        "Source, access date, and content hash are required.")
+                        LocalizedUiText.Get("Source, access date, and content hash are required."))
                 ]);
             return;
         }
@@ -614,7 +608,7 @@
         if (result.IsSuccess && result.Value is not null)
         {
             _currentImport = result.Value;
-            _successAnnouncement = "Import evidence was accepted by the server.";
+            _successAnnouncement = LocalizedUiText.Get("Import evidence was accepted by the server.");
             _state = SuccessState;
             return;
         }
@@ -639,7 +633,7 @@
         {
             issues.Add(new(
                 "normal-max-credits",
-                "Normal maximum credits must be a positive typed number."));
+                LocalizedUiText.Get("Normal maximum credits must be a positive typed number.")));
         }
 
         if (!decimal.TryParse(
@@ -651,7 +645,7 @@
         {
             issues.Add(new(
                 "probation-max-credits",
-                "Probation maximum credits must be a positive typed number."));
+                LocalizedUiText.Get("Probation maximum credits must be a positive typed number.")));
         }
 
         if (issues.Count > 0)
@@ -674,14 +668,14 @@
             .ToArray();
         var result = await CatalogueApi.UpdatePolicyAsync(
             _policy.Id,
-            new(_policy.RowVersion, "Update typed demo credit boundaries", operations));
+            new(_policy.RowVersion, LocalizedUiText.Get("Update typed demo credit boundaries"), operations));
         _isSavingPolicy = false;
         if (result.IsSuccess && result.Value is not null)
         {
             _policy = result.Value;
             _previewToken = null;
             _successAnnouncement =
-                "Policy draft saved. Any earlier publication preview was invalidated.";
+                LocalizedUiText.Get("Policy draft saved. Any earlier publication preview was invalidated.");
             return;
         }
 
@@ -738,7 +732,7 @@
         {
             _simulation = result.Value;
             _successAnnouncement =
-                "Simulation completed deterministically; no durable change was made.";
+                LocalizedUiText.Get("Simulation completed deterministically; no durable change was made.");
             return;
         }
 
@@ -771,7 +765,7 @@
             _previewToken = null;
             _catalogueValidation = null;
             _state = SuccessState;
-            _successAnnouncement = "Published immutable catalogue version";
+            _successAnnouncement = LocalizedUiText.Get("Published immutable catalogue version");
             return;
         }
 
@@ -815,7 +809,7 @@
             ?? (status is HttpStatusCode.ServiceUnavailable
                 ? "SERVICE_UNAVAILABLE"
                 : "UNEXPECTED_ERROR");
-        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The request could not be completed safely.");
         _referenceId = error?.CorrelationId;
         _currentVersion = error?.CurrentVersion;
         _state = status switch
@@ -894,7 +888,9 @@
             .ToArray();
 
     private static string SourceKindLabel(string sourceKind) =>
-        sourceKind == "official-source" ? "Official source" : "Synthetic demo";
+        sourceKind == "official-source"
+            ? LocalizedUiText.Get("Official source")
+            : LocalizedUiText.Get("Synthetic demo");
 
     private sealed record ValidationIssue(string ControlId, string Message);
 }

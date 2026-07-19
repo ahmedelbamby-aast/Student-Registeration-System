@@ -8,10 +8,13 @@ public sealed class ScheduleBuilderPageAccessibilityTests(AxeAccessibilityFixtur
 {
     private const string TermId = "00000000-0000-0000-0000-000000012001";
 
-    [Fact]
-    public async Task Stu_04_calendar_list_and_continue_flow_are_accessible_by_keyboard()
+    [Theory]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Stu_04_calendar_list_and_continue_flow_are_accessible_by_keyboard(
+        int width,
+        float scale)
     {
-        await using var context = await fixture.OpenContextAsync(1280, 900);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/context", route => route.FulfillAsync(Json(AppContext)));
         await page.RouteAsync(
@@ -50,6 +53,8 @@ public sealed class ScheduleBuilderPageAccessibilityTests(AxeAccessibilityFixtur
         var box = await review.BoundingBoxAsync();
         Assert.NotNull(box);
         Assert.True(box.Height >= 44);
+        Assert.True(await page.EvaluateAsync<bool>(
+            "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
     }
 
     private static RouteFulfillOptions Json(string body) => new()

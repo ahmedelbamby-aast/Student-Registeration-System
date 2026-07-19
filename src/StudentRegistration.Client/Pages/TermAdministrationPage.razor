@@ -8,24 +8,24 @@
 @using StudentRegistration.Contracts.Academics
 @inject AcademicApiClient AcademicApi
 
-<PageTitle>Term administration | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Term administration | Student Registration")</PageTitle>
 
 <div class="srs-term-admin"
      data-route-id="ADM-02"
      data-state="@_state"
      data-contract-state="@CurrentStateFixture">
-    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
     <header class="srs-term-admin__header" role="banner">
-        <a class="srs-term-admin__brand" href="/admin" aria-label="Administration home">
+        <a class="srs-term-admin__brand" href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
             <img src="/brand/aastmt-logo.png"
-                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
             <span>
-                <strong>AASTMT</strong>
-                <small>Student Registration</small>
+                <strong>@LocalizedUiText.Get("AASTMT")</strong>
+                <small>@LocalizedUiText.Get("Student Registration")</small>
             </span>
         </a>
-        <RoleNavigation AccessibleName="Administration navigation"
+        <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
                         Items="@AdministrationNavigation" />
     </header>
 
@@ -33,11 +33,10 @@
           data-testid="term-administration-page"
           tabindex="-1">
         <section class="srs-term-admin__intro" aria-labelledby="term-administration-heading">
-            <p class="srs-term-admin__eyebrow">Academic context administration</p>
-            <h1 id="term-administration-heading" tabindex="-1">Term administration</h1>
+            <p class="srs-term-admin__eyebrow">@LocalizedUiText.Get("Academic context administration")</p>
+            <h1 id="term-administration-heading" tabindex="-1">@LocalizedUiText.Get("Term administration")</h1>
             <p>
-                Create explicit teaching terms, maintain versioned registration windows,
-                and publish only after the owner service accepts the command.
+                @LocalizedUiText.Get("Create explicit teaching terms, maintain versioned registration windows, and publish only after the owner service accepts the command.")
             </p>
         </section>
 
@@ -48,8 +47,8 @@
                      role="status"
                      aria-live="polite"
                      aria-busy="true">
-                <h2>Loading terms and registration windows</h2>
-                <p>The current bounded term page is being requested once.</p>
+                <h2>@LocalizedUiText.Get("Loading terms and registration windows")</h2>
+                <p>@LocalizedUiText.Get("The current bounded term page is being requested once.")</p>
             </section>
         }
         else if (_state is UnauthorizedState)
@@ -59,11 +58,11 @@
                      role="alert"
                      aria-live="assertive">
                 <h2 id="term-access-denied-heading" @ref="_stateHeading" tabindex="-1">
-                    Term administration access denied
+                    @LocalizedUiText.Get("Term administration access denied")
                 </h2>
                 <p class="srs-term-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
-                <a class="srs-term-admin__action-link" href="/admin">Return to authorized home</a>
+                <a class="srs-term-admin__action-link" href="/admin">@LocalizedUiText.Get("Return to authorized home")</a>
             </section>
         }
         else if (_state is SessionExpiredState)
@@ -73,11 +72,11 @@
                      role="alert"
                      aria-live="assertive">
                 <h2 id="term-session-expired-heading" @ref="_stateHeading" tabindex="-1">
-                    Session expired
+                    @LocalizedUiText.Get("Session expired")
                 </h2>
                 <p class="srs-term-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
-                <a class="srs-term-admin__action-link" href="/staff/login">Sign in again</a>
+                <a class="srs-term-admin__action-link" href="/staff/login">@LocalizedUiText.Get("Sign in again")</a>
             </section>
         }
         else if (!_hasLoadedTerms)
@@ -96,9 +95,9 @@
                     <button type="button"
                             disabled="@_isLoadingTerms"
                             @onclick="RetryTermsAsync">
-                        @(_isLoadingTerms ? "Retrying…" : "Retry term list")
+                        @(_isLoadingTerms ? LocalizedUiText.Get("Retrying…") : LocalizedUiText.Get("Retry term list"))
                     </button>
-                    <a href="/status/support">Open safe support path</a>
+                    <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
                 </div>
             </section>
         }
@@ -110,9 +109,9 @@
                          data-testid="term-administration-empty"
                          aria-labelledby="term-empty-heading">
                     <h2 id="term-empty-heading" @ref="_stateHeading" tabindex="-1">
-                        No academic terms have been created
+                        @LocalizedUiText.Get("No academic terms have been created")
                     </h2>
-                    <p>Create the first explicit term without inferring dates or lifecycle values.</p>
+                    <p>@LocalizedUiText.Get("Create the first explicit term without inferring dates or lifecycle values.")</p>
                 </section>
             }
 
@@ -129,7 +128,7 @@
                     <button type="button"
                             disabled="@_isLoadingTerms"
                             @onclick="RetryTermsAsync">
-                        Retry term list
+                        @LocalizedUiText.Get("Retry term list")
                     </button>
                 </section>
             }
@@ -139,7 +138,7 @@
                 <section class="srs-term-admin__success"
                          role="status"
                          aria-live="polite">
-                    <h2>Server-confirmed result</h2>
+                    <h2>@LocalizedUiText.Get("Server-confirmed result")</h2>
                     <p>@_successAnnouncement</p>
                 </section>
             }
@@ -150,16 +149,16 @@
                          aria-labelledby="term-stale-heading"
                          aria-live="polite">
                     <h2 id="term-stale-heading" @ref="_stateHeading" tabindex="-1">
-                        Concurrent term change requires review
+                        @LocalizedUiText.Get("Concurrent term change requires review")
                     </h2>
-                    <p class="srs-term-admin__code">STALE_VERSION</p>
+                    <p class="srs-term-admin__code">@LocalizedUiText.Get("STALE_VERSION")</p>
                     <p>@_safeMessage</p>
                     @ReferenceContent()
                     <div data-testid="stale-changed-fields">
-                        <h3>Changed server fields</h3>
+                        <h3>@LocalizedUiText.Get("Changed server fields")</h3>
                         @if (_staleChangedFields.Count == 0)
                         {
-                            <p>The aggregate version changed. Review the refreshed server version.</p>
+                            <p>@LocalizedUiText.Get("The aggregate version changed. Review the refreshed server version.")</p>
                         }
                         else
                         {
@@ -174,7 +173,7 @@
                     <button type="button"
                             data-testid="refresh-stale-term"
                             @onclick="AdoptRefetchedVersions">
-                        Use current versions and review draft
+                        @LocalizedUiText.Get("Use current versions and review draft")
                     </button>
                 </section>
             }
@@ -185,7 +184,7 @@
                          data-testid="conflicting-registration-windows"
                          aria-labelledby="conflicting-window-heading"
                          role="alert">
-                    <h2 id="conflicting-window-heading">Conflicting registration windows</h2>
+                    <h2 id="conflicting-window-heading">@LocalizedUiText.Get("Conflicting registration windows")</h2>
                     <ul>
                         @foreach (var conflict in _conflictingWindows)
                         {
@@ -204,7 +203,7 @@
                          role="alert"
                          aria-live="assertive"
                          tabindex="-1">
-                    <h2>Review the term command</h2>
+                    <h2>@LocalizedUiText.Get("Review the term command")</h2>
                     <p class="srs-term-admin__code">@_reasonCode</p>
                     <ul>
                         @foreach (var error in _validationErrors)
@@ -218,27 +217,27 @@
 
             <section class="srs-term-admin__search" aria-labelledby="term-search-heading">
                 <div>
-                    <p class="srs-term-admin__eyebrow">Bounded owner query</p>
-                    <h2 id="term-search-heading">Terms and windows</h2>
+                    <p class="srs-term-admin__eyebrow">@LocalizedUiText.Get("Bounded owner query")</p>
+                    <h2 id="term-search-heading">@LocalizedUiText.Get("Terms and windows")</h2>
                 </div>
                 <form role="search"
-                      aria-label="Search academic terms"
+                      aria-label="@(LocalizedUiText.Get("Search academic terms"))"
                       @onsubmit="SearchTermsAsync"
                       @onsubmit:preventDefault>
-                    <label for="term-search">Term code or display name</label>
+                    <label for="term-search">@LocalizedUiText.Get("Term code or display name")</label>
                     <input id="term-search"
                            type="search"
                            minlength="3"
                            maxlength="50"
-                           placeholder="At least 3 characters"
+                           placeholder="@(LocalizedUiText.Get("At least 3 characters"))"
                            @bind="_searchQuery"
                            @bind:event="oninput" />
-                    <button type="submit" disabled="@_isLoadingTerms">Search</button>
+                    <button type="submit" disabled="@_isLoadingTerms">@LocalizedUiText.Get("Search")</button>
                     <button type="button" disabled="@_isLoadingTerms" @onclick="ClearSearchAsync">
-                        Clear
+                        @LocalizedUiText.Get("Clear")
                     </button>
                     <button type="button" disabled="@AnyCommandPending" @onclick="StartNewTerm">
-                        Create another term
+                        @LocalizedUiText.Get("Create another term")
                     </button>
                 </form>
             </section>
@@ -247,31 +246,31 @@
                 <section class="srs-term-admin__list"
                          data-testid="term-list"
                          aria-labelledby="term-list-heading">
-                    <h2 id="term-list-heading">Versioned term list</h2>
+                    <h2 id="term-list-heading">@LocalizedUiText.Get("Versioned term list")</h2>
 
                     <div class="srs-term-admin__table-region"
                          role="region"
-                         aria-label="Academic term results"
+                         aria-label="@(LocalizedUiText.Get("Academic term results"))"
                          tabindex="0">
                         <table>
                             <caption>
-                                @_totalCount academic terms; page @_currentPage of @TotalPages
+                                @_totalCount @LocalizedUiText.Get("academic terms; page") @_currentPage @LocalizedUiText.Get("of") @TotalPages
                             </caption>
                             <thead>
                                 <tr>
-                                    <th scope="col">Term</th>
-                                    <th scope="col">Teaching dates</th>
-                                    <th scope="col">Lifecycle</th>
-                                    <th scope="col">Registration windows</th>
-                                    <th scope="col">Version</th>
-                                    <th scope="col">Action</th>
+                                    <th scope="col">@LocalizedUiText.Get("Term")</th>
+                                    <th scope="col">@LocalizedUiText.Get("Teaching dates")</th>
+                                    <th scope="col">@LocalizedUiText.Get("Lifecycle")</th>
+                                    <th scope="col">@LocalizedUiText.Get("Registration windows")</th>
+                                    <th scope="col">@LocalizedUiText.Get("Version")</th>
+                                    <th scope="col">@LocalizedUiText.Get("Action")</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if (_terms.Count == 0)
                                 {
                                     <tr>
-                                        <td colspan="6">No terms match the current bounded query.</td>
+                                        <td colspan="6">@LocalizedUiText.Get("No terms match the current bounded query.")</td>
                                     </tr>
                                 }
                                 else
@@ -289,7 +288,7 @@
                                             <td>
                                                 @if (term.Windows.Count == 0)
                                                 {
-                                                    <span>No windows</span>
+                                                    <span>@LocalizedUiText.Get("No windows")</span>
                                                 }
                                                 else
                                                 {
@@ -313,7 +312,7 @@
                                                         aria-pressed="@(term.Id == _selectedTerm?.Id ? "true" : "false")"
                                                         disabled="@AnyCommandPending"
                                                         @onclick="() => SelectTerm(term)">
-                                                    Review
+                                                    @LocalizedUiText.Get("Review")
                                                 </button>
                                             </td>
                                         </tr>
@@ -325,11 +324,11 @@
 
                     <section class="srs-term-admin__semantic-alternative"
                              data-testid="term-table-semantic-alternative"
-                             aria-label="Academic term results, compact semantic alternative">
+                             aria-label="@(LocalizedUiText.Get("Academic term results, compact semantic alternative"))">
                         <ul data-testid="term-card-list">
                             @if (_terms.Count == 0)
                             {
-                                <li>No terms match the current bounded query.</li>
+                                <li>@LocalizedUiText.Get("No terms match the current bounded query.")</li>
                             }
                             else
                             {
@@ -338,23 +337,22 @@
                                     <li>
                                         <h3>@term.DisplayName</h3>
                                         <dl>
-                                            <div><dt>Code</dt><dd>@term.Code</dd></div>
-                                            <div><dt>Time zone</dt><dd>@term.TimeZoneId</dd></div>
-                                            <div><dt>Teaching dates</dt><dd>@DateLabel(term.TeachingStartsOn) – @DateLabel(term.TeachingEndsOn)</dd></div>
-                                            <div><dt>Lifecycle</dt><dd>@TermStateLabel(term.State)</dd></div>
-                                            <div><dt>Term version</dt><dd>Version @term.RowVersion</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Code")</dt><dd>@term.Code</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Time zone")</dt><dd>@term.TimeZoneId</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Teaching dates")</dt><dd>@DateLabel(term.TeachingStartsOn) – @DateLabel(term.TeachingEndsOn)</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Lifecycle")</dt><dd>@TermStateLabel(term.State)</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Term version")</dt><dd>@LocalizedUiText.Get("Version") @term.RowVersion</dd></div>
                                         </dl>
                                         @if (term.Windows.Count > 0)
                                         {
-                                            <h4>Registration windows</h4>
+                                            <h4>@LocalizedUiText.Get("Registration windows")</h4>
                                             <ul>
                                                 @foreach (var window in term.Windows)
                                                 {
                                                     <li>
                                                         @WindowLifecycleLabel(window.LifecycleState),
                                                         @WindowScopeLabel(window),
-                                                        @UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc),
-                                                        version @window.RowVersion
+                                                        @UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc)@LocalizedUiText.Get(", version") @window.RowVersion
                                                     </li>
                                                 }
                                             </ul>
@@ -363,7 +361,7 @@
                                                 aria-label="Review @term.DisplayName"
                                                 disabled="@AnyCommandPending"
                                                 @onclick="() => SelectTerm(term)">
-                                            Review
+                                            @LocalizedUiText.Get("Review")
                                         </button>
                                     </li>
                                 }
@@ -371,17 +369,17 @@
                         </ul>
                     </section>
 
-                    <nav class="srs-term-admin__pagination" aria-label="Academic term pages">
+                    <nav class="srs-term-admin__pagination" aria-label="@(LocalizedUiText.Get("Academic term pages"))">
                         <button type="button"
                                 disabled="@(_isLoadingTerms || _currentPage <= 1)"
                                 @onclick="() => ChangePageAsync(_currentPage - 1)">
-                            Previous
+                            @LocalizedUiText.Get("Previous")
                         </button>
-                        <span aria-live="polite">Page @_currentPage of @TotalPages</span>
+                        <span aria-live="polite">@LocalizedUiText.Get("Page") @_currentPage @LocalizedUiText.Get("of") @TotalPages</span>
                         <button type="button"
                                 disabled="@(_isLoadingTerms || _currentPage >= TotalPages)"
                                 @onclick="() => ChangePageAsync(_currentPage + 1)">
-                            Next
+                            @LocalizedUiText.Get("Next")
                         </button>
                     </nav>
                 </section>
@@ -392,7 +390,7 @@
                         <div class="srs-term-admin__editor-heading">
                             <div>
                                 <p class="srs-term-admin__eyebrow">
-                                    @(_isCreateMode ? "New explicit aggregate" : "Versioned aggregate editor")
+                                    @(_isCreateMode ? LocalizedUiText.Get("New explicit aggregate") : LocalizedUiText.Get("Versioned aggregate editor"))
                                 </p>
                                 <h2 id="term-editor-heading">
                                     @(_isCreateMode ? "Create term" : $"Review {_selectedTerm?.DisplayName}")
@@ -401,7 +399,7 @@
                             @if (_selectedTerm is not null)
                             {
                                 <span class="srs-term-admin__version">
-                                    Current term version: @_selectedTerm.RowVersion
+                                    @LocalizedUiText.Get("Current term version:") @_selectedTerm.RowVersion
                                 </span>
                             }
                         </div>
@@ -412,7 +410,7 @@
                               @onsubmit:preventDefault>
                             <div class="srs-term-admin__field-grid">
                                 <div class="srs-term-admin__field">
-                                    <label for="term-code">Term code</label>
+                                    <label for="term-code">@LocalizedUiText.Get("Term code")</label>
                                     <input id="term-code"
                                            maxlength="50"
                                            aria-invalid="@InvalidAria("term-code")"
@@ -422,7 +420,7 @@
                                     @FieldError("term-code")
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-display-name">Display name</label>
+                                    <label for="term-display-name">@LocalizedUiText.Get("Display name")</label>
                                     <input id="term-display-name"
                                            maxlength="200"
                                            aria-invalid="@InvalidAria("term-display-name")"
@@ -432,7 +430,7 @@
                                     @FieldError("term-display-name")
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-time-zone">Institutional time zone</label>
+                                    <label for="term-time-zone">@LocalizedUiText.Get("Institutional time zone")</label>
                                     <input id="term-time-zone"
                                            maxlength="100"
                                            aria-invalid="@InvalidAria("term-time-zone")"
@@ -442,7 +440,7 @@
                                     @FieldError("term-time-zone")
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-state">Term lifecycle</label>
+                                    <label for="term-state">@LocalizedUiText.Get("Term lifecycle")</label>
                                     <select id="term-state" @bind="_editor.State">
                                         @foreach (var state in Enum.GetValues<TermState>())
                                         {
@@ -451,7 +449,7 @@
                                     </select>
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-teaching-start">Teaching start date</label>
+                                    <label for="term-teaching-start">@LocalizedUiText.Get("Teaching start date")</label>
                                      <input id="term-teaching-start"
                                             type="date"
                                             aria-invalid="@DateRangeInvalidAria"
@@ -460,7 +458,7 @@
                                             @oninput="eventArgs => _editor.TeachingStartsOn = eventArgs.Value?.ToString() ?? string.Empty" />
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-teaching-end">Teaching end date</label>
+                                    <label for="term-teaching-end">@LocalizedUiText.Get("Teaching end date")</label>
                                      <input id="term-teaching-end"
                                             type="date"
                                             aria-invalid="@DateRangeInvalidAria"
@@ -479,15 +477,14 @@
                             <fieldset class="srs-term-admin__windows"
                                       id="registration-window-editor"
                                       data-testid="registration-window-editor">
-                                <legend>Registration windows</legend>
+                                <legend>@LocalizedUiText.Get("Registration windows")</legend>
                                 <p>
-                                    Enter local institutional times. The request converts them to
-                                    explicit UTC instants; the server computes availability.
+                                    @LocalizedUiText.Get("Enter local institutional times. The request converts them to explicit UTC instants; the server computes availability.")
                                 </p>
 
                                 @if (_editor.Windows.Count == 0)
                                 {
-                                    <p>No registration windows are included in this draft.</p>
+                                    <p>@LocalizedUiText.Get("No registration windows are included in this draft.")</p>
                                 }
                                 else
                                 {
@@ -498,12 +495,12 @@
                                         <section class="srs-term-admin__window-editor"
                                                  aria-labelledby="@WindowHeadingId(index)">
                                             <div class="srs-term-admin__window-heading">
-                                                <h3 id="@WindowHeadingId(index)">Window @(index + 1)</h3>
+                                                <h3 id="@WindowHeadingId(index)">@LocalizedUiText.Get("Window") @(index + 1)</h3>
                                                 <span>@WindowLifecycleLabel(window.LifecycleState)</span>
                                             </div>
                                             <div class="srs-term-admin__field-grid">
                                                 <div class="srs-term-admin__field">
-                                                    <label for="@WindowControlId("window-scope", index)">Scope</label>
+                                                    <label for="@WindowControlId("window-scope", index)">@LocalizedUiText.Get("Scope")</label>
                                                     <select id="@WindowControlId("window-scope", index)"
                                                             disabled="@window.HasImmutablePublishedValues"
                                                             @bind="window.ScopeType">
@@ -516,7 +513,7 @@
                                                 @if (window.ScopeType is not RegistrationWindowScope.AllStudents)
                                                 {
                                                     <div class="srs-term-admin__field">
-                                                        <label for="@WindowControlId("window-scope-value", index)">Scope value</label>
+                                                        <label for="@WindowControlId("window-scope-value", index)">@LocalizedUiText.Get("Scope value")</label>
                                                         <input id="@WindowControlId("window-scope-value", index)"
                                                                maxlength="100"
                                                                disabled="@window.HasImmutablePublishedValues"
@@ -525,7 +522,7 @@
                                                     </div>
                                                 }
                                                 <div class="srs-term-admin__field">
-                                                    <label for="@WindowControlId("window-opens-at", index)">Registration opens</label>
+                                                    <label for="@WindowControlId("window-opens-at", index)">@LocalizedUiText.Get("Registration opens")</label>
                                                      <input id="@WindowControlId("window-opens-at", index)"
                                                             type="datetime-local"
                                                             disabled="@window.HasImmutablePublishedValues"
@@ -533,7 +530,7 @@
                                                             @onchange="eventArgs => SetWindowLocalValue(windowKey, opensAt: true, eventArgs.Value)" />
                                                 </div>
                                                 <div class="srs-term-admin__field">
-                                                    <label for="@WindowControlId("window-closes-at", index)">Registration closes</label>
+                                                    <label for="@WindowControlId("window-closes-at", index)">@LocalizedUiText.Get("Registration closes")</label>
                                                      <input id="@WindowControlId("window-closes-at", index)"
                                                             type="datetime-local"
                                                             disabled="@window.HasImmutablePublishedValues"
@@ -547,7 +544,7 @@
                                                         class="srs-term-admin__secondary-button"
                                                         disabled="@AnyCommandPending"
                                                         @onclick="() => RemoveWindow(window.ClientKey)">
-                                                    Remove window
+                                                    @LocalizedUiText.Get("Remove window")
                                                 </button>
                                             }
                                         </section>
@@ -558,13 +555,13 @@
                                         data-testid="add-registration-window"
                                         disabled="@(AnyCommandPending || _editor.Windows.Count >= 20)"
                                         @onclick="AddWindow">
-                                    Add registration window
+                                    @LocalizedUiText.Get("Add registration window")
                                 </button>
                             </fieldset>
 
                             <div class="srs-term-admin__field-grid">
                                 <div class="srs-term-admin__field srs-term-admin__field--wide">
-                                    <label for="term-change-reason">Reason</label>
+                                    <label for="term-change-reason">@LocalizedUiText.Get("Reason")</label>
                                     <textarea id="term-change-reason"
                                               minlength="10"
                                               maxlength="500"
@@ -575,7 +572,7 @@
                                     @FieldError("term-change-reason")
                                 </div>
                                 <div class="srs-term-admin__field">
-                                    <label for="term-change-source">Source</label>
+                                    <label for="term-change-source">@LocalizedUiText.Get("Source")</label>
                                     <input id="term-change-source"
                                            maxlength="200"
                                            aria-invalid="@InvalidAria("term-change-source")"
@@ -592,7 +589,7 @@
                                     <button type="submit"
                                             data-testid="create-term-submit"
                                             disabled="@_isCreating">
-                                        @(_isCreating ? "Creating term…" : "Create term")
+                                        @(_isCreating ? LocalizedUiText.Get("Creating term…") : LocalizedUiText.Get("Create term"))
                                     </button>
                                 }
                                 else
@@ -600,12 +597,12 @@
                                     <button type="submit"
                                             data-testid="save-term-submit"
                                             disabled="@_isSaving">
-                                        @(_isSaving ? "Saving changes…" : "Save changes")
+                                        @(_isSaving ? LocalizedUiText.Get("Saving changes…") : LocalizedUiText.Get("Save changes"))
                                     </button>
 
                                     @if (PublishableWindows.Count > 0)
                                     {
-                                        <label for="window-to-publish">Window to publish</label>
+                                        <label for="window-to-publish">@LocalizedUiText.Get("Window to publish")</label>
                                         <select id="window-to-publish" @bind="_selectedWindowId">
                                             @foreach (var window in PublishableWindows)
                                             {
@@ -617,7 +614,7 @@
                                                 data-testid="publish-registration-window"
                                                 disabled="@_isPublishing"
                                                 @onclick="OpenPublishConfirmation">
-                                            @(_isPublishing ? "Publishing registration window…" : "Publish registration window")
+                                            @(_isPublishing ? LocalizedUiText.Get("Publishing registration window…") : LocalizedUiText.Get("Publish registration window"))
                                         </button>
                                     }
                                 }
@@ -630,8 +627,8 @@
     </main>
 
     <footer class="srs-term-admin__footer" role="contentinfo">
-        <p>Academic term owner: SPEC-008</p>
-        <a href="/status/support">System status and support</a>
+        <p>@LocalizedUiText.Get("Academic term owner: SPEC-008")</p>
+        <a href="/status/support">@LocalizedUiText.Get("System status and support")</a>
     </footer>
 </div>
 
@@ -644,12 +641,12 @@
                             DialogId="publish-registration-window-dialog"
                             TitleId="publish-registration-window-dialog-title"
                             DescriptionId="publish-registration-window-dialog-description"
-                            Title="Publish registration window"
-                            Message="Publish this explicit window using the current term and window versions? The server will recheck overlap and lifecycle rules."
-                            ConfirmLabel="Confirm publish"
-                            CancelLabel="Cancel"
+                            Title="@(LocalizedUiText.Get("Publish registration window"))"
+                            Message="@(LocalizedUiText.Get("Publish this explicit window using the current term and window versions? The server will recheck overlap and lifecycle rules."))"
+                            ConfirmLabel="@(LocalizedUiText.Get("Confirm publish"))"
+                            CancelLabel="@(LocalizedUiText.Get("Cancel"))"
                             IsBusy="@_isPublishing"
-                            BusyLabel="Publishing registration window…"
+                            BusyLabel="@(LocalizedUiText.Get("Publishing registration window…"))"
                             OnConfirm="PublishWindowAsync"
                             OnCancel="ClosePublishConfirmation"
                             FocusRestoreRequested="RestorePublishFocusAsync" />
@@ -688,9 +685,9 @@
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdministrationNavigation =
     [
-        new("Dashboard", "/admin"),
-        new("Terms", "/admin/terms", IsActive: true),
-        new("Registrations", "/admin/registrations")
+        new(LocalizedUiText.Get("Dashboard"), "/admin"),
+        new(LocalizedUiText.Get("Terms"), "/admin/terms", IsActive: true),
+        new(LocalizedUiText.Get("Registrations"), "/admin/registrations")
     ];
 
     private readonly List<AdminTermDto> _terms = [];
@@ -717,7 +714,7 @@
     private int _totalCount;
     private string _sort = "code,id";
     private string _reasonCode = ServiceUnavailable;
-    private string _safeMessage = "Term administration could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Term administration could not be loaded.");
     private string? _referenceId;
     private string? _successAnnouncement;
     private string? _selectedWindowId;
@@ -746,8 +743,8 @@
     };
 
     private string FailureHeading => _state is OfflineState
-        ? "Term administration is offline"
-        : "Term administration service unavailable";
+            ? LocalizedUiText.Get("Term administration is offline")
+        : LocalizedUiText.Get("Term administration service unavailable");
 
     private string FailureStateCss => _state is OfflineState
         ? "srs-term-admin__state--warning"
@@ -861,7 +858,7 @@
     private void ApplyReadFailure(HttpStatusCode statusCode, ApiError? error)
     {
         _reasonCode = error?.Code ?? ServiceUnavailable;
-        _safeMessage = error?.Message ?? "Term administration could not be loaded.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("Term administration could not be loaded.");
         _referenceId = error?.CorrelationId;
         _successAnnouncement = null;
 
@@ -888,7 +885,7 @@
     {
         _state = OfflineState;
         _reasonCode = "OFFLINE";
-        _safeMessage = "The browser cannot reach the service. Reconnect and retry the authoritative term list.";
+        _safeMessage = LocalizedUiText.Get("The browser cannot reach the service. Reconnect and retry the authoritative term list.");
         _referenceId = null;
         _successAnnouncement = null;
         _focusStateHeading = !_hasLoadedTerms;
@@ -903,8 +900,8 @@
         {
             SetValidation(
                 ValidationError,
-                "Enter between 3 and 50 characters, or clear the search.",
-                [new("term-search", "Search must contain between 3 and 50 characters.")]);
+                LocalizedUiText.Get("Enter between 3 and 50 characters, or clear the search."),
+                [new("term-search", LocalizedUiText.Get("Search must contain between 3 and 50 characters."))]);
             return;
         }
 
@@ -1044,7 +1041,7 @@
             var result = await AcademicApi.CreateAdminTermAsync(request);
             if (result.IsSuccess && result.Value is not null)
             {
-                ApplyServerAcceptedTerm(result.Value, "Term created after server confirmation.");
+                ApplyServerAcceptedTerm(result.Value, LocalizedUiText.Get("Term created after server confirmation."));
                 _lastCreatePayloadFingerprint = null;
                 return;
             }
@@ -1093,7 +1090,7 @@
             var result = await AcademicApi.UpdateAdminTermAsync(_selectedTerm.Id, request);
             if (result.IsSuccess && result.Value is not null)
             {
-                ApplyServerAcceptedTerm(result.Value, "Term changes saved after server confirmation.");
+                ApplyServerAcceptedTerm(result.Value, LocalizedUiText.Get("Term changes saved after server confirmation."));
                 return;
             }
 
@@ -1120,8 +1117,8 @@
         {
             SetValidation(
                 ValidationError,
-                "Select one draft registration window to publish.",
-                [new("window-to-publish", "Select one draft registration window to publish.")]);
+                LocalizedUiText.Get("Select one draft registration window to publish."),
+                [new("window-to-publish", LocalizedUiText.Get("Select one draft registration window to publish."))]);
             return;
         }
 
@@ -1150,7 +1147,7 @@
         if (provenanceErrors.Count > 0)
         {
             _showPublishConfirmation = false;
-            SetValidation(ValidationError, "Reason and source are required.", provenanceErrors);
+            SetValidation(ValidationError, LocalizedUiText.Get("Reason and source are required."), provenanceErrors);
             return;
         }
 
@@ -1173,8 +1170,8 @@
             {
                 ApplyServerAcceptedTerm(
                     result.Value,
-                    "Registration window published after server confirmation. " +
-                    "The immutable versions are shown below; actor and timestamp remain in server audit.");
+                    LocalizedUiText.Get("Registration window published after server confirmation. ") +
+                    LocalizedUiText.Get("The immutable versions are shown below; actor and timestamp remain in server audit."));
                 return;
             }
 
@@ -1197,7 +1194,7 @@
         AdminTermDto? previousServerTerm)
     {
         _reasonCode = error?.Code ?? ServiceUnavailable;
-        _safeMessage = error?.Message ?? "The server did not accept the term command.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The server did not accept the term command.");
         _referenceId = error?.CorrelationId;
         _successAnnouncement = null;
         _validationErrors.Clear();
@@ -1233,7 +1230,7 @@
             _validationErrors.Add(new("registration-window-editor", _safeMessage));
             _conflictingWindows.AddRange(
                 error?.FieldErrors?.Values.SelectMany(messages => messages)
-                ?? ["The server reported an overlapping registration window."]);
+                ?? [LocalizedUiText.Get("The server reported an overlapping registration window.")]);
             await RefetchContestedTermAsync(previousServerTerm);
             _focusValidationSummary = true;
             return;
@@ -1287,11 +1284,11 @@
     private void CaptureChangedFields(AdminTermDto previous, AdminTermDto current)
     {
         _staleChangedFields.Clear();
-        AddChangedField("Display name", previous.DisplayName, current.DisplayName);
-        AddChangedField("Teaching start date", DateValue(previous.TeachingStartsOn), DateValue(current.TeachingStartsOn));
-        AddChangedField("Teaching end date", DateValue(previous.TeachingEndsOn), DateValue(current.TeachingEndsOn));
-        AddChangedField("Term lifecycle", TermStateLabel(previous.State), TermStateLabel(current.State));
-        AddChangedField("Term row version", previous.RowVersion, current.RowVersion);
+        AddChangedField(LocalizedUiText.Get("Display name"), previous.DisplayName, current.DisplayName);
+        AddChangedField(LocalizedUiText.Get("Teaching start date"), DateValue(previous.TeachingStartsOn), DateValue(current.TeachingStartsOn));
+        AddChangedField(LocalizedUiText.Get("Teaching end date"), DateValue(previous.TeachingEndsOn), DateValue(current.TeachingEndsOn));
+        AddChangedField(LocalizedUiText.Get("Term lifecycle"), TermStateLabel(previous.State), TermStateLabel(current.State));
+        AddChangedField(LocalizedUiText.Get("Term row version"), previous.RowVersion, current.RowVersion);
     }
 
     private void AddChangedField(string label, string previous, string current)
@@ -1313,8 +1310,8 @@
         _staleServerTerm = null;
         _state = SuccessState;
         _reasonCode = "CURRENT_VERSION_REVIEWED";
-        _safeMessage = "Current server versions loaded. Review the preserved draft before saving.";
-        _successAnnouncement = "Current versions loaded; no draft value was submitted or overwritten.";
+        _safeMessage = LocalizedUiText.Get("Current server versions loaded. Review the preserved draft before saving.");
+        _successAnnouncement = LocalizedUiText.Get("Current versions loaded; no draft value was submitted or overwritten.");
         _staleChangedFields.Clear();
         _selectedWindowId = _selectedTerm.Windows
             .FirstOrDefault(window => window.LifecycleState is RegistrationWindowLifecycle.Draft)
@@ -1364,7 +1361,7 @@
         var errors = ValidateEditor();
         if (errors.Count > 0)
         {
-            SetValidation(ValidationError, "Correct the highlighted term values.", errors);
+            SetValidation(ValidationError, LocalizedUiText.Get("Correct the highlighted term values."), errors);
             return false;
         }
 
@@ -1396,8 +1393,8 @@
         {
             SetValidation(
                 ValidationError,
-                "The term values could not be normalized.",
-                [new("term-editor", "Review the dates, time zone, scope, and registration-window values.")]);
+                LocalizedUiText.Get("The term values could not be normalized."),
+                [new("term-editor", LocalizedUiText.Get("Review the dates, time zone, scope, and registration-window values."))]);
             return false;
         }
     }
@@ -1407,17 +1404,17 @@
         var errors = ValidateProvenance();
         if (string.IsNullOrWhiteSpace(_editor!.Code) || _editor.Code.Trim().Length > 50)
         {
-            errors.Add(new("term-code", "Term code is required and must not exceed 50 characters."));
+            errors.Add(new("term-code", LocalizedUiText.Get("Term code is required and must not exceed 50 characters.")));
         }
 
         if (string.IsNullOrWhiteSpace(_editor.DisplayName) || _editor.DisplayName.Trim().Length > 200)
         {
-            errors.Add(new("term-display-name", "Display name is required and must not exceed 200 characters."));
+            errors.Add(new("term-display-name", LocalizedUiText.Get("Display name is required and must not exceed 200 characters.")));
         }
 
         if (string.IsNullOrWhiteSpace(_editor.TimeZoneId) || _editor.TimeZoneId.Trim().Length > 100)
         {
-            errors.Add(new("term-time-zone", "Institutional time zone is required."));
+            errors.Add(new("term-time-zone", LocalizedUiText.Get("Institutional time zone is required.")));
         }
         else
         {
@@ -1427,7 +1424,7 @@
             }
             catch (Exception exception) when (exception is TimeZoneNotFoundException or InvalidTimeZoneException)
             {
-                errors.Add(new("term-time-zone", "Enter a valid IANA institutional time zone."));
+                errors.Add(new("term-time-zone", LocalizedUiText.Get("Enter a valid IANA institutional time zone.")));
             }
         }
 
@@ -1445,14 +1442,14 @@
             out var end);
         if (!hasStart || !hasEnd || end <= start)
         {
-            const string dateMessage = "Teaching end date must be after the teaching start date.";
+        var dateMessage = LocalizedUiText.Get("Teaching end date must be after the teaching start date.");
             errors.Add(new("term-teaching-start", dateMessage));
             errors.Add(new("term-teaching-end", dateMessage));
         }
 
         if (_editor.Windows.Count > 20)
         {
-            errors.Add(new("registration-window-editor", "A term may contain at most 20 registration windows."));
+            errors.Add(new("registration-window-editor", LocalizedUiText.Get("A term may contain at most 20 registration windows.")));
         }
 
         for (var index = 0; index < _editor.Windows.Count; index++)
@@ -1463,7 +1460,7 @@
             {
                 errors.Add(new(
                     WindowControlId("window-scope-value", index),
-                    $"Window {index + 1} requires a scope value."));
+                    LocalizedUiText.Format("Window {0} requires a scope value.", index + 1)));
             }
 
             var hasOpen = TryParseLocal(window.OpensAtLocal, out var opens);
@@ -1472,7 +1469,7 @@
             {
                 errors.Add(new(
                     WindowControlId("window-closes-at", index),
-                    $"Window {index + 1} must close after it opens."));
+                    LocalizedUiText.Format("Window {0} must close after it opens.", index + 1)));
             }
         }
 
@@ -1485,13 +1482,13 @@
         var reason = _editor?.Reason.Trim() ?? string.Empty;
         if (reason.Length is < 10 or > 500)
         {
-            errors.Add(new("term-change-reason", "Reason must contain between 10 and 500 characters."));
+            errors.Add(new("term-change-reason", LocalizedUiText.Get("Reason must contain between 10 and 500 characters.")));
         }
 
         var source = _editor?.Source.Trim() ?? string.Empty;
         if (source.Length is < 1 or > 200)
         {
-            errors.Add(new("term-change-source", "Source is required and must not exceed 200 characters."));
+            errors.Add(new("term-change-source", LocalizedUiText.Get("Source is required and must not exceed 200 characters.")));
         }
 
         return errors;
@@ -1579,7 +1576,7 @@
     private RenderFragment ReferenceContent() => @<text>
         @if (!string.IsNullOrWhiteSpace(_referenceId))
         {
-            <p class="srs-term-admin__reference">Reference <strong>@_referenceId</strong></p>
+            <p class="srs-term-admin__reference">@LocalizedUiText.Get("Reference") <strong>@_referenceId</strong></p>
         }
     </text>;
 
@@ -1670,13 +1667,13 @@
 
     private static string TermStateLabel(TermState state) => state switch
     {
-        TermState.Draft => "Draft",
-        TermState.RegistrationOpen => "Registration open",
-        TermState.RegistrationClosed => "Registration closed",
-        TermState.Teaching => "Teaching",
-        TermState.Completed => "Completed",
-        TermState.Archived => "Archived",
-        _ => "Unknown"
+        TermState.Draft => LocalizedUiText.Get("Draft"),
+        TermState.RegistrationOpen => LocalizedUiText.Get("Registration open"),
+        TermState.RegistrationClosed => LocalizedUiText.Get("Registration closed"),
+        TermState.Teaching => LocalizedUiText.Get("Teaching"),
+        TermState.Completed => LocalizedUiText.Get("Completed"),
+        TermState.Archived => LocalizedUiText.Get("Archived"),
+        _ => LocalizedUiText.Get("Unknown")
     };
 
     private static string WindowLifecycleToken(RegistrationWindowLifecycle lifecycle) => lifecycle switch
@@ -1690,28 +1687,28 @@
 
     private static string WindowLifecycleLabel(RegistrationWindowLifecycle lifecycle) => lifecycle switch
     {
-        RegistrationWindowLifecycle.Draft => "Draft",
-        RegistrationWindowLifecycle.Published => "Published",
-        RegistrationWindowLifecycle.EmergencyClosed => "Emergency closed",
-        RegistrationWindowLifecycle.Superseded => "Superseded",
-        _ => "Unknown"
+        RegistrationWindowLifecycle.Draft => LocalizedUiText.Get("Draft"),
+        RegistrationWindowLifecycle.Published => LocalizedUiText.Get("Published"),
+        RegistrationWindowLifecycle.EmergencyClosed => LocalizedUiText.Get("Emergency closed"),
+        RegistrationWindowLifecycle.Superseded => LocalizedUiText.Get("Superseded"),
+        _ => LocalizedUiText.Get("Unknown")
     };
 
     private static string ScopeLabel(RegistrationWindowScope scope) => scope switch
     {
-        RegistrationWindowScope.AllStudents => "All students",
-        RegistrationWindowScope.Program => "Program",
-        RegistrationWindowScope.Cohort => "Cohort",
-        _ => "Unknown"
+        RegistrationWindowScope.AllStudents => LocalizedUiText.Get("All students"),
+        RegistrationWindowScope.Program => LocalizedUiText.Get("Program"),
+        RegistrationWindowScope.Cohort => LocalizedUiText.Get("Cohort"),
+        _ => LocalizedUiText.Get("Unknown")
     };
 
     private static string WindowScopeLabel(AdminRegistrationWindowDto window) =>
         window.ScopeType is RegistrationWindowScope.AllStudents
-            ? "All students"
-            : $"{ScopeLabel(window.ScopeType)}: {window.ScopeValue}";
+            ? LocalizedUiText.Get("All students")
+            : LocalizedUiText.Format("{0}: {1}", ScopeLabel(window.ScopeType), window.ScopeValue);
 
     private static string PublishWindowLabel(AdminRegistrationWindowDto window) =>
-        $"{WindowScopeLabel(window)} — {UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc)}";
+        LocalizedUiText.Format("{0} — {1}", WindowScopeLabel(window), UtcRangeLabel(window.OpensAtUtc, window.ClosesAtUtc));
 
     private sealed record ValidationIssue(string ControlId, string Message);
 
@@ -1726,7 +1723,7 @@
         public string TeachingEndsOn { get; set; } = string.Empty;
         public TermState State { get; set; } = TermState.Draft;
         public string Reason { get; set; } = string.Empty;
-        public string Source { get; set; } = "ADM-02 web administration";
+        public string Source { get; set; } = LocalizedUiText.Get("ADM-02 web administration");
         public List<WindowEditorModel> Windows { get; } = [];
 
         public static TermEditorModel New() => new();
@@ -1741,7 +1738,7 @@
                 TeachingStartsOn = DateValue(term.TeachingStartsOn),
                 TeachingEndsOn = DateValue(term.TeachingEndsOn),
                 State = term.State,
-                Source = "ADM-02 web administration"
+                Source = LocalizedUiText.Get("ADM-02 web administration")
             };
             model.Windows.AddRange(term.Windows.Select(window => WindowEditorModel.From(window, term.TimeZoneId)));
             return model;

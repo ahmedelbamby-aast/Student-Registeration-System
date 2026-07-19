@@ -5,21 +5,21 @@
 @using StudentRegistration.Client.UX
 @inject AcademicApiClient AcademicApi
 
-<PageTitle>Role gateway | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Role gateway | Student Registration")</PageTitle>
 
 <div class="srs-public-gateway" data-route-id="AUTH-01" data-state="@StateToken">
-    <a class="srs-skip-link" href="#main-content">Skip to main content</a>
+    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
     <header class="srs-public-gateway__header" role="banner">
-        <a class="srs-public-gateway__brand" href="/" aria-label="Student Registration home">
+        <a class="srs-public-gateway__brand" href="/" aria-label="@(LocalizedUiText.Get("Student Registration home"))">
             <img src="/brand/aastmt-logo.png"
-                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
             <span>
-                <strong>AASTMT</strong>
-                <small>Student Registration</small>
+                <strong>@LocalizedUiText.Get("AASTMT")</strong>
+                <small>@LocalizedUiText.Get("Student Registration")</small>
             </span>
         </a>
-        <span class="srs-public-gateway__demo-label">Academic services demo</span>
+        <span class="srs-public-gateway__demo-label">@LocalizedUiText.Get("Academic services demo")</span>
     </header>
 
     <main id="main-content"
@@ -27,11 +27,10 @@
           data-testid="role-gateway-page"
           tabindex="-1">
         <section class="srs-public-gateway__intro" aria-labelledby="role-gateway-heading">
-            <p class="srs-public-gateway__eyebrow">Online academic services</p>
-            <h1 id="role-gateway-heading" tabindex="-1">Role gateway</h1>
+            <p class="srs-public-gateway__eyebrow">@LocalizedUiText.Get("Online academic services")</p>
+            <h1 id="role-gateway-heading" tabindex="-1">@LocalizedUiText.Get("Role gateway")</h1>
             <p>
-                Check the server-authoritative academic status, then choose the
-                correct secure access path.
+                @LocalizedUiText.Get("Check the server-authoritative academic status, then choose the correct secure access path.")
             </p>
         </section>
 
@@ -45,8 +44,8 @@
                      aria-busy="true">
                 <span class="srs-public-context__pulse" aria-hidden="true"></span>
                 <div>
-                    <h2>Loading public academic status</h2>
-                    <p>Checking the current term and registration service once.</p>
+                    <h2>@LocalizedUiText.Get("Loading public academic status")</h2>
+                    <p>@LocalizedUiText.Get("Checking the current term and registration service once.")</p>
                 </div>
             </section>
         }
@@ -58,16 +57,16 @@
                      aria-live="polite">
                 <div class="srs-public-context__heading">
                     <div>
-                        <p class="srs-public-gateway__eyebrow">Current server status</p>
-                        <h2 id="public-context-heading">Academic context</h2>
+                        <p class="srs-public-gateway__eyebrow">@LocalizedUiText.Get("Current server status")</p>
+                        <h2 id="public-context-heading">@LocalizedUiText.Get("Academic context")</h2>
                     </div>
-                    <StatusBadge Text="Available"
+                    <StatusBadge Text="@(LocalizedUiText.Get("Available"))"
                                  Tone="StatusBadge.BadgeTone.Success" />
                 </div>
 
                 <dl class="srs-public-context__facts">
                     <div>
-                        <dt>Server time</dt>
+                        <dt>@LocalizedUiText.Get("Server time")</dt>
                         <dd>
                             <time datetime="@UtcInstant(_context.ServerTimeUtc)">
                                 @ServerTimeLabel(_context.ServerTimeUtc)
@@ -76,15 +75,15 @@
                         </dd>
                     </div>
                     <div>
-                        <dt>Teaching term</dt>
+                        <dt>@LocalizedUiText.Get("Teaching term")</dt>
                         <dd>@(_context.TeachingTermLabel ?? "No teaching term published")</dd>
                     </div>
                     <div>
-                        <dt>Registration term</dt>
+                        <dt>@LocalizedUiText.Get("Registration term")</dt>
                         <dd>@(_context.RegistrationTermLabel ?? "No registration term published")</dd>
                     </div>
                     <div>
-                        <dt>Registration window</dt>
+                        <dt>@LocalizedUiText.Get("Registration window")</dt>
                         <dd>
                             <StatusBadge Text="@WindowLabel(_context.RegistrationWindowState)"
                                          Tone="@WindowTone(_context.RegistrationWindowState)" />
@@ -93,38 +92,36 @@
                 </dl>
             </section>
 
-            <section class="srs-public-gateway__destinations" aria-label="Sign-in destinations">
-                <EntityCard HeadingId="student-destination-heading" Heading="Students">
+            <section class="srs-public-gateway__destinations" aria-label="@(LocalizedUiText.Get("Sign-in destinations"))">
+                <EntityCard HeadingId="student-destination-heading" Heading="@(LocalizedUiText.Get("Students"))">
                     <ChildContent>
                         <p>
-                            Sign in with your University ID, or activate a generated
-                            demo account for first use.
+                            @LocalizedUiText.Get("Sign in with your University ID, or activate a generated demo account for first use.")
                         </p>
                     </ChildContent>
                     <Actions>
                         <div class="srs-public-gateway__card-actions">
                             <a class="srs-public-gateway__primary-link"
                                data-testid="student-login-link"
-                               href="/student/login">Student login</a>
+                               href="/student/login">@LocalizedUiText.Get("Student login")</a>
                             <a class="srs-public-gateway__secondary-link"
                                data-testid="student-activation-link"
-                               href="/student/activate">Student activation</a>
+                               href="/student/activate">@LocalizedUiText.Get("Student activation")</a>
                         </div>
                     </Actions>
                 </EntityCard>
 
-                <EntityCard HeadingId="staff-destination-heading" Heading="Academic staff">
+                <EntityCard HeadingId="staff-destination-heading" Heading="@(LocalizedUiText.Get("Academic staff"))">
                     <ChildContent>
                         <p>
-                            Admins, Lecturers, and Teaching Assistants use the shared
-                            staff sign-in page. The server assigns authorized access.
+                            @LocalizedUiText.Get("Admins, Lecturers, and Teaching Assistants use the shared staff sign-in page. The server assigns authorized access.")
                         </p>
                     </ChildContent>
                     <Actions>
                         <div class="srs-public-gateway__card-actions">
                             <a class="srs-public-gateway__primary-link"
                                data-testid="staff-login-link"
-                               href="/staff/login">Staff login</a>
+                               href="/staff/login">@LocalizedUiText.Get("Staff login")</a>
                         </div>
                     </Actions>
                 </EntityCard>
@@ -136,7 +133,7 @@
                      data-contract-state="AUTH-01-COMP-STATE-STALE"
                      aria-labelledby="public-context-stale-heading"
                      aria-live="polite">
-                <h2 id="public-context-stale-heading">Public status changed</h2>
+                <h2 id="public-context-stale-heading">@LocalizedUiText.Get("Public status changed")</h2>
                 <p class="srs-public-context__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
                 @RecoveryActions()
@@ -148,7 +145,7 @@
                      data-contract-state="AUTH-01-COMP-STATE-OFFLINE"
                      aria-labelledby="public-context-offline-heading"
                      aria-live="polite">
-                <h2 id="public-context-offline-heading">Offline Role gateway status</h2>
+                <h2 id="public-context-offline-heading">@LocalizedUiText.Get("Offline Role gateway status")</h2>
                 <p>@_safeMessage</p>
                 @RecoveryActions()
             </section>
@@ -159,7 +156,7 @@
                      data-contract-state="AUTH-01-COMP-STATE-SERVICE-ERROR"
                      aria-labelledby="public-context-error-heading"
                      aria-live="polite">
-                <h2 id="public-context-error-heading">Public academic status unavailable</h2>
+                <h2 id="public-context-error-heading">@LocalizedUiText.Get("Public academic status unavailable")</h2>
                 <p class="srs-public-context__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
                 @RecoveryActions()
@@ -168,8 +165,8 @@
     </main>
 
     <footer class="srs-public-gateway__footer" role="contentinfo">
-        <p>Arab Academy for Science, Technology and Maritime Transport</p>
-        <a href="/status/support">System status and support</a>
+        <p>@LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport")</p>
+        <a href="/status/support">@LocalizedUiText.Get("System status and support")</a>
     </footer>
 </div>
 
@@ -183,7 +180,7 @@
     private bool _isLoading = true;
     private bool _isRetrying;
     private string _reasonCode = ServiceUnavailable;
-    private string _safeMessage = "Public context could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Public context could not be loaded.");
     private string? _referenceId;
 
     private string StateToken => _isLoading
@@ -229,7 +226,7 @@
         {
             _state = RouteUiState.Offline;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach the service. Reconnect and retry public context.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach the service. Reconnect and retry public context.");
             _referenceId = null;
         }
         finally
@@ -247,17 +244,17 @@
                 _context = context;
                 _state = RouteUiState.Success;
                 _reasonCode = "AVAILABLE";
-                _safeMessage = "Public academic status is available.";
+        _safeMessage = LocalizedUiText.Get("Public academic status is available.");
                 break;
             case ServiceState.Maintenance:
                 _state = RouteUiState.ServiceError;
                 _reasonCode = Maintenance;
-                _safeMessage = "Public registration status is temporarily unavailable.";
+        _safeMessage = LocalizedUiText.Get("Public registration status is temporarily unavailable.");
                 break;
             default:
                 _state = RouteUiState.ServiceError;
                 _reasonCode = ServiceUnavailable;
-                _safeMessage = "Public context could not be loaded.";
+                _safeMessage = LocalizedUiText.Get("Public context could not be loaded.");
                 break;
         }
     }
@@ -265,7 +262,7 @@
     private void ApplyFailure(ApiError? error)
     {
         _reasonCode = error?.Code ?? ServiceUnavailable;
-        _safeMessage = error?.Message ?? "Public context could not be loaded.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("Public context could not be loaded.");
         _referenceId = error?.CorrelationId;
         _state = string.Equals(_reasonCode, WindowChanged, StringComparison.Ordinal)
             ? RouteUiState.Stale
@@ -276,7 +273,7 @@
         @if (!string.IsNullOrWhiteSpace(_referenceId))
         {
             <p class="srs-public-context__reference">
-                Reference <strong>@_referenceId</strong>
+                @LocalizedUiText.Get("Reference") <strong>@_referenceId</strong>
             </p>
         }
         <div class="srs-public-context__actions">
@@ -284,9 +281,9 @@
                     data-testid="public-context-retry"
                     disabled="@_isRetrying"
                     @onclick="RetryPublicContextAsync">
-                @(_isRetrying ? "Retrying…" : "Retry public context")
+                @(_isRetrying ? "Retrying…" : LocalizedUiText.Get("Retry public context"))
             </button>
-            <a href="/status/support">Open safe support path</a>
+            <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
         </div>
     </div>;
 
@@ -294,14 +291,14 @@
         value.ToString("O", CultureInfo.InvariantCulture);
 
     private static string ServerTimeLabel(DateTime value) =>
-        value.ToString("dd MMM yyyy, HH:mm 'UTC'", CultureInfo.InvariantCulture);
+        value.ToString("g", CultureInfo.CurrentCulture);
 
     private static string WindowLabel(RegistrationWindowState state) => state switch
     {
-        RegistrationWindowState.Open => "Open",
-        RegistrationWindowState.Upcoming => "Upcoming",
-        RegistrationWindowState.Closed => "Closed",
-        _ => "No registration window"
+        RegistrationWindowState.Open => LocalizedUiText.Get("Open"),
+        RegistrationWindowState.Upcoming => LocalizedUiText.Get("Upcoming"),
+        RegistrationWindowState.Closed => LocalizedUiText.Get("Closed"),
+        _ => LocalizedUiText.Get("No registration window")
     };
 
     private static StatusBadge.BadgeTone WindowTone(RegistrationWindowState state) => state switch

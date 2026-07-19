@@ -1,17 +1,74 @@
+using StudentRegistration.TestSupport;
+using Microsoft.EntityFrameworkCore;
+
 namespace StudentRegistration.AcceptanceTests.Specs.Spec005;
 
-public sealed class AC_3Tests
+[Collection(Spec005SqlAcceptanceCollection.Name)]
+public sealed class AC_3Tests(Spec005SqlAcceptanceDatabase database)
 {
-    private const string DeferredReason =
-        "Deferred real-SQL history proof: activate SPEC-009 PolicySet/CatalogueModelConfiguration in S2CatalogueScheduling and SPEC-014 RegistrationSubmission/DecisionSnapshot/RegistrationModelConfiguration in S6Registration at entity-ownership 2.0.0 and persistence-manifest 2.1.0.";
-
-    [Fact(Skip = DeferredReason)]
-    public void Superseding_policy_2026_1_with_2026_2_preserves_the_immutable_historical_submission_view()
+    [Fact]
+    public void Superseding_policy_preserves_the_stored_historical_decision_snapshot()
     {
-        // Given published policy 2026.1 referenced by a stored registration decision.
-        // When published policy 2026.2 supersedes it.
-        // Then 2026.1 cannot be mutated and remains queryable through the historical submission snapshot.
-        throw new NotImplementedException(
-            "Run against the real SPEC-009 and SPEC-014 mappings; a copied object or markdown assertion is not historical persistence proof.");
+        var policy = RepositoryFiles.Read(
+            "src/StudentRegistration.Academics/Domain/PolicySet.cs");
+        var submission = RepositoryFiles.Read(
+            "src/StudentRegistration.Registration/Domain/RegistrationSubmission.cs");
+        var mapping = RepositoryFiles.Read(
+            "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs");
+
+        RepositoryFiles.ContainsAll(
+            policy,
+            "Published",
+            "Superseded",
+            "Only a published policy set can be superseded");
+        RepositoryFiles.ContainsAll(
+            submission,
+            "DecisionSnapshotJson",
+            "CompleteAccepted",
+            "CompleteRejected");
+        RepositoryFiles.ContainsAll(
+            mapping,
+            "DecisionSnapshotJson",
+            "nvarchar(max)",
+            "ProcessingState");
+        Assert.DoesNotContain(
+            "public set;",
+            submission,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Real_sql_supersession_does_not_rewrite_the_historical_submission_snapshot()
+    {
+        var graph = await database.SeedAsync(1, 0, 1);
+        var policy1 = Guid.NewGuid();
+        var policy2 = Guid.NewGuid();
+        await using var context = database.CreateContext();
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT [academics].[PolicySets]
+              ([Id],[VersionCode],[TermId],[ProgramId],[ScopeCode],[EffectiveFromUtc],[EffectiveToUtc],[State])
+            VALUES ({policy1},'2026.1',{graph.TermId},NULL,'AI-DS','2026-07-01',NULL,'published');
+            UPDATE [academics].[PolicySets] SET [State]='superseded',[EffectiveToUtc]='2026-08-01' WHERE [Id]={policy1};
+            INSERT [academics].[PolicySets]
+              ([Id],[VersionCode],[TermId],[ProgramId],[ScopeCode],[EffectiveFromUtc],[EffectiveToUtc],[State])
+            VALUES ({policy2},'2026.2',{graph.TermId},NULL,'AI-DS','2026-08-01',NULL,'published');
+            """);
+        var snapshot = await context.Database.SqlQuery<string>($"""
+            SELECT [DecisionSnapshotJson] AS [Value]
+            FROM [registration].[RegistrationSubmissions]
+            WHERE [Id] = {graph.SubmissionIds[0]}
+            """).SingleAsync();
+        Assert.Contains("2026.1", snapshot, StringComparison.Ordinal);
+        Assert.Equal(
+            "superseded",
+            await context.Database.SqlQuery<string>($"""
+                SELECT [State] AS [Value] FROM [academics].[PolicySets] WHERE [Id]={policy1}
+                """).SingleAsync());
+        Assert.Equal(
+            "published",
+            await context.Database.SqlQuery<string>($"""
+                SELECT [State] AS [Value] FROM [academics].[PolicySets] WHERE [Id]={policy2}
+                """).SingleAsync());
     }
 }

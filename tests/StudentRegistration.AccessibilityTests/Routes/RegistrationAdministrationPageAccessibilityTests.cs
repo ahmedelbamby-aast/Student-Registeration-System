@@ -40,11 +40,10 @@ public sealed class RegistrationAdministrationPageAccessibilityTests
 public sealed class RegistrationAdministrationPageAxeTests(AxeAccessibilityFixture fixture)
 {
     [Theory]
-    [InlineData(375)]
-    [InlineData(1280)]
-    public async Task Adm_08_has_no_serious_issue_or_page_overflow_at_width(int width)
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Adm_08_has_no_serious_issue_or_page_overflow_at_width(int width, float scale)
     {
-        await using var context = await fixture.OpenContextAsync(width);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.GotoAsync("/admin/registrations", new()
         {
@@ -53,6 +52,10 @@ public sealed class RegistrationAdministrationPageAxeTests(AxeAccessibilityFixtu
         await page.Locator("[data-route-id='ADM-08']").WaitForAsync();
 
         await AxeAccessibilityFixture.AssertNoSeriousAxeViolationsAsync(page);
+        var skip = page.GetByRole(AriaRole.Link, new() { Name = "Skip to main content", Exact = true });
+        await skip.FocusAsync();
+        Assert.True(await skip.EvaluateAsync<bool>(
+            "element => getComputedStyle(element).outlineStyle !== 'none'"));
         Assert.True(await page.EvaluateAsync<bool>(
             "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
     }

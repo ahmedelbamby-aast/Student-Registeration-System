@@ -9,7 +9,7 @@
 @inject AcademicApiClient AcademicApi
 @inject RegistrationApiClient RegistrationApi
 
-<PageTitle>Subject details | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Subject details | Student Registration")</PageTitle>
 
 @if (_initialLoading)
 {
@@ -19,10 +19,10 @@
           data-state="loading"
           data-contract-state="STU-03-COMP-STATE-LOADING"
           tabindex="-1">
-        <h1>Subject details</h1>
+        <h1>@LocalizedUiText.Get("Subject details")</h1>
         <section role="status" aria-live="polite" aria-busy="true">
-            <h2>Loading subject details</h2>
-            <p>Refreshing the current eligibility, groups, capacity, and versions.</p>
+            <h2>@LocalizedUiText.Get("Loading subject details")</h2>
+            <p>@LocalizedUiText.Get("Refreshing the current eligibility, groups, capacity, and versions.")</p>
         </section>
     </main>
 }
@@ -30,24 +30,24 @@ else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext"
               MainContentId="main-content"
-              SkipLinkLabel="Skip to main content"
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
               BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time"
-              TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term"
-              RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term"
-              NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window"
-              AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role"
-              SessionLabel="Session"
-              ServiceLabel="Service"
-              SupportLinkLabel="Open support"
-              LoadingLabel="Loading subject details">
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+              SessionLabel="@(LocalizedUiText.Get("Session"))"
+              ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+              LoadingLabel="@(LocalizedUiText.Get("Loading subject details"))">
         <Navigation>
-            <RoleNavigation AccessibleName="Student role navigation"
+            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
                             Items="@StudentNavigation" />
         </Navigation>
         <ChildContent>
@@ -55,25 +55,25 @@ else if (_shellContext is not null)
                  data-route-id="STU-03"
                  data-state="@_state"
                  data-contract-state="@ContractState">
-                <nav aria-label="Breadcrumb">
-                    <a href="/student/subjects">Available subjects</a>
+                <nav aria-label="@(LocalizedUiText.Get("Breadcrumb"))">
+                    <a href="/student/subjects">@LocalizedUiText.Get("Available subjects")</a>
                     <span aria-hidden="true"> / </span>
-                    <span>Subject details</span>
+                    <span>@LocalizedUiText.Get("Subject details")</span>
                 </nav>
                 <header class="srs-subject-details__intro">
                     <div>
-                        <p class="srs-subject-details__eyebrow">Student registration</p>
-                        <h1>Subject details</h1>
+                        <p class="srs-subject-details__eyebrow">@LocalizedUiText.Get("Student registration")</p>
+                        <h1>@LocalizedUiText.Get("Subject details")</h1>
                         @if (_offering is not null)
                         {
                             <p>
                                 <strong>@_offering.CourseCode</strong>
                                 · @_offering.Title
-                                · @Credits(_offering.Credits) credits
+                                · @Credits(_offering.Credits) @LocalizedUiText.Get("credits")
                             </p>
                         }
                     </div>
-                    <a href="/student/subjects">Return to discovery</a>
+                    <a href="/student/subjects">@LocalizedUiText.Get("Return to discovery")</a>
                 </header>
 
                 @if (IsFailureState)
@@ -87,17 +87,17 @@ else if (_shellContext is not null)
                         <p>@_safeMessage</p>
                         @if (!string.IsNullOrWhiteSpace(_referenceId))
                         {
-                            <p>Reference: <span>@_referenceId</span></p>
+                            <p>@LocalizedUiText.Get("Reference:") <span>@_referenceId</span></p>
                         }
                         @if (_state is ServiceErrorState or OfflineState or StaleState)
                         {
                             <button type="button"
                                     disabled="@_requestLoading"
                                     @onclick="LoadDetailsAsync">
-                                Retry subject details
+                                @LocalizedUiText.Get("Retry subject details")
                             </button>
                         }
-                        <a href="/student/subjects">Return to discovery</a>
+                        <a href="/student/subjects">@LocalizedUiText.Get("Return to discovery")</a>
                     </section>
                 }
                 else if (_offering is not null)
@@ -107,32 +107,30 @@ else if (_shellContext is not null)
                         <section class="srs-subject-details__state srs-subject-details__state--stale"
                                  role="status"
                                  aria-live="polite">
-                            <h2>Group availability changed</h2>
+                            <h2>@LocalizedUiText.Get("Group availability changed")</h2>
                             <p><strong>@_reasonCode</strong></p>
                             <p>
-                                This is the latest server result. No seat was reserved
-                                and no plan change was made.
+                                @LocalizedUiText.Get("This is the latest server result. No seat was reserved and no plan change was made.")
                             </p>
                             <button type="button"
                                     disabled="@_requestLoading"
                                     @onclick="LoadDetailsAsync">
-                                Refresh subject details
+                                @LocalizedUiText.Get("Refresh subject details")
                             </button>
-                            <a href="/student/subjects">Choose another subject</a>
+                            <a href="/student/subjects">@LocalizedUiText.Get("Choose another subject")</a>
                         </section>
                     }
 
                     <section class="srs-subject-details__decision"
                              aria-labelledby="subject-decision-heading">
-                        <h2 id="subject-decision-heading">Eligibility result</h2>
-                        <StatusBadge Text="@(_offering.Eligible ? "Eligible" : "Unavailable")"
+                        <h2 id="subject-decision-heading">@LocalizedUiText.Get("Eligibility result")</h2>
+                        <StatusBadge Text="@(_offering.Eligible ? LocalizedUiText.Get("Eligible") : LocalizedUiText.Get("Unavailable"))"
                                      Icon="@(_offering.Eligible ? "✓" : "✕")"
                                      Tone="@(_offering.Eligible
                                          ? StatusBadge.BadgeTone.Success
                                          : StatusBadge.BadgeTone.Danger)" />
                         <p>
-                            Continue links record only a group intent. The schedule page
-                            and later submission must revalidate authoritative state.
+                            @LocalizedUiText.Get("Continue links record only a group intent. The schedule page and later submission must revalidate authoritative state.")
                         </p>
                     </section>
 
@@ -152,16 +150,16 @@ else
           data-state="@_state"
           data-contract-state="@ContractState"
           tabindex="-1">
-        <h1>Subject details</h1>
+        <h1>@LocalizedUiText.Get("Subject details")</h1>
         <section role="alert" aria-live="assertive">
             <h2>@FailureHeading</h2>
             <p><strong>@_reasonCode</strong></p>
             <p>@_safeMessage</p>
             @if (!string.IsNullOrWhiteSpace(_referenceId))
             {
-                <p>Reference: @_referenceId</p>
+                <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
             }
-            <a href="/student/subjects">Return to discovery</a>
+            <a href="/student/subjects">@LocalizedUiText.Get("Return to discovery")</a>
         </section>
     </main>
 }
@@ -178,9 +176,9 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new("Dashboard", "/student"),
-        new("Available subjects", "/student/subjects", IsActive: true),
-        new("Current plan", "/student/schedule")
+        new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Available subjects"), "/student/subjects", IsActive: true),
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule")
     ];
 
     [Parameter]
@@ -190,7 +188,7 @@ else
     private OfferingEligibilityDto? _offering;
     private string _state = LoadingState;
     private string _reasonCode = "DISCOVERY_UNAVAILABLE";
-    private string _safeMessage = "Subject details could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Subject details could not be loaded.");
     private string? _referenceId;
     private bool _initialLoading = true;
     private bool _requestLoading;
@@ -215,12 +213,12 @@ else
 
     private string FailureHeading => _state switch
     {
-        ValidationErrorState => "Subject is not available in this context",
-        UnauthorizedState => "Access denied",
-        SessionExpiredState => "Session expired",
-        StaleState => "Group availability changed",
-        OfflineState => "Subject details are offline",
-        _ => "Subject details are unavailable"
+        ValidationErrorState => LocalizedUiText.Get("Subject is not available in this context"),
+        UnauthorizedState => LocalizedUiText.Get("Access denied"),
+        SessionExpiredState => LocalizedUiText.Get("Session expired"),
+        StaleState => LocalizedUiText.Get("Group availability changed"),
+        OfflineState => LocalizedUiText.Get("Subject details are offline"),
+        _ => LocalizedUiText.Get("Subject details are unavailable")
     };
 
     protected override async Task OnParametersSetAsync()
@@ -230,7 +228,7 @@ else
             _initialLoading = false;
             _state = ValidationErrorState;
             _reasonCode = "OFFERING_NOT_FOUND_OR_OUTSIDE_CONTEXT";
-            _safeMessage = "The requested subject identifier is not valid.";
+            _safeMessage = LocalizedUiText.Get("The requested subject identifier is not valid.");
             return;
         }
 
@@ -250,7 +248,7 @@ else
                     HttpStatusCode.Forbidden,
                     new ApiError(
                         "FORBIDDEN",
-                        "The active server role cannot open Student subject details.",
+                        LocalizedUiText.Get("The active server role cannot open Student subject details."),
                         "STU-03-AUTHORIZATION"));
                 return;
             }
@@ -264,7 +262,7 @@ else
                         context.ServiceState is ServiceState.Maintenance
                             ? "MAINTENANCE"
                             : "DISCOVERY_UNAVAILABLE",
-                        "Subject details are temporarily unavailable.",
+                        LocalizedUiText.Get("Subject details are temporarily unavailable."),
                         "STU-03-SERVICE"));
                 return;
             }
@@ -275,7 +273,7 @@ else
         {
             _state = OfflineState;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach subject details. No request was queued.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach subject details. No request was queued.");
             _offering = null;
         }
         finally
@@ -319,7 +317,7 @@ else
         {
             _state = OfflineState;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach subject details. No request was queued.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach subject details. No request was queued.");
             _offering = null;
         }
         finally
@@ -332,7 +330,7 @@ else
     {
         _offering = null;
         _reasonCode = error?.Code ?? "DISCOVERY_UNAVAILABLE";
-        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The request could not be completed safely.");
         _referenceId = error?.CorrelationId;
         _state = _reasonCode switch
         {
@@ -347,5 +345,5 @@ else
     }
 
     private static string Credits(decimal value) =>
-        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
 }

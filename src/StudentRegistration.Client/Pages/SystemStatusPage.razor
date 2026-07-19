@@ -1,32 +1,32 @@
 @page "/status/{Code}"
 @inject OperationsApiClient OperationsApi
 
-<PageTitle>System status</PageTitle>
+<PageTitle>@LocalizedUiText.Get("System status")</PageTitle>
 
 <main id="system-status-main"
       class="srs-system-status"
       tabindex="-1"
       data-route-id="SYS-01"
       data-state="@_state.ToString().ToLowerInvariant()">
-    <a class="srs-skip-link" href="#system-status-main">Skip to main content</a>
+    <a class="srs-skip-link" href="#system-status-main">@LocalizedUiText.Get("Skip to main content")</a>
 
     <section class="srs-system-status__panel" aria-labelledby="system-status-page-heading">
-        <h1 id="system-status-page-heading">System status</h1>
+        <h1 id="system-status-page-heading">@LocalizedUiText.Get("System status")</h1>
 
         <RouteStatePanel HeadingId="system-status-detail-heading"
                          Status="@_status"
                          State="@_state"
                          Announcement="@_announcement"
-                         ReferenceLabel="Reference"
+                         ReferenceLabel="@(LocalizedUiText.Get("Reference"))"
                          ActionsDisabled="@_isLoading" />
 
         @if (_health is not null)
         {
-            <dl class="srs-system-status__health" aria-label="Safe health summary">
-                <div><dt>Status</dt><dd>@HealthStatusLabel</dd></div>
-                <div><dt>Version</dt><dd>@_health.Version</dd></div>
+            <dl class="srs-system-status__health" aria-label="@(LocalizedUiText.Get("Safe health summary"))">
+                <div><dt>@LocalizedUiText.Get("Status")</dt><dd>@HealthStatusLabel</dd></div>
+                <div><dt>@LocalizedUiText.Get("Version")</dt><dd>@_health.Version</dd></div>
                 <div>
-                    <dt>Timestamp</dt>
+                    <dt>@LocalizedUiText.Get("Timestamp")</dt>
                     <dd>
                         <time datetime="@_health.TimestampUtc.ToString("O")">
                             @_health.TimestampUtc.ToString("yyyy-MM-dd HH:mm 'UTC'")
@@ -40,12 +40,12 @@
 
 @code {
     private static readonly IReadOnlyList<UiStatusAction> GatewayAction =
-        [new("gateway", "Open public gateway", "/")];
+        [new("gateway", LocalizedUiText.Get("Open public gateway"), "/")];
     private static readonly IReadOnlyList<UiStatusAction> SignInActions =
     [
-        new("student-login", "Student login", "/student/login"),
-        new("staff-login", "Staff login", "/staff/login"),
-        new("gateway", "Open public gateway", "/")
+        new("student-login", LocalizedUiText.Get("Student login"), "/student/login"),
+        new("staff-login", LocalizedUiText.Get("Staff login"), "/staff/login"),
+        new("gateway", LocalizedUiText.Get("Open public gateway"), "/")
     ];
 
     [Parameter]
@@ -62,8 +62,8 @@
         RouteStatePanel.AnnouncementMode.Polite;
     private UiStatus _status = new(
         "LOADING",
-        "Checking system status",
-        "Wait for the safe status summary.",
+        LocalizedUiText.Get("Checking system status"),
+        LocalizedUiText.Get("Wait for the safe status summary."),
         UiStatusSeverity.Information,
         [],
         null);
@@ -107,8 +107,8 @@
         _announcement = RouteStatePanel.AnnouncementMode.Polite;
         _status = new UiStatus(
             "LOADING",
-            "Checking system status",
-            "Wait for the safe status summary.",
+            LocalizedUiText.Get("Checking system status"),
+            LocalizedUiText.Get("Wait for the safe status summary."),
             UiStatusSeverity.Information,
             [],
             null);
@@ -138,7 +138,7 @@
     {
         var retry = new UiStatusAction(
             "retry",
-            "Retry status",
+            LocalizedUiText.Get("Retry status"),
             $"/status/{summary.Status.ToString().ToLowerInvariant()}");
         (_state, _announcement, _status) = summary.Status switch
         {
@@ -147,8 +147,8 @@
                 RouteStatePanel.AnnouncementMode.Polite,
                 new UiStatus(
                     "HEALTHY",
-                    "Systems available",
-                    "The public health summary reports that required services are available.",
+                    LocalizedUiText.Get("Systems available"),
+                    LocalizedUiText.Get("The public health summary reports that required services are available."),
                     UiStatusSeverity.Success,
                     GatewayAction,
                     null)),
@@ -157,8 +157,8 @@
                 RouteStatePanel.AnnouncementMode.Polite,
                 new UiStatus(
                     "DEGRADED",
-                    "Service degraded",
-                    "Some non-critical capability is unavailable. Retry or continue from the public gateway.",
+                    LocalizedUiText.Get("Service degraded"),
+                    LocalizedUiText.Get("Some non-critical capability is unavailable. Retry or continue from the public gateway."),
                     UiStatusSeverity.Warning,
                     [retry, .. GatewayAction],
                     SafeReference(ReferenceId) ?? "HEALTH-DEGRADED")),
@@ -167,8 +167,8 @@
                 RouteStatePanel.AnnouncementMode.Assertive,
                 new UiStatus(
                     "UNHEALTHY",
-                    "Service unavailable",
-                    "A required service is unavailable. Retry later or use the public gateway.",
+                    LocalizedUiText.Get("Service unavailable"),
+                    LocalizedUiText.Get("A required service is unavailable. Retry later or use the public gateway."),
                     UiStatusSeverity.Error,
                     [retry, .. GatewayAction],
                     SafeReference(ReferenceId) ?? "HEALTH-UNHEALTHY"))
@@ -185,8 +185,8 @@
                 RouteStatePanel.AnnouncementMode.Assertive,
                 new UiStatus(
                     "FORBIDDEN",
-                    "Access unavailable",
-                    "Your current context cannot open that resource. Sign in with an authorized account or return to the public gateway.",
+                    LocalizedUiText.Get("Access unavailable"),
+                    LocalizedUiText.Get("Your current context cannot open that resource. Sign in with an authorized account or return to the public gateway."),
                     UiStatusSeverity.Error,
                     SignInActions,
                     reference ?? "STATUS-403")),
@@ -195,8 +195,8 @@
                 RouteStatePanel.AnnouncementMode.Assertive,
                 new UiStatus(
                     "NOT_FOUND",
-                    "Page not found",
-                    "The requested page is unavailable. No protected resource details are shown.",
+                    LocalizedUiText.Get("Page not found"),
+                    LocalizedUiText.Get("The requested page is unavailable. No protected resource details are shown."),
                     UiStatusSeverity.Error,
                     GatewayAction,
                     reference ?? "STATUS-404")),
@@ -205,8 +205,8 @@
                 RouteStatePanel.AnnouncementMode.Assertive,
                 new UiStatus(
                     "SESSION_EXPIRED",
-                    "Session expired",
-                    "Sign in again before returning to protected work.",
+                    LocalizedUiText.Get("Session expired"),
+                    LocalizedUiText.Get("Sign in again before returning to protected work."),
                     UiStatusSeverity.Error,
                     SignInActions,
                     reference ?? "STATUS-EXPIRED")),
@@ -215,28 +215,28 @@
                 RouteStatePanel.AnnouncementMode.Polite,
                 new UiStatus(
                     "MAINTENANCE",
-                    "Maintenance in progress",
-                    "The service is temporarily unavailable for maintenance. Retry later.",
+                    LocalizedUiText.Get("Maintenance in progress"),
+                    LocalizedUiText.Get("The service is temporarily unavailable for maintenance. Retry later."),
                     UiStatusSeverity.Warning,
-                    [new("retry", "Retry status", "/status/maintenance"), .. GatewayAction],
+                    [new("retry", LocalizedUiText.Get("Retry status"), "/status/maintenance"), .. GatewayAction],
                     reference ?? "STATUS-MAINTENANCE")),
             "offline" => (
                 RouteUiState.Offline,
                 RouteStatePanel.AnnouncementMode.Polite,
                 new UiStatus(
                     "OFFLINE",
-                    "You are offline",
-                    "Reconnect before retrying. No request or registration action was queued.",
+                    LocalizedUiText.Get("You are offline"),
+                    LocalizedUiText.Get("Reconnect before retrying. No request or registration action was queued."),
                     UiStatusSeverity.Warning,
-                    [new("retry", "Retry status", "/status/healthy"), .. GatewayAction],
+                    [new("retry", LocalizedUiText.Get("Retry status"), "/status/healthy"), .. GatewayAction],
                     reference)),
             _ => (
                 RouteUiState.ServiceError,
                 RouteStatePanel.AnnouncementMode.Assertive,
                 new UiStatus(
                     "UNEXPECTED",
-                    "Unexpected error",
-                    "The request could not be completed. Return to the public gateway or use the reference when requesting support.",
+                    LocalizedUiText.Get("Unexpected error"),
+                    LocalizedUiText.Get("The request could not be completed. Return to the public gateway or use the reference when requesting support."),
                     UiStatusSeverity.Error,
                     GatewayAction,
                     reference ?? "STATUS-UNEXPECTED"))
@@ -249,10 +249,10 @@
         _announcement = RouteStatePanel.AnnouncementMode.Assertive;
         _status = new UiStatus(
             "SERVICE_UNAVAILABLE",
-            "Service unavailable",
-            "The safe health summary could not be loaded. Retry later.",
+            LocalizedUiText.Get("Service unavailable"),
+            LocalizedUiText.Get("The safe health summary could not be loaded. Retry later."),
             UiStatusSeverity.Error,
-            [new("retry", "Retry status", "/status/healthy"), .. GatewayAction],
+            [new("retry", LocalizedUiText.Get("Retry status"), "/status/healthy"), .. GatewayAction],
             SafeReference(correlationId) ?? SafeReference(ReferenceId) ?? "HEALTH-UNAVAILABLE");
     }
 

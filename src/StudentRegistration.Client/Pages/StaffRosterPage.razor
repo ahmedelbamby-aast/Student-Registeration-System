@@ -11,39 +11,39 @@
 @inject AcademicApiClient AcademicApi
 @inject StaffApiClient StaffApi
 
-<PageTitle>Assigned group roster | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Assigned group roster | Student Registration")</PageTitle>
 
 @if (_loading)
 {
     <div data-route-id="STF-03" data-state="loading" data-contract-state="STF-03-COMP-STATE-LOADING">
-        <a href="#main-content">Skip to main content</a>
-        <main id="main-content" tabindex="-1"><h1>Assigned group roster</h1><p role="status" aria-busy="true">Loading the authorized roster.</p></main>
+        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
+        <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Assigned group roster")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading the authorized roster.")</p></main>
     </div>
 }
 else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
-              SupportLinkLabel="Open support" LoadingLabel="Loading assigned roster">
-        <Navigation><RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" /></Navigation>
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading assigned roster"))">
+        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" /></Navigation>
         <ChildContent>@RosterContent</ChildContent>
     </AppShell>
 }
 else
 {
-    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@RosterContent</main>
+    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@RosterContent</main>
 }
 
 @code {
     private const int PageSize = 20;
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
-    [new("Staff home", "/staff"), new("Timetable", "/staff/timetable"), new("Availability", "/staff/availability")];
+    [new(LocalizedUiText.Get("Staff home"), "/staff"), new(LocalizedUiText.Get("Timetable"), "/staff/timetable"), new(LocalizedUiText.Get("Availability"), "/staff/availability")];
 
     [Parameter] public Guid GroupId { get; set; }
 
@@ -51,7 +51,7 @@ else
     private Page<RosterRowDto>? _roster;
     private string _state = "loading";
     private string _reasonCode = "STAFF_ROSTER_UNAVAILABLE";
-    private string _message = "The assigned roster could not be loaded safely.";
+    private string _message = LocalizedUiText.Get("The assigned roster could not be loaded safely.");
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
@@ -70,42 +70,42 @@ else
 
     private RenderFragment RosterContent => @<article data-route-id="STF-03"
         data-state="@_state" data-contract-state="@ContractState">
-        <header><p>Staff workspace</p><h1>Assigned group roster</h1></header>
+        <header><p>@LocalizedUiText.Get("Staff workspace")</p><h1>@LocalizedUiText.Get("Assigned group roster")</h1></header>
 
         @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
         {
             <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
                 <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
-                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: @_reference</p> }
-                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="() => LoadRosterAsync(1)">Retry</button> }
-                <a href="/staff">Return to Staff home</a>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") @_reference</p> }
+                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="() => LoadRosterAsync(1)">@LocalizedUiText.Get("Retry")</button> }
+                <a href="/staff">@LocalizedUiText.Get("Return to Staff home")</a>
             </section>
         }
         else if (_state == "stale")
         {
             <section role="status" aria-live="polite">
-                <h2>Assignment changed</h2><p><strong>STAFF_GROUP_NOT_FOUND</strong></p>
-                <p>The assignment was removed or changed. Roster content is no longer available.</p>
-                <a href="/staff">Return to Staff home</a>
+                <h2>@LocalizedUiText.Get("Assignment changed")</h2><p><strong>@LocalizedUiText.Get("STAFF_GROUP_NOT_FOUND")</strong></p>
+                <p>@LocalizedUiText.Get("The assignment was removed or changed. Roster content is no longer available.")</p>
+                <a href="/staff">@LocalizedUiText.Get("Return to Staff home")</a>
             </section>
         }
         else if (_state == "empty")
         {
             <section aria-labelledby="empty-roster-heading">
-                <h2 id="empty-roster-heading">No active roster entries</h2>
-                <p>The assigned group currently has no active enrollment rows.</p>
-                <a href="/staff/timetable">Return to timetable</a>
+                <h2 id="empty-roster-heading">@LocalizedUiText.Get("No active roster entries")</h2>
+                <p>@LocalizedUiText.Get("The assigned group currently has no active enrollment rows.")</p>
+                <a href="/staff/timetable">@LocalizedUiText.Get("Return to timetable")</a>
             </section>
         }
         else if (_roster is not null)
         {
             <section aria-labelledby="roster-heading">
-                <h2 id="roster-heading">Authorized roster</h2>
-                <p role="status">@_roster.TotalCount active roster entries. Page @_roster.PageNumber of @TotalPages.</p>
-                <div role="region" aria-label="Assigned group roster table" tabindex="0">
+                <h2 id="roster-heading">@LocalizedUiText.Get("Authorized roster")</h2>
+                <p role="status">@_roster.TotalCount @LocalizedUiText.Get("active roster entries. Page") @_roster.PageNumber @LocalizedUiText.Get("of") @TotalPages.</p>
+                <div role="region" aria-label="@(LocalizedUiText.Get("Assigned group roster table"))" tabindex="0">
                     <table>
-                        <caption>Minimum authorized roster fields, sorted by display name then University ID</caption>
-                        <thead><tr><th scope="col">University ID</th><th scope="col">Display name</th><th scope="col">Enrollment state</th></tr></thead>
+                        <caption>@LocalizedUiText.Get("Minimum authorized roster fields, sorted by display name then University ID")</caption>
+                        <thead><tr><th scope="col">@LocalizedUiText.Get("University ID")</th><th scope="col">@LocalizedUiText.Get("Display name")</th><th scope="col">@LocalizedUiText.Get("Enrollment state")</th></tr></thead>
                         <tbody>
                             @foreach (var row in _roster.Items)
                             {
@@ -114,19 +114,19 @@ else
                         </tbody>
                     </table>
                 </div>
-                <ol aria-label="Roster compact view">
+                <ol aria-label="@(LocalizedUiText.Get("Roster compact view"))">
                     @foreach (var row in _roster.Items)
                     {
                         <li><strong>@row.DisplayName</strong><span> @row.UniversityId · @row.EnrollmentState</span></li>
                     }
                 </ol>
-                <Pagination AccessibleLabel="Roster pages" PreviousLabel="Previous" NextLabel="Next"
+                <Pagination AccessibleLabel="@(LocalizedUiText.Get("Roster pages"))" PreviousLabel="@(LocalizedUiText.Get("Previous"))" NextLabel="@(LocalizedUiText.Get("Next"))"
                             CurrentPage="@_roster.PageNumber" TotalPages="@TotalPages" VisiblePages="@VisiblePages"
-                            PageLabel="@(page => page.ToString(CultureInfo.InvariantCulture))"
-                            CurrentPageLabel="@((page, total) => $"Page {page} of {total}")"
-                            PageChanged="LoadRosterAsync" IsLoading="@_requesting" LoadingLabel="Loading roster page" />
+                            PageLabel="@(page => page.ToString(CultureInfo.CurrentCulture))"
+                            CurrentPageLabel="@((page, total) => LocalizedUiText.Format("Page {0} of {1}", page, total))"
+                            PageChanged="LoadRosterAsync" IsLoading="@_requesting" LoadingLabel="@(LocalizedUiText.Get("Loading roster page"))" />
             </section>
-            <nav aria-label="Roster actions"><a href="/staff/timetable">Open timetable</a><a href="/staff">Return to Staff dashboard</a></nav>
+            <nav aria-label="@(LocalizedUiText.Get("Roster actions"))"><a href="/staff/timetable">@LocalizedUiText.Get("Open timetable")</a><a href="/staff">@LocalizedUiText.Get("Return to Staff dashboard")</a></nav>
         }
     </article>;
 
@@ -134,10 +134,10 @@ else
     private IReadOnlyList<int> VisiblePages => _roster is null ? [1] : Enumerable.Range(1, TotalPages).Where(page => Math.Abs(page - _roster.PageNumber) <= 2).ToArray();
     private string ErrorHeading => _state switch
     {
-        "session-expired" => "Session expired",
-        "unauthorized" => "Access denied",
-        "offline" => "You are offline",
-        _ => "Roster unavailable"
+        "session-expired" => LocalizedUiText.Get("Session expired"),
+        "unauthorized" => LocalizedUiText.Get("Access denied"),
+        "offline" => LocalizedUiText.Get("You are offline"),
+        _ => LocalizedUiText.Get("Roster unavailable")
     };
 
     protected override async Task OnInitializedAsync()
@@ -152,7 +152,7 @@ else
             }
             if (!StaffPageSupport.HasActiveStaffContext(context.Value))
             {
-                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "An active staff context is required.", "STF-03-AUTH"), initialRequest: true);
+            ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", LocalizedUiText.Get("An active staff context is required."), "STF-03-AUTH"), initialRequest: true);
                 return;
             }
             _shellContext = StaffPageSupport.ToShellContext(context.Value);
@@ -192,7 +192,7 @@ else
     {
         _roster = null;
         _reasonCode = error?.Code ?? "STAFF_ROSTER_UNAVAILABLE";
-        _message = error?.Message ?? "The assigned roster could not be loaded safely.";
+        _message = error?.Message ?? LocalizedUiText.Get("The assigned roster could not be loaded safely.");
         _reference = error?.CorrelationId;
         _state = status switch
         {
@@ -207,6 +207,6 @@ else
     private void ApplyOffline()
     {
         _roster = null; _state = "offline"; _reasonCode = "OFFLINE";
-        _message = "Reconnect, then retry the assigned roster."; _reference = null;
+        _message = LocalizedUiText.Get("Reconnect, then retry the assigned roster."); _reference = null;
     }
 }

@@ -32,7 +32,7 @@ public sealed class AuditAdministrationPageComponentTests
 
         RepositoryFiles.ContainsAll(
             page,
-            "aria-label=\"Scoped audit filters\"",
+            "aria-label=\"@(LocalizedUiText.Get(\"Scoped audit filters\"))\"",
             "name=\"pageSize\"",
             "max=\"100\"",
             "data-testid=\"audit-event-table\"",

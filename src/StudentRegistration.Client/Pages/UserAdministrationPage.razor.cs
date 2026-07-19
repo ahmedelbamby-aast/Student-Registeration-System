@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using StudentRegistration.Client.Components.Forms;
 using StudentRegistration.Client.Features.Identity;
+using StudentRegistration.Client.Localization;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Identity;
 
@@ -69,7 +70,7 @@ public partial class UserAdministrationPage : ComponentBase
     private IdentityImportBatchDto? _importBatch;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Administration status";
+    private string _feedbackHeading = LocalizedUiText.Get("Administration status");
     private string? _feedbackState;
     private string? _correlationId;
     private bool _feedbackIsError;
@@ -92,12 +93,12 @@ public partial class UserAdministrationPage : ComponentBase
         string.Equals(_importBatch.State, "validated", StringComparison.Ordinal);
 
     private string StatusConfirmationTitle => _selectedUser?.Enabled == true
-        ? "Disable this account?"
-        : "Enable this account?";
+        ? LocalizedUiText.Get("Disable this account?")
+        : LocalizedUiText.Get("Enable this account?");
 
     private string StatusConfirmationMessage => _selectedUser?.Enabled == true
-        ? "The account will be signed out on every replica. The final enabled Admin cannot be disabled."
-        : "The account will become eligible for its server-authorized roles.";
+        ? LocalizedUiText.Get("The account will be signed out on every replica. The final enabled Admin cannot be disabled.")
+        : LocalizedUiText.Get("The account will become eligible for its server-authorized roles.");
 
     protected override async Task OnInitializedAsync()
     {
@@ -209,7 +210,7 @@ public partial class UserAdministrationPage : ComponentBase
             [
                 new AccessibleValidationSummary.ValidationItem(
                     "status-change-reason",
-                    "Enter a reason for the status change.")
+                    LocalizedUiText.Get("Enter a reason for the status change."))
             ];
             return;
         }
@@ -242,7 +243,9 @@ public partial class UserAdministrationPage : ComponentBase
             {
                 UpdateUser(result.Value);
                 _statusReason = string.Empty;
-                ApplySuccess("Account status updated", "The server accepted and audited the status change.");
+                ApplySuccess(
+                    LocalizedUiText.Get("Account status updated"),
+                    LocalizedUiText.Get("The server accepted and audited the status change."));
                 return;
             }
 
@@ -297,7 +300,7 @@ public partial class UserAdministrationPage : ComponentBase
             [
                 new AccessibleValidationSummary.ValidationItem(
                     "role-change-reason",
-                    "Enter a reason for the role change.")
+                    LocalizedUiText.Get("Enter a reason for the role change."))
             ];
             return;
         }
@@ -315,7 +318,9 @@ public partial class UserAdministrationPage : ComponentBase
             {
                 UpdateUser(result.Value);
                 _roleReason = string.Empty;
-                ApplySuccess("Roles updated", "The server accepted and audited the role replacement.");
+                ApplySuccess(
+                    LocalizedUiText.Get("Roles updated"),
+                    LocalizedUiText.Get("The server accepted and audited the role replacement."));
                 return;
             }
 
@@ -342,7 +347,9 @@ public partial class UserAdministrationPage : ComponentBase
 
         if (string.IsNullOrWhiteSpace(_importSource))
         {
-            SetImportError("identity-import-source", "Enter the import source name.");
+            SetImportError(
+                "identity-import-source",
+                LocalizedUiText.Get("Enter the import source name."));
             return;
         }
 
@@ -353,7 +360,9 @@ public partial class UserAdministrationPage : ComponentBase
                 ImportJsonOptions);
             if (rows is null || rows.Length is < 1 or > 500)
             {
-                SetImportError("identity-import-rows", "Provide between 1 and 500 user rows.");
+                SetImportError(
+                    "identity-import-rows",
+                    LocalizedUiText.Get("Provide between 1 and 500 user rows."));
                 return;
             }
 
@@ -366,13 +375,15 @@ public partial class UserAdministrationPage : ComponentBase
             _importPreview = normalized;
             _importContentHash = IdentityImportContentHash.Compute(normalized);
             _createImportClientRequestId = Guid.NewGuid().ToString("N");
-            ApplySuccess("Import preview ready", "Review the bounded rows before server validation.");
+            ApplySuccess(
+                LocalizedUiText.Get("Import preview ready"),
+                LocalizedUiText.Get("Review the bounded rows before server validation."));
         }
         catch (JsonException)
         {
             SetImportError(
                 "identity-import-rows",
-                "Use a JSON array containing only the documented pre-provisioning fields.");
+                LocalizedUiText.Get("Use a JSON array containing only the documented pre-provisioning fields."));
         }
     }
 
@@ -399,7 +410,9 @@ public partial class UserAdministrationPage : ComponentBase
             {
                 _importBatch = result.Value;
                 _publishImportClientRequestId = Guid.NewGuid().ToString("N");
-                ApplySuccess("Import received", "The server returned the authoritative validation state.");
+                ApplySuccess(
+                    LocalizedUiText.Get("Import received"),
+                    LocalizedUiText.Get("The server returned the authoritative validation state."));
                 return;
             }
 
@@ -462,7 +475,9 @@ public partial class UserAdministrationPage : ComponentBase
             if (result.IsSuccess && result.Value is not null)
             {
                 _importBatch = result.Value;
-                ApplySuccess("Import published", "All validated identities were published atomically.");
+                ApplySuccess(
+                    LocalizedUiText.Get("Import published"),
+                    LocalizedUiText.Get("All validated identities were published atomically."));
                 await LoadUsersAsync(1);
                 return;
             }
@@ -505,24 +520,24 @@ public partial class UserAdministrationPage : ComponentBase
         };
         _feedbackHeading = _feedbackCode switch
         {
-            "FINAL_ADMIN_REQUIRED" => "Final Admin must remain",
-            "STALE_VERSION" => "User information changed",
-            "UNAUTHORIZED" or "FORBIDDEN" => "Access unavailable",
-            _ => "Identity operation not completed"
+            "FINAL_ADMIN_REQUIRED" => LocalizedUiText.Get("Final Admin must remain"),
+            "STALE_VERSION" => LocalizedUiText.Get("User information changed"),
+            "UNAUTHORIZED" or "FORBIDDEN" => LocalizedUiText.Get("Access unavailable"),
+            _ => LocalizedUiText.Get("Identity operation not completed")
         };
         _feedbackMessage = _feedbackCode switch
         {
             "FINAL_ADMIN_REQUIRED" =>
-                "This change would remove the final enabled Admin. No change was made.",
+                LocalizedUiText.Get("This change would remove the final enabled Admin. No change was made."),
             "STALE_VERSION" =>
-                "Refresh and review the current user or import before submitting again.",
-            "IMPORT_INVALID" => "Correct the import preview and submit it again.",
-            "IMPORT_NOT_VALIDATED" => "Wait for a validated import before publishing.",
-            "IDEMPOTENCY_KEY_REUSED" => "The same request key was used for different content.",
-            "IMPORT_CONTENT_EXISTS" => "This source content was already imported.",
+                LocalizedUiText.Get("Refresh and review the current user or import before submitting again."),
+            "IMPORT_INVALID" => LocalizedUiText.Get("Correct the import preview and submit it again."),
+            "IMPORT_NOT_VALIDATED" => LocalizedUiText.Get("Wait for a validated import before publishing."),
+            "IDEMPOTENCY_KEY_REUSED" => LocalizedUiText.Get("The same request key was used for different content."),
+            "IMPORT_CONTENT_EXISTS" => LocalizedUiText.Get("This source content was already imported."),
             "UNAUTHORIZED" or "FORBIDDEN" =>
-                "Your current context cannot manage identities. Return to an authorized Admin context.",
-            _ => "The operation could not be completed. Retry or use the support path."
+                LocalizedUiText.Get("Your current context cannot manage identities. Return to an authorized Admin context."),
+            _ => LocalizedUiText.Get("The operation could not be completed. Retry or use the support path.")
         };
         _feedbackState = IdentityPageFeedback.StateFor(_feedbackCode);
         _correlationId = error?.CorrelationId;
@@ -567,7 +582,7 @@ public partial class UserAdministrationPage : ComponentBase
                 row.Roles is null)
             {
                 normalized = [];
-                message = "Every row needs a unique external reference, kind, display name, and roles array.";
+                message = LocalizedUiText.Get("Every row needs a unique external reference, kind, display name, and roles array.");
                 return false;
             }
 
@@ -581,7 +596,7 @@ public partial class UserAdministrationPage : ComponentBase
             if (roles.Any(role => !AssignableRoles.Contains(role, StringComparer.Ordinal)))
             {
                 normalized = [];
-                message = "Staff roles are limited to Admin, Lecturer, and Teaching Assistant.";
+                message = LocalizedUiText.Get("Staff roles are limited to Admin, Lecturer, and Teaching Assistant.");
                 return false;
             }
 
@@ -594,7 +609,7 @@ public partial class UserAdministrationPage : ComponentBase
                     roles.Length != 0)
                 {
                     normalized = [];
-                    message = "Student rows need a unique University ID and no staff fields or roles.";
+                    message = LocalizedUiText.Get("Student rows need a unique University ID and no staff fields or roles.");
                     return false;
                 }
 
@@ -619,7 +634,7 @@ public partial class UserAdministrationPage : ComponentBase
                     roles.Length == 0)
                 {
                     normalized = [];
-                    message = "Staff rows need unique username and staff number values plus at least one role.";
+                    message = LocalizedUiText.Get("Staff rows need unique username and staff number values plus at least one role.");
                     return false;
                 }
 
@@ -635,7 +650,7 @@ public partial class UserAdministrationPage : ComponentBase
             }
 
             normalized = [];
-            message = "Each row kind must be student or staff.";
+            message = LocalizedUiText.Get("Each row kind must be student or staff.");
             return false;
         }
 
@@ -646,9 +661,9 @@ public partial class UserAdministrationPage : ComponentBase
 
     private static string DisplayRoles(IReadOnlyList<string> roles) =>
         roles.Count == 0
-            ? "No active roles"
-            : string.Join(", ", roles.Select(DisplayRole));
+            ? LocalizedUiText.Get("No active roles")
+            : string.Join(LocalizedUiText.Get(", "), roles.Select(DisplayRole));
 
     private static string DisplayRole(string role) =>
-        role == "TeachingAssistant" ? "Teaching Assistant" : role;
+        LocalizedUiText.Get(role == "TeachingAssistant" ? "Teaching Assistant" : role);
 }

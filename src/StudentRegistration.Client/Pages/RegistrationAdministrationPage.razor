@@ -1,32 +1,31 @@
 @page "/admin/registrations"
 
-<PageTitle>Registration monitoring | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Registration monitoring | Student Registration")</PageTitle>
 
 <div class="srs-registration-monitor"
      data-route-id="ADM-08"
      data-state="loading"
      data-supported-states="loading empty success stale degraded unauthorized session-expired offline">
-    <a class="srs-registration-monitor__skip" href="#main-content">Skip to main content</a>
+    <a class="srs-registration-monitor__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
     <header class="srs-registration-monitor__header" role="banner">
-        <a href="/admin" aria-label="Administration home">
-            <strong>AASTMT</strong>
-            <span>Student Registration</span>
+        <a href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
+            <strong>@LocalizedUiText.Get("AASTMT")</strong>
+            <span>@LocalizedUiText.Get("Student Registration")</span>
         </a>
-        <nav aria-label="Administration navigation">
-            <a href="/admin">Dashboard</a>
-            <a href="/admin/registrations" aria-current="page">Registrations</a>
-            <a href="/admin/audit">Audit</a>
+        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
+            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
+            <a href="/admin/registrations" aria-current="page">@LocalizedUiText.Get("Registrations")</a>
+            <a href="/admin/audit">@LocalizedUiText.Get("Audit")</a>
         </nav>
     </header>
 
     <main id="main-content" tabindex="-1">
         <section class="srs-registration-monitor__intro" aria-labelledby="registration-monitor-heading">
-            <p class="srs-registration-monitor__eyebrow">Operations and reconciliation</p>
-            <h1 id="registration-monitor-heading">Read-only registration monitoring</h1>
+            <p class="srs-registration-monitor__eyebrow">@LocalizedUiText.Get("Operations and reconciliation")</p>
+            <h1 id="registration-monitor-heading">@LocalizedUiText.Get("Read-only registration monitoring")</h1>
             <p>
-                Inspect server-authorized submission, receipt, fill, failure, and
-                reconciliation observations without changing registration state.
+                @LocalizedUiText.Get("Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state.")
             </p>
         </section>
 
@@ -34,71 +33,70 @@
                  role="status"
                  aria-live="polite"
                  aria-busy="true">
-            <h2>Loading registration observations</h2>
+            <h2>@LocalizedUiText.Get("Loading registration observations")</h2>
             <p>
-                Metrics and registration records have not been loaded. No live,
-                successful, or repaired state is inferred in the browser.
+                @LocalizedUiText.Get("Metrics and registration records have not been loaded. No live, successful, or repaired state is inferred in the browser.")
             </p>
         </section>
 
         <section class="srs-registration-monitor__metrics" aria-labelledby="registration-metrics-heading">
             <div>
-                <h2 id="registration-metrics-heading">Operations metrics</h2>
+                <h2 id="registration-metrics-heading">@LocalizedUiText.Get("Operations metrics")</h2>
                 <p>
-                    Observation time:
-                    <time data-testid="registration-monitor-observed-at">Awaiting server observation</time>
+                    @LocalizedUiText.Get("Observation time:")
+                    <time data-testid="registration-monitor-observed-at">@LocalizedUiText.Get("Awaiting server observation")</time>
                 </p>
             </div>
             <dl>
-                <div><dt>Submissions</dt><dd>Not loaded</dd></div>
-                <div><dt>Fill</dt><dd>Not loaded</dd></div>
-                <div><dt>Failures</dt><dd>Not loaded</dd></div>
-                <div><dt>Collisions</dt><dd>Not loaded</dd></div>
+                <div><dt>@LocalizedUiText.Get("Submissions")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Fill")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Failures")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Collisions")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
             </dl>
-            <button type="button" disabled>Refresh monitoring data</button>
+            <button type="button" disabled>@LocalizedUiText.Get("Refresh monitoring data")</button>
         </section>
 
         <section class="srs-registration-monitor__filters" aria-labelledby="registration-filter-heading">
-            <h2 id="registration-filter-heading">Registration filters</h2>
-            <form aria-label="Registration monitoring filters">
+            <h2 id="registration-filter-heading">@LocalizedUiText.Get("Registration filters")</h2>
+            <form aria-label="@(LocalizedUiText.Get("Registration monitoring filters"))">
                 <label>
-                    Student or submission
+                    @LocalizedUiText.Get("Student or submission")
                     <input type="search" name="query" maxlength="100" />
                 </label>
                 <label>
-                    Result
+                    @LocalizedUiText.Get("Result")
                     <select name="result">
-                        <option value="">All results</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="rejected">Rejected</option>
+                        <option value="">@LocalizedUiText.Get("All results")</option>
+                        <option value="accepted">@LocalizedUiText.Get("Accepted")</option>
+                        <option value="rejected">@LocalizedUiText.Get("Rejected")</option>
                     </select>
                 </label>
-                <button type="button" disabled>Filter registrations</button>
-                <button type="reset">Clear registration filters</button>
+                <button type="button" disabled>@LocalizedUiText.Get("Filter registrations")</button>
+                <button type="reset">@LocalizedUiText.Get("Clear registration filters")</button>
             </form>
         </section>
 
         <div class="srs-registration-monitor__workspace">
             <section aria-labelledby="registration-results-heading">
-                <h2 id="registration-results-heading">Submission and fill results</h2>
+                <h2 id="registration-results-heading">@LocalizedUiText.Get("Submission and fill results")</h2>
                 <div class="srs-registration-monitor__table-region"
                      role="region"
-                     aria-label="Registration monitoring results"
+                     aria-label="@(LocalizedUiText.Get("Registration monitoring results"))"
                      tabindex="0">
                     <table data-testid="registration-monitor-table">
-                        <caption>No server-authorized registration rows are loaded.</caption>
+                        <caption>@LocalizedUiText.Get("No server-authorized registration rows are loaded.")</caption>
                         <thead>
                             <tr>
-                                <th scope="col">Submitted</th>
-                                <th scope="col">Student</th>
-                                <th scope="col">Receipt</th>
-                                <th scope="col">Result</th>
-                                <th scope="col">Action</th>
+                                <th scope="col">@LocalizedUiText.Get("Submitted")</th>
+                                <th scope="col">@LocalizedUiText.Get("Student")</th>
+                                <th scope="col">@LocalizedUiText.Get("Receipt")</th>
+                                <th scope="col">@LocalizedUiText.Get("Result")</th>
+                                <th scope="col">@LocalizedUiText.Get("Action")</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td colspan="5">No matching registrations are loaded.</td>
+                                <td colspan="5">@LocalizedUiText.Get("No matching registrations are loaded.")</td>
                             </tr>
                         </tbody>
                     </table>
@@ -106,46 +104,44 @@
 
                 <div class="srs-registration-monitor__semantic-alternative"
                      data-testid="registration-monitor-card-list"
-                     aria-label="Registration results semantic alternative">
-                    <h3>Registration result summaries</h3>
-                    <p>No matching registrations are loaded.</p>
+                     aria-label="@(LocalizedUiText.Get("Registration results semantic alternative"))">
+                    <h3>@LocalizedUiText.Get("Registration result summaries")</h3>
+                    <p>@LocalizedUiText.Get("No matching registrations are loaded.")</p>
                 </div>
 
-                <nav class="srs-registration-monitor__pagination" aria-label="Registration result pages">
-                    <button type="button" disabled>Previous page</button>
-                    <span>Page 1 of 1</span>
-                    <button type="button" disabled>Next page</button>
+                <nav class="srs-registration-monitor__pagination" aria-label="@(LocalizedUiText.Get("Registration result pages"))">
+                    <button type="button" disabled>@LocalizedUiText.Get("Previous page")</button>
+                    <span>@LocalizedUiText.Get("Page 1 of 1")</span>
+                    <button type="button" disabled>@LocalizedUiText.Get("Next page")</button>
                 </nav>
             </section>
 
             <aside class="srs-registration-monitor__detail" aria-labelledby="receipt-detail-heading">
-                <h2 id="receipt-detail-heading">Selected receipt detail</h2>
-                <p>Open a server-authorized submission to inspect its immutable receipt summary.</p>
-                <button type="button" disabled>Open submission detail</button>
-                <button type="button" disabled>Open Student profile</button>
+                <h2 id="receipt-detail-heading">@LocalizedUiText.Get("Selected receipt detail")</h2>
+                <p>@LocalizedUiText.Get("Open a server-authorized submission to inspect its immutable receipt summary.")</p>
+                <button type="button" disabled>@LocalizedUiText.Get("Open submission detail")</button>
+                <button type="button" disabled>@LocalizedUiText.Get("Open Student profile")</button>
             </aside>
         </div>
 
         <section class="srs-registration-monitor__alerts" aria-labelledby="reconciliation-alert-heading">
-            <h2 id="reconciliation-alert-heading">Reconciliation alerts</h2>
-            <p>No collision, paused-group, repaired, stale, or degraded observation is loaded.</p>
+            <h2 id="reconciliation-alert-heading">@LocalizedUiText.Get("Reconciliation alerts")</h2>
+            <p>@LocalizedUiText.Get("No collision, paused-group, repaired, stale, or degraded observation is loaded.")</p>
             <p>
-                A server alert keeps its detected timestamp, affected group, state,
-                and <code>supportReferencePath</code> together.
+                @LocalizedUiText.Get("A server alert keeps its detected timestamp, affected group, state, and") <code>@LocalizedUiText.Get("supportReferencePath")</code> @LocalizedUiText.Get("together.")
             </p>
-            <a href="/status/support">Open safe support reference</a>
+            <a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a>
         </section>
 
         <section class="srs-registration-monitor__notice" role="note">
-            <h2>Observation only</h2>
+            <h2>@LocalizedUiText.Get("Observation only")</h2>
             <p>
-                No repair or correction actions are available. Capacity, enrollment,
-                receipt, and reconciliation decisions remain with their server owners.
+                @LocalizedUiText.Get("No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners.")
             </p>
         </section>
     </main>
 
     <footer>
-        <a href="/status/support">Open safe support reference</a>
+        <a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a>
     </footer>
 </div>

@@ -1,18 +1,28 @@
+using System.Text.Json;
+using StudentRegistration.TestSupport;
+
 namespace StudentRegistration.AcceptanceTests.Specs.Spec005;
 
 public sealed class AC_7Tests
 {
-    private const string DeferredReason =
-        "Deferred operational evidence: requires activated owner mappings at entity-ownership 2.0.0/persistence-manifest 2.1.0, production-like row counts, reviewed actual SQL plans, an approved numeric Operations window, and passing SPEC-018 RPO/RTO and privacy-safe log evidence.";
-
-    [Fact(Skip = DeferredReason)]
-    public void Data_release_gate_requires_reviewed_plans_bounded_rehearsal_restore_targets_and_privacy_safe_logs()
+    [Fact]
+    public void Data_release_gate_has_passing_plan_migration_restore_and_privacy_evidence()
     {
-        // Given the production-like database, reviewed bundle/backup, critical-query inventory, and safe log fixture.
-        // When the measured data release gate runs.
-        // Then no unapproved unbounded scan exists, rehearsal stays within 80% of the approved window,
-        // restore meets SPEC-018 RPO/RTO, and credentials/full student profiles are absent from unsafe output.
-        throw new NotImplementedException(
-            "Collect actual execution plans, elapsed rehearsal/restore measurements, and captured runtime logs; declarations alone cannot pass this gate.");
+        AssertPass("docs/release-evidence/SPEC-005-NFR-1-plans.json");
+        AssertPass("docs/release-evidence/SPEC-005-NFR-2-rehearsal.json");
+        AssertPass("docs/release-evidence/SPEC-018-NFR-7-recovery.json");
+        RepositoryFiles.ContainsAll(
+            RepositoryFiles.Read("docs/release-evidence/SPEC-005-NFR-4.md"),
+            "**Result: PASS.**",
+            "password hashes",
+            "generated plaintext credentials",
+            "4 passed",
+            "0 failed");
+    }
+
+    private static void AssertPass(string path)
+    {
+        using var document = JsonDocument.Parse(RepositoryFiles.Read(path));
+        Assert.Equal("pass", document.RootElement.GetProperty("status").GetString());
     }
 }

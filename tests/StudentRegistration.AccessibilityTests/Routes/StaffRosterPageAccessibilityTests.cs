@@ -19,10 +19,11 @@ public sealed class StaffRosterPageAccessibilityFrozenContractTests
 [Collection(AxeAccessibilityCollection.CollectionName)]
 public sealed class StaffRosterPageAccessibilityTests(AxeAccessibilityFixture fixture)
 {
-    [Fact]
-    public async Task Stf_03_scoped_roster_table_and_paging_are_accessible()
+    [Theory]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Stf_03_scoped_roster_table_and_paging_are_accessible(int width, float scale)
     {
-        await using var context = await fixture.OpenContextAsync(768, 1000);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/**", route => Spec016BrowserData.Path(route) switch
         {

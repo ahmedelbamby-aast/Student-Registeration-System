@@ -5,36 +5,36 @@
 
 <section class="srs-eligibility" aria-label="@($"{Offering.CourseCode} eligibility details")">
     <div class="srs-eligibility__load" aria-labelledby="@($"{IdPrefix}-load-heading")">
-        <h3 id="@($"{IdPrefix}-load-heading")">Credit load</h3>
+        <h3 id="@($"{IdPrefix}-load-heading")">@LocalizedUiText.Get("Credit load")</h3>
         <dl>
             <div>
-                <dt>Current plan</dt>
-                <dd>@Credits(Offering.CurrentPlanCredits) of @Credits(Offering.MaximumAllowedCredits) credits</dd>
+                <dt>@LocalizedUiText.Get("Current plan")</dt>
+                <dd>@Credits(Offering.CurrentPlanCredits) @LocalizedUiText.Get("of") @Credits(Offering.MaximumAllowedCredits) @LocalizedUiText.Get("credits")</dd>
             </div>
             <div>
-                <dt>Projected with this subject</dt>
-                <dd>@Credits(Offering.ProjectedPlanCredits) of @Credits(Offering.MaximumAllowedCredits) credits</dd>
+                <dt>@LocalizedUiText.Get("Projected with this subject")</dt>
+                <dd>@Credits(Offering.ProjectedPlanCredits) @LocalizedUiText.Get("of") @Credits(Offering.MaximumAllowedCredits) @LocalizedUiText.Get("credits")</dd>
             </div>
             <div>
-                <dt>Default target</dt>
-                <dd>@Credits(Offering.DefaultTargetCredits) credits</dd>
+                <dt>@LocalizedUiText.Get("Default target")</dt>
+                <dd>@Credits(Offering.DefaultTargetCredits) @LocalizedUiText.Get("credits")</dd>
             </div>
             <div>
-                <dt>Effective maximum</dt>
-                <dd>@Credits(Offering.MaximumAllowedCredits) credits</dd>
+                <dt>@LocalizedUiText.Get("Effective maximum")</dt>
+                <dd>@Credits(Offering.MaximumAllowedCredits) @LocalizedUiText.Get("credits")</dd>
             </div>
         </dl>
     </div>
 
     <section class="srs-eligibility__reasons"
              aria-labelledby="@($"{IdPrefix}-reasons-heading")">
-        <h3 id="@($"{IdPrefix}-reasons-heading")">Server eligibility reasons</h3>
+        <h3 id="@($"{IdPrefix}-reasons-heading")">@LocalizedUiText.Get("Server eligibility reasons")</h3>
         <ul>
             @foreach (var reason in Offering.Reasons)
             {
                 <li data-reason-code="@reason.Code">
                     <div class="srs-eligibility__reason-heading">
-                        <StatusBadge Text="@(reason.Passed ? "Passed" : "Unavailable")"
+                        <StatusBadge Text="@(reason.Passed ? LocalizedUiText.Get("Passed") : LocalizedUiText.Get("Unavailable"))"
                                      Icon="@(reason.Passed ? "✓" : "✕")"
                                      Tone="@(reason.Passed
                                          ? StatusBadge.BadgeTone.Success
@@ -48,44 +48,41 @@
                             @if (reason.RequiredValue is not null)
                             {
                                 <div>
-                                    <dt>Required</dt>
+                                    <dt>@LocalizedUiText.Get("Required")</dt>
                                     <dd>@reason.RequiredValue</dd>
                                 </div>
                             }
                             @if (reason.CurrentValue is not null)
                             {
                                 <div>
-                                    <dt>Current</dt>
+                                    <dt>@LocalizedUiText.Get("Current")</dt>
                                     <dd>@reason.CurrentValue</dd>
                                 </div>
                             }
                         </dl>
                     }
                     <p>
-                        Policy <strong>@reason.PolicyVersion</strong>;
-                        source <span>@reason.SourceReference</span>;
-                        accessed <time datetime="@reason.SourceAccessedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">
-                            @reason.SourceAccessedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                        </time>;
-                        approved by <span>@reason.ApprovedBy</span>.
+                        @LocalizedUiText.Get("Policy") <strong>@reason.PolicyVersion</strong>@LocalizedUiText.Get("; source") <span>@reason.SourceReference</span>@LocalizedUiText.Get("; accessed") <time datetime="@reason.SourceAccessedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">
+                            @reason.SourceAccessedOn.ToString("d", CultureInfo.CurrentCulture)
+                        </time>@LocalizedUiText.Get("; approved by") <span>@reason.ApprovedBy</span>.
                     </p>
                     <p>
-                        Effective
+                        @LocalizedUiText.Get("Effective")
                         <time datetime="@reason.EffectiveFromUtc.ToString("O", CultureInfo.InvariantCulture)">
-                            @reason.EffectiveFromUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                            @reason.EffectiveFromUtc.ToString("d", CultureInfo.CurrentCulture)
                         </time>
                         @if (reason.EffectiveToUtc is { } effectiveTo)
                         {
-                            <span> to </span>
+                            <span> @LocalizedUiText.Get("to") </span>
                             <time datetime="@effectiveTo.ToString("O", CultureInfo.InvariantCulture)">
-                                @effectiveTo.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                                @effectiveTo.ToString("d", CultureInfo.CurrentCulture)
                             </time>
                         }
-                        <span>; override possible: @(reason.OverridePossible ? "yes" : "no").</span>
+                        <span>@LocalizedUiText.Get("; override possible:") @(reason.OverridePossible ? LocalizedUiText.Get("yes") : LocalizedUiText.Get("no")).</span>
                     </p>
                     @if (!string.IsNullOrWhiteSpace(reason.SupportReferencePath))
                     {
-                        <a href="@reason.SupportReferencePath">Open reason support</a>
+                        <a href="@reason.SupportReferencePath">@LocalizedUiText.Get("Open reason support")</a>
                     }
                 </li>
             }
@@ -94,7 +91,7 @@
 
     <section class="srs-eligibility__groups"
              aria-labelledby="@($"{IdPrefix}-groups-heading")">
-        <h3 id="@($"{IdPrefix}-groups-heading")">Groups</h3>
+        <h3 id="@($"{IdPrefix}-groups-heading")">@LocalizedUiText.Get("Groups")</h3>
         <div class="srs-eligibility__group-grid">
             @foreach (var group in Offering.Groups)
             {
@@ -102,20 +99,20 @@
                          data-group-id="@group.GroupId"
                          data-selectable="@group.Selectable.ToString().ToLowerInvariant()">
                     <header>
-                        <h4>Group @group.GroupCode</h4>
-                        <StatusBadge Text="@(group.Selectable ? "Selectable" : "Unavailable")"
+                        <h4>@LocalizedUiText.Get("Group") @group.GroupCode</h4>
+                        <StatusBadge Text="@(group.Selectable ? LocalizedUiText.Get("Selectable") : LocalizedUiText.Get("Unavailable"))"
                                      Icon="@(group.Selectable ? "✓" : "✕")"
                                      Tone="@(group.Selectable
                                          ? StatusBadge.BadgeTone.Success
                                          : StatusBadge.BadgeTone.Danger)" />
                     </header>
-                    <p>Lifecycle state: <strong>@group.State</strong></p>
+                    <p>@LocalizedUiText.Get("Lifecycle state:") <strong>@group.State</strong></p>
                     <CapacityIndicator AccessibleName="@($"Group {group.GroupCode} capacity")"
-                                       OccupiedLabel="Occupied"
+                                       OccupiedLabel="@(LocalizedUiText.Get("Occupied"))"
                                        Occupied="@group.EnrolledCount"
-                                       TotalLabel="Capacity"
+                                       TotalLabel="@(LocalizedUiText.Get("Capacity"))"
                                        Total="@group.Capacity"
-                                       RemainingLabel="Remaining"
+                                       RemainingLabel="@(LocalizedUiText.Get("Remaining"))"
                                        Remaining="@group.SeatsRemaining" />
 
                     @if (group.NonSelectableReasons.Count > 0)
@@ -138,19 +135,19 @@
                                 <h5>@meeting.Activity</h5>
                                 <dl>
                                     <div>
-                                        <dt>Day</dt>
+                                        <dt>@LocalizedUiText.Get("Day")</dt>
                                         <dd>@RegistrationPageSupport.DayName(meeting.DayOfWeek)</dd>
                                     </div>
                                     <div>
-                                        <dt>Time</dt>
-                                        <dd>@meeting.StartLocal.ToString("HH:mm", CultureInfo.InvariantCulture)–@meeting.EndLocal.ToString("HH:mm", CultureInfo.InvariantCulture)</dd>
+                                        <dt>@LocalizedUiText.Get("Time")</dt>
+                                        <dd>@meeting.StartLocal.ToString("t", CultureInfo.CurrentCulture)–@meeting.EndLocal.ToString("t", CultureInfo.CurrentCulture)</dd>
                                     </div>
                                     <div>
-                                        <dt>Room</dt>
+                                        <dt>@LocalizedUiText.Get("Room")</dt>
                                         <dd>@meeting.RoomCode</dd>
                                     </div>
                                     <div>
-                                        <dt>Location</dt>
+                                        <dt>@LocalizedUiText.Get("Location")</dt>
                                         <dd>@meeting.Location</dd>
                                     </div>
                                 </dl>
@@ -164,12 +161,12 @@
                         }
                     </div>
 
-                    <p class="srs-eligibility__version">Group version: @group.RowVersion</p>
+                    <p class="srs-eligibility__version">@LocalizedUiText.Get("Group version:") @group.RowVersion</p>
                     @if (ShowSelectionActions && group.Selectable && Offering.Eligible)
                     {
                         <a class="srs-eligibility__primary-action"
                            href="@($"/student/schedule?offeringId={Offering.OfferingId:D}&groupId={group.GroupId:D}")">
-                            Continue with group @group.GroupCode
+                            @LocalizedUiText.Get("Continue with group") @group.GroupCode
                         </a>
                     }
                 </article>
@@ -178,14 +175,14 @@
     </section>
 
     <details class="srs-eligibility__versions">
-        <summary>Decision versions and input summary</summary>
+        <summary>@LocalizedUiText.Get("Decision versions and input summary")</summary>
         <dl>
-            <div><dt>Evaluated</dt><dd>@Offering.EvaluatedAtUtc.ToString("u", CultureInfo.InvariantCulture)</dd></div>
-            <div><dt>Academic context</dt><dd>@Offering.AcademicContextVersion</dd></div>
-            <div><dt>Catalogue</dt><dd>@Offering.CatalogueVersion</dd></div>
-            <div><dt>Policy</dt><dd>@Offering.PolicyVersion</dd></div>
-            <div><dt>Offering</dt><dd>@Offering.OfferingRowVersion</dd></div>
-            <div><dt>Current plan</dt><dd>@Offering.CurrentPlanVersion</dd></div>
+            <div><dt>@LocalizedUiText.Get("Evaluated")</dt><dd>@Offering.EvaluatedAtUtc.ToString("g", CultureInfo.CurrentCulture)</dd></div>
+            <div><dt>@LocalizedUiText.Get("Academic context")</dt><dd>@Offering.AcademicContextVersion</dd></div>
+            <div><dt>@LocalizedUiText.Get("Catalogue")</dt><dd>@Offering.CatalogueVersion</dd></div>
+            <div><dt>@LocalizedUiText.Get("Policy")</dt><dd>@Offering.PolicyVersion</dd></div>
+            <div><dt>@LocalizedUiText.Get("Offering")</dt><dd>@Offering.OfferingRowVersion</dd></div>
+            <div><dt>@LocalizedUiText.Get("Current plan")</dt><dd>@Offering.CurrentPlanVersion</dd></div>
             @foreach (var item in Offering.InputSummary)
             {
                 <div><dt>@item.Key</dt><dd>@item.Value</dd></div>
@@ -205,5 +202,5 @@
     public bool ShowSelectionActions { get; set; }
 
     private static string Credits(decimal value) =>
-        value.ToString("0.##", CultureInfo.InvariantCulture);
+        value.ToString("0.##", CultureInfo.CurrentCulture);
 }

@@ -30,7 +30,9 @@
                 aria-pressed="@(_secretRevealed ? "true" : "false")"
                 disabled="@IsUnavailable"
                 @onclick="ToggleSecretReveal">
-            @(_secretRevealed ? $"Hide {Label}" : $"Show {Label}")
+            @(_secretRevealed
+                ? LocalizedUiText.Format("Hide {0}", Label)
+                : LocalizedUiText.Format("Show {0}", Label))
         </button>
     }
 

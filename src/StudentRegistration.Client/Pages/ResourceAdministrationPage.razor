@@ -3,47 +3,47 @@
 @using StudentRegistration.Client.Features.Academics
 @inject SchedulingApiClient SchedulingApi
 
-<PageTitle>Resource administration | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Resource administration | Student Registration")</PageTitle>
 
 <main class="srs-scheduling-admin"
       data-route-id="ADM-07"
       data-state="@_state"
       data-testid="resource-administration-page">
-    <a class="srs-skip-link" href="#resource-main-content">Skip to main content</a>
+    <a class="srs-skip-link" href="#resource-main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
     <header class="srs-scheduling-admin__header">
         <div>
-            <p class="srs-scheduling-admin__eyebrow">Scheduling resources</p>
-            <h1 id="resource-main-content" tabindex="-1">Resource administration</h1>
-            <p>Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override.</p>
+            <p class="srs-scheduling-admin__eyebrow">@LocalizedUiText.Get("Scheduling resources")</p>
+            <h1 id="resource-main-content" tabindex="-1">@LocalizedUiText.Get("Resource administration")</h1>
+            <p>@LocalizedUiText.Get("Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override.")</p>
         </div>
-        <nav aria-label="Administration navigation">
-            <a href="/admin">Dashboard</a>
-            <a href="/admin/offerings">Offerings</a>
+        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
+            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
+            <a href="/admin/offerings">@LocalizedUiText.Get("Offerings")</a>
         </nav>
     </header>
 
     @if (_state == LoadingState)
     {
         <section role="status" aria-live="polite" aria-busy="true">
-            <h2>Loading rooms, availability, and impacts</h2>
-            <p>Requesting bounded Scheduling projections.</p>
+            <h2>@LocalizedUiText.Get("Loading rooms, availability, and impacts")</h2>
+            <p>@LocalizedUiText.Get("Requesting bounded Scheduling projections.")</p>
         </section>
     }
     else if (_state == UnauthorizedState)
     {
         <section role="alert" aria-live="assertive">
-            <h2>Resource administration access denied</h2>
+            <h2>@LocalizedUiText.Get("Resource administration access denied")</h2>
             <p class="srs-scheduling-admin__code">@_reasonCode</p>
-            <a href="/admin">Return to authorized home</a>
+            <a href="/admin">@LocalizedUiText.Get("Return to authorized home")</a>
         </section>
     }
     else if (_state == SessionExpiredState)
     {
         <section role="alert" aria-live="assertive">
-            <h2>Session expired</h2>
+            <h2>@LocalizedUiText.Get("Session expired")</h2>
             <p class="srs-scheduling-admin__code">@_reasonCode</p>
-            <a href="/staff/login">Sign in again</a>
+            <a href="/staff/login">@LocalizedUiText.Get("Sign in again")</a>
         </section>
     }
     else
@@ -51,31 +51,31 @@
         @if (_state is ServiceErrorState or OfflineState)
         {
             <section role="status" aria-live="polite">
-                <h2>Scheduling resources unavailable</h2>
+                <h2>@LocalizedUiText.Get("Scheduling resources unavailable")</h2>
                 <p class="srs-scheduling-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
                 @if (!string.IsNullOrWhiteSpace(_referenceId))
                 {
-                    <p>Reference: @_referenceId</p>
+                    <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
                 }
-                <button type="button" @onclick="LoadAsync">Retry</button>
+                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
             </section>
         }
 
         @if (_state == StaleState)
         {
             <section role="status" aria-live="polite">
-                <h2>Concurrent resource change requires review</h2>
+                <h2>@LocalizedUiText.Get("Concurrent resource change requires review")</h2>
                 <p class="srs-scheduling-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
-                <button type="button" @onclick="LoadAsync">Refresh and review</button>
+                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh and review")</button>
             </section>
         }
 
         @if (_validationMessages.Count > 0)
         {
             <section role="alert" aria-live="assertive" tabindex="-1">
-                <h2>Review the resource command</h2>
+                <h2>@LocalizedUiText.Get("Review the resource command")</h2>
                 <p class="srs-scheduling-admin__code">@_reasonCode</p>
                 <ul>
                     @foreach (var message in _validationMessages)
@@ -89,7 +89,7 @@
         @if (!string.IsNullOrWhiteSpace(_successMessage))
         {
             <section role="status" aria-live="polite">
-                <h2>Server-confirmed result</h2>
+                <h2>@LocalizedUiText.Get("Server-confirmed result")</h2>
                 <p>@_successMessage</p>
             </section>
         }
@@ -97,30 +97,30 @@
         <section aria-labelledby="room-management-heading">
             <div class="srs-scheduling-admin__section-heading">
                 <div>
-                    <p class="srs-scheduling-admin__eyebrow">Keyboard text entry</p>
-                    <h2 id="room-management-heading">Rooms</h2>
+                    <p class="srs-scheduling-admin__eyebrow">@LocalizedUiText.Get("Keyboard text entry")</p>
+                    <h2 id="room-management-heading">@LocalizedUiText.Get("Rooms")</h2>
                 </div>
             </div>
 
             @if (_rooms.Count == 0)
             {
                 <section aria-labelledby="room-empty-heading">
-                    <h3 id="room-empty-heading">No rooms match the current query</h3>
-                    <p>Create a room or clear the bounded filter.</p>
+                    <h3 id="room-empty-heading">@LocalizedUiText.Get("No rooms match the current query")</h3>
+                    <p>@LocalizedUiText.Get("Create a room or clear the bounded filter.")</p>
                 </section>
             }
             else
             {
-                <div class="srs-scheduling-admin__table-region" role="region" aria-label="Room results" tabindex="0">
+                <div class="srs-scheduling-admin__table-region" role="region" aria-label="@(LocalizedUiText.Get("Room results"))" tabindex="0">
                     <table>
                         <thead>
                             <tr>
-                                <th scope="col">Room</th>
-                                <th scope="col">Location</th>
-                                <th scope="col">Capacity</th>
-                                <th scope="col">State</th>
-                                <th scope="col">Version</th>
-                                <th scope="col">Action</th>
+                                <th scope="col">@LocalizedUiText.Get("Room")</th>
+                                <th scope="col">@LocalizedUiText.Get("Location")</th>
+                                <th scope="col">@LocalizedUiText.Get("Capacity")</th>
+                                <th scope="col">@LocalizedUiText.Get("State")</th>
+                                <th scope="col">@LocalizedUiText.Get("Version")</th>
+                                <th scope="col">@LocalizedUiText.Get("Action")</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -136,7 +136,7 @@
                                         <button type="button"
                                                 disabled="@_pending"
                                                 @onclick="() => SelectRoom(room)">
-                                            Review room
+                                            @LocalizedUiText.Get("Review room")
                                         </button>
                                     </td>
                                 </tr>
@@ -148,37 +148,37 @@
 
             <div class="srs-scheduling-admin__form-grid">
                 <label>
-                    Room code
+                    @LocalizedUiText.Get("Room code")
                     <input id="resource-room-code" maxlength="30" @bind="_roomCode" />
                 </label>
                 <label>
-                    Location
+                    @LocalizedUiText.Get("Location")
                     <input id="resource-room-location" maxlength="120" @bind="_roomLocation" />
                 </label>
                 <label>
-                    Capacity
+                    @LocalizedUiText.Get("Capacity")
                     <input id="resource-room-capacity" type="number" min="0" @bind="_roomCapacity" />
                 </label>
                 <label>
-                    State
+                    @LocalizedUiText.Get("State")
                     <select id="resource-room-state" @bind="_roomState">
-                        <option value="Available">Available</option>
-                        <option value="Unavailable">Unavailable</option>
+                        <option value="Available">@LocalizedUiText.Get("Available")</option>
+                        <option value="Unavailable">@LocalizedUiText.Get("Unavailable")</option>
                     </select>
                 </label>
                 <label>
-                    Change reason
+                    @LocalizedUiText.Get("Change reason")
                     <input id="resource-room-reason" maxlength="256" @bind="_roomReason" />
                 </label>
             </div>
             <div class="srs-scheduling-admin__actions">
                 <button type="button" disabled="@_pending" @onclick="CreateRoomAsync">
-                    Create room
+                    @LocalizedUiText.Get("Create room")
                 </button>
                 <button type="button"
                         disabled="@(_pending || _selectedRoom is null)"
                         @onclick="SaveRoomAsync">
-                    Save room
+                    @LocalizedUiText.Get("Save room")
                 </button>
             </div>
         </section>
@@ -187,32 +187,31 @@
                  aria-labelledby="staff-availability-heading">
             <div class="srs-scheduling-admin__section-heading">
                 <div>
-                    <p class="srs-scheduling-admin__eyebrow">Read-only planning input</p>
-                    <h2 id="staff-availability-heading">Staff availability</h2>
+                    <p class="srs-scheduling-admin__eyebrow">@LocalizedUiText.Get("Read-only planning input")</p>
+                    <h2 id="staff-availability-heading">@LocalizedUiText.Get("Staff availability")</h2>
                 </div>
-                <strong>Read-only Staff declaration</strong>
+                <strong>@LocalizedUiText.Get("Read-only Staff declaration")</strong>
             </div>
             <p>
-                Staff own and replace these declarations. Admin can select an ID and version
-                as an offering-planning dependency, but cannot edit or override any range.
+                @LocalizedUiText.Get("Staff own and replace these declarations. Admin can select an ID and version as an offering-planning dependency, but cannot edit or override any range.")
             </p>
-            <form method="get" aria-label="Choose availability term">
-                <label for="resource-availability-term">Academic term ID</label>
+            <form method="get" aria-label="@(LocalizedUiText.Get("Choose availability term"))">
+                <label for="resource-availability-term">@LocalizedUiText.Get("Academic term ID")</label>
                 <input id="resource-availability-term"
                        name="termId"
                        value="@TermId?.ToString("D")"
                        required />
-                <button type="submit">Load Staff availability</button>
+                <button type="submit">@LocalizedUiText.Get("Load Staff availability")</button>
             </form>
 
             <div data-testid="staff-availability-declarations">
                 @if (TermId is null)
                 {
-                    <p>Choose the server-issued academic term before loading Staff declarations.</p>
+                    <p>@LocalizedUiText.Get("Choose the server-issued academic term before loading Staff declarations.")</p>
                 }
                 else if (_availability.Count == 0)
                 {
-                    <p>No Staff declarations are available for the configured term.</p>
+                    <p>@LocalizedUiText.Get("No Staff declarations are available for the configured term.")</p>
                 }
                 else
                 {
@@ -221,8 +220,8 @@
                         {
                             <li>
                                 <h3>@availability.StaffName</h3>
-                                <p>Deadline @availability.DeadlineUtc.ToString("u")</p>
-                                <p>Version <code>@availability.RowVersion</code></p>
+                                <p>@LocalizedUiText.Get("Deadline") @availability.DeadlineUtc.ToString("u")</p>
+                                <p>@LocalizedUiText.Get("Version") <code>@availability.RowVersion</code></p>
                                 <ul>
                                     @foreach (var range in availability.Ranges)
                                     {
@@ -235,7 +234,7 @@
                                 </ul>
                                 <button type="button"
                                         @onclick="() => UsePlanningDependency(availability)">
-                                    Use as planning dependency
+                                    @LocalizedUiText.Get("Use as planning dependency")
                                 </button>
                             </li>
                         }
@@ -246,11 +245,11 @@
             @if (_planningDependencies.Count > 0)
             {
                 <section aria-labelledby="planning-dependency-heading">
-                    <h3 id="planning-dependency-heading">Selected planning dependencies</h3>
+                    <h3 id="planning-dependency-heading">@LocalizedUiText.Get("Selected planning dependencies")</h3>
                     <ul>
                         @foreach (var dependency in _planningDependencies)
                         {
-                            <li>@dependency.Key — version @dependency.Value</li>
+                            <li>@dependency.Key @LocalizedUiText.Get("— version") @dependency.Value</li>
                         }
                     </ul>
                 </section>
@@ -258,10 +257,10 @@
         </section>
 
         <section aria-labelledby="impact-alert-heading">
-            <h2 id="impact-alert-heading">Schedule impact alerts</h2>
+            <h2 id="impact-alert-heading">@LocalizedUiText.Get("Schedule impact alerts")</h2>
             @if (_alerts.Count == 0)
             {
-                <p>No schedule impacts require Admin revalidation.</p>
+                <p>@LocalizedUiText.Get("No schedule impacts require Admin revalidation.")</p>
             }
             else
             {
@@ -271,29 +270,29 @@
                         <li>
                             <h3>@alert.ReasonCode</h3>
                             <dl>
-                                <div><dt>State</dt><dd>@alert.State</dd></div>
-                                <div><dt>Group</dt><dd>@alert.GroupId</dd></div>
-                                <div><dt>Detected</dt><dd>@alert.DetectedAtUtc.ToString("u")</dd></div>
-                                <div><dt>Version</dt><dd><code>@alert.RowVersion</code></dd></div>
+                                <div><dt>@LocalizedUiText.Get("State")</dt><dd>@alert.State</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Group")</dt><dd>@alert.GroupId</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Detected")</dt><dd>@alert.DetectedAtUtc.ToString("u")</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Version")</dt><dd><code>@alert.RowVersion</code></dd></div>
                             </dl>
                             @if (alert.LastValidation is not null)
                             {
                                 <p>
-                                    Latest revalidation:
-                                    @(alert.LastValidation.Valid ? "passed" : "failed")
-                                    at @alert.LastValidation.ValidatedAtUtc.ToString("u")
+                                    @LocalizedUiText.Get("Latest revalidation:")
+                                    @(alert.LastValidation.Valid ? LocalizedUiText.Get("passed") : LocalizedUiText.Get("failed"))
+                                    @LocalizedUiText.Get("at") @alert.LastValidation.ValidatedAtUtc.ToString("u")
                                 </p>
                             }
                             <div class="srs-scheduling-admin__actions">
                                 <button type="button"
                                         disabled="@(_pending || alert.State == "Resolved")"
                                         @onclick="() => RevalidateAlertAsync(alert)">
-                                    Revalidate impact
+                                    @LocalizedUiText.Get("Revalidate impact")
                                 </button>
                                 <button type="button"
                                         disabled="@(_pending || alert.State != "Revalidated" || alert.LastValidation?.Valid != true)"
                                         @onclick="() => SelectAlertForResolution(alert)">
-                                    Prepare resolution
+                                    @LocalizedUiText.Get("Prepare resolution")
                                 </button>
                             </div>
                         </li>
@@ -304,8 +303,8 @@
             @if (_selectedAlert is not null)
             {
                 <section aria-labelledby="resolve-alert-heading">
-                    <h3 id="resolve-alert-heading">Resolve revalidated impact</h3>
-                    <label for="resource-alert-resolution-reason">Resolution reason</label>
+                    <h3 id="resolve-alert-heading">@LocalizedUiText.Get("Resolve revalidated impact")</h3>
+                    <label for="resource-alert-resolution-reason">@LocalizedUiText.Get("Resolution reason")</label>
                     <textarea id="resource-alert-resolution-reason"
                               maxlength="256"
                               @bind="_resolutionReason"
@@ -313,7 +312,7 @@
                     <button type="button"
                             disabled="@(_pending || string.IsNullOrWhiteSpace(_resolutionReason))"
                             @onclick="ResolveAlertAsync">
-                        Resolve impact
+                        @LocalizedUiText.Get("Resolve impact")
                     </button>
                 </section>
             }
@@ -434,7 +433,7 @@
 
         _rooms.Add(result.Value);
         SelectRoom(result.Value);
-        _successMessage = "Room created by the server";
+        _successMessage = LocalizedUiText.Get("Room created by the server");
         _state = SuccessState;
     }
 
@@ -447,7 +446,7 @@
 
         if (string.IsNullOrWhiteSpace(_roomReason))
         {
-            SetLocalValidation("A room change reason is required.");
+            SetLocalValidation(LocalizedUiText.Get("A room change reason is required."));
             return;
         }
 
@@ -471,7 +470,7 @@
 
         ReplaceRoom(result.Value);
         SelectRoom(result.Value);
-        _successMessage = "Room saved by the server";
+        _successMessage = LocalizedUiText.Get("Room saved by the server");
         _state = SuccessState;
     }
 
@@ -481,7 +480,7 @@
             || string.IsNullOrWhiteSpace(_roomLocation)
             || _roomCapacity < 0)
         {
-            SetLocalValidation("Room code, location, and a non-negative capacity are required.");
+            SetLocalValidation(LocalizedUiText.Get("Room code, location, and a non-negative capacity are required."));
             return false;
         }
 
@@ -492,7 +491,7 @@
     {
         _planningDependencies[availability.Id] = availability.RowVersion;
         _successMessage =
-            "Read-only Staff availability selected as an offering-planning dependency.";
+            LocalizedUiText.Get("Read-only Staff availability selected as an offering-planning dependency.");
     }
 
     private async Task RevalidateAlertAsync(ScheduleImpactAlertDto alert)
@@ -533,7 +532,7 @@
         _selectedAlert = result.Value.LastValidation?.Valid == true
             ? result.Value
             : null;
-        _successMessage = "Impact revalidated by the server";
+        _successMessage = LocalizedUiText.Get("Impact revalidated by the server");
         _state = result.Value.LastValidation?.Valid == true
             ? SuccessState
             : ValidationErrorState;
@@ -567,7 +566,7 @@
         ReplaceAlert(result.Value);
         _selectedAlert = null;
         _resolutionReason = string.Empty;
-        _successMessage = "Impact resolved by the server";
+        _successMessage = LocalizedUiText.Get("Impact resolved by the server");
         _state = SuccessState;
     }
 
@@ -626,7 +625,7 @@
             ?? (status == HttpStatusCode.ServiceUnavailable
                 ? "SCHEDULING_UNAVAILABLE"
                 : "INTERNAL_ERROR");
-        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The request could not be completed safely.");
         _referenceId = error?.CorrelationId;
         _successMessage = null;
         _state = status switch

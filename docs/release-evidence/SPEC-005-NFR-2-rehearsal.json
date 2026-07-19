@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "spec005-migration-rehearsal/1.0",
+  "ownerSpec": "SPEC-005",
+  "recordedAtUtc": "2026-07-19T16:37:02.3759012+00:00",
+  "approvedWindowSeconds": 600,
+  "maximumAllowedSeconds": 480,
+  "forwardDurationSeconds": 1.146,
+  "rollbackDurationSeconds": 1.714,
+  "migrationArtifactSha256": "703E31E21D150F70E0113D7A5546BB4F656AA26B6BC8D9DB5057AAB2EAAA080F",
+  "backupVerified": true,
+  "rollbackTested": true,
+  "priorStateRestored": true,
+  "modelParityVerified": true,
+  "appliedMigrationCount": 7,
+  "status": "pass",
+  "approvedBy": "Ahmed ELbamby",
+  "productionAuthorized": false
+}

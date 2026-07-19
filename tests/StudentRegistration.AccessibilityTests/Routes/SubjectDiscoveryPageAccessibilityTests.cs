@@ -8,10 +8,13 @@ public sealed class SubjectDiscoveryPageAccessibilityTests(AxeAccessibilityFixtu
 {
     private const string TermId = "00000000-0000-0000-0000-000000011001";
 
-    [Fact]
-    public async Task Stu_02_search_filters_and_unavailable_reason_are_accessible_by_keyboard()
+    [Theory]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Stu_02_search_filters_and_unavailable_reason_are_accessible_by_keyboard(
+        int width,
+        float scale)
     {
-        await using var context = await fixture.OpenContextAsync(375, 1000);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/context", route => route.FulfillAsync(Json(AppContext)));
         await page.RouteAsync(

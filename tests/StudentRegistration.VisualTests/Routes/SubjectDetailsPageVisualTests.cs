@@ -1,0 +1,4 @@
+using StudentRegistration.VisualTests.Infrastructure;
+namespace StudentRegistration.VisualTests.Routes;
+public sealed class SubjectDetailsPageVisualContractTests { [Fact] public void Stu_03_visual_contract_is_frozen() => Spec003RouteVisualAssertions.AssertFrozenContract("STU-03", "T161", "SubjectDetailsPage"); }
+[Collection(VisualRegressionCollection.CollectionName)] public sealed class SubjectDetailsPageVisualTests(VisualRegressionFixture fixture) { [Theory] [MemberData(nameof(Spec003RouteVisualAssertions.BrowserWidths), MemberType=typeof(Spec003RouteVisualAssertions))] public Task Stu_03_matches_approved_baseline(string browser,int width) => Spec003RouteVisualAssertions.AssertApprovedBaselineAsync(fixture,"STU-03","/student/subjects/00000000-0000-0000-0000-000000003003",browser,width); }

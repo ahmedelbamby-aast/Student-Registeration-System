@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "spec005-query-plans/1.0",
+  "ownerSpec": "SPEC-005",
+  "sqlEdition": "SQL Server 2022 Developer",
+  "compatibilityLevel": 160,
+  "dataClassification": "synthetic-only",
+  "recordedAtUtc": "2026-07-19T16:15:53.9098795+00:00",
+  "rowCounts": {
+    "applicationUsers": 25000,
+    "students": 25000,
+    "registrationPlans": 8000,
+    "registrationSubmissions": 25000,
+    "enrollments": 75000,
+    "auditEvents": 100000
+  },
+  "plans": [
+    {
+      "queryId": "CQ-01",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "75FE9677B9C859A7C4D88E8FF5FC64A479551FA205771EA4F5E215F6E1F1599E",
+      "p95Milliseconds": 8.455,
+      "physicalOperators": [
+        "Clustered Index Seek",
+        "Index Seek",
+        "Nested Loops"
+      ],
+      "indexesUsed": [
+        "[IX_ApplicationUsers_NormalizedUserName]",
+        "[IX_Students_ApplicationUserId]",
+        "[PK_Students]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    },
+    {
+      "queryId": "CQ-02",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "E016065F5D8A7B2551F554C8AEE660A600E419B3B5044299BF9FA573BA08BF35",
+      "p95Milliseconds": 6.251,
+      "physicalOperators": [
+        "Clustered Index Scan",
+        "Clustered Index Seek",
+        "Index Seek",
+        "Nested Loops",
+        "Top"
+      ],
+      "indexesUsed": [
+        "[AK_SectionGroups_OfferingId_Id]",
+        "[PK_CourseOfferings]",
+        "[PK_SectionGroups]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    },
+    {
+      "queryId": "CQ-03",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "EBE0DE577C11C2D19832C8B76BB84C099E9AC52C7B877468052046BE667D35BC",
+      "p95Milliseconds": 14.788,
+      "physicalOperators": [
+        "Clustered Index Seek",
+        "Index Seek",
+        "Nested Loops"
+      ],
+      "indexesUsed": [
+        "[IX_RegistrationPlans_StudentId_TermId]",
+        "[PK_RegistrationPlans]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    },
+    {
+      "queryId": "CQ-04",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "099A86210B61B00D3A7F17A5E52867F853DF1BF23A2C52668CE46546E816EED2",
+      "p95Milliseconds": 20.611,
+      "physicalOperators": [
+        "Clustered Index Seek",
+        "Index Seek",
+        "Nested Loops"
+      ],
+      "indexesUsed": [
+        "[IX_RegistrationSubmissions_StudentId_TermId_ClientRequestId]",
+        "[PK_RegistrationSubmissions]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    },
+    {
+      "queryId": "CQ-05",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "EA9E19C4F2B4B3B31E7D948C5072F6E720C5B9E9736E76071A54F7D34F79597D",
+      "p95Milliseconds": 9.756,
+      "physicalOperators": [
+        "Clustered Index Seek",
+        "Index Scan",
+        "Nested Loops",
+        "Top"
+      ],
+      "indexesUsed": [
+        "[IX_Enrollments_StudentId_OfferingId]",
+        "[PK_Enrollments]"
+      ],
+      "scanOperators": [
+        "Index Scan"
+      ],
+      "exceptionId": "SPEC005-SCAN-20260719",
+      "exceptionOwner": "Ahmed ELbamby",
+      "exceptionExpiresOn": "2026-08-02"
+    },
+    {
+      "queryId": "CQ-06",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "2E9996E4AB41BAA8173DB958D0AC519C55D1FFB2C5A1B0A65BEDC2F7D76E8660",
+      "p95Milliseconds": 11.536,
+      "physicalOperators": [
+        "Clustered Index Seek",
+        "Compute Scalar",
+        "Constant Scan",
+        "Index Seek",
+        "Nested Loops",
+        "Top"
+      ],
+      "indexesUsed": [
+        "[IX_AuditEvents_OccurredAtUtc]",
+        "[PK_AuditEvents]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    },
+    {
+      "queryId": "CQ-07",
+      "actualPlanCaptured": true,
+      "actualPlanSha256": "BD2578B07F3E275CFB8CF2E5D6BE62D9240D8D472B38A66EBDC4338E3F296A3C",
+      "p95Milliseconds": 13.246,
+      "physicalOperators": [
+        "Index Seek",
+        "Stream Aggregate"
+      ],
+      "indexesUsed": [
+        "[IX_Enrollments_OfferingId_GroupId]"
+      ],
+      "scanOperators": [],
+      "exceptionId": null,
+      "exceptionOwner": null,
+      "exceptionExpiresOn": null
+    }
+  ],
+  "status": "pass",
+  "approvedBy": "Ahmed ELbamby",
+  "productionAuthorized": false
+}

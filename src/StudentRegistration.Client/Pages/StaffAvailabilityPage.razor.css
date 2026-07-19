@@ -1,0 +1,19 @@
+article,
+section {
+    min-inline-size: 0;
+}
+
+.srs-staff-availability__editor-table {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+}
+
+.srs-staff-availability__editor-table table {
+    min-inline-size: 48rem;
+}
+
+.srs-staff-availability__editor-table:focus-visible {
+    outline: var(--srs-focus-ring-width) solid var(--srs-color-focus-ring);
+    outline-offset: var(--srs-focus-ring-offset);
+}

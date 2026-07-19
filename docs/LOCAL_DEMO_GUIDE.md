@@ -184,10 +184,10 @@ Useful routes:
 
 ## 6. Inspect the generated credential artifact
 
-Passwords are intentionally random; there is no shared hard-coded demo
-password. After the Development initializer has successfully seeded a fresh
-database, it writes a reveal-once, Git-ignored JSON file under the API content
-root.
+The Development seed uses simple, deterministic demo-only passwords based on
+each institutional-style login ID. After the initializer has successfully
+seeded a fresh database, it also writes a Git-ignored JSON file under the API
+content root.
 
 Show the newest credential file:
 
@@ -209,7 +209,7 @@ $credentials.accounts |
 To retrieve one password without printing every account:
 
 ```powershell
-$login = 'admin.demo'
+$login = 'ADM-0001'
 ($credentials.accounts |
     Where-Object loginIdentifier -eq $login |
     Select-Object -First 1).secret
@@ -227,21 +227,22 @@ endpoints on 19 July 2026.
 
 | Test role | Login page | Username / University ID | Password |
 |---|---|---|---|
-| Student | `/student/login` | `AI2600001` | `N7v!q2L#p9R@x4T-m8K` |
-| Administrator | `/staff/login` | `admin.demo` | `RkV74K5RYb2vsio48SwAhqQa` |
-| Lecturer (teacher) | `/staff/login` | `lecturer.demo` | `-xHooVRUPPWKCKAzCkz-atYu` |
-| Teaching Assistant | `/staff/login` | `ta.demo` | `7McgZ_LNUgTUbniNpd-cbaQn` |
-| Lecturer + Teaching Assistant | `/staff/login` | `dual.demo` | `CaYKEpxkgfVMhY3hUHqCABzB` |
+| Student | `/student/login` | `AI2600001` | `DemoLogin@2026!!` |
+| Administrator | `/staff/login` | `ADM-0001` | `Demo@2026-ADM-0001` |
+| Lecturer (teacher) | `/staff/login` | `LEC-0001` | `Demo@2026-LEC-0001` |
+| Teaching Assistant | `/staff/login` | `TA-0001` | `Demo@2026-TA-0001` |
+| Lecturer + Teaching Assistant | `/staff/login` | `DUAL-0001` | `Demo@2026-DUAL-0001` |
 
-The student account was activated through the supported first-use flow, so
-its login password differs from the generated initial password retained in
-the artifact. The four staff passwords match their generated seed values.
+The student account was activated through the supported first-use flow. Its
+initial activation password is `Demo@2026-AI2600001`; its current login
+password is `DemoLogin@2026!!`. Staff sign in directly with their role/staff
+ID and matching ID-based password.
 
 ### Student
 
 1. Open `https://localhost:7078/student/login`.
 2. Enter a seeded University ID, such as `AI2600001`.
-3. Enter `N7v!q2L#p9R@x4T-m8K`.
+3. Enter `DemoLogin@2026!!`.
 4. Select **Sign in**. A successful login opens `/student`.
 
 The default seed creates 25 students: `AI2600001` through `AI2600025`.
@@ -250,33 +251,33 @@ Changing `DemoDatabase__StudentCount` changes the upper number, up to 25,000.
 ### Administrator
 
 1. Open `https://localhost:7078/staff/login`.
-2. Enter username `admin.demo`.
-3. Enter `RkV74K5RYb2vsio48SwAhqQa`.
+2. Enter staff ID `ADM-0001`.
+3. Enter `Demo@2026-ADM-0001`.
 4. Select **Sign in**. The Admin role opens `/admin`.
 
 ### Lecturer (teacher)
 
 1. Open `https://localhost:7078/staff/login`.
-2. Enter username `lecturer.demo`.
-3. Enter `-xHooVRUPPWKCKAzCkz-atYu`.
+2. Enter staff ID `LEC-0001`.
+3. Enter `Demo@2026-LEC-0001`.
 4. Select **Sign in**. The Lecturer role opens `/staff`.
 
 ### Teaching Assistant
 
 1. Open `https://localhost:7078/staff/login`.
-2. Enter username `ta.demo`.
-3. Enter `7McgZ_LNUgTUbniNpd-cbaQn`.
+2. Enter staff ID `TA-0001`.
+3. Enter `Demo@2026-TA-0001`.
 4. Select **Sign in**. The Teaching Assistant role opens `/staff`.
 
 ### User with Lecturer and Teaching Assistant roles
 
 1. Open `https://localhost:7078/staff/login`.
-2. Enter username `dual.demo` and password `CaYKEpxkgfVMhY3hUHqCABzB`.
+2. Enter staff ID `DUAL-0001` and password `Demo@2026-DUAL-0001`.
 3. After authentication, choose either **Lecturer** or
    **Teaching Assistant** when the authorized-role selector appears.
 
 The staff form never asks the user to claim a role. Roles come from the server.
-Only `dual.demo` needs to select between more than one authorized staff role.
+Only `DUAL-0001` needs to select between more than one authorized staff role.
 
 ## Stop or reset local infrastructure
 

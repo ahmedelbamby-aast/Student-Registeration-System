@@ -33,7 +33,7 @@ public sealed class RegistrationAdministrationPageComponentTests
         RepositoryFiles.ContainsAll(
             page,
             "data-testid=\"registration-monitor-observed-at\"",
-            "aria-label=\"Registration monitoring filters\"",
+            "aria-label=\"@(LocalizedUiText.Get(\"Registration monitoring filters\"))\"",
             "data-testid=\"registration-monitor-table\"",
             "data-testid=\"registration-monitor-card-list\"",
             "Selected receipt detail",

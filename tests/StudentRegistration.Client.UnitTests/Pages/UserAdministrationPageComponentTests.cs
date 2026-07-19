@@ -16,7 +16,7 @@ public sealed class UserAdministrationPageComponentTests
             page,
             "Skip to main content",
             "role=\"search\"",
-            "aria-label=\"User results\"",
+            "aria-label=\"@(LocalizedUiText.Get(\"User results\"))\"",
             "aria-busy=",
             "AccessibleValidationSummary",
             "ConfirmationDialog",

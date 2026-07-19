@@ -1,0 +1,4178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Ui.State.Loading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="Ui.State.Empty" xml:space="preserve">
+    <value>No matching information is available</value>
+  </data>
+  <data name="Ui.State.Success" xml:space="preserve">
+    <value>Completed successfully</value>
+  </data>
+  <data name="Ui.State.ValidationError" xml:space="preserve">
+    <value>Review the highlighted information</value>
+  </data>
+  <data name="Ui.State.ServiceError" xml:space="preserve">
+    <value>The service is temporarily unavailable</value>
+  </data>
+  <data name="Ui.State.Unauthorized" xml:space="preserve">
+    <value>Access is not authorized</value>
+  </data>
+  <data name="Ui.State.SessionExpired" xml:space="preserve">
+    <value>Your session has expired</value>
+  </data>
+  <data name="Ui.State.Stale" xml:space="preserve">
+    <value>The information changed; refresh and review</value>
+  </data>
+  <data name="Ui.State.Offline" xml:space="preserve">
+    <value>You appear to be offline</value>
+  </data>
+  <data name="Ui.State.UnknownReason" xml:space="preserve">
+    <value>The request could not be completed safely</value>
+  </data>
+  <data name="Ui.State.Loading.Heading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="Ui.State.Loading.Message" xml:space="preserve">
+    <value>Please wait while the latest information is loaded.</value>
+  </data>
+  <data name="Ui.State.Empty.Heading" xml:space="preserve">
+    <value>No information available</value>
+  </data>
+  <data name="Ui.State.Empty.Message" xml:space="preserve">
+    <value>No matching information is available.</value>
+  </data>
+  <data name="Ui.State.Success.Heading" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Ui.State.Success.Message" xml:space="preserve">
+    <value>Completed successfully.</value>
+  </data>
+  <data name="Ui.State.ValidationError.Heading" xml:space="preserve">
+    <value>Review required</value>
+  </data>
+  <data name="Ui.State.ValidationError.Message" xml:space="preserve">
+    <value>Review the highlighted information.</value>
+  </data>
+  <data name="Ui.State.ServiceError.Heading" xml:space="preserve">
+    <value>Service unavailable</value>
+  </data>
+  <data name="Ui.State.ServiceError.Message" xml:space="preserve">
+    <value>The service is temporarily unavailable.</value>
+  </data>
+  <data name="Ui.State.Unauthorized.Heading" xml:space="preserve">
+    <value>Access unavailable</value>
+  </data>
+  <data name="Ui.State.Unauthorized.Message" xml:space="preserve">
+    <value>Access is not authorized.</value>
+  </data>
+  <data name="Ui.State.SessionExpired.Heading" xml:space="preserve">
+    <value>Session expired</value>
+  </data>
+  <data name="Ui.State.SessionExpired.Message" xml:space="preserve">
+    <value>Your session has expired.</value>
+  </data>
+  <data name="Ui.State.Stale.Heading" xml:space="preserve">
+    <value>Information changed</value>
+  </data>
+  <data name="Ui.State.Stale.Message" xml:space="preserve">
+    <value>The information changed; refresh and review.</value>
+  </data>
+  <data name="Ui.State.Offline.Heading" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Ui.State.Offline.Message" xml:space="preserve">
+    <value>You appear to be offline.</value>
+  </data>
+  <data name="Ui.State.UnknownReason.Heading" xml:space="preserve">
+    <value>Request not completed</value>
+  </data>
+  <data name="Ui.State.UnknownReason.Message" xml:space="preserve">
+    <value>The request could not be completed safely.</value>
+  </data>
+  <data name="_editor.TeachingStartsOn = eventArgs.Value?.ToString() ?? string.Empty&quot; /&gt;" xml:space="preserve">
+    <value>_editor.TeachingStartsOn = eventArgs.Value?.ToString() ?? string.Empty" /&gt;</value>
+  </data>
+  <data name="_importAccessedOn = eventArgs.Value?.ToString() ?? string.Empty&quot; /&gt;" xml:space="preserve">
+    <value>_importAccessedOn = eventArgs.Value?.ToString() ?? string.Empty" /&gt;</value>
+  </data>
+  <data name=",&#xA;                                rowversion" xml:space="preserve">
+    <value>,
+                                rowversion</value>
+  </data>
+  <data name="/api/student/registrations/current/timetable" xml:space="preserve">
+    <value>/api/student/registrations/current/timetable</value>
+  </data>
+  <data name="&gt; policies,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>&gt; policies,
+        AcademicApiResult</value>
+  </data>
+  <data name="&gt; programs,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>&gt; programs,
+        AcademicApiResult</value>
+  </data>
+  <data name="&gt; rooms,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>&gt; rooms,
+        AcademicApiResult</value>
+  </data>
+  <data name="&gt; versions,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>&gt; versions,
+        AcademicApiResult</value>
+  </data>
+  <data name="&gt;? availability,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>&gt;? availability,
+        AcademicApiResult</value>
+  </data>
+  <data name="A server alert keeps its detected timestamp, affected group, state,&#xA;                and" xml:space="preserve">
+    <value>A server alert keeps its detected timestamp, affected group, state,
+                and</value>
+  </data>
+  <data name="AASTMT" xml:space="preserve">
+    <value>AASTMT</value>
+  </data>
+  <data name="AASTMT academic services demo" xml:space="preserve">
+    <value>AASTMT academic services demo</value>
+  </data>
+  <data name="AASTMT Student Registration" xml:space="preserve">
+    <value>AASTMT Student Registration</value>
+  </data>
+  <data name="AASTMT Student Registration · Sourced academic administration" xml:space="preserve">
+    <value>AASTMT Student Registration · Sourced academic administration</value>
+  </data>
+  <data name="Academic context" xml:space="preserve">
+    <value>Academic context</value>
+  </data>
+  <data name="Academic context administration" xml:space="preserve">
+    <value>Academic context administration</value>
+  </data>
+  <data name="Academic correction" xml:space="preserve">
+    <value>Academic correction</value>
+  </data>
+  <data name="Academic correction is offline" xml:space="preserve">
+    <value>Academic correction is offline</value>
+  </data>
+  <data name="Academic data as of" xml:space="preserve">
+    <value>Academic data as of</value>
+  </data>
+  <data name="Academic profile changed concurrently" xml:space="preserve">
+    <value>Academic profile changed concurrently</value>
+  </data>
+  <data name="Academic profile details are unavailable until the stated blocker is resolved." xml:space="preserve">
+    <value>Academic profile details are unavailable until the stated blocker is resolved.</value>
+  </data>
+  <data name="Academic provenance table" xml:space="preserve">
+    <value>Academic provenance table</value>
+  </data>
+  <data name="Academic provenance, stacked view" xml:space="preserve">
+    <value>Academic provenance, stacked view</value>
+  </data>
+  <data name="Academic services demo" xml:space="preserve">
+    <value>Academic services demo</value>
+  </data>
+  <data name="Academic summary" xml:space="preserve">
+    <value>Academic summary</value>
+  </data>
+  <data name="Academic term" xml:space="preserve">
+    <value>Academic term</value>
+  </data>
+  <data name="Academic term ID" xml:space="preserve">
+    <value>Academic term ID</value>
+  </data>
+  <data name="Academic term owner: SPEC-008" xml:space="preserve">
+    <value>Academic term owner: SPEC-008</value>
+  </data>
+  <data name="Academic term pages" xml:space="preserve">
+    <value>Academic term pages</value>
+  </data>
+  <data name="Academic term results" xml:space="preserve">
+    <value>Academic term results</value>
+  </data>
+  <data name="Academic term results, compact semantic alternative" xml:space="preserve">
+    <value>Academic term results, compact semantic alternative</value>
+  </data>
+  <data name="Accepted" xml:space="preserve">
+    <value>Accepted</value>
+  </data>
+  <data name="Access date" xml:space="preserve">
+    <value>Access date</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Account access" xml:space="preserve">
+    <value>Account access</value>
+  </data>
+  <data name="Account recovery" xml:space="preserve">
+    <value>Account recovery</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Activate Student account" xml:space="preserve">
+    <value>Activate Student account</value>
+  </data>
+  <data name="Activating the account once." xml:space="preserve">
+    <value>Activating the account once.</value>
+  </data>
+  <data name="Active holds" xml:space="preserve">
+    <value>Active holds</value>
+  </data>
+  <data name="Active holds table" xml:space="preserve">
+    <value>Active holds table</value>
+  </data>
+  <data name="Active holds, stacked view" xml:space="preserve">
+    <value>Active holds, stacked view</value>
+  </data>
+  <data name="Active role" xml:space="preserve">
+    <value>Active role</value>
+  </data>
+  <data name="Active roster count" xml:space="preserve">
+    <value>Active roster count</value>
+  </data>
+  <data name="Activity" xml:space="preserve">
+    <value>Activity</value>
+  </data>
+  <data name="Actor" xml:space="preserve">
+    <value>Actor</value>
+  </data>
+  <data name="Add a subject" xml:space="preserve">
+    <value>Add a subject</value>
+  </data>
+  <data name="Add an eligible subject group to build your schedule." xml:space="preserve">
+    <value>Add an eligible subject group to build your schedule.</value>
+  </data>
+  <data name="Add availability range" xml:space="preserve">
+    <value>Add availability range</value>
+  </data>
+  <data name="Add only pre-provisioning data. Generated credentials are never accepted here." xml:space="preserve">
+    <value>Add only pre-provisioning data. Generated credentials are never accepted here.</value>
+  </data>
+  <data name="Add or edit plan" xml:space="preserve">
+    <value>Add or edit plan</value>
+  </data>
+  <data name="Add registration window" xml:space="preserve">
+    <value>Add registration window</value>
+  </data>
+  <data name="Add subjects and groups before submission." xml:space="preserve">
+    <value>Add subjects and groups before submission.</value>
+  </data>
+  <data name="Add the complete set of available or unavailable ranges before saving." xml:space="preserve">
+    <value>Add the complete set of available or unavailable ranges before saving.</value>
+  </data>
+  <data name="Admin dashboard" xml:space="preserve">
+    <value>Admin dashboard</value>
+  </data>
+  <data name="Admin dashboard | Student Registration" xml:space="preserve">
+    <value>Admin dashboard | Student Registration</value>
+  </data>
+  <data name="Administration" xml:space="preserve">
+    <value>Administration</value>
+  </data>
+  <data name="Administration home" xml:space="preserve">
+    <value>Administration home</value>
+  </data>
+  <data name="Administration modules" xml:space="preserve">
+    <value>Administration modules</value>
+  </data>
+  <data name="Administration navigation" xml:space="preserve">
+    <value>Administration navigation</value>
+  </data>
+  <data name="Administration operations" xml:space="preserve">
+    <value>Administration operations</value>
+  </data>
+  <data name="Admins, Lecturers, and Teaching Assistants use the shared&#xA;                            staff sign-in page. The server assigns authorized access." xml:space="preserve">
+    <value>Admins, Lecturers, and Teaching Assistants use the shared
+                            staff sign-in page. The server assigns authorized access.</value>
+  </data>
+  <data name="Affected groups" xml:space="preserve">
+    <value>Affected groups</value>
+  </data>
+  <data name="Affected subjects" xml:space="preserve">
+    <value>Affected subjects</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="All authorized sources" xml:space="preserve">
+    <value>All authorized sources</value>
+  </data>
+  <data name="All results" xml:space="preserve">
+    <value>All results</value>
+  </data>
+  <data name="Alternatives" xml:space="preserve">
+    <value>Alternatives</value>
+  </data>
+  <data name="Any day" xml:space="preserve">
+    <value>Any day</value>
+  </data>
+  <data name="Apply search and filters" xml:space="preserve">
+    <value>Apply search and filters</value>
+  </data>
+  <data name="Applying one identity operation." xml:space="preserve">
+    <value>Applying one identity operation.</value>
+  </data>
+  <data name="Arab Academy for Science, Technology and Maritime Transport" xml:space="preserve">
+    <value>Arab Academy for Science, Technology and Maritime Transport</value>
+  </data>
+  <data name="Assigned group roster" xml:space="preserve">
+    <value>Assigned group roster</value>
+  </data>
+  <data name="Assigned group roster | Student Registration" xml:space="preserve">
+    <value>Assigned group roster | Student Registration</value>
+  </data>
+  <data name="Assigned group roster table" xml:space="preserve">
+    <value>Assigned group roster table</value>
+  </data>
+  <data name="Assignment" xml:space="preserve">
+    <value>Assignment</value>
+  </data>
+  <data name="Assignment changed" xml:space="preserve">
+    <value>Assignment changed</value>
+  </data>
+  <data name="Assignment status" xml:space="preserve">
+    <value>Assignment status</value>
+  </data>
+  <data name="Assignments changed" xml:space="preserve">
+    <value>Assignments changed</value>
+  </data>
+  <data name="At least 3 characters" xml:space="preserve">
+    <value>At least 3 characters</value>
+  </data>
+  <data name="Atomic registration result" xml:space="preserve">
+    <value>Atomic registration result</value>
+  </data>
+  <data name="Audit" xml:space="preserve">
+    <value>Audit</value>
+  </data>
+  <data name="Audit administration | Student Registration" xml:space="preserve">
+    <value>Audit administration | Student Registration</value>
+  </data>
+  <data name="Audit event summaries" xml:space="preserve">
+    <value>Audit event summaries</value>
+  </data>
+  <data name="Audit result pages" xml:space="preserve">
+    <value>Audit result pages</value>
+  </data>
+  <data name="Audit results semantic alternative" xml:space="preserve">
+    <value>Audit results semantic alternative</value>
+  </data>
+  <data name="Authoritative application context" xml:space="preserve">
+    <value>Authoritative application context</value>
+  </data>
+  <data name="Authorized assignments" xml:space="preserve">
+    <value>Authorized assignments</value>
+  </data>
+  <data name="Authorized locator fields" xml:space="preserve">
+    <value>Authorized locator fields</value>
+  </data>
+  <data name="Authorized role" xml:space="preserve">
+    <value>Authorized role</value>
+  </data>
+  <data name="Authorized role context" xml:space="preserve">
+    <value>Authorized role context</value>
+  </data>
+  <data name="Authorized roles" xml:space="preserve">
+    <value>Authorized roles</value>
+  </data>
+  <data name="Authorized roster" xml:space="preserve">
+    <value>Authorized roster</value>
+  </data>
+  <data name="Availability actions" xml:space="preserve">
+    <value>Availability actions</value>
+  </data>
+  <data name="Availability changed" xml:space="preserve">
+    <value>Availability changed</value>
+  </data>
+  <data name="Availability range editor" xml:space="preserve">
+    <value>Availability range editor</value>
+  </data>
+  <data name="Availability saved" xml:space="preserve">
+    <value>Availability saved</value>
+  </data>
+  <data name="Availability timetable" xml:space="preserve">
+    <value>Availability timetable</value>
+  </data>
+  <data name="Available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="Available subjects" xml:space="preserve">
+    <value>Available subjects</value>
+  </data>
+  <data name="Available subjects | Student Registration" xml:space="preserve">
+    <value>Available subjects | Student Registration</value>
+  </data>
+  <data name="Awaiting server observation" xml:space="preserve">
+    <value>Awaiting server observation</value>
+  </data>
+  <data name="Blocks registration" xml:space="preserve">
+    <value>Blocks registration</value>
+  </data>
+  <data name="Bounded owner query" xml:space="preserve">
+    <value>Bounded owner query</value>
+  </data>
+  <data name="Breadcrumb" xml:space="preserve">
+    <value>Breadcrumb</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Capacity" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="Catalogue" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="Catalogue administration | Student Registration" xml:space="preserve">
+    <value>Catalogue administration | Student Registration</value>
+  </data>
+  <data name="Catalogue and policy administration" xml:space="preserve">
+    <value>Catalogue and policy administration</value>
+  </data>
+  <data name="Catalogue draft" xml:space="preserve">
+    <value>Catalogue draft</value>
+  </data>
+  <data name="Catalogue versions" xml:space="preserve">
+    <value>Catalogue versions</value>
+  </data>
+  <data name="Change password" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="Change reason" xml:space="preserve">
+    <value>Change reason</value>
+  </data>
+  <data name="Changed server fields" xml:space="preserve">
+    <value>Changed server fields</value>
+  </data>
+  <data name="ChangePageAsync(_currentPage - 1)&quot;&gt;&#xA;                            Previous" xml:space="preserve">
+    <value>ChangePageAsync(_currentPage - 1)"&gt;
+                            Previous</value>
+  </data>
+  <data name="ChangePageAsync(_currentPage - 1)&quot;&gt;&#xA;                    Previous" xml:space="preserve">
+    <value>ChangePageAsync(_currentPage - 1)"&gt;
+                    Previous</value>
+  </data>
+  <data name="ChangePageAsync(_currentPage + 1)&quot;&gt;&#xA;                            Next" xml:space="preserve">
+    <value>ChangePageAsync(_currentPage + 1)"&gt;
+                            Next</value>
+  </data>
+  <data name="ChangePageAsync(_currentPage + 1)&quot;&gt;&#xA;                    Next" xml:space="preserve">
+    <value>ChangePageAsync(_currentPage + 1)"&gt;
+                    Next</value>
+  </data>
+  <data name="Changing account status…" xml:space="preserve">
+    <value>Changing account status…</value>
+  </data>
+  <data name="Check the server-authoritative academic status, then choose the&#xA;                correct secure access path." xml:space="preserve">
+    <value>Check the server-authoritative academic status, then choose the
+                correct secure access path.</value>
+  </data>
+  <data name="Checking the current registration term and server eligibility." xml:space="preserve">
+    <value>Checking the current registration term and server eligibility.</value>
+  </data>
+  <data name="Checking the current term and registration service once." xml:space="preserve">
+    <value>Checking the current term and registration service once.</value>
+  </data>
+  <data name="Checking the server date, academic term, registration window,&#xA;                    profile, and holds." xml:space="preserve">
+    <value>Checking the server date, academic term, registration window,
+                    profile, and holds.</value>
+  </data>
+  <data name="Choose an authorized staff context" xml:space="preserve">
+    <value>Choose an authorized staff context</value>
+  </data>
+  <data name="Choose another subject" xml:space="preserve">
+    <value>Choose another subject</value>
+  </data>
+  <data name="Choose availability term" xml:space="preserve">
+    <value>Choose availability term</value>
+  </data>
+  <data name="Choose the server-issued academic term before loading Staff declarations." xml:space="preserve">
+    <value>Choose the server-issued academic term before loading Staff declarations.</value>
+  </data>
+  <data name="Chronological schedule" xml:space="preserve">
+    <value>Chronological schedule</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="Clear registration filters" xml:space="preserve">
+    <value>Clear registration filters</value>
+  </data>
+  <data name="Clear Student search" xml:space="preserve">
+    <value>Clear Student search</value>
+  </data>
+  <data name="Code" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Cohort" xml:space="preserve">
+    <value>Cohort</value>
+  </data>
+  <data name="Collisions" xml:space="preserve">
+    <value>Collisions</value>
+  </data>
+  <data name="Complete active hold set for the selected Student" xml:space="preserve">
+    <value>Complete active hold set for the selected Student</value>
+  </data>
+  <data name="Complete activity bundle" xml:space="preserve">
+    <value>Complete activity bundle</value>
+  </data>
+  <data name="Complete recovery" xml:space="preserve">
+    <value>Complete recovery</value>
+  </data>
+  <data name="Concurrent offering change requires review" xml:space="preserve">
+    <value>Concurrent offering change requires review</value>
+  </data>
+  <data name="Concurrent resource change requires review" xml:space="preserve">
+    <value>Concurrent resource change requires review</value>
+  </data>
+  <data name="Concurrent term change requires review" xml:space="preserve">
+    <value>Concurrent term change requires review</value>
+  </data>
+  <data name="Confirm offering publication" xml:space="preserve">
+    <value>Confirm offering publication</value>
+  </data>
+  <data name="Confirm publish" xml:space="preserve">
+    <value>Confirm publish</value>
+  </data>
+  <data name="Confirm registration" xml:space="preserve">
+    <value>Confirm registration</value>
+  </data>
+  <data name="Confirm status change" xml:space="preserve">
+    <value>Confirm status change</value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>Conflict</value>
+  </data>
+  <data name="Conflict status" xml:space="preserve">
+    <value>Conflict status</value>
+  </data>
+  <data name="Conflicting registration windows" xml:space="preserve">
+    <value>Conflicting registration windows</value>
+  </data>
+  <data name="Content hash" xml:space="preserve">
+    <value>Content hash</value>
+  </data>
+  <data name="Context selection needs attention" xml:space="preserve">
+    <value>Context selection needs attention</value>
+  </data>
+  <data name="Continue links record only a group intent. The schedule page&#xA;                            and later submission must revalidate authoritative state." xml:space="preserve">
+    <value>Continue links record only a group intent. The schedule page
+                            and later submission must revalidate authoritative state.</value>
+  </data>
+  <data name="Continue to review" xml:space="preserve">
+    <value>Continue to review</value>
+  </data>
+  <data name="Corrected GPA" xml:space="preserve">
+    <value>Corrected GPA</value>
+  </data>
+  <data name="Correlation" xml:space="preserve">
+    <value>Correlation</value>
+  </data>
+  <data name="Course" xml:space="preserve">
+    <value>Course</value>
+  </data>
+  <data name="Course code" xml:space="preserve">
+    <value>Course code</value>
+  </data>
+  <data name="Course code descending" xml:space="preserve">
+    <value>Course code descending</value>
+  </data>
+  <data name="Course code or title" xml:space="preserve">
+    <value>Course code or title</value>
+  </data>
+  <data name="Course ID" xml:space="preserve">
+    <value>Course ID</value>
+  </data>
+  <data name="Courses" xml:space="preserve">
+    <value>Courses</value>
+  </data>
+  <data name="Create a Draft offering or clear the bounded filter." xml:space="preserve">
+    <value>Create a Draft offering or clear the bounded filter.</value>
+  </data>
+  <data name="Create a room or clear the bounded filter." xml:space="preserve">
+    <value>Create a room or clear the bounded filter.</value>
+  </data>
+  <data name="Create another term" xml:space="preserve">
+    <value>Create another term</value>
+  </data>
+  <data name="Create Draft offering" xml:space="preserve">
+    <value>Create Draft offering</value>
+  </data>
+  <data name="Create Draft offerings, edit complete groups, validate every resource, and publish only after server confirmation." xml:space="preserve">
+    <value>Create Draft offerings, edit complete groups, validate every resource, and publish only after server confirmation.</value>
+  </data>
+  <data name="Create explicit teaching terms, maintain versioned registration windows,&#xA;                and publish only after the owner service accepts the command." xml:space="preserve">
+    <value>Create explicit teaching terms, maintain versioned registration windows,
+                and publish only after the owner service accepts the command.</value>
+  </data>
+  <data name="Create offering" xml:space="preserve">
+    <value>Create offering</value>
+  </data>
+  <data name="Create room" xml:space="preserve">
+    <value>Create room</value>
+  </data>
+  <data name="Create the first explicit term without inferring dates or lifecycle values." xml:space="preserve">
+    <value>Create the first explicit term without inferring dates or lifecycle values.</value>
+  </data>
+  <data name="Credit and policy checks" xml:space="preserve">
+    <value>Credit and policy checks</value>
+  </data>
+  <data name="Credit load" xml:space="preserve">
+    <value>Credit load</value>
+  </data>
+  <data name="Credit summary" xml:space="preserve">
+    <value>Credit summary</value>
+  </data>
+  <data name="Credits" xml:space="preserve">
+    <value>Credits</value>
+  </data>
+  <data name="Credits descending" xml:space="preserve">
+    <value>Credits descending</value>
+  </data>
+  <data name="Curated courses" xml:space="preserve">
+    <value>Curated courses</value>
+  </data>
+  <data name="Curated demo subset — locally assigned credits and fixture flags&#xA;                        remain explicitly synthetic." xml:space="preserve">
+    <value>Curated demo subset — locally assigned credits and fixture flags
+                        remain explicitly synthetic.</value>
+  </data>
+  <data name="Current" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="Current and archived registration outcomes" xml:space="preserve">
+    <value>Current and archived registration outcomes</value>
+  </data>
+  <data name="Current authorized timetable" xml:space="preserve">
+    <value>Current authorized timetable</value>
+  </data>
+  <data name="Current import" xml:space="preserve">
+    <value>Current import</value>
+  </data>
+  <data name="Current plan" xml:space="preserve">
+    <value>Current plan</value>
+  </data>
+  <data name="Current registration timetable" xml:space="preserve">
+    <value>Current registration timetable</value>
+  </data>
+  <data name="Current registrations" xml:space="preserve">
+    <value>Current registrations</value>
+  </data>
+  <data name="Current server status" xml:space="preserve">
+    <value>Current server status</value>
+  </data>
+  <data name="Current server version:" xml:space="preserve">
+    <value>Current server version:</value>
+  </data>
+  <data name="Current timetable" xml:space="preserve">
+    <value>Current timetable</value>
+  </data>
+  <data name="Current timetable is unavailable until SPEC-015 is delivered." xml:space="preserve">
+    <value>Current timetable is unavailable until SPEC-015 is delivered.</value>
+  </data>
+  <data name="Current version" xml:space="preserve">
+    <value>Current version</value>
+  </data>
+  <data name="CurrentPageLabel" xml:space="preserve">
+    <value>CurrentPageLabel</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Day and term-local time" xml:space="preserve">
+    <value>Day and term-local time</value>
+  </data>
+  <data name="Decision versions and input summary" xml:space="preserve">
+    <value>Decision versions and input summary</value>
+  </data>
+  <data name="Default target" xml:space="preserve">
+    <value>Default target</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Detected" xml:space="preserve">
+    <value>Detected</value>
+  </data>
+  <data name="Deterministic policy simulation" xml:space="preserve">
+    <value>Deterministic policy simulation</value>
+  </data>
+  <data name="Display name" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="Download ready export" xml:space="preserve">
+    <value>Download ready export</value>
+  </data>
+  <data name="Draft version" xml:space="preserve">
+    <value>Draft version</value>
+  </data>
+  <data name="draft,&#xA;        AcademicApiResult" xml:space="preserve">
+    <value>draft,
+        AcademicApiResult</value>
+  </data>
+  <data name="Earned credits" xml:space="preserve">
+    <value>Earned credits</value>
+  </data>
+  <data name="Edit plan" xml:space="preserve">
+    <value>Edit plan</value>
+  </data>
+  <data name="Edit the server-stored plan. Capacity is advisory until&#xA;                        final submission revalidates every selection." xml:space="preserve">
+    <value>Edit the server-stored plan. Capacity is advisory until
+                        final submission revalidates every selection.</value>
+  </data>
+  <data name="Editing deadline:" xml:space="preserve">
+    <value>Editing deadline:</value>
+  </data>
+  <data name="Effective" xml:space="preserve">
+    <value>Effective</value>
+  </data>
+  <data name="Effective from" xml:space="preserve">
+    <value>Effective from</value>
+  </data>
+  <data name="Effective maximum" xml:space="preserve">
+    <value>Effective maximum</value>
+  </data>
+  <data name="Eligibility" xml:space="preserve">
+    <value>Eligibility</value>
+  </data>
+  <data name="Eligibility result" xml:space="preserve">
+    <value>Eligibility result</value>
+  </data>
+  <data name="Eligible" xml:space="preserve">
+    <value>Eligible</value>
+  </data>
+  <data name="End" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>Ends</value>
+  </data>
+  <data name="Enrollment state" xml:space="preserve">
+    <value>Enrollment state</value>
+  </data>
+  <data name="Enter 10 to 500 characters for the audit record." xml:space="preserve">
+    <value>Enter 10 to 500 characters for the audit record.</value>
+  </data>
+  <data name="Enter 3 to 50 characters. Empty-query Student enumeration is not available." xml:space="preserve">
+    <value>Enter 3 to 50 characters. Empty-query Student enumeration is not available.</value>
+  </data>
+  <data name="Enter a sourced value from 0.00 to 4.00." xml:space="preserve">
+    <value>Enter a sourced value from 0.00 to 4.00.</value>
+  </data>
+  <data name="Enum.TryParse" xml:space="preserve">
+    <value>Enum.TryParse</value>
+  </data>
+  <data name="Evaluated" xml:space="preserve">
+    <value>Evaluated</value>
+  </data>
+  <data name="Every save replaces the complete owned range set. Times use the configured institutional time zone." xml:space="preserve">
+    <value>Every save replaces the complete owned range set. Times use the configured institutional time zone.</value>
+  </data>
+  <data name="Exact overlap" xml:space="preserve">
+    <value>Exact overlap</value>
+  </data>
+  <data name="Expires" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="Expiry" xml:space="preserve">
+    <value>Expiry</value>
+  </data>
+  <data name="Export status may be queued, ready, failed, or expired. Restricted&#xA;                    jobs reveal no event or job detail." xml:space="preserve">
+    <value>Export status may be queued, ready, failed, or expired. Restricted
+                    jobs reveal no event or job detail.</value>
+  </data>
+  <data name="Failures" xml:space="preserve">
+    <value>Failures</value>
+  </data>
+  <data name="Fill" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="Filter registrations" xml:space="preserve">
+    <value>Filter registrations</value>
+  </data>
+  <data name="Find schedule alternatives" xml:space="preserve">
+    <value>Find schedule alternatives</value>
+  </data>
+  <data name="Find subjects" xml:space="preserve">
+    <value>Find subjects</value>
+  </data>
+  <data name="Find users" xml:space="preserve">
+    <value>Find users</value>
+  </data>
+  <data name="Finding schedule alternatives" xml:space="preserve">
+    <value>Finding schedule alternatives</value>
+  </data>
+  <data name="Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Full" xml:space="preserve">
+    <value>Full</value>
+  </data>
+  <data name="Go to Student login" xml:space="preserve">
+    <value>Go to Student login</value>
+  </data>
+  <data name="Governed academic master data" xml:space="preserve">
+    <value>Governed academic master data</value>
+  </data>
+  <data name="GPA" xml:space="preserve">
+    <value>GPA</value>
+  </data>
+  <data name="GPA-below-2.0 maximum credits" xml:space="preserve">
+    <value>GPA-below-2.0 maximum credits</value>
+  </data>
+  <data name="Grade" xml:space="preserve">
+    <value>Grade</value>
+  </data>
+  <data name="Group" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="Group activities" xml:space="preserve">
+    <value>Group activities</value>
+  </data>
+  <data name="Group availability" xml:space="preserve">
+    <value>Group availability</value>
+  </data>
+  <data name="Group availability changed" xml:space="preserve">
+    <value>Group availability changed</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="History records" xml:space="preserve">
+    <value>History records</value>
+  </data>
+  <data name="Identity security" xml:space="preserve">
+    <value>Identity security</value>
+  </data>
+  <data name="Immutable administrative evidence" xml:space="preserve">
+    <value>Immutable administrative evidence</value>
+  </data>
+  <data name="Immutable event detail" xml:space="preserve">
+    <value>Immutable event detail</value>
+  </data>
+  <data name="Immutable history" xml:space="preserve">
+    <value>Immutable history</value>
+  </data>
+  <data name="Import catalogue evidence" xml:space="preserve">
+    <value>Import catalogue evidence</value>
+  </data>
+  <data name="Import row errors" xml:space="preserve">
+    <value>Import row errors</value>
+  </data>
+  <data name="Imported at" xml:space="preserve">
+    <value>Imported at</value>
+  </data>
+  <data name="Initial capacity" xml:space="preserve">
+    <value>Initial capacity</value>
+  </data>
+  <data name="Initial group code" xml:space="preserve">
+    <value>Initial group code</value>
+  </data>
+  <data name="Inspect server-authorized submission, receipt, fill, failure, and&#xA;                reconciliation observations without changing registration state." xml:space="preserve">
+    <value>Inspect server-authorized submission, receipt, fill, failure, and
+                reconciliation observations without changing registration state.</value>
+  </data>
+  <data name="Institutional identity" xml:space="preserve">
+    <value>Institutional identity</value>
+  </data>
+  <data name="Institutional time zone" xml:space="preserve">
+    <value>Institutional time zone</value>
+  </data>
+  <data name="Investigate warning" xml:space="preserve">
+    <value>Investigate warning</value>
+  </data>
+  <data name="Job" xml:space="preserve">
+    <value>Job</value>
+  </data>
+  <data name="Keyboard text entry" xml:space="preserve">
+    <value>Keyboard text entry</value>
+  </data>
+  <data name="Kind" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="Lecturer" xml:space="preserve">
+    <value>Lecturer</value>
+  </data>
+  <data name="Lecturer and Teaching Assistant workspace" xml:space="preserve">
+    <value>Lecturer and Teaching Assistant workspace</value>
+  </data>
+  <data name="Lifecycle" xml:space="preserve">
+    <value>Lifecycle</value>
+  </data>
+  <data name="Lifecycle state:" xml:space="preserve">
+    <value>Lifecycle state:</value>
+  </data>
+  <data name="Load policy reasons" xml:space="preserve">
+    <value>Load policy reasons</value>
+  </data>
+  <data name="Load Staff availability" xml:space="preserve">
+    <value>Load Staff availability</value>
+  </data>
+  <data name="Loading Admin dashboard" xml:space="preserve">
+    <value>Loading Admin dashboard</value>
+  </data>
+  <data name="Loading assigned roster" xml:space="preserve">
+    <value>Loading assigned roster</value>
+  </data>
+  <data name="Loading audit events" xml:space="preserve">
+    <value>Loading audit events</value>
+  </data>
+  <data name="Loading authoritative operational metrics." xml:space="preserve">
+    <value>Loading authoritative operational metrics.</value>
+  </data>
+  <data name="Loading authorized assignments." xml:space="preserve">
+    <value>Loading authorized assignments.</value>
+  </data>
+  <data name="Loading authorized timetable." xml:space="preserve">
+    <value>Loading authorized timetable.</value>
+  </data>
+  <data name="Loading available subjects" xml:space="preserve">
+    <value>Loading available subjects</value>
+  </data>
+  <data name="Loading catalogue and policy versions" xml:space="preserve">
+    <value>Loading catalogue and policy versions</value>
+  </data>
+  <data name="Loading offerings" xml:space="preserve">
+    <value>Loading offerings</value>
+  </data>
+  <data name="Loading owned availability." xml:space="preserve">
+    <value>Loading owned availability.</value>
+  </data>
+  <data name="Loading public academic status" xml:space="preserve">
+    <value>Loading public academic status</value>
+  </data>
+  <data name="Loading registration history" xml:space="preserve">
+    <value>Loading registration history</value>
+  </data>
+  <data name="Loading registration observations" xml:space="preserve">
+    <value>Loading registration observations</value>
+  </data>
+  <data name="Loading registration records" xml:space="preserve">
+    <value>Loading registration records</value>
+  </data>
+  <data name="Loading registration records." xml:space="preserve">
+    <value>Loading registration records.</value>
+  </data>
+  <data name="Loading registration result" xml:space="preserve">
+    <value>Loading registration result</value>
+  </data>
+  <data name="Loading registration review" xml:space="preserve">
+    <value>Loading registration review</value>
+  </data>
+  <data name="Loading rooms, availability, and impacts" xml:space="preserve">
+    <value>Loading rooms, availability, and impacts</value>
+  </data>
+  <data name="Loading roster page" xml:space="preserve">
+    <value>Loading roster page</value>
+  </data>
+  <data name="Loading schedule builder" xml:space="preserve">
+    <value>Loading schedule builder</value>
+  </data>
+  <data name="Loading sourced academic profile" xml:space="preserve">
+    <value>Loading sourced academic profile</value>
+  </data>
+  <data name="Loading staff availability" xml:space="preserve">
+    <value>Loading staff availability</value>
+  </data>
+  <data name="Loading staff timetable" xml:space="preserve">
+    <value>Loading staff timetable</value>
+  </data>
+  <data name="Loading staff workspace" xml:space="preserve">
+    <value>Loading staff workspace</value>
+  </data>
+  <data name="Loading Student administration" xml:space="preserve">
+    <value>Loading Student administration</value>
+  </data>
+  <data name="Loading Student dashboard" xml:space="preserve">
+    <value>Loading Student dashboard</value>
+  </data>
+  <data name="Loading Student result page" xml:space="preserve">
+    <value>Loading Student result page</value>
+  </data>
+  <data name="Loading subject details" xml:space="preserve">
+    <value>Loading subject details</value>
+  </data>
+  <data name="Loading subject page" xml:space="preserve">
+    <value>Loading subject page</value>
+  </data>
+  <data name="Loading terms and registration windows" xml:space="preserve">
+    <value>Loading terms and registration windows</value>
+  </data>
+  <data name="Loading the authoritative registration result." xml:space="preserve">
+    <value>Loading the authoritative registration result.</value>
+  </data>
+  <data name="Loading the authorized roster." xml:space="preserve">
+    <value>Loading the authorized roster.</value>
+  </data>
+  <data name="Loading the current server-authored plan." xml:space="preserve">
+    <value>Loading the current server-authored plan.</value>
+  </data>
+  <data name="Loading the current server-authored registration plan." xml:space="preserve">
+    <value>Loading the current server-authored registration plan.</value>
+  </data>
+  <data name="Loading users…" xml:space="preserve">
+    <value>Loading users…</value>
+  </data>
+  <data name="Loading your academic context" xml:space="preserve">
+    <value>Loading your academic context</value>
+  </data>
+  <data name="LoadRecordsAsync(1)&quot;&gt;Retry registration records" xml:space="preserve">
+    <value>LoadRecordsAsync(1)"&gt;Retry registration records</value>
+  </data>
+  <data name="LoadRosterAsync(1)&quot;&gt;Retry" xml:space="preserve">
+    <value>LoadRosterAsync(1)"&gt;Retry</value>
+  </data>
+  <data name="Locate one Student inside the server-selected academic term, review the&#xA;                sourced record, and submit a reasoned version-safe correction." xml:space="preserve">
+    <value>Locate one Student inside the server-selected academic term, review the
+                sourced record, and submit a reasoned version-safe correction.</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override." xml:space="preserve">
+    <value>Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override.</value>
+  </data>
+  <data name="Maximum allowed" xml:space="preserve">
+    <value>Maximum allowed</value>
+  </data>
+  <data name="Meeting" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="Meetings" xml:space="preserve">
+    <value>Meetings</value>
+  </data>
+  <data name="Meetings() =&gt;&#xA;        _plan?.SelectedGroups&#xA;            .SelectMany(group =&gt; group.Meetings.Select(meeting =&gt; (Group: group, Meeting: meeting)))&#xA;            .OrderBy(item =&gt; item.Meeting.DayOfWeek)&#xA;            .ThenBy(item =&gt; item.Meeting.StartLocal)&#xA;            .ThenBy(item =&gt; item.Group.CourseCode, StringComparer.Ordinal)&#xA;        ?? Enumerable.Empty" xml:space="preserve">
+    <value>Meetings() =&gt;
+        _plan?.SelectedGroups
+            .SelectMany(group =&gt; group.Meetings.Select(meeting =&gt; (Group: group, Meeting: meeting)))
+            .OrderBy(item =&gt; item.Meeting.DayOfWeek)
+            .ThenBy(item =&gt; item.Meeting.StartLocal)
+            .ThenBy(item =&gt; item.Group.CourseCode, StringComparer.Ordinal)
+        ?? Enumerable.Empty</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Metric refresh controls" xml:space="preserve">
+    <value>Metric refresh controls</value>
+  </data>
+  <data name="MetricLabels =&#xA;        new Dictionary" xml:space="preserve">
+    <value>MetricLabels =
+        new Dictionary</value>
+  </data>
+  <data name="Metrics and registration records have not been loaded. No live,&#xA;                successful, or repaired state is inferred in the browser." xml:space="preserve">
+    <value>Metrics and registration records have not been loaded. No live,
+                successful, or repaired state is inferred in the browser.</value>
+  </data>
+  <data name="Metrics not reported" xml:space="preserve">
+    <value>Metrics not reported</value>
+  </data>
+  <data name="Minimum authorized roster fields, sorted by display name then University ID" xml:space="preserve">
+    <value>Minimum authorized roster fields, sorted by display name then University ID</value>
+  </data>
+  <data name="Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Monitor the current registration window from timestamped server observations." xml:space="preserve">
+    <value>Monitor the current registration window from timestamped server observations.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Name or login identifier" xml:space="preserve">
+    <value>Name or login identifier</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Next page" xml:space="preserve">
+    <value>Next page</value>
+  </data>
+  <data name="No academic terms have been created" xml:space="preserve">
+    <value>No academic terms have been created</value>
+  </data>
+  <data name="No accepted or rejected registration has been recorded." xml:space="preserve">
+    <value>No accepted or rejected registration has been recorded.</value>
+  </data>
+  <data name="No active holds were returned." xml:space="preserve">
+    <value>No active holds were returned.</value>
+  </data>
+  <data name="No active roster entries" xml:space="preserve">
+    <value>No active roster entries</value>
+  </data>
+  <data name="No audit events match the current authorized filters." xml:space="preserve">
+    <value>No audit events match the current authorized filters.</value>
+  </data>
+  <data name="No authorized assignments" xml:space="preserve">
+    <value>No authorized assignments</value>
+  </data>
+  <data name="No authorized timetable assignments" xml:space="preserve">
+    <value>No authorized timetable assignments</value>
+  </data>
+  <data name="No authorized users match this search." xml:space="preserve">
+    <value>No authorized users match this search.</value>
+  </data>
+  <data name="No availability ranges" xml:space="preserve">
+    <value>No availability ranges</value>
+  </data>
+  <data name="No catalogue versions are available" xml:space="preserve">
+    <value>No catalogue versions are available</value>
+  </data>
+  <data name="No change was queued. Check the connection and retry when online." xml:space="preserve">
+    <value>No change was queued. Check the connection and retry when online.</value>
+  </data>
+  <data name="No change was queued. Keep this dialog open and retry when online." xml:space="preserve">
+    <value>No change was queued. Keep this dialog open and retry when online.</value>
+  </data>
+  <data name="No class, room, or staff assignment moved automatically." xml:space="preserve">
+    <value>No class, room, or staff assignment moved automatically.</value>
+  </data>
+  <data name="No collision, paused-group, repaired, stale, or degraded observation is loaded." xml:space="preserve">
+    <value>No collision, paused-group, repaired, stale, or degraded observation is loaded.</value>
+  </data>
+  <data name="No complete schedule alternative was found" xml:space="preserve">
+    <value>No complete schedule alternative was found</value>
+  </data>
+  <data name="No current assignment is available for the active role context. No broad assignment search is provided." xml:space="preserve">
+    <value>No current assignment is available for the active role context. No broad assignment search is provided.</value>
+  </data>
+  <data name="No current lecture, tutorial, or laboratory assignment is available for this role context." xml:space="preserve">
+    <value>No current lecture, tutorial, or laboratory assignment is available for this role context.</value>
+  </data>
+  <data name="No current registered meetings." xml:space="preserve">
+    <value>No current registered meetings.</value>
+  </data>
+  <data name="No current registration term" xml:space="preserve">
+    <value>No current registration term</value>
+  </data>
+  <data name="No current teaching term" xml:space="preserve">
+    <value>No current teaching term</value>
+  </data>
+  <data name="No matching registrations are loaded." xml:space="preserve">
+    <value>No matching registrations are loaded.</value>
+  </data>
+  <data name="No matching Students" xml:space="preserve">
+    <value>No matching Students</value>
+  </data>
+  <data name="No meetings are selected." xml:space="preserve">
+    <value>No meetings are selected.</value>
+  </data>
+  <data name="No offerings match this query" xml:space="preserve">
+    <value>No offerings match this query</value>
+  </data>
+  <data name="No registration window" xml:space="preserve">
+    <value>No registration window</value>
+  </data>
+  <data name="No registration windows are included in this draft." xml:space="preserve">
+    <value>No registration windows are included in this draft.</value>
+  </data>
+  <data name="No repair or correction actions are available. Capacity, enrollment,&#xA;                receipt, and reconciliation decisions remain with their server owners." xml:space="preserve">
+    <value>No repair or correction actions are available. Capacity, enrollment,
+                receipt, and reconciliation decisions remain with their server owners.</value>
+  </data>
+  <data name="No result is assumed until the server returns one authoritative outcome." xml:space="preserve">
+    <value>No result is assumed until the server returns one authoritative outcome.</value>
+  </data>
+  <data name="No reviewable registration plan" xml:space="preserve">
+    <value>No reviewable registration plan</value>
+  </data>
+  <data name="No rooms match the current query" xml:space="preserve">
+    <value>No rooms match the current query</value>
+  </data>
+  <data name="No schedule impacts require Admin revalidation." xml:space="preserve">
+    <value>No schedule impacts require Admin revalidation.</value>
+  </data>
+  <data name="No scoped event or export result has been accepted by the server." xml:space="preserve">
+    <value>No scoped event or export result has been accepted by the server.</value>
+  </data>
+  <data name="No server-authorized audit rows are loaded." xml:space="preserve">
+    <value>No server-authorized audit rows are loaded.</value>
+  </data>
+  <data name="No server-authorized registration rows are loaded." xml:space="preserve">
+    <value>No server-authorized registration rows are loaded.</value>
+  </data>
+  <data name="No Staff declarations are available for the configured term." xml:space="preserve">
+    <value>No Staff declarations are available for the configured term.</value>
+  </data>
+  <data name="No subjects match these criteria" xml:space="preserve">
+    <value>No subjects match these criteria</value>
+  </data>
+  <data name="No subjects were partially registered." xml:space="preserve">
+    <value>No subjects were partially registered.</value>
+  </data>
+  <data name="No terms match the current bounded query." xml:space="preserve">
+    <value>No terms match the current bounded query.</value>
+  </data>
+  <data name="No windows" xml:space="preserve">
+    <value>No windows</value>
+  </data>
+  <data name="Normal maximum credits" xml:space="preserve">
+    <value>Normal maximum credits</value>
+  </data>
+  <data name="Not loaded" xml:space="preserve">
+    <value>Not loaded</value>
+  </data>
+  <data name="Not requested" xml:space="preserve">
+    <value>Not requested</value>
+  </data>
+  <data name="Not selected" xml:space="preserve">
+    <value>Not selected</value>
+  </data>
+  <data name="Observation only" xml:space="preserve">
+    <value>Observation only</value>
+  </data>
+  <data name="Observation time:" xml:space="preserve">
+    <value>Observation time:</value>
+  </data>
+  <data name="Observed" xml:space="preserve">
+    <value>Observed</value>
+  </data>
+  <data name="Occupied" xml:space="preserve">
+    <value>Occupied</value>
+  </data>
+  <data name="Occurred" xml:space="preserve">
+    <value>Occurred</value>
+  </data>
+  <data name="Offering" xml:space="preserve">
+    <value>Offering</value>
+  </data>
+  <data name="Offering administration" xml:space="preserve">
+    <value>Offering administration</value>
+  </data>
+  <data name="Offering administration | Student Registration" xml:space="preserve">
+    <value>Offering administration | Student Registration</value>
+  </data>
+  <data name="Offering administration access denied" xml:space="preserve">
+    <value>Offering administration access denied</value>
+  </data>
+  <data name="Offering results" xml:space="preserve">
+    <value>Offering results</value>
+  </data>
+  <data name="Offerings" xml:space="preserve">
+    <value>Offerings</value>
+  </data>
+  <data name="Offline Role gateway status" xml:space="preserve">
+    <value>Offline Role gateway status</value>
+  </data>
+  <data name="Online academic services" xml:space="preserve">
+    <value>Online academic services</value>
+  </data>
+  <data name="Online registration" xml:space="preserve">
+    <value>Online registration</value>
+  </data>
+  <data name="Only the server can authorize a scoped download. A ready status never&#xA;                broadens the current actor or row permissions." xml:space="preserve">
+    <value>Only the server can authorize a scoped download. A ready status never
+                broadens the current actor or row permissions.</value>
+  </data>
+  <data name="Open a server-authorized submission to inspect its immutable receipt summary." xml:space="preserve">
+    <value>Open a server-authorized submission to inspect its immutable receipt summary.</value>
+  </data>
+  <data name="Open academic correction" xml:space="preserve">
+    <value>Open academic correction</value>
+  </data>
+  <data name="Open assigned roster" xml:space="preserve">
+    <value>Open assigned roster</value>
+  </data>
+  <data name="Open availability" xml:space="preserve">
+    <value>Open availability</value>
+  </data>
+  <data name="Open current plan" xml:space="preserve">
+    <value>Open current plan</value>
+  </data>
+  <data name="Open event detail" xml:space="preserve">
+    <value>Open event detail</value>
+  </data>
+  <data name="Open reason support" xml:space="preserve">
+    <value>Open reason support</value>
+  </data>
+  <data name="Open Registrar support" xml:space="preserve">
+    <value>Open Registrar support</value>
+  </data>
+  <data name="Open registrations" xml:space="preserve">
+    <value>Open registrations</value>
+  </data>
+  <data name="Open safe support" xml:space="preserve">
+    <value>Open safe support</value>
+  </data>
+  <data name="Open safe support path" xml:space="preserve">
+    <value>Open safe support path</value>
+  </data>
+  <data name="Open safe support reference" xml:space="preserve">
+    <value>Open safe support reference</value>
+  </data>
+  <data name="Open source reference" xml:space="preserve">
+    <value>Open source reference</value>
+  </data>
+  <data name="Open Student profile" xml:space="preserve">
+    <value>Open Student profile</value>
+  </data>
+  <data name="Open submission detail" xml:space="preserve">
+    <value>Open submission detail</value>
+  </data>
+  <data name="Open support" xml:space="preserve">
+    <value>Open support</value>
+  </data>
+  <data name="Open timetable" xml:space="preserve">
+    <value>Open timetable</value>
+  </data>
+  <data name="OpenStudentAsync(student)&quot;&gt;&#xA;                                                Open academic record" xml:space="preserve">
+    <value>OpenStudentAsync(student)"&gt;
+                                                Open academic record</value>
+  </data>
+  <data name="OpenStudentAsync(student)&quot;&gt;&#xA;                                    Open academic record" xml:space="preserve">
+    <value>OpenStudentAsync(student)"&gt;
+                                    Open academic record</value>
+  </data>
+  <data name="Operational metrics" xml:space="preserve">
+    <value>Operational metrics</value>
+  </data>
+  <data name="Operational warnings" xml:space="preserve">
+    <value>Operational warnings</value>
+  </data>
+  <data name="Operations and reconciliation" xml:space="preserve">
+    <value>Operations and reconciliation</value>
+  </data>
+  <data name="Operations metrics" xml:space="preserve">
+    <value>Operations metrics</value>
+  </data>
+  <data name="Owned availability ranges" xml:space="preserve">
+    <value>Owned availability ranges</value>
+  </data>
+  <data name="Page 1 of 1" xml:space="preserve">
+    <value>Page 1 of 1</value>
+  </data>
+  <data name="Page not found" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
+  <data name="Page size" xml:space="preserve">
+    <value>Page size</value>
+  </data>
+  <data name="Paged immutable events" xml:space="preserve">
+    <value>Paged immutable events</value>
+  </data>
+  <data name="PageLabel" xml:space="preserve">
+    <value>PageLabel</value>
+  </data>
+  <data name="Partners" xml:space="preserve">
+    <value>Partners</value>
+  </data>
+  <data name="Pause refresh" xml:space="preserve">
+    <value>Pause refresh</value>
+  </data>
+  <data name="Pause registration" xml:space="preserve">
+    <value>Pause registration</value>
+  </data>
+  <data name="Pending owner endpoint:" xml:space="preserve">
+    <value>Pending owner endpoint:</value>
+  </data>
+  <data name="Plan changed" xml:space="preserve">
+    <value>Plan changed</value>
+  </data>
+  <data name="Policy" xml:space="preserve">
+    <value>Policy</value>
+  </data>
+  <data name="Policy version" xml:space="preserve">
+    <value>Policy version</value>
+  </data>
+  <data name="Preview identity import" xml:space="preserve">
+    <value>Preview identity import</value>
+  </data>
+  <data name="Preview is bound to actor, scope, content hash, dependencies,&#xA;                            rowversion, and expiry. It is not publication authority." xml:space="preserve">
+    <value>Preview is bound to actor, scope, content hash, dependencies,
+                            rowversion, and expiry. It is not publication authority.</value>
+  </data>
+  <data name="Preview rows" xml:space="preserve">
+    <value>Preview rows</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Previous page" xml:space="preserve">
+    <value>Previous page</value>
+  </data>
+  <data name="Print history" xml:space="preserve">
+    <value>Print history</value>
+  </data>
+  <data name="Print receipt" xml:space="preserve">
+    <value>Print receipt</value>
+  </data>
+  <data name="Profile data version" xml:space="preserve">
+    <value>Profile data version</value>
+  </data>
+  <data name="Profile version" xml:space="preserve">
+    <value>Profile version</value>
+  </data>
+  <data name="Program" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="Projected with this subject" xml:space="preserve">
+    <value>Projected with this subject</value>
+  </data>
+  <data name="Provenance" xml:space="preserve">
+    <value>Provenance</value>
+  </data>
+  <data name="Public academic status unavailable" xml:space="preserve">
+    <value>Public academic status unavailable</value>
+  </data>
+  <data name="Public status changed" xml:space="preserve">
+    <value>Public status changed</value>
+  </data>
+  <data name="Publication blockers" xml:space="preserve">
+    <value>Publication blockers</value>
+  </data>
+  <data name="Publication confirmation is stale" xml:space="preserve">
+    <value>Publication confirmation is stale</value>
+  </data>
+  <data name="Publication reason" xml:space="preserve">
+    <value>Publication reason</value>
+  </data>
+  <data name="Publish all rows" xml:space="preserve">
+    <value>Publish all rows</value>
+  </data>
+  <data name="Publish catalogue" xml:space="preserve">
+    <value>Publish catalogue</value>
+  </data>
+  <data name="Publish offering" xml:space="preserve">
+    <value>Publish offering</value>
+  </data>
+  <data name="Published" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Published schedule impact recorded" xml:space="preserve">
+    <value>Published schedule impact recorded</value>
+  </data>
+  <data name="Publishing catalogue…" xml:space="preserve">
+    <value>Publishing catalogue…</value>
+  </data>
+  <data name="Publishing registration window…" xml:space="preserve">
+    <value>Publishing registration window…</value>
+  </data>
+  <data name="Range" xml:space="preserve">
+    <value>Range</value>
+  </data>
+  <data name="Read-only planning input" xml:space="preserve">
+    <value>Read-only planning input</value>
+  </data>
+  <data name="Read-only registration monitoring" xml:space="preserve">
+    <value>Read-only registration monitoring</value>
+  </data>
+  <data name="Read-only Staff declaration" xml:space="preserve">
+    <value>Read-only Staff declaration</value>
+  </data>
+  <data name="Read-only until the explicit correction command is opened." xml:space="preserve">
+    <value>Read-only until the explicit correction command is opened.</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Reason codes" xml:space="preserve">
+    <value>Reason codes</value>
+  </data>
+  <data name="Reason for correction" xml:space="preserve">
+    <value>Reason for correction</value>
+  </data>
+  <data name="Reason for role change" xml:space="preserve">
+    <value>Reason for role change</value>
+  </data>
+  <data name="Reason for status change" xml:space="preserve">
+    <value>Reason for status change</value>
+  </data>
+  <data name="Recalculating the current plan." xml:space="preserve">
+    <value>Recalculating the current plan.</value>
+  </data>
+  <data name="Receipt" xml:space="preserve">
+    <value>Receipt</value>
+  </data>
+  <data name="Receipt reference" xml:space="preserve">
+    <value>Receipt reference</value>
+  </data>
+  <data name="Recommendation time budget reached" xml:space="preserve">
+    <value>Recommendation time budget reached</value>
+  </data>
+  <data name="Reconciliation alerts" xml:space="preserve">
+    <value>Reconciliation alerts</value>
+  </data>
+  <data name="Record provenance" xml:space="preserve">
+    <value>Record provenance</value>
+  </data>
+  <data name="Reference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="Reference:" xml:space="preserve">
+    <value>Reference:</value>
+  </data>
+  <data name="Refresh and revalidate" xml:space="preserve">
+    <value>Refresh and revalidate</value>
+  </data>
+  <data name="Refresh and review" xml:space="preserve">
+    <value>Refresh and review</value>
+  </data>
+  <data name="Refresh assignments" xml:space="preserve">
+    <value>Refresh assignments</value>
+  </data>
+  <data name="Refresh export status" xml:space="preserve">
+    <value>Refresh export status</value>
+  </data>
+  <data name="Refresh import status" xml:space="preserve">
+    <value>Refresh import status</value>
+  </data>
+  <data name="Refresh metrics" xml:space="preserve">
+    <value>Refresh metrics</value>
+  </data>
+  <data name="Refresh monitoring data" xml:space="preserve">
+    <value>Refresh monitoring data</value>
+  </data>
+  <data name="Refresh selected user" xml:space="preserve">
+    <value>Refresh selected user</value>
+  </data>
+  <data name="Refresh Student context" xml:space="preserve">
+    <value>Refresh Student context</value>
+  </data>
+  <data name="Refresh subject details" xml:space="preserve">
+    <value>Refresh subject details</value>
+  </data>
+  <data name="Refresh timetable" xml:space="preserve">
+    <value>Refresh timetable</value>
+  </data>
+  <data name="Refreshing the current eligibility, groups, capacity, and versions." xml:space="preserve">
+    <value>Refreshing the current eligibility, groups, capacity, and versions.</value>
+  </data>
+  <data name="Registered groups" xml:space="preserve">
+    <value>Registered groups</value>
+  </data>
+  <data name="Registration accepted" xml:space="preserve">
+    <value>Registration accepted</value>
+  </data>
+  <data name="Registration administration contribution" xml:space="preserve">
+    <value>Registration administration contribution</value>
+  </data>
+  <data name="Registration blocked" xml:space="preserve">
+    <value>Registration blocked</value>
+  </data>
+  <data name="Registration closes" xml:space="preserve">
+    <value>Registration closes</value>
+  </data>
+  <data name="Registration filters" xml:space="preserve">
+    <value>Registration filters</value>
+  </data>
+  <data name="Registration history" xml:space="preserve">
+    <value>Registration history</value>
+  </data>
+  <data name="Registration history | Student Registration" xml:space="preserve">
+    <value>Registration history | Student Registration</value>
+  </data>
+  <data name="Registration history pages" xml:space="preserve">
+    <value>Registration history pages</value>
+  </data>
+  <data name="Registration is still processing" xml:space="preserve">
+    <value>Registration is still processing</value>
+  </data>
+  <data name="Registration links" xml:space="preserve">
+    <value>Registration links</value>
+  </data>
+  <data name="Registration monitoring | Student Registration" xml:space="preserve">
+    <value>Registration monitoring | Student Registration</value>
+  </data>
+  <data name="Registration monitoring filters" xml:space="preserve">
+    <value>Registration monitoring filters</value>
+  </data>
+  <data name="Registration monitoring results" xml:space="preserve">
+    <value>Registration monitoring results</value>
+  </data>
+  <data name="Registration opens" xml:space="preserve">
+    <value>Registration opens</value>
+  </data>
+  <data name="Registration record" xml:space="preserve">
+    <value>Registration record</value>
+  </data>
+  <data name="Registration records" xml:space="preserve">
+    <value>Registration records</value>
+  </data>
+  <data name="Registration records compact view" xml:space="preserve">
+    <value>Registration records compact view</value>
+  </data>
+  <data name="Registration records table" xml:space="preserve">
+    <value>Registration records table</value>
+  </data>
+  <data name="Registration rejected" xml:space="preserve">
+    <value>Registration rejected</value>
+  </data>
+  <data name="Registration result" xml:space="preserve">
+    <value>Registration result</value>
+  </data>
+  <data name="Registration result | Student Registration" xml:space="preserve">
+    <value>Registration result | Student Registration</value>
+  </data>
+  <data name="Registration result pages" xml:space="preserve">
+    <value>Registration result pages</value>
+  </data>
+  <data name="Registration result summaries" xml:space="preserve">
+    <value>Registration result summaries</value>
+  </data>
+  <data name="Registration results semantic alternative" xml:space="preserve">
+    <value>Registration results semantic alternative</value>
+  </data>
+  <data name="Registration review" xml:space="preserve">
+    <value>Registration review</value>
+  </data>
+  <data name="Registration review | Student Registration" xml:space="preserve">
+    <value>Registration review | Student Registration</value>
+  </data>
+  <data name="Registration status" xml:space="preserve">
+    <value>Registration status</value>
+  </data>
+  <data name="Registration term" xml:space="preserve">
+    <value>Registration term</value>
+  </data>
+  <data name="Registration view" xml:space="preserve">
+    <value>Registration view</value>
+  </data>
+  <data name="Registration window" xml:space="preserve">
+    <value>Registration window</value>
+  </data>
+  <data name="Registration windows" xml:space="preserve">
+    <value>Registration windows</value>
+  </data>
+  <data name="Registrations" xml:space="preserve">
+    <value>Registrations</value>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="Remaining" xml:space="preserve">
+    <value>Remaining</value>
+  </data>
+  <data name="RemoveRange(range.Key)&quot;&gt;Remove range" xml:space="preserve">
+    <value>RemoveRange(range.Key)"&gt;Remove range</value>
+  </data>
+  <data name="RemoveWindow(window.ClientKey)&quot;&gt;&#xA;                                                    Remove window" xml:space="preserve">
+    <value>RemoveWindow(window.ClientKey)"&gt;
+                                                    Remove window</value>
+  </data>
+  <data name="Replace roles" xml:space="preserve">
+    <value>Replace roles</value>
+  </data>
+  <data name="Replace staff roles" xml:space="preserve">
+    <value>Replace staff roles</value>
+  </data>
+  <data name="Replacement groups" xml:space="preserve">
+    <value>Replacement groups</value>
+  </data>
+  <data name="Request a new export" xml:space="preserve">
+    <value>Request a new export</value>
+  </data>
+  <data name="Request export" xml:space="preserve">
+    <value>Request export</value>
+  </data>
+  <data name="Request in progress" xml:space="preserve">
+    <value>Request in progress</value>
+  </data>
+  <data name="Request recovery" xml:space="preserve">
+    <value>Request recovery</value>
+  </data>
+  <data name="Requested course codes" xml:space="preserve">
+    <value>Requested course codes</value>
+  </data>
+  <data name="Requesting bounded Scheduling projections." xml:space="preserve">
+    <value>Requesting bounded Scheduling projections.</value>
+  </data>
+  <data name="Requesting the authoritative session and academic term." xml:space="preserve">
+    <value>Requesting the authoritative session and academic term.</value>
+  </data>
+  <data name="Requesting the bounded owner list." xml:space="preserve">
+    <value>Requesting the bounded owner list.</value>
+  </data>
+  <data name="Required" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="Reset filters" xml:space="preserve">
+    <value>Reset filters</value>
+  </data>
+  <data name="Resolution reason" xml:space="preserve">
+    <value>Resolution reason</value>
+  </data>
+  <data name="Resolve conflict" xml:space="preserve">
+    <value>Resolve conflict</value>
+  </data>
+  <data name="Resolve every blocker before submission." xml:space="preserve">
+    <value>Resolve every blocker before submission.</value>
+  </data>
+  <data name="Resolve every conflict or unavailable selection before continuing." xml:space="preserve">
+    <value>Resolve every conflict or unavailable selection before continuing.</value>
+  </data>
+  <data name="Resolve impact" xml:space="preserve">
+    <value>Resolve impact</value>
+  </data>
+  <data name="Resolve revalidated impact" xml:space="preserve">
+    <value>Resolve revalidated impact</value>
+  </data>
+  <data name="Resource administration" xml:space="preserve">
+    <value>Resource administration</value>
+  </data>
+  <data name="Resource administration | Student Registration" xml:space="preserve">
+    <value>Resource administration | Student Registration</value>
+  </data>
+  <data name="Resource administration access denied" xml:space="preserve">
+    <value>Resource administration access denied</value>
+  </data>
+  <data name="Resources" xml:space="preserve">
+    <value>Resources</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="Resume refresh" xml:space="preserve">
+    <value>Resume refresh</value>
+  </data>
+  <data name="Resume registration" xml:space="preserve">
+    <value>Resume registration</value>
+  </data>
+  <data name="Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Retry after an authorized draft or version has been created." xml:space="preserve">
+    <value>Retry after an authorized draft or version has been created.</value>
+  </data>
+  <data name="Retry metrics" xml:space="preserve">
+    <value>Retry metrics</value>
+  </data>
+  <data name="Retry registration review" xml:space="preserve">
+    <value>Retry registration review</value>
+  </data>
+  <data name="Retry result lookup" xml:space="preserve">
+    <value>Retry result lookup</value>
+  </data>
+  <data name="Retry schedule builder" xml:space="preserve">
+    <value>Retry schedule builder</value>
+  </data>
+  <data name="Retry subject details" xml:space="preserve">
+    <value>Retry subject details</value>
+  </data>
+  <data name="Retry subject discovery" xml:space="preserve">
+    <value>Retry subject discovery</value>
+  </data>
+  <data name="Retry term list" xml:space="preserve">
+    <value>Retry term list</value>
+  </data>
+  <data name="Retry when online" xml:space="preserve">
+    <value>Retry when online</value>
+  </data>
+  <data name="Return to Admin home" xml:space="preserve">
+    <value>Return to Admin home</value>
+  </data>
+  <data name="Return to authorized home" xml:space="preserve">
+    <value>Return to authorized home</value>
+  </data>
+  <data name="Return to dashboard" xml:space="preserve">
+    <value>Return to dashboard</value>
+  </data>
+  <data name="Return to discovery" xml:space="preserve">
+    <value>Return to discovery</value>
+  </data>
+  <data name="Return to Staff dashboard" xml:space="preserve">
+    <value>Return to Staff dashboard</value>
+  </data>
+  <data name="Return to Staff home" xml:space="preserve">
+    <value>Return to Staff home</value>
+  </data>
+  <data name="Return to Student dashboard" xml:space="preserve">
+    <value>Return to Student dashboard</value>
+  </data>
+  <data name="Return to timetable" xml:space="preserve">
+    <value>Return to timetable</value>
+  </data>
+  <data name="RevalidateAlertAsync(alert)&quot;&gt;&#xA;                                    Revalidate impact" xml:space="preserve">
+    <value>RevalidateAlertAsync(alert)"&gt;
+                                    Revalidate impact</value>
+  </data>
+  <data name="Review a curated programme subset, keep field provenance beside every&#xA;                value, validate prerequisite and typed-policy rules, simulate without&#xA;                saving, and publish only after server confirmation." xml:space="preserve">
+    <value>Review a curated programme subset, keep field provenance beside every
+                value, validate prerequisite and typed-policy rules, simulate without
+                saving, and publish only after server confirmation.</value>
+  </data>
+  <data name="Review and submit" xml:space="preserve">
+    <value>Review and submit</value>
+  </data>
+  <data name="Review catalogue or policy values" xml:space="preserve">
+    <value>Review catalogue or policy values</value>
+  </data>
+  <data name="Review the academic correction" xml:space="preserve">
+    <value>Review the academic correction</value>
+  </data>
+  <data name="Review the current plan. The server rechecks every rule and seat at submission." xml:space="preserve">
+    <value>Review the current plan. The server rechecks every rule and seat at submission.</value>
+  </data>
+  <data name="Review the resource command" xml:space="preserve">
+    <value>Review the resource command</value>
+  </data>
+  <data name="Review the server-authoritative academic and registration&#xA;                                status before continuing." xml:space="preserve">
+    <value>Review the server-authoritative academic and registration
+                                status before continuing.</value>
+  </data>
+  <data name="Review the Student request" xml:space="preserve">
+    <value>Review the Student request</value>
+  </data>
+  <data name="Review the term command" xml:space="preserve">
+    <value>Review the term command</value>
+  </data>
+  <data name="Review timetable impact" xml:space="preserve">
+    <value>Review timetable impact</value>
+  </data>
+  <data name="Revoke all sessions" xml:space="preserve">
+    <value>Revoke all sessions</value>
+  </data>
+  <data name="Revoking all sessions signs this browser and every other earlier session out." xml:space="preserve">
+    <value>Revoking all sessions signs this browser and every other earlier session out.</value>
+  </data>
+  <data name="Revoking sessions…" xml:space="preserve">
+    <value>Revoking sessions…</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="Role context:" xml:space="preserve">
+    <value>Role context:</value>
+  </data>
+  <data name="Role gateway" xml:space="preserve">
+    <value>Role gateway</value>
+  </data>
+  <data name="Role gateway | Student Registration" xml:space="preserve">
+    <value>Role gateway | Student Registration</value>
+  </data>
+  <data name="Role partners" xml:space="preserve">
+    <value>Role partners</value>
+  </data>
+  <data name="Role selection required" xml:space="preserve">
+    <value>Role selection required</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="Room" xml:space="preserve">
+    <value>Room</value>
+  </data>
+  <data name="Room and location" xml:space="preserve">
+    <value>Room and location</value>
+  </data>
+  <data name="Room code" xml:space="preserve">
+    <value>Room code</value>
+  </data>
+  <data name="Room results" xml:space="preserve">
+    <value>Room results</value>
+  </data>
+  <data name="Rooms" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="Roster actions" xml:space="preserve">
+    <value>Roster actions</value>
+  </data>
+  <data name="Roster compact view" xml:space="preserve">
+    <value>Roster compact view</value>
+  </data>
+  <data name="Roster pages" xml:space="preserve">
+    <value>Roster pages</value>
+  </data>
+  <data name="Row" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="rows ready for server validation." xml:space="preserve">
+    <value>rows ready for server validation.</value>
+  </data>
+  <data name="Safe health summary" xml:space="preserve">
+    <value>Safe health summary</value>
+  </data>
+  <data name="Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="Save availability" xml:space="preserve">
+    <value>Save availability</value>
+  </data>
+  <data name="Save group" xml:space="preserve">
+    <value>Save group</value>
+  </data>
+  <data name="Save room" xml:space="preserve">
+    <value>Save room</value>
+  </data>
+  <data name="Schedule alternatives" xml:space="preserve">
+    <value>Schedule alternatives</value>
+  </data>
+  <data name="Schedule builder" xml:space="preserve">
+    <value>Schedule builder</value>
+  </data>
+  <data name="Schedule builder | Student Registration" xml:space="preserve">
+    <value>Schedule builder | Student Registration</value>
+  </data>
+  <data name="Schedule impact alerts" xml:space="preserve">
+    <value>Schedule impact alerts</value>
+  </data>
+  <data name="Scheduling" xml:space="preserve">
+    <value>Scheduling</value>
+  </data>
+  <data name="Scheduling resources" xml:space="preserve">
+    <value>Scheduling resources</value>
+  </data>
+  <data name="Scheduling resources unavailable" xml:space="preserve">
+    <value>Scheduling resources unavailable</value>
+  </data>
+  <data name="Scheduling service unavailable" xml:space="preserve">
+    <value>Scheduling service unavailable</value>
+  </data>
+  <data name="Scope" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="Scope and search filters" xml:space="preserve">
+    <value>Scope and search filters</value>
+  </data>
+  <data name="Scope value" xml:space="preserve">
+    <value>Scope value</value>
+  </data>
+  <data name="Scoped audit filters" xml:space="preserve">
+    <value>Scoped audit filters</value>
+  </data>
+  <data name="Scoped audit results" xml:space="preserve">
+    <value>Scoped audit results</value>
+  </data>
+  <data name="Scoped audit search" xml:space="preserve">
+    <value>Scoped audit search</value>
+  </data>
+  <data name="Scoped export lifecycle" xml:space="preserve">
+    <value>Scoped export lifecycle</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Search academic terms" xml:space="preserve">
+    <value>Search academic terms</value>
+  </data>
+  <data name="Search audit" xml:space="preserve">
+    <value>Search audit</value>
+  </data>
+  <data name="Search by course code or title" xml:space="preserve">
+    <value>Search by course code or title</value>
+  </data>
+  <data name="Search only events visible in the current server scope and follow an&#xA;                asynchronous, expiring export lifecycle." xml:space="preserve">
+    <value>Search only events visible in the current server scope and follow an
+                asynchronous, expiring export lifecycle.</value>
+  </data>
+  <data name="Search pre-provisioned identities, review imports, and submit governed account changes." xml:space="preserve">
+    <value>Search pre-provisioned identities, review imports, and submit governed account changes.</value>
+  </data>
+  <data name="Search Students" xml:space="preserve">
+    <value>Search Students</value>
+  </data>
+  <data name="Search the bounded server result. Eligibility, load,&#xA;                            capacity, and selectability are evaluated by the server." xml:space="preserve">
+    <value>Search the bounded server result. Eligibility, load,
+                            capacity, and selectability are evaluated by the server.</value>
+  </data>
+  <data name="Search users" xml:space="preserve">
+    <value>Search users</value>
+  </data>
+  <data name="Select a role" xml:space="preserve">
+    <value>Select a role</value>
+  </data>
+  <data name="Select an authorized event to view its redacted before and after summaries." xml:space="preserve">
+    <value>Select an authorized event to view its redacted before and after summaries.</value>
+  </data>
+  <data name="Select one server-authorized context before assignments load. Roles are never combined." xml:space="preserve">
+    <value>Select one server-authorized context before assignments load. Roles are never combined.</value>
+  </data>
+  <data name="SelectAlertForResolution(alert)&quot;&gt;&#xA;                                    Prepare resolution" xml:space="preserve">
+    <value>SelectAlertForResolution(alert)"&gt;
+                                    Prepare resolution</value>
+  </data>
+  <data name="Selected aggregate" xml:space="preserve">
+    <value>Selected aggregate</value>
+  </data>
+  <data name="Selected groups" xml:space="preserve">
+    <value>Selected groups</value>
+  </data>
+  <data name="Selected planning dependencies" xml:space="preserve">
+    <value>Selected planning dependencies</value>
+  </data>
+  <data name="Selected receipt detail" xml:space="preserve">
+    <value>Selected receipt detail</value>
+  </data>
+  <data name="Selected sourced record" xml:space="preserve">
+    <value>Selected sourced record</value>
+  </data>
+  <data name="Selections need attention" xml:space="preserve">
+    <value>Selections need attention</value>
+  </data>
+  <data name="SelectOfferingAsync(offering.Id)&quot;&gt;&#xA;                                            Review" xml:space="preserve">
+    <value>SelectOfferingAsync(offering.Id)"&gt;
+                                            Review</value>
+  </data>
+  <data name="SelectRoom(room)&quot;&gt;&#xA;                                            Review room" xml:space="preserve">
+    <value>SelectRoom(room)"&gt;
+                                            Review room</value>
+  </data>
+  <data name="SelectTerm(term)&quot;&gt;&#xA;                                                    Review" xml:space="preserve">
+    <value>SelectTerm(term)"&gt;
+                                                    Review</value>
+  </data>
+  <data name="SelectTerm(term)&quot;&gt;&#xA;                                            Review" xml:space="preserve">
+    <value>SelectTerm(term)"&gt;
+                                            Review</value>
+  </data>
+  <data name="SelectUser(user)&quot;&gt;&#xA;                                            Review" xml:space="preserve">
+    <value>SelectUser(user)"&gt;
+                                            Review</value>
+  </data>
+  <data name="SelectUser(user)&quot;&gt;&#xA;                                Review" xml:space="preserve">
+    <value>SelectUser(user)"&gt;
+                                Review</value>
+  </data>
+  <data name="Server date" xml:space="preserve">
+    <value>Server date</value>
+  </data>
+  <data name="Server date and time" xml:space="preserve">
+    <value>Server date and time</value>
+  </data>
+  <data name="Server eligibility reasons" xml:space="preserve">
+    <value>Server eligibility reasons</value>
+  </data>
+  <data name="Server time" xml:space="preserve">
+    <value>Server time</value>
+  </data>
+  <data name="Server-authored current and archived records." xml:space="preserve">
+    <value>Server-authored current and archived records.</value>
+  </data>
+  <data name="Server-confirmed result" xml:space="preserve">
+    <value>Server-confirmed result</value>
+  </data>
+  <data name="Server-verifiable content hash" xml:space="preserve">
+    <value>Server-verifiable content hash</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="Service degraded. The last safe server snapshot remains visible." xml:space="preserve">
+    <value>Service degraded. The last safe server snapshot remains visible.</value>
+  </data>
+  <data name="Session" xml:space="preserve">
+    <value>Session</value>
+  </data>
+  <data name="Session actions" xml:space="preserve">
+    <value>Session actions</value>
+  </data>
+  <data name="Session expired" xml:space="preserve">
+    <value>Session expired</value>
+  </data>
+  <data name="Session state" xml:space="preserve">
+    <value>Session state</value>
+  </data>
+  <data name="SetWindowLocalValue(windowKey, opensAt: false, eventArgs.Value)&quot; /&gt;" xml:space="preserve">
+    <value>SetWindowLocalValue(windowKey, opensAt: false, eventArgs.Value)" /&gt;</value>
+  </data>
+  <data name="SetWindowLocalValue(windowKey, opensAt: true, eventArgs.Value)&quot; /&gt;" xml:space="preserve">
+    <value>SetWindowLocalValue(windowKey, opensAt: true, eventArgs.Value)" /&gt;</value>
+  </data>
+  <data name="Sign in again" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="Sign in with your University ID, or activate a generated&#xA;                            demo account for first use." xml:space="preserve">
+    <value>Sign in with your University ID, or activate a generated
+                            demo account for first use.</value>
+  </data>
+  <data name="Sign out" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Sign-in destinations" xml:space="preserve">
+    <value>Sign-in destinations</value>
+  </data>
+  <data name="Signed in as" xml:space="preserve">
+    <value>Signed in as</value>
+  </data>
+  <data name="Signing in once." xml:space="preserve">
+    <value>Signing in once.</value>
+  </data>
+  <data name="Simulation does not publish or save changes." xml:space="preserve">
+    <value>Simulation does not publish or save changes.</value>
+  </data>
+  <data name="Skip to main content" xml:space="preserve">
+    <value>Skip to main content</value>
+  </data>
+  <data name="Snapshot observed:" xml:space="preserve">
+    <value>Snapshot observed:</value>
+  </data>
+  <data name="Sort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Source name" xml:space="preserve">
+    <value>Source name</value>
+  </data>
+  <data name="Source provenance for the selected academic record" xml:space="preserve">
+    <value>Source provenance for the selected academic record</value>
+  </data>
+  <data name="Source reference" xml:space="preserve">
+    <value>Source reference</value>
+  </data>
+  <data name="Source timestamp" xml:space="preserve">
+    <value>Source timestamp</value>
+  </data>
+  <data name="Source URL or reference" xml:space="preserve">
+    <value>Source URL or reference</value>
+  </data>
+  <data name="Sourced academic records" xml:space="preserve">
+    <value>Sourced academic records</value>
+  </data>
+  <data name="Sourced transcript attempts for the selected Student" xml:space="preserve">
+    <value>Sourced transcript attempts for the selected Student</value>
+  </data>
+  <data name="Staff" xml:space="preserve">
+    <value>Staff</value>
+  </data>
+  <data name="Staff availability" xml:space="preserve">
+    <value>Staff availability</value>
+  </data>
+  <data name="Staff availability | Student Registration" xml:space="preserve">
+    <value>Staff availability | Student Registration</value>
+  </data>
+  <data name="Staff login" xml:space="preserve">
+    <value>Staff login</value>
+  </data>
+  <data name="Staff own and replace these declarations. Admin can select an ID and version&#xA;                as an offering-planning dependency, but cannot edit or override any range." xml:space="preserve">
+    <value>Staff own and replace these declarations. Admin can select an ID and version
+                as an offering-planning dependency, but cannot edit or override any range.</value>
+  </data>
+  <data name="Staff timetable" xml:space="preserve">
+    <value>Staff timetable</value>
+  </data>
+  <data name="Staff timetable | Student Registration" xml:space="preserve">
+    <value>Staff timetable | Student Registration</value>
+  </data>
+  <data name="Staff workspace" xml:space="preserve">
+    <value>Staff workspace</value>
+  </data>
+  <data name="Staff workspace | Student Registration" xml:space="preserve">
+    <value>Staff workspace | Student Registration</value>
+  </data>
+  <data name="Staff workspace actions" xml:space="preserve">
+    <value>Staff workspace actions</value>
+  </data>
+  <data name="STAFF_GROUP_NOT_FOUND" xml:space="preserve">
+    <value>STAFF_GROUP_NOT_FOUND</value>
+  </data>
+  <data name="STALE_VERSION" xml:space="preserve">
+    <value>STALE_VERSION</value>
+  </data>
+  <data name="Standing" xml:space="preserve">
+    <value>Standing</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Start registration" xml:space="preserve">
+    <value>Start registration</value>
+  </data>
+  <data name="Starts" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Student" xml:space="preserve">
+    <value>Student</value>
+  </data>
+  <data name="Student academic services" xml:space="preserve">
+    <value>Student academic services</value>
+  </data>
+  <data name="Student account" xml:space="preserve">
+    <value>Student account</value>
+  </data>
+  <data name="Student account and registration links" xml:space="preserve">
+    <value>Student account and registration links</value>
+  </data>
+  <data name="Student activation" xml:space="preserve">
+    <value>Student activation</value>
+  </data>
+  <data name="Student administration" xml:space="preserve">
+    <value>Student administration</value>
+  </data>
+  <data name="Student administration | Student Registration" xml:space="preserve">
+    <value>Student administration | Student Registration</value>
+  </data>
+  <data name="Student administration is offline" xml:space="preserve">
+    <value>Student administration is offline</value>
+  </data>
+  <data name="Student administration is unavailable" xml:space="preserve">
+    <value>Student administration is unavailable</value>
+  </data>
+  <data name="Student context fixture" xml:space="preserve">
+    <value>Student context fixture</value>
+  </data>
+  <data name="Student dashboard" xml:space="preserve">
+    <value>Student dashboard</value>
+  </data>
+  <data name="Student dashboard | Student Registration" xml:space="preserve">
+    <value>Student dashboard | Student Registration</value>
+  </data>
+  <data name="Student login" xml:space="preserve">
+    <value>Student login</value>
+  </data>
+  <data name="Student or submission" xml:space="preserve">
+    <value>Student or submission</value>
+  </data>
+  <data name="Student records are restricted" xml:space="preserve">
+    <value>Student records are restricted</value>
+  </data>
+  <data name="Student registration" xml:space="preserve">
+    <value>Student registration</value>
+  </data>
+  <data name="Student Registration home" xml:space="preserve">
+    <value>Student Registration home</value>
+  </data>
+  <data name="Student results, compact view" xml:space="preserve">
+    <value>Student results, compact view</value>
+  </data>
+  <data name="Student row version" xml:space="preserve">
+    <value>Student row version</value>
+  </data>
+  <data name="Student search result pages" xml:space="preserve">
+    <value>Student search result pages</value>
+  </data>
+  <data name="Student search results" xml:space="preserve">
+    <value>Student search results</value>
+  </data>
+  <data name="Student search results table" xml:space="preserve">
+    <value>Student search results table</value>
+  </data>
+  <data name="Student version" xml:space="preserve">
+    <value>Student version</value>
+  </data>
+  <data name="Student-term row version" xml:space="preserve">
+    <value>Student-term row version</value>
+  </data>
+  <data name="Student-term version" xml:space="preserve">
+    <value>Student-term version</value>
+  </data>
+  <data name="Students matching the submitted term-scoped search" xml:space="preserve">
+    <value>Students matching the submitted term-scoped search</value>
+  </data>
+  <data name="Subject" xml:space="preserve">
+    <value>Subject</value>
+  </data>
+  <data name="Subject details" xml:space="preserve">
+    <value>Subject details</value>
+  </data>
+  <data name="Subject details | Student Registration" xml:space="preserve">
+    <value>Subject details | Student Registration</value>
+  </data>
+  <data name="Subject result pages" xml:space="preserve">
+    <value>Subject result pages</value>
+  </data>
+  <data name="Submission and fill results" xml:space="preserve">
+    <value>Submission and fill results</value>
+  </data>
+  <data name="Submissions" xml:space="preserve">
+    <value>Submissions</value>
+  </data>
+  <data name="Submit import for validation" xml:space="preserve">
+    <value>Submit import for validation</value>
+  </data>
+  <data name="Submitted" xml:space="preserve">
+    <value>Submitted</value>
+  </data>
+  <data name="Submitting one recovery request." xml:space="preserve">
+    <value>Submitting one recovery request.</value>
+  </data>
+  <data name="Submitting one registration request." xml:space="preserve">
+    <value>Submitting one registration request.</value>
+  </data>
+  <data name="Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="supportReferencePath" xml:space="preserve">
+    <value>supportReferencePath</value>
+  </data>
+  <data name="Switch context" xml:space="preserve">
+    <value>Switch context</value>
+  </data>
+  <data name="Synthetic field manifest" xml:space="preserve">
+    <value>Synthetic field manifest</value>
+  </data>
+  <data name="Synthetic user rows (JSON array)" xml:space="preserve">
+    <value>Synthetic user rows (JSON array)</value>
+  </data>
+  <data name="System status" xml:space="preserve">
+    <value>System status</value>
+  </data>
+  <data name="System status and support" xml:space="preserve">
+    <value>System status and support</value>
+  </data>
+  <data name="Target" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="Teaching assistants" xml:space="preserve">
+    <value>Teaching assistants</value>
+  </data>
+  <data name="Teaching dates" xml:space="preserve">
+    <value>Teaching dates</value>
+  </data>
+  <data name="Teaching end date" xml:space="preserve">
+    <value>Teaching end date</value>
+  </data>
+  <data name="Teaching start date" xml:space="preserve">
+    <value>Teaching start date</value>
+  </data>
+  <data name="Teaching term" xml:space="preserve">
+    <value>Teaching term</value>
+  </data>
+  <data name="Term" xml:space="preserve">
+    <value>Term</value>
+  </data>
+  <data name="Term administration" xml:space="preserve">
+    <value>Term administration</value>
+  </data>
+  <data name="Term administration | Student Registration" xml:space="preserve">
+    <value>Term administration | Student Registration</value>
+  </data>
+  <data name="Term administration access denied" xml:space="preserve">
+    <value>Term administration access denied</value>
+  </data>
+  <data name="Term code" xml:space="preserve">
+    <value>Term code</value>
+  </data>
+  <data name="Term code or display name" xml:space="preserve">
+    <value>Term code or display name</value>
+  </data>
+  <data name="Term ID" xml:space="preserve">
+    <value>Term ID</value>
+  </data>
+  <data name="Term lifecycle" xml:space="preserve">
+    <value>Term lifecycle</value>
+  </data>
+  <data name="Term version" xml:space="preserve">
+    <value>Term version</value>
+  </data>
+  <data name="Term-scoped locator" xml:space="preserve">
+    <value>Term-scoped locator</value>
+  </data>
+  <data name="Terms and windows" xml:space="preserve">
+    <value>Terms and windows</value>
+  </data>
+  <data name="Text-range editor" xml:space="preserve">
+    <value>Text-range editor</value>
+  </data>
+  <data name="The aggregate version changed. Review the refreshed server version." xml:space="preserve">
+    <value>The aggregate version changed. Review the refreshed server version.</value>
+  </data>
+  <data name="The assigned group currently has no active enrollment rows." xml:space="preserve">
+    <value>The assigned group currently has no active enrollment rows.</value>
+  </data>
+  <data name="The assignment was removed or changed. Roster content is no longer available." xml:space="preserve">
+    <value>The assignment was removed or changed. Roster content is no longer available.</value>
+  </data>
+  <data name="The bounded owner APIs are being requested once." xml:space="preserve">
+    <value>The bounded owner APIs are being requested once.</value>
+  </data>
+  <data name="The complete registration was accepted as one transaction." xml:space="preserve">
+    <value>The complete registration was accepted as one transaction.</value>
+  </data>
+  <data name="The current authorized plan is shown below. Review it before editing again." xml:space="preserve">
+    <value>The current authorized plan is shown below. Review it before editing again.</value>
+  </data>
+  <data name="The current bounded term page is being requested once." xml:space="preserve">
+    <value>The current bounded term page is being requested once.</value>
+  </data>
+  <data name="The displayed result is the latest server refresh.&#xA;                                Review the changed capacity and reasons before continuing." xml:space="preserve">
+    <value>The displayed result is the latest server refresh.
+                                Review the changed capacity and reasons before continuing.</value>
+  </data>
+  <data name="The requested page is not available." xml:space="preserve">
+    <value>The requested page is not available.</value>
+  </data>
+  <data name="The server has not published a current registration term.&#xA;                                    Refresh the context later or use the support reference." xml:space="preserve">
+    <value>The server has not published a current registration term.
+                                    Refresh the context later or use the support reference.</value>
+  </data>
+  <data name="The server marked this snapshot stale. Refresh and review before acting." xml:space="preserve">
+    <value>The server marked this snapshot stale. Refresh and review before acting.</value>
+  </data>
+  <data name="The server returned these roles. Choose one to continue." xml:space="preserve">
+    <value>The server returned these roles. Choose one to continue.</value>
+  </data>
+  <data name="The server will lock and revalidate all submitted dependency versions." xml:space="preserve">
+    <value>The server will lock and revalidate all submitted dependency versions.</value>
+  </data>
+  <data name="The term is supplied by the server context, never by this form." xml:space="preserve">
+    <value>The term is supplied by the server context, never by this form.</value>
+  </data>
+  <data name="This is the latest server result. No seat was reserved&#xA;                                and no plan change was made." xml:space="preserve">
+    <value>This is the latest server result. No seat was reserved
+                                and no plan change was made.</value>
+  </data>
+  <data name="This page does not fabricate SPEC-017 registration or audit results.&#xA;                                Open the owner workspace when that contribution is available." xml:space="preserve">
+    <value>This page does not fabricate SPEC-017 registration or audit results.
+                                Open the owner workspace when that contribution is available.</value>
+  </data>
+  <data name="Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Time zone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="Timestamp" xml:space="preserve">
+    <value>Timestamp</value>
+  </data>
+  <data name="Timetable actions" xml:space="preserve">
+    <value>Timetable actions</value>
+  </data>
+  <data name="Timetable changed" xml:space="preserve">
+    <value>Timetable changed</value>
+  </data>
+  <data name="Timetable period" xml:space="preserve">
+    <value>Timetable period</value>
+  </data>
+  <data name="Timezone" xml:space="preserve">
+    <value>Timezone</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Title descending" xml:space="preserve">
+    <value>Title descending</value>
+  </data>
+  <data name="to" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="together." xml:space="preserve">
+    <value>together.</value>
+  </data>
+  <data name="Total credits" xml:space="preserve">
+    <value>Total credits</value>
+  </data>
+  <data name="Transcript" xml:space="preserve">
+    <value>Transcript</value>
+  </data>
+  <data name="Transcript attempts table" xml:space="preserve">
+    <value>Transcript attempts table</value>
+  </data>
+  <data name="Transcript attempts, stacked view" xml:space="preserve">
+    <value>Transcript attempts, stacked view</value>
+  </data>
+  <data name="Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Typed policy" xml:space="preserve">
+    <value>Typed policy</value>
+  </data>
+  <data name="Unavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="University ID" xml:space="preserve">
+    <value>University ID</value>
+  </data>
+  <data name="University ID or Student search" xml:space="preserve">
+    <value>University ID or Student search</value>
+  </data>
+  <data name="Updating your account securely." xml:space="preserve">
+    <value>Updating your account securely.</value>
+  </data>
+  <data name="Use current versions and review draft" xml:space="preserve">
+    <value>Use current versions and review draft</value>
+  </data>
+  <data name="UsePlanningDependency(availability)&quot;&gt;&#xA;                                    Use as planning dependency" xml:space="preserve">
+    <value>UsePlanningDependency(availability)"&gt;
+                                    Use as planning dependency</value>
+  </data>
+  <data name="User administration" xml:space="preserve">
+    <value>User administration</value>
+  </data>
+  <data name="User result pages" xml:space="preserve">
+    <value>User result pages</value>
+  </data>
+  <data name="User results" xml:space="preserve">
+    <value>User results</value>
+  </data>
+  <data name="User results, compact view" xml:space="preserve">
+    <value>User results, compact view</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Validate offering" xml:space="preserve">
+    <value>Validate offering</value>
+  </data>
+  <data name="Validation snapshot" xml:space="preserve">
+    <value>Validation snapshot</value>
+  </data>
+  <data name="Validation summary" xml:space="preserve">
+    <value>Validation summary</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Values are typed data only. Scripts and executable expressions&#xA;                        are not accepted." xml:space="preserve">
+    <value>Values are typed data only. Scripts and executable expressions
+                        are not accepted.</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Version and status list" xml:space="preserve">
+    <value>Version and status list</value>
+  </data>
+  <data name="Version-safe owner command" xml:space="preserve">
+    <value>Version-safe owner command</value>
+  </data>
+  <data name="Versioned term list" xml:space="preserve">
+    <value>Versioned term list</value>
+  </data>
+  <data name="View result" xml:space="preserve">
+    <value>View result</value>
+  </data>
+  <data name="VisiblePages =&gt; _history is null ? [1] : Enumerable.Range(1, TotalPages).Where(page =&gt; Math.Abs(page - _history.PageNumber)" xml:space="preserve">
+    <value>VisiblePages =&gt; _history is null ? [1] : Enumerable.Range(1, TotalPages).Where(page =&gt; Math.Abs(page - _history.PageNumber)</value>
+  </data>
+  <data name="VisiblePages =&gt; _roster is null ? [1] : Enumerable.Range(1, TotalPages).Where(page =&gt; Math.Abs(page - _roster.PageNumber)" xml:space="preserve">
+    <value>VisiblePages =&gt; _roster is null ? [1] : Enumerable.Range(1, TotalPages).Where(page =&gt; Math.Abs(page - _roster.PageNumber)</value>
+  </data>
+  <data name="Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Window to publish" xml:space="preserve">
+    <value>Window to publish</value>
+  </data>
+  <data name="Your plan is empty" xml:space="preserve">
+    <value>Your plan is empty</value>
+  </data>
+  <data name="— version" xml:space="preserve">
+    <value>— version</value>
+  </data>
+  <data name=", rowversion" xml:space="preserve">
+    <value>, rowversion</value>
+  </data>
+  <data name=", version" xml:space="preserve">
+    <value>, version</value>
+  </data>
+  <data name="; accessed" xml:space="preserve">
+    <value>; accessed</value>
+  </data>
+  <data name="; approved by" xml:space="preserve">
+    <value>; approved by</value>
+  </data>
+  <data name="; override possible:" xml:space="preserve">
+    <value>; override possible:</value>
+  </data>
+  <data name="; source" xml:space="preserve">
+    <value>; source</value>
+  </data>
+  <data name="; version" xml:space="preserve">
+    <value>; version</value>
+  </data>
+  <data name=". Both current row versions will be submitted." xml:space="preserve">
+    <value>. Both current row versions will be submitted.</value>
+  </data>
+  <data name=". This does not mean that the catalogue is empty." xml:space="preserve">
+    <value>. This does not mean that the catalogue is empty.</value>
+  </data>
+  <data name="· advisory capacity" xml:space="preserve">
+    <value>· advisory capacity</value>
+  </data>
+  <data name="” in the current server-selected term." xml:space="preserve">
+    <value>” in the current server-selected term.</value>
+  </data>
+  <data name="A server alert keeps its detected timestamp, affected group, state, and" xml:space="preserve">
+    <value>A server alert keeps its detected timestamp, affected group, state, and</value>
+  </data>
+  <data name="Academic staff" xml:space="preserve">
+    <value>Academic staff</value>
+  </data>
+  <data name="academic terms; page" xml:space="preserve">
+    <value>academic terms; page</value>
+  </data>
+  <data name="Accessed" xml:space="preserve">
+    <value>Accessed</value>
+  </data>
+  <data name="Admin, Lecturer, and Teaching Assistant use this one password-only login. Roles come from the server after sign-in." xml:space="preserve">
+    <value>Admin, Lecturer, and Teaching Assistant use this one password-only login. Roles come from the server after sign-in.</value>
+  </data>
+  <data name="Admins, Lecturers, and Teaching Assistants use the shared staff sign-in page. The server assigns authorized access." xml:space="preserve">
+    <value>Admins, Lecturers, and Teaching Assistants use the shared staff sign-in page. The server assigns authorized access.</value>
+  </data>
+  <data name="Advisory capacity:" xml:space="preserve">
+    <value>Advisory capacity:</value>
+  </data>
+  <data name="Apply option" xml:space="preserve">
+    <value>Apply option</value>
+  </data>
+  <data name="at" xml:space="preserve">
+    <value>at</value>
+  </data>
+  <data name="Attempt source:" xml:space="preserve">
+    <value>Attempt source:</value>
+  </data>
+  <data name="attempted credits ·" xml:space="preserve">
+    <value>attempted credits ·</value>
+  </data>
+  <data name="attempts ·" xml:space="preserve">
+    <value>attempts ·</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="Check the server-authoritative academic status, then choose the correct secure access path." xml:space="preserve">
+    <value>Check the server-authoritative academic status, then choose the correct secure access path.</value>
+  </data>
+  <data name="Checking the server date, academic term, registration window, profile, and holds." xml:space="preserve">
+    <value>Checking the server date, academic term, registration window, profile, and holds.</value>
+  </data>
+  <data name="Comma-separated field names; do not hide local gap values." xml:space="preserve">
+    <value>Comma-separated field names; do not hide local gap values.</value>
+  </data>
+  <data name="Confirm new password" xml:space="preserve">
+    <value>Confirm new password</value>
+  </data>
+  <data name="Content hash:" xml:space="preserve">
+    <value>Content hash:</value>
+  </data>
+  <data name="Continue as" xml:space="preserve">
+    <value>Continue as</value>
+  </data>
+  <data name="Continue links record only a group intent. The schedule page and later submission must revalidate authoritative state." xml:space="preserve">
+    <value>Continue links record only a group intent. The schedule page and later submission must revalidate authoritative state.</value>
+  </data>
+  <data name="Continue with group" xml:space="preserve">
+    <value>Continue with group</value>
+  </data>
+  <data name="Correct the sourced GPA for Student" xml:space="preserve">
+    <value>Correct the sourced GPA for Student</value>
+  </data>
+  <data name="Create explicit teaching terms, maintain versioned registration windows, and publish only after the owner service accepts the command." xml:space="preserve">
+    <value>Create explicit teaching terms, maintain versioned registration windows, and publish only after the owner service accepts the command.</value>
+  </data>
+  <data name="credits ·" xml:space="preserve">
+    <value>credits ·</value>
+  </data>
+  <data name="Curated demo subset — locally assigned credits and fixture flags remain explicitly synthetic." xml:space="preserve">
+    <value>Curated demo subset — locally assigned credits and fixture flags remain explicitly synthetic.</value>
+  </data>
+  <data name="Current password" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="Current term version:" xml:space="preserve">
+    <value>Current term version:</value>
+  </data>
+  <data name="Deadline" xml:space="preserve">
+    <value>Deadline</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Edit the server-stored plan. Capacity is advisory until final submission revalidates every selection." xml:space="preserve">
+    <value>Edit the server-stored plan. Capacity is advisory until final submission revalidates every selection.</value>
+  </data>
+  <data name="enrolled; capacity" xml:space="preserve">
+    <value>enrolled; capacity</value>
+  </data>
+  <data name="enrolled." xml:space="preserve">
+    <value>enrolled.</value>
+  </data>
+  <data name="Enter local institutional times. The request converts them to explicit UTC instants; the server computes availability." xml:space="preserve">
+    <value>Enter local institutional times. The request converts them to explicit UTC instants; the server computes availability.</value>
+  </data>
+  <data name="Export status may be queued, ready, failed, or expired. Restricted jobs reveal no event or job detail." xml:space="preserve">
+    <value>Export status may be queued, ready, failed, or expired. Restricted jobs reveal no event or job detail.</value>
+  </data>
+  <data name="Group version:" xml:space="preserve">
+    <value>Group version:</value>
+  </data>
+  <data name="Hold source:" xml:space="preserve">
+    <value>Hold source:</value>
+  </data>
+  <data name="Import status:" xml:space="preserve">
+    <value>Import status:</value>
+  </data>
+  <data name="Initial PIN / password" xml:space="preserve">
+    <value>Initial PIN / password</value>
+  </data>
+  <data name="Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state." xml:space="preserve">
+    <value>Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state.</value>
+  </data>
+  <data name="Issue:" xml:space="preserve">
+    <value>Issue:</value>
+  </data>
+  <data name="Latest revalidation:" xml:space="preserve">
+    <value>Latest revalidation:</value>
+  </data>
+  <data name="Locate one Student inside the server-selected academic term, review the sourced record, and submit a reasoned version-safe correction." xml:space="preserve">
+    <value>Locate one Student inside the server-selected academic term, review the sourced record, and submit a reasoned version-safe correction.</value>
+  </data>
+  <data name="Metrics and registration records have not been loaded. No live, successful, or repaired state is inferred in the browser." xml:space="preserve">
+    <value>Metrics and registration records have not been loaded. No live, successful, or repaired state is inferred in the browser.</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="No records matched “" xml:space="preserve">
+    <value>No records matched “</value>
+  </data>
+  <data name="No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners." xml:space="preserve">
+    <value>No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners.</value>
+  </data>
+  <data name="of" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions." xml:space="preserve">
+    <value>Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions.</value>
+  </data>
+  <data name="Open academic record" xml:space="preserve">
+    <value>Open academic record</value>
+  </data>
+  <data name="Optimizer configuration:" xml:space="preserve">
+    <value>Optimizer configuration:</value>
+  </data>
+  <data name="Option" xml:space="preserve">
+    <value>Option</value>
+  </data>
+  <data name="Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Prepare resolution" xml:space="preserve">
+    <value>Prepare resolution</value>
+  </data>
+  <data name="Preview is bound to actor, scope, content hash, dependencies, rowversion, and expiry. It is not publication authority." xml:space="preserve">
+    <value>Preview is bound to actor, scope, content hash, dependencies, rowversion, and expiry. It is not publication authority.</value>
+  </data>
+  <data name="programme snapshot" xml:space="preserve">
+    <value>programme snapshot</value>
+  </data>
+  <data name="Publish one immutable version using the current draft rowversion and bound preview? The server will revalidate and choose one winner." xml:space="preserve">
+    <value>Publish one immutable version using the current draft rowversion and bound preview? The server will revalidate and choose one winner.</value>
+  </data>
+  <data name="Publish registration window" xml:space="preserve">
+    <value>Publish registration window</value>
+  </data>
+  <data name="Publish this explicit window using the current term and window versions? The server will recheck overlap and lifecycle rules." xml:space="preserve">
+    <value>Publish this explicit window using the current term and window versions? The server will recheck overlap and lifecycle rules.</value>
+  </data>
+  <data name="Recovery code" xml:space="preserve">
+    <value>Recovery code</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Remove window" xml:space="preserve">
+    <value>Remove window</value>
+  </data>
+  <data name="Request recovery without revealing whether an account exists, or complete recovery with the code you received." xml:space="preserve">
+    <value>Request recovery without revealing whether an account exists, or complete recovery with the code you received.</value>
+  </data>
+  <data name="Revalidate impact" xml:space="preserve">
+    <value>Revalidate impact</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="Review a curated programme subset, keep field provenance beside every value, validate prerequisite and typed-policy rules, simulate without saving, and publish only after server confirmation." xml:space="preserve">
+    <value>Review a curated programme subset, keep field provenance beside every value, validate prerequisite and typed-policy rules, simulate without saving, and publish only after server confirmation.</value>
+  </data>
+  <data name="Review room" xml:space="preserve">
+    <value>Review room</value>
+  </data>
+  <data name="Review the account status change" xml:space="preserve">
+    <value>Review the account status change</value>
+  </data>
+  <data name="Review the activation details" xml:space="preserve">
+    <value>Review the activation details</value>
+  </data>
+  <data name="Review the import" xml:space="preserve">
+    <value>Review the import</value>
+  </data>
+  <data name="Review the password details" xml:space="preserve">
+    <value>Review the password details</value>
+  </data>
+  <data name="Review the recovery details" xml:space="preserve">
+    <value>Review the recovery details</value>
+  </data>
+  <data name="Review the recovery request" xml:space="preserve">
+    <value>Review the recovery request</value>
+  </data>
+  <data name="Review the role change" xml:space="preserve">
+    <value>Review the role change</value>
+  </data>
+  <data name="Review the server-authoritative academic and registration status before continuing." xml:space="preserve">
+    <value>Review the server-authoritative academic and registration status before continuing.</value>
+  </data>
+  <data name="Review the sign-in details" xml:space="preserve">
+    <value>Review the sign-in details</value>
+  </data>
+  <data name="Revoke all sessions?" xml:space="preserve">
+    <value>Revoke all sessions?</value>
+  </data>
+  <data name="Schedule calendar" xml:space="preserve">
+    <value>Schedule calendar</value>
+  </data>
+  <data name="Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle." xml:space="preserve">
+    <value>Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle.</value>
+  </data>
+  <data name="Search the bounded server result. Eligibility, load, capacity, and selectability are evaluated by the server." xml:space="preserve">
+    <value>Search the bounded server result. Eligibility, load, capacity, and selectability are evaluated by the server.</value>
+  </data>
+  <data name="server-evaluated subjects. Applied sort:" xml:space="preserve">
+    <value>server-evaluated subjects. Applied sort:</value>
+  </data>
+  <data name="Showing" xml:space="preserve">
+    <value>Showing</value>
+  </data>
+  <data name="Sign in with your University ID, or activate a generated demo account for first use." xml:space="preserve">
+    <value>Sign in with your University ID, or activate a generated demo account for first use.</value>
+  </data>
+  <data name="Source:" xml:space="preserve">
+    <value>Source:</value>
+  </data>
+  <data name="Staff own and replace these declarations. Admin can select an ID and version as an offering-planning dependency, but cannot edit or override any range." xml:space="preserve">
+    <value>Staff own and replace these declarations. Admin can select an ID and version as an offering-planning dependency, but cannot edit or override any range.</value>
+  </data>
+  <data name="Staff role navigation" xml:space="preserve">
+    <value>Staff role navigation</value>
+  </data>
+  <data name="Staff username" xml:space="preserve">
+    <value>Staff username</value>
+  </data>
+  <data name="Student role navigation" xml:space="preserve">
+    <value>Student role navigation</value>
+  </data>
+  <data name="Students" xml:space="preserve">
+    <value>Students</value>
+  </data>
+  <data name="Subject discovery search and filters" xml:space="preserve">
+    <value>Subject discovery search and filters</value>
+  </data>
+  <data name="Synthetic fields:" xml:space="preserve">
+    <value>Synthetic fields:</value>
+  </data>
+  <data name="The displayed result is the latest server refresh. Review the changed capacity and reasons before continuing." xml:space="preserve">
+    <value>The displayed result is the latest server refresh. Review the changed capacity and reasons before continuing.</value>
+  </data>
+  <data name="The server has not published a current registration term. Refresh the context later or use the support reference." xml:space="preserve">
+    <value>The server has not published a current registration term. Refresh the context later or use the support reference.</value>
+  </data>
+  <data name="The server returned no results for" xml:space="preserve">
+    <value>The server returned no results for</value>
+  </data>
+  <data name="This is a first-use activation credential, not a second factor." xml:space="preserve">
+    <value>This is a first-use activation credential, not a second factor.</value>
+  </data>
+  <data name="This is the latest server result. No seat was reserved and no plan change was made." xml:space="preserve">
+    <value>This is the latest server result. No seat was reserved and no plan change was made.</value>
+  </data>
+  <data name="This page does not fabricate SPEC-017 registration or audit results. Open the owner workspace when that contribution is available." xml:space="preserve">
+    <value>This page does not fabricate SPEC-017 registration or audit results. Open the owner workspace when that contribution is available.</value>
+  </data>
+  <data name="total result" xml:space="preserve">
+    <value>total result</value>
+  </data>
+  <data name="University ID or Staff username" xml:space="preserve">
+    <value>University ID or Staff username</value>
+  </data>
+  <data name="Use 15 to 128 characters. Spaces and Unicode are allowed." xml:space="preserve">
+    <value>Use 15 to 128 characters. Spaces and Unicode are allowed.</value>
+  </data>
+  <data name="Use as planning dependency" xml:space="preserve">
+    <value>Use as planning dependency</value>
+  </data>
+  <data name="Use the University ID and initial credential issued for this demo, then choose your own password." xml:space="preserve">
+    <value>Use the University ID and initial credential issued for this demo, then choose your own password.</value>
+  </data>
+  <data name="Use your University ID and password. The server decides your account and access." xml:space="preserve">
+    <value>Use your University ID and password. The server decides your account and access.</value>
+  </data>
+  <data name="user results; page" xml:space="preserve">
+    <value>user results; page</value>
+  </data>
+  <data name="Values are typed data only. Scripts and executable expressions are not accepted." xml:space="preserve">
+    <value>Values are typed data only. Scripts and executable expressions are not accepted.</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="Window" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="You will need to sign in again on every device." xml:space="preserve">
+    <value>You will need to sign in again on every device.</value>
+  </data>
+  <data name=" has-error" xml:space="preserve">
+    <value> has-error</value>
+  </data>
+  <data name=" is-active" xml:space="preserve">
+    <value> is-active</value>
+  </data>
+  <data name=" is-disabled" xml:space="preserve">
+    <value> is-disabled</value>
+  </data>
+  <data name=" is-loading" xml:space="preserve">
+    <value> is-loading</value>
+  </data>
+  <data name=", " xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name=", above threshold" xml:space="preserve">
+    <value>, above threshold</value>
+  </data>
+  <data name=". Review the server time above." xml:space="preserve">
+    <value>. Review the server time above.</value>
+  </data>
+  <data name="A required service is unavailable. Retry later or use the public gateway." xml:space="preserve">
+    <value>A required service is unavailable. Retry later or use the public gateway.</value>
+  </data>
+  <data name="A room change reason is required." xml:space="preserve">
+    <value>A room change reason is required.</value>
+  </data>
+  <data name="A Student session is required." xml:space="preserve">
+    <value>A Student session is required.</value>
+  </data>
+  <data name="A term may contain at most 20 registration windows." xml:space="preserve">
+    <value>A term may contain at most 20 registration windows.</value>
+  </data>
+  <data name="academic-correction-reason-hint academic-correction-reason-error" xml:space="preserve">
+    <value>academic-correction-reason-hint academic-correction-reason-error</value>
+  </data>
+  <data name="academic-correction-value-hint academic-correction-value-error" xml:space="preserve">
+    <value>academic-correction-value-hint academic-correction-value-error</value>
+  </data>
+  <data name="Access denied" xml:space="preserve">
+    <value>Access denied</value>
+  </data>
+  <data name="Access to Student academic records is restricted." xml:space="preserve">
+    <value>Access to Student academic records is restricted.</value>
+  </data>
+  <data name="Access unavailable" xml:space="preserve">
+    <value>Access unavailable</value>
+  </data>
+  <data name="Account service unavailable" xml:space="preserve">
+    <value>Account service unavailable</value>
+  </data>
+  <data name="Account status" xml:space="preserve">
+    <value>Account status</value>
+  </data>
+  <data name="Account status updated" xml:space="preserve">
+    <value>Account status updated</value>
+  </data>
+  <data name="Activation not accepted" xml:space="preserve">
+    <value>Activation not accepted</value>
+  </data>
+  <data name="Activation service unavailable" xml:space="preserve">
+    <value>Activation service unavailable</value>
+  </data>
+  <data name="Activation status" xml:space="preserve">
+    <value>Activation status</value>
+  </data>
+  <data name="active roster entries. Page" xml:space="preserve">
+    <value>active roster entries. Page</value>
+  </data>
+  <data name="ADM-02 web administration" xml:space="preserve">
+    <value>ADM-02 web administration</value>
+  </data>
+  <data name="Admin home" xml:space="preserve">
+    <value>Admin home</value>
+  </data>
+  <data name="Administration status" xml:space="preserve">
+    <value>Administration status</value>
+  </data>
+  <data name="All students" xml:space="preserve">
+    <value>All students</value>
+  </data>
+  <data name="All validated identities were published atomically." xml:space="preserve">
+    <value>All validated identities were published atomically.</value>
+  </data>
+  <data name="An active Admin context is required." xml:space="preserve">
+    <value>An active Admin context is required.</value>
+  </data>
+  <data name="An active Lecturer or Teaching Assistant context is required." xml:space="preserve">
+    <value>An active Lecturer or Teaching Assistant context is required.</value>
+  </data>
+  <data name="An active staff context is required." xml:space="preserve">
+    <value>An active staff context is required.</value>
+  </data>
+  <data name="Archived" xml:space="preserve">
+    <value>Archived</value>
+  </data>
+  <data name="assigned groups" xml:space="preserve">
+    <value>assigned groups</value>
+  </data>
+  <data name="At least one complete availability range is required." xml:space="preserve">
+    <value>At least one complete availability range is required.</value>
+  </data>
+  <data name="Audit and reports" xml:space="preserve">
+    <value>Audit and reports</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Availability</value>
+  </data>
+  <data name="Availability calendar" xml:space="preserve">
+    <value>Availability calendar</value>
+  </data>
+  <data name="Availability could not be loaded safely." xml:space="preserve">
+    <value>Availability could not be loaded safely.</value>
+  </data>
+  <data name="Availability ranges are edited with the labelled text fields above." xml:space="preserve">
+    <value>Availability ranges are edited with the labelled text fields above.</value>
+  </data>
+  <data name="Availability unavailable" xml:space="preserve">
+    <value>Availability unavailable</value>
+  </data>
+  <data name="Capacity cannot be below enrollment and a reason is required." xml:space="preserve">
+    <value>Capacity cannot be below enrollment and a reason is required.</value>
+  </data>
+  <data name="Capacity conflicts" xml:space="preserve">
+    <value>Capacity conflicts</value>
+  </data>
+  <data name="Catalogue administration could not be loaded." xml:space="preserve">
+    <value>Catalogue administration could not be loaded.</value>
+  </data>
+  <data name="Check your recovery channel" xml:space="preserve">
+    <value>Check your recovery channel</value>
+  </data>
+  <data name="Checking system status" xml:space="preserve">
+    <value>Checking system status</value>
+  </data>
+  <data name="Choose an available Student result page." xml:space="preserve">
+    <value>Choose an available Student result page.</value>
+  </data>
+  <data name="Chronological availability list" xml:space="preserve">
+    <value>Chronological availability list</value>
+  </data>
+  <data name="Chronological timetable list" xml:space="preserve">
+    <value>Chronological timetable list</value>
+  </data>
+  <data name="Closed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Completed at" xml:space="preserve">
+    <value>Completed at</value>
+  </data>
+  <data name="Correct the highlighted term values." xml:space="preserve">
+    <value>Correct the highlighted term values.</value>
+  </data>
+  <data name="Correct the import preview and submit it again." xml:space="preserve">
+    <value>Correct the import preview and submit it again.</value>
+  </data>
+  <data name="Correction saved after server validation." xml:space="preserve">
+    <value>Correction saved after server validation.</value>
+  </data>
+  <data name="Credits, IsActive" xml:space="preserve">
+    <value>Credits, IsActive</value>
+  </data>
+  <data name="Current authorized timetable calendar" xml:space="preserve">
+    <value>Current authorized timetable calendar</value>
+  </data>
+  <data name="Current page {0} of {1}" xml:space="preserve">
+    <value>Current page {0} of {1}</value>
+  </data>
+  <data name="Current registered timetable calendar" xml:space="preserve">
+    <value>Current registered timetable calendar</value>
+  </data>
+  <data name="Current registered timetable list" xml:space="preserve">
+    <value>Current registered timetable list</value>
+  </data>
+  <data name="Current server versions loaded. Review the preserved draft before saving." xml:space="preserve">
+    <value>Current server versions loaded. Review the preserved draft before saving.</value>
+  </data>
+  <data name="Current versions loaded; no draft value was submitted or overwritten." xml:space="preserve">
+    <value>Current versions loaded; no draft value was submitted or overwritten.</value>
+  </data>
+  <data name="Data-quality alerts" xml:space="preserve">
+    <value>Data-quality alerts</value>
+  </data>
+  <data name="Database lock wait" xml:space="preserve">
+    <value>Database lock wait</value>
+  </data>
+  <data name="Degraded metrics" xml:space="preserve">
+    <value>Degraded metrics</value>
+  </data>
+  <data name="Degraded observation" xml:space="preserve">
+    <value>Degraded observation</value>
+  </data>
+  <data name="Disable this account?" xml:space="preserve">
+    <value>Disable this account?</value>
+  </data>
+  <data name="Display name is required and must not exceed 200 characters." xml:space="preserve">
+    <value>Display name is required and must not exceed 200 characters.</value>
+  </data>
+  <data name="Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Draft offering created by the server" xml:space="preserve">
+    <value>Draft offering created by the server</value>
+  </data>
+  <data name="Each row kind must be student or staff." xml:space="preserve">
+    <value>Each row kind must be student or staff.</value>
+  </data>
+  <data name="Emergency closed" xml:space="preserve">
+    <value>Emergency closed</value>
+  </data>
+  <data name="Enable this account?" xml:space="preserve">
+    <value>Enable this account?</value>
+  </data>
+  <data name="Enter a numeric GPA." xml:space="preserve">
+    <value>Enter a numeric GPA.</value>
+  </data>
+  <data name="Enter a reason for the role change." xml:space="preserve">
+    <value>Enter a reason for the role change.</value>
+  </data>
+  <data name="Enter a reason for the status change." xml:space="preserve">
+    <value>Enter a reason for the status change.</value>
+  </data>
+  <data name="Enter a reason of at least 10 characters." xml:space="preserve">
+    <value>Enter a reason of at least 10 characters.</value>
+  </data>
+  <data name="Enter a Student search from 3 to 50 characters." xml:space="preserve">
+    <value>Enter a Student search from 3 to 50 characters.</value>
+  </data>
+  <data name="Enter a University ID or Staff username." xml:space="preserve">
+    <value>Enter a University ID or Staff username.</value>
+  </data>
+  <data name="Enter a valid IANA institutional time zone." xml:space="preserve">
+    <value>Enter a valid IANA institutional time zone.</value>
+  </data>
+  <data name="Enter between 3 and 50 characters, or clear the search." xml:space="preserve">
+    <value>Enter between 3 and 50 characters, or clear the search.</value>
+  </data>
+  <data name="Enter the import source name." xml:space="preserve">
+    <value>Enter the import source name.</value>
+  </data>
+  <data name="Enter the issued initial credential." xml:space="preserve">
+    <value>Enter the issued initial credential.</value>
+  </data>
+  <data name="Enter the recovery code." xml:space="preserve">
+    <value>Enter the recovery code.</value>
+  </data>
+  <data name="Enter valid term/course IDs, group code, and capacity." xml:space="preserve">
+    <value>Enter valid term/course IDs, group code, and capacity.</value>
+  </data>
+  <data name="Enter your current password." xml:space="preserve">
+    <value>Enter your current password.</value>
+  </data>
+  <data name="Enter your password." xml:space="preserve">
+    <value>Enter your password.</value>
+  </data>
+  <data name="Enter your Staff username." xml:space="preserve">
+    <value>Enter your Staff username.</value>
+  </data>
+  <data name="Enter your University ID." xml:space="preserve">
+    <value>Enter your University ID.</value>
+  </data>
+  <data name="Every row needs a unique external reference, kind, display name, and roles array." xml:space="preserve">
+    <value>Every row needs a unique external reference, kind, display name, and roles array.</value>
+  </data>
+  <data name="Expected rejections" xml:space="preserve">
+    <value>Expected rejections</value>
+  </data>
+  <data name="Final Admin must remain" xml:space="preserve">
+    <value>Final Admin must remain</value>
+  </data>
+  <data name="GPA must be between zero and four." xml:space="preserve">
+    <value>GPA must be between zero and four.</value>
+  </data>
+  <data name="Group fill rate" xml:space="preserve">
+    <value>Group fill rate</value>
+  </data>
+  <data name="Group saved by the server" xml:space="preserve">
+    <value>Group saved by the server</value>
+  </data>
+  <data name="groups &#183;" xml:space="preserve">
+    <value>groups &#183;</value>
+  </data>
+  <data name="Identity operation not completed" xml:space="preserve">
+    <value>Identity operation not completed</value>
+  </data>
+  <data name="If an eligible account matches, recovery instructions have been sent." xml:space="preserve">
+    <value>If an eligible account matches, recovery instructions have been sent.</value>
+  </data>
+  <data name="Impact resolved by the server" xml:space="preserve">
+    <value>Impact resolved by the server</value>
+  </data>
+  <data name="Impact revalidated by the server" xml:space="preserve">
+    <value>Impact revalidated by the server</value>
+  </data>
+  <data name="Import evidence was accepted by the server." xml:space="preserve">
+    <value>Import evidence was accepted by the server.</value>
+  </data>
+  <data name="Import preview ready" xml:space="preserve">
+    <value>Import preview ready</value>
+  </data>
+  <data name="Import published" xml:space="preserve">
+    <value>Import published</value>
+  </data>
+  <data name="Import received" xml:space="preserve">
+    <value>Import received</value>
+  </data>
+  <data name="Institutional time zone is required." xml:space="preserve">
+    <value>Institutional time zone is required.</value>
+  </data>
+  <data name="Live metrics" xml:space="preserve">
+    <value>Live metrics</value>
+  </data>
+  <data name="Live observation" xml:space="preserve">
+    <value>Live observation</value>
+  </data>
+  <data name="Maintenance in progress" xml:space="preserve">
+    <value>Maintenance in progress</value>
+  </data>
+  <data name="No active roles" xml:space="preserve">
+    <value>No active roles</value>
+  </data>
+  <data name="No authorized registration term is available." xml:space="preserve">
+    <value>No authorized registration term is available.</value>
+  </data>
+  <data name="No conflict" xml:space="preserve">
+    <value>No conflict</value>
+  </data>
+  <data name="No registration term is currently published." xml:space="preserve">
+    <value>No registration term is currently published.</value>
+  </data>
+  <data name="No registration window is available." xml:space="preserve">
+    <value>No registration window is available.</value>
+  </data>
+  <data name="No registrations for" xml:space="preserve">
+    <value>No registrations for</value>
+  </data>
+  <data name="No role partners" xml:space="preserve">
+    <value>No role partners</value>
+  </data>
+  <data name="No server-selected academic term is available for Student search." xml:space="preserve">
+    <value>No server-selected academic term is available for Student search.</value>
+  </data>
+  <data name="No unsaved changes" xml:space="preserve">
+    <value>No unsaved changes</value>
+  </data>
+  <data name="Normal maximum credits must be a positive typed number." xml:space="preserve">
+    <value>Normal maximum credits must be a positive typed number.</value>
+  </data>
+  <data name="Not issued" xml:space="preserve">
+    <value>Not issued</value>
+  </data>
+  <data name="Not reported by the server; no zero value has been assumed." xml:space="preserve">
+    <value>Not reported by the server; no zero value has been assumed.</value>
+  </data>
+  <data name="Not supplied" xml:space="preserve">
+    <value>Not supplied</value>
+  </data>
+  <data name="Offering validation passed" xml:space="preserve">
+    <value>Offering validation passed</value>
+  </data>
+  <data name="Official source" xml:space="preserve">
+    <value>Official source</value>
+  </data>
+  <data name="Offline Student dashboard status" xml:space="preserve">
+    <value>Offline Student dashboard status</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Open public gateway" xml:space="preserve">
+    <value>Open public gateway</value>
+  </data>
+  <data name="Open {0} group {1} details" xml:space="preserve">
+    <value>Open {0} group {1} details</value>
+  </data>
+  <data name="Operational metric" xml:space="preserve">
+    <value>Operational metric</value>
+  </data>
+  <data name="Operational metrics could not be loaded safely." xml:space="preserve">
+    <value>Operational metrics could not be loaded safely.</value>
+  </data>
+  <data name="Page {0} of {1}" xml:space="preserve">
+    <value>Page {0} of {1}</value>
+  </data>
+  <data name="Password change not accepted" xml:space="preserve">
+    <value>Password change not accepted</value>
+  </data>
+  <data name="Password changed" xml:space="preserve">
+    <value>Password changed</value>
+  </data>
+  <data name="Please wait." xml:space="preserve">
+    <value>Please wait.</value>
+  </data>
+  <data name="Policy draft saved. Any earlier publication preview was invalidated." xml:space="preserve">
+    <value>Policy draft saved. Any earlier publication preview was invalidated.</value>
+  </data>
+  <data name="Probation maximum credits must be a positive typed number." xml:space="preserve">
+    <value>Probation maximum credits must be a positive typed number.</value>
+  </data>
+  <data name="Provide between 1 and 500 user rows." xml:space="preserve">
+    <value>Provide between 1 and 500 user rows.</value>
+  </data>
+  <data name="Public academic status is available." xml:space="preserve">
+    <value>Public academic status is available.</value>
+  </data>
+  <data name="Public context could not be loaded." xml:space="preserve">
+    <value>Public context could not be loaded.</value>
+  </data>
+  <data name="Public registration status is temporarily unavailable." xml:space="preserve">
+    <value>Public registration status is temporarily unavailable.</value>
+  </data>
+  <data name="Publish validated offering" xml:space="preserve">
+    <value>Publish validated offering</value>
+  </data>
+  <data name="Published by the server" xml:space="preserve">
+    <value>Published by the server</value>
+  </data>
+  <data name="Published immutable catalogue version" xml:space="preserve">
+    <value>Published immutable catalogue version</value>
+  </data>
+  <data name="Read-only Staff availability selected as an offering-planning dependency." xml:space="preserve">
+    <value>Read-only Staff availability selected as an offering-planning dependency.</value>
+  </data>
+  <data name="Reason and source are required." xml:space="preserve">
+    <value>Reason and source are required.</value>
+  </data>
+  <data name="Reason must contain between 10 and 500 characters." xml:space="preserve">
+    <value>Reason must contain between 10 and 500 characters.</value>
+  </data>
+  <data name="Reason must not exceed 500 characters." xml:space="preserve">
+    <value>Reason must not exceed 500 characters.</value>
+  </data>
+  <data name="Reconnect before retrying. No request or registration action was queued." xml:space="preserve">
+    <value>Reconnect before retrying. No request or registration action was queued.</value>
+  </data>
+  <data name="Reconnect, then refresh metrics. No action was queued." xml:space="preserve">
+    <value>Reconnect, then refresh metrics. No action was queued.</value>
+  </data>
+  <data name="Reconnect, then refresh the authorized timetable." xml:space="preserve">
+    <value>Reconnect, then refresh the authorized timetable.</value>
+  </data>
+  <data name="Reconnect, then retry availability." xml:space="preserve">
+    <value>Reconnect, then retry availability.</value>
+  </data>
+  <data name="Reconnect, then retry registration records." xml:space="preserve">
+    <value>Reconnect, then retry registration records.</value>
+  </data>
+  <data name="Reconnect, then retry the assigned roster." xml:space="preserve">
+    <value>Reconnect, then retry the assigned roster.</value>
+  </data>
+  <data name="Reconnect, then retry the current plan. No edit was queued." xml:space="preserve">
+    <value>Reconnect, then retry the current plan. No edit was queued.</value>
+  </data>
+  <data name="Reconnect, then retry the staff workspace." xml:space="preserve">
+    <value>Reconnect, then retry the staff workspace.</value>
+  </data>
+  <data name="Reconnect, then retry. No registration change was made." xml:space="preserve">
+    <value>Reconnect, then retry. No registration change was made.</value>
+  </data>
+  <data name="Reconnect, then retry. No registration was queued." xml:space="preserve">
+    <value>Reconnect, then retry. No registration was queued.</value>
+  </data>
+  <data name="Recovery complete" xml:space="preserve">
+    <value>Recovery complete</value>
+  </data>
+  <data name="Recovery not accepted" xml:space="preserve">
+    <value>Recovery not accepted</value>
+  </data>
+  <data name="Recovery service unavailable" xml:space="preserve">
+    <value>Recovery service unavailable</value>
+  </data>
+  <data name="Recovery status" xml:space="preserve">
+    <value>Recovery status</value>
+  </data>
+  <data name="Reference: " xml:space="preserve">
+    <value>Reference: </value>
+  </data>
+  <data name="Refresh and review the current user or import before submitting again." xml:space="preserve">
+    <value>Refresh and review the current user or import before submitting again.</value>
+  </data>
+  <data name="Refresh dashboard" xml:space="preserve">
+    <value>Refresh dashboard</value>
+  </data>
+  <data name="Refresh paused" xml:space="preserve">
+    <value>Refresh paused</value>
+  </data>
+  <data name="Refresh paused; metrics are not live and remain at the last server observation." xml:space="preserve">
+    <value>Refresh paused; metrics are not live and remain at the last server observation.</value>
+  </data>
+  <data name="Refreshing dashboard…" xml:space="preserve">
+    <value>Refreshing dashboard…</value>
+  </data>
+  <data name="Refreshing server-authoritative dashboard context." xml:space="preserve">
+    <value>Refreshing server-authoritative dashboard context.</value>
+  </data>
+  <data name="Registered timetable" xml:space="preserve">
+    <value>Registered timetable</value>
+  </data>
+  <data name="Registered timetable list" xml:space="preserve">
+    <value>Registered timetable list</value>
+  </data>
+  <data name="Registration cannot start until the server publishes a registration term." xml:space="preserve">
+    <value>Registration cannot start until the server publishes a registration term.</value>
+  </data>
+  <data name="Registration closed" xml:space="preserve">
+    <value>Registration closed</value>
+  </data>
+  <data name="Registration closed {0} ({1})." xml:space="preserve">
+    <value>Registration closed {0} ({1}).</value>
+  </data>
+  <data name="Registration context changed" xml:space="preserve">
+    <value>Registration context changed</value>
+  </data>
+  <data name="Registration could not be accepted" xml:space="preserve">
+    <value>Registration could not be accepted</value>
+  </data>
+  <data name="Registration has not opened. Review the server opening time above." xml:space="preserve">
+    <value>Registration has not opened. Review the server opening time above.</value>
+  </data>
+  <data name="Registration history is unavailable" xml:space="preserve">
+    <value>Registration history is unavailable</value>
+  </data>
+  <data name="Registration is blocked by the listed active hold." xml:space="preserve">
+    <value>Registration is blocked by the listed active hold.</value>
+  </data>
+  <data name="Registration is blocked until the listed issue is resolved." xml:space="preserve">
+    <value>Registration is blocked until the listed issue is resolved.</value>
+  </data>
+  <data name="Registration is closed. Refresh the dashboard before continuing." xml:space="preserve">
+    <value>Registration is closed. Refresh the dashboard before continuing.</value>
+  </data>
+  <data name="Registration is not currently available." xml:space="preserve">
+    <value>Registration is not currently available.</value>
+  </data>
+  <data name="Registration is open and closes {0} ({1})." xml:space="preserve">
+    <value>Registration is open and closes {0} ({1}).</value>
+  </data>
+  <data name="Registration open" xml:space="preserve">
+    <value>Registration open</value>
+  </data>
+  <data name="Registration opens {0} ({1})." xml:space="preserve">
+    <value>Registration opens {0} ({1}).</value>
+  </data>
+  <data name="Registration receipt" xml:space="preserve">
+    <value>Registration receipt</value>
+  </data>
+  <data name="Registration records could not be loaded safely." xml:space="preserve">
+    <value>Registration records could not be loaded safely.</value>
+  </data>
+  <data name="Registration result is unavailable" xml:space="preserve">
+    <value>Registration result is unavailable</value>
+  </data>
+  <data name="Registration result needs recovery" xml:space="preserve">
+    <value>Registration result needs recovery</value>
+  </data>
+  <data name="Registration review is offline" xml:space="preserve">
+    <value>Registration review is offline</value>
+  </data>
+  <data name="Registration review is unavailable" xml:space="preserve">
+    <value>Registration review is unavailable</value>
+  </data>
+  <data name="Registration traffic" xml:space="preserve">
+    <value>Registration traffic</value>
+  </data>
+  <data name="Registration window published after server confirmation. " xml:space="preserve">
+    <value>Registration window published after server confirmation. </value>
+  </data>
+  <data name="Remove range" xml:space="preserve">
+    <value>Remove range</value>
+  </data>
+  <data name="Resolve every server-reported blocker before submission." xml:space="preserve">
+    <value>Resolve every server-reported blocker before submission.</value>
+  </data>
+  <data name="Resolve the listed blocker before starting registration." xml:space="preserve">
+    <value>Resolve the listed blocker before starting registration.</value>
+  </data>
+  <data name="Retry public context" xml:space="preserve">
+    <value>Retry public context</value>
+  </data>
+  <data name="Retry registration records" xml:space="preserve">
+    <value>Retry registration records</value>
+  </data>
+  <data name="Retry status" xml:space="preserve">
+    <value>Retry status</value>
+  </data>
+  <data name="Review the academic correction." xml:space="preserve">
+    <value>Review the academic correction.</value>
+  </data>
+  <data name="Review the bounded rows before server validation." xml:space="preserve">
+    <value>Review the bounded rows before server validation.</value>
+  </data>
+  <data name="Review the dates, time zone, scope, and registration-window values." xml:space="preserve">
+    <value>Review the dates, time zone, scope, and registration-window values.</value>
+  </data>
+  <data name="Review the search or registration context" xml:space="preserve">
+    <value>Review the search or registration context</value>
+  </data>
+  <data name="Review the submitted Student request." xml:space="preserve">
+    <value>Review the submitted Student request.</value>
+  </data>
+  <data name="Roles updated" xml:space="preserve">
+    <value>Roles updated</value>
+  </data>
+  <data name="Room code, location, and a non-negative capacity are required." xml:space="preserve">
+    <value>Room code, location, and a non-negative capacity are required.</value>
+  </data>
+  <data name="Room created by the server" xml:space="preserve">
+    <value>Room created by the server</value>
+  </data>
+  <data name="Room saved by the server" xml:space="preserve">
+    <value>Room saved by the server</value>
+  </data>
+  <data name="Roster unavailable" xml:space="preserve">
+    <value>Roster unavailable</value>
+  </data>
+  <data name="Saved by the server" xml:space="preserve">
+    <value>Saved by the server</value>
+  </data>
+  <data name="Schedule alternatives could not be loaded." xml:space="preserve">
+    <value>Schedule alternatives could not be loaded.</value>
+  </data>
+  <data name="Schedule builder is offline" xml:space="preserve">
+    <value>Schedule builder is offline</value>
+  </data>
+  <data name="Schedule builder is unavailable" xml:space="preserve">
+    <value>Schedule builder is unavailable</value>
+  </data>
+  <data name="schedule impact alert(s) require revalidation." xml:space="preserve">
+    <value>schedule impact alert(s) require revalidation.</value>
+  </data>
+  <data name="Search must contain between 3 and 50 characters." xml:space="preserve">
+    <value>Search must contain between 3 and 50 characters.</value>
+  </data>
+  <data name="Section (Tutorial)" xml:space="preserve">
+    <value>Section (Tutorial)</value>
+  </data>
+  <data name="Select one draft registration window to publish." xml:space="preserve">
+    <value>Select one draft registration window to publish.</value>
+  </data>
+  <data name="Select one role returned by the server." xml:space="preserve">
+    <value>Select one role returned by the server.</value>
+  </data>
+  <data name="Server failures" xml:space="preserve">
+    <value>Server failures</value>
+  </data>
+  <data name="Server time zone" xml:space="preserve">
+    <value>Server time zone</value>
+  </data>
+  <data name="Service degraded" xml:space="preserve">
+    <value>Service degraded</value>
+  </data>
+  <data name="Service unavailable" xml:space="preserve">
+    <value>Service unavailable</value>
+  </data>
+  <data name="Sign in again before returning to protected work." xml:space="preserve">
+    <value>Sign in again before returning to protected work.</value>
+  </data>
+  <data name="Sign in again before viewing Student academic records." xml:space="preserve">
+    <value>Sign in again before viewing Student academic records.</value>
+  </data>
+  <data name="Sign-in not accepted" xml:space="preserve">
+    <value>Sign-in not accepted</value>
+  </data>
+  <data name="Sign-in service unavailable" xml:space="preserve">
+    <value>Sign-in service unavailable</value>
+  </data>
+  <data name="Sign-in status" xml:space="preserve">
+    <value>Sign-in status</value>
+  </data>
+  <data name="Simulation completed deterministically; no durable change was made." xml:space="preserve">
+    <value>Simulation completed deterministically; no durable change was made.</value>
+  </data>
+  <data name="Some non-critical capability is unavailable. Retry or continue from the public gateway." xml:space="preserve">
+    <value>Some non-critical capability is unavailable. Retry or continue from the public gateway.</value>
+  </data>
+  <data name="Source is required and must not exceed 200 characters." xml:space="preserve">
+    <value>Source is required and must not exceed 200 characters.</value>
+  </data>
+  <data name="Source, access date, and content hash are required." xml:space="preserve">
+    <value>Source, access date, and content hash are required.</value>
+  </data>
+  <data name="Sourced correction provenance is unavailable." xml:space="preserve">
+    <value>Sourced correction provenance is unavailable.</value>
+  </data>
+  <data name="Staff home" xml:space="preserve">
+    <value>Staff home</value>
+  </data>
+  <data name="Staff roles are limited to Admin, Lecturer, and Teaching Assistant." xml:space="preserve">
+    <value>Staff roles are limited to Admin, Lecturer, and Teaching Assistant.</value>
+  </data>
+  <data name="Staff rows need unique username and staff number values plus at least one role." xml:space="preserve">
+    <value>Staff rows need unique username and staff number values plus at least one role.</value>
+  </data>
+  <data name="Staff sign-in unavailable" xml:space="preserve">
+    <value>Staff sign-in unavailable</value>
+  </data>
+  <data name="Staff timetable unavailable" xml:space="preserve">
+    <value>Staff timetable unavailable</value>
+  </data>
+  <data name="Staff workspace unavailable" xml:space="preserve">
+    <value>Staff workspace unavailable</value>
+  </data>
+  <data name="Stale metrics" xml:space="preserve">
+    <value>Stale metrics</value>
+  </data>
+  <data name="Stale observation" xml:space="preserve">
+    <value>Stale observation</value>
+  </data>
+  <data name="Student academic services are temporarily unavailable." xml:space="preserve">
+    <value>Student academic services are temporarily unavailable.</value>
+  </data>
+  <data name="Student administration could not be loaded safely." xml:space="preserve">
+    <value>Student administration could not be loaded safely.</value>
+  </data>
+  <data name="Student dashboard access denied" xml:space="preserve">
+    <value>Student dashboard access denied</value>
+  </data>
+  <data name="Student dashboard context changed" xml:space="preserve">
+    <value>Student dashboard context changed</value>
+  </data>
+  <data name="Student dashboard context could not be loaded." xml:space="preserve">
+    <value>Student dashboard context could not be loaded.</value>
+  </data>
+  <data name="Student dashboard context is available." xml:space="preserve">
+    <value>Student dashboard context is available.</value>
+  </data>
+  <data name="Student dashboard context is current." xml:space="preserve">
+    <value>Student dashboard context is current.</value>
+  </data>
+  <data name="Student dashboard unavailable" xml:space="preserve">
+    <value>Student dashboard unavailable</value>
+  </data>
+  <data name="Student rows need a unique University ID and no staff fields or roles." xml:space="preserve">
+    <value>Student rows need a unique University ID and no staff fields or roles.</value>
+  </data>
+  <data name="Subject details are offline" xml:space="preserve">
+    <value>Subject details are offline</value>
+  </data>
+  <data name="Subject details are temporarily unavailable." xml:space="preserve">
+    <value>Subject details are temporarily unavailable.</value>
+  </data>
+  <data name="Subject details are unavailable" xml:space="preserve">
+    <value>Subject details are unavailable</value>
+  </data>
+  <data name="Subject details could not be loaded." xml:space="preserve">
+    <value>Subject details could not be loaded.</value>
+  </data>
+  <data name="Subject discovery could not be loaded." xml:space="preserve">
+    <value>Subject discovery could not be loaded.</value>
+  </data>
+  <data name="Subject discovery is offline" xml:space="preserve">
+    <value>Subject discovery is offline</value>
+  </data>
+  <data name="Subject discovery is temporarily unavailable." xml:space="preserve">
+    <value>Subject discovery is temporarily unavailable.</value>
+  </data>
+  <data name="Subject discovery is unavailable" xml:space="preserve">
+    <value>Subject discovery is unavailable</value>
+  </data>
+  <data name="Subject is not available in this context" xml:space="preserve">
+    <value>Subject is not available in this context</value>
+  </data>
+  <data name="Submit this complete plan for one atomic server decision?" xml:space="preserve">
+    <value>Submit this complete plan for one atomic server decision?</value>
+  </data>
+  <data name="Successful registrations" xml:space="preserve">
+    <value>Successful registrations</value>
+  </data>
+  <data name="Superseded" xml:space="preserve">
+    <value>Superseded</value>
+  </data>
+  <data name="Synthetic demo" xml:space="preserve">
+    <value>Synthetic demo</value>
+  </data>
+  <data name="Systems available" xml:space="preserve">
+    <value>Systems available</value>
+  </data>
+  <data name="Teaching" xml:space="preserve">
+    <value>Teaching</value>
+  </data>
+  <data name="Teaching Assistant" xml:space="preserve">
+    <value>Teaching Assistant</value>
+  </data>
+  <data name="Teaching end date must be after the teaching start date." xml:space="preserve">
+    <value>Teaching end date must be after the teaching start date.</value>
+  </data>
+  <data name="Term administration could not be loaded." xml:space="preserve">
+    <value>Term administration could not be loaded.</value>
+  </data>
+  <data name="Term administration is offline" xml:space="preserve">
+    <value>Term administration is offline</value>
+  </data>
+  <data name="Term administration service unavailable" xml:space="preserve">
+    <value>Term administration service unavailable</value>
+  </data>
+  <data name="Term changes saved after server confirmation." xml:space="preserve">
+    <value>Term changes saved after server confirmation.</value>
+  </data>
+  <data name="Term code is required and must not exceed 50 characters." xml:space="preserve">
+    <value>Term code is required and must not exceed 50 characters.</value>
+  </data>
+  <data name="Term created after server confirmation." xml:space="preserve">
+    <value>Term created after server confirmation.</value>
+  </data>
+  <data name="Term row version" xml:space="preserve">
+    <value>Term row version</value>
+  </data>
+  <data name="Terms" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="The academic profile changed. Refresh and review it." xml:space="preserve">
+    <value>The academic profile changed. Refresh and review it.</value>
+  </data>
+  <data name="The account will be signed out on every replica. The final enabled Admin cannot be disabled." xml:space="preserve">
+    <value>The account will be signed out on every replica. The final enabled Admin cannot be disabled.</value>
+  </data>
+  <data name="The account will become eligible for its server-authorized roles." xml:space="preserve">
+    <value>The account will become eligible for its server-authorized roles.</value>
+  </data>
+  <data name="The active server role cannot open Student subject details." xml:space="preserve">
+    <value>The active server role cannot open Student subject details.</value>
+  </data>
+  <data name="The active server role cannot open Student subject discovery." xml:space="preserve">
+    <value>The active server role cannot open Student subject discovery.</value>
+  </data>
+  <data name="The active server role is not authorized for the Student dashboard." xml:space="preserve">
+    <value>The active server role is not authorized for the Student dashboard.</value>
+  </data>
+  <data name="The assigned roster could not be loaded safely." xml:space="preserve">
+    <value>The assigned roster could not be loaded safely.</value>
+  </data>
+  <data name="The authorized registration term could not be loaded safely." xml:space="preserve">
+    <value>The authorized registration term could not be loaded safely.</value>
+  </data>
+  <data name="The authorized timetable could not be loaded safely." xml:space="preserve">
+    <value>The authorized timetable could not be loaded safely.</value>
+  </data>
+  <data name="The availability update was not saved." xml:space="preserve">
+    <value>The availability update was not saved.</value>
+  </data>
+  <data name="The browser cannot reach catalogue administration. No action was queued." xml:space="preserve">
+    <value>The browser cannot reach catalogue administration. No action was queued.</value>
+  </data>
+  <data name="The browser cannot reach Student academic services. Reconnect and refresh the dashboard." xml:space="preserve">
+    <value>The browser cannot reach Student academic services. Reconnect and refresh the dashboard.</value>
+  </data>
+  <data name="The browser cannot reach subject details. No request was queued." xml:space="preserve">
+    <value>The browser cannot reach subject details. No request was queued.</value>
+  </data>
+  <data name="The browser cannot reach subject discovery. No request was queued." xml:space="preserve">
+    <value>The browser cannot reach subject discovery. No request was queued.</value>
+  </data>
+  <data name="The browser cannot reach the service. Reconnect and retry public context." xml:space="preserve">
+    <value>The browser cannot reach the service. Reconnect and retry public context.</value>
+  </data>
+  <data name="The browser cannot reach the service. Reconnect and retry the authoritative term list." xml:space="preserve">
+    <value>The browser cannot reach the service. Reconnect and retry the authoritative term list.</value>
+  </data>
+  <data name="The configured deadline is" xml:space="preserve">
+    <value>The configured deadline is</value>
+  </data>
+  <data name="The current server ranges are shown below. Refresh and reapply changes; the stale draft was not saved." xml:space="preserve">
+    <value>The current server ranges are shown below. Refresh and reapply changes; the stale draft was not saved.</value>
+  </data>
+  <data name="The immutable versions are shown below; actor and timestamp remain in server audit." xml:space="preserve">
+    <value>The immutable versions are shown below; actor and timestamp remain in server audit.</value>
+  </data>
+  <data name="The new passwords must match." xml:space="preserve">
+    <value>The new passwords must match.</value>
+  </data>
+  <data name="The operation could not be completed. Retry or use the support path." xml:space="preserve">
+    <value>The operation could not be completed. Retry or use the support path.</value>
+  </data>
+  <data name="The plan changed in another editor." xml:space="preserve">
+    <value>The plan changed in another editor.</value>
+  </data>
+  <data name="The public health summary reports that required services are available." xml:space="preserve">
+    <value>The public health summary reports that required services are available.</value>
+  </data>
+  <data name="The registration result could not be loaded safely." xml:space="preserve">
+    <value>The registration result could not be loaded safely.</value>
+  </data>
+  <data name="The registration review could not be completed safely." xml:space="preserve">
+    <value>The registration review could not be completed safely.</value>
+  </data>
+  <data name="The registration review could not be completed." xml:space="preserve">
+    <value>The registration review could not be completed.</value>
+  </data>
+  <data name="The registration window is closed or changed; refresh before continuing." xml:space="preserve">
+    <value>The registration window is closed or changed; refresh before continuing.</value>
+  </data>
+  <data name="The request could not be completed safely." xml:space="preserve">
+    <value>The request could not be completed safely.</value>
+  </data>
+  <data name="The request could not be completed. Return to the public gateway or use the reference when requesting support." xml:space="preserve">
+    <value>The request could not be completed. Return to the public gateway or use the reference when requesting support.</value>
+  </data>
+  <data name="The requested page is unavailable. No protected resource details are shown." xml:space="preserve">
+    <value>The requested page is unavailable. No protected resource details are shown.</value>
+  </data>
+  <data name="The requested subject identifier is not valid." xml:space="preserve">
+    <value>The requested subject identifier is not valid.</value>
+  </data>
+  <data name="The role context was not changed." xml:space="preserve">
+    <value>The role context was not changed.</value>
+  </data>
+  <data name="The safe health summary could not be loaded. Retry later." xml:space="preserve">
+    <value>The safe health summary could not be loaded. Retry later.</value>
+  </data>
+  <data name="The same request key was used for different content." xml:space="preserve">
+    <value>The same request key was used for different content.</value>
+  </data>
+  <data name="The schedule builder request could not be completed." xml:space="preserve">
+    <value>The schedule builder request could not be completed.</value>
+  </data>
+  <data name="The schedule option could not be applied." xml:space="preserve">
+    <value>The schedule option could not be applied.</value>
+  </data>
+  <data name="The server accepted and audited the role replacement." xml:space="preserve">
+    <value>The server accepted and audited the role replacement.</value>
+  </data>
+  <data name="The server accepted and audited the status change." xml:space="preserve">
+    <value>The server accepted and audited the status change.</value>
+  </data>
+  <data name="The server accepted the complete range set at version" xml:space="preserve">
+    <value>The server accepted the complete range set at version</value>
+  </data>
+  <data name="The server did not accept the term command." xml:space="preserve">
+    <value>The server did not accept the term command.</value>
+  </data>
+  <data name="The server has not published a current registration term." xml:space="preserve">
+    <value>The server has not published a current registration term.</value>
+  </data>
+  <data name="The server has not supplied a current registration term." xml:space="preserve">
+    <value>The server has not supplied a current registration term.</value>
+  </data>
+  <data name="The server metrics response was unavailable or invalid." xml:space="preserve">
+    <value>The server metrics response was unavailable or invalid.</value>
+  </data>
+  <data name="The server reported an overlapping registration window." xml:space="preserve">
+    <value>The server reported an overlapping registration window.</value>
+  </data>
+  <data name="The server reports that the registration window is closed." xml:space="preserve">
+    <value>The server reports that the registration window is closed.</value>
+  </data>
+  <data name="The server returned no authoritative outcome." xml:space="preserve">
+    <value>The server returned no authoritative outcome.</value>
+  </data>
+  <data name="The server returned the authoritative validation state." xml:space="preserve">
+    <value>The server returned the authoritative validation state.</value>
+  </data>
+  <data name="The service could not be reached." xml:space="preserve">
+    <value>The service could not be reached.</value>
+  </data>
+  <data name="The service is temporarily unavailable for maintenance. Retry later." xml:space="preserve">
+    <value>The service is temporarily unavailable for maintenance. Retry later.</value>
+  </data>
+  <data name="The staff workspace could not be loaded safely." xml:space="preserve">
+    <value>The staff workspace could not be loaded safely.</value>
+  </data>
+  <data name="The Student record did not match the server-selected term." xml:space="preserve">
+    <value>The Student record did not match the server-selected term.</value>
+  </data>
+  <data name="The Student result page was outside the authoritative result set." xml:space="preserve">
+    <value>The Student result page was outside the authoritative result set.</value>
+  </data>
+  <data name="The term values could not be normalized." xml:space="preserve">
+    <value>The term values could not be normalized.</value>
+  </data>
+  <data name="This change would remove the final enabled Admin. No change was made." xml:space="preserve">
+    <value>This change would remove the final enabled Admin. No change was made.</value>
+  </data>
+  <data name="This source content was already imported." xml:space="preserve">
+    <value>This source content was already imported.</value>
+  </data>
+  <data name="Timestamped observation" xml:space="preserve">
+    <value>Timestamped observation</value>
+  </data>
+  <data name="Timetable" xml:space="preserve">
+    <value>Timetable</value>
+  </data>
+  <data name="Try again later" xml:space="preserve">
+    <value>Try again later</value>
+  </data>
+  <data name="Unexpected error" xml:space="preserve">
+    <value>Unexpected error</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Unsaved draft" xml:space="preserve">
+    <value>Unsaved draft</value>
+  </data>
+  <data name="Upcoming" xml:space="preserve">
+    <value>Upcoming</value>
+  </data>
+  <data name="Update typed demo credit boundaries" xml:space="preserve">
+    <value>Update typed demo credit boundaries</value>
+  </data>
+  <data name="Use a JSON array containing only the documented pre-provisioning fields." xml:space="preserve">
+    <value>Use a JSON array containing only the documented pre-provisioning fields.</value>
+  </data>
+  <data name="Use a password from 15 to 128 characters." xml:space="preserve">
+    <value>Use a password from 15 to 128 characters.</value>
+  </data>
+  <data name="User information changed" xml:space="preserve">
+    <value>User information changed</value>
+  </data>
+  <data name="Version:" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="Visible pages must be unique, bounded, and contain the current page." xml:space="preserve">
+    <value>Visible pages must be unique, bounded, and contain the current page.</value>
+  </data>
+  <data name="Wait for a validated import before publishing." xml:space="preserve">
+    <value>Wait for a validated import before publishing.</value>
+  </data>
+  <data name="Wait for the safe status summary." xml:space="preserve">
+    <value>Wait for the safe status summary.</value>
+  </data>
+  <data name="Window {0} must close after it opens." xml:space="preserve">
+    <value>Window {0} must close after it opens.</value>
+  </data>
+  <data name="Window {0} requires a scope value." xml:space="preserve">
+    <value>Window {0} requires a scope value.</value>
+  </data>
+  <data name="You are offline" xml:space="preserve">
+    <value>You are offline</value>
+  </data>
+  <data name="Your current context cannot manage identities. Return to an authorized Admin context." xml:space="preserve">
+    <value>Your current context cannot manage identities. Return to an authorized Admin context.</value>
+  </data>
+  <data name="Your current context cannot open that resource. Sign in with an authorized account or return to the public gateway." xml:space="preserve">
+    <value>Your current context cannot open that resource. Sign in with an authorized account or return to the public gateway.</value>
+  </data>
+  <data name="Your password changed and earlier sessions are no longer valid." xml:space="preserve">
+    <value>Your password changed and earlier sessions are no longer valid.</value>
+  </data>
+  <data name="Your password was changed. You can now sign in." xml:space="preserve">
+    <value>Your password was changed. You can now sign in.</value>
+  </data>
+  <data name="{0:0.##} credits" xml:space="preserve">
+    <value>{0:0.##} credits</value>
+  </data>
+  <data name="{0} alerts" xml:space="preserve">
+    <value>{0} alerts</value>
+  </data>
+  <data name="{0} conflicts" xml:space="preserve">
+    <value>{0} conflicts</value>
+  </data>
+  <data name="{0} credits" xml:space="preserve">
+    <value>{0} credits</value>
+  </data>
+  <data name="{0} failures" xml:space="preserve">
+    <value>{0} failures</value>
+  </data>
+  <data name="{0} ms" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="{0} registrations" xml:space="preserve">
+    <value>{0} registrations</value>
+  </data>
+  <data name="{0} rejections" xml:space="preserve">
+    <value>{0} rejections</value>
+  </data>
+  <data name="{0} requests" xml:space="preserve">
+    <value>{0} requests</value>
+  </data>
+  <data name="{0}: availability ranges overlap." xml:space="preserve">
+    <value>{0}: availability ranges overlap.</value>
+  </data>
+  <data name="{0}: start time must be before end time." xml:space="preserve">
+    <value>{0}: start time must be before end time.</value>
+  </data>
+  <data name="; " xml:space="preserve">
+    <value>; </value>
+  </data>
+  <data name="any" xml:space="preserve">
+    <value>any</value>
+  </data>
+  <data name="{0} ({1})" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="{0} &#183; {1}" xml:space="preserve">
+    <value>{0} &#183; {1}</value>
+  </data>
+  <data name="{0} — {1}" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="{0}: {1}" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="search “{0}”, eligibility {1}, credits {2}, day {3}, availability {4}" xml:space="preserve">
+    <value>search “{0}”, eligibility {1}, credits {2}, day {3}, availability {4}</value>
+  </data>
+  <data name="Activate account" xml:space="preserve">
+    <value>Activate account</value>
+  </data>
+  <data name="Activating…" xml:space="preserve">
+    <value>Activating…</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Catalogue access denied" xml:space="preserve">
+    <value>Catalogue access denied</value>
+  </data>
+  <data name="Changing…" xml:space="preserve">
+    <value>Changing…</value>
+  </data>
+  <data name="Completing…" xml:space="preserve">
+    <value>Completing…</value>
+  </data>
+  <data name="Create import" xml:space="preserve">
+    <value>Create import</value>
+  </data>
+  <data name="Create term" xml:space="preserve">
+    <value>Create term</value>
+  </data>
+  <data name="Creating import…" xml:space="preserve">
+    <value>Creating import…</value>
+  </data>
+  <data name="Creating term…" xml:space="preserve">
+    <value>Creating term…</value>
+  </data>
+  <data name="Disable account" xml:space="preserve">
+    <value>Disable account</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Enable account" xml:space="preserve">
+    <value>Enable account</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="failed" xml:space="preserve">
+    <value>failed</value>
+  </data>
+  <data name="Hide {0}" xml:space="preserve">
+    <value>Hide {0}</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="New explicit aggregate" xml:space="preserve">
+    <value>New explicit aggregate</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Not eligible" xml:space="preserve">
+    <value>Not eligible</value>
+  </data>
+  <data name="passed" xml:space="preserve">
+    <value>passed</value>
+  </data>
+  <data name="Requesting…" xml:space="preserve">
+    <value>Requesting…</value>
+  </data>
+  <data name="Retrying…" xml:space="preserve">
+    <value>Retrying…</value>
+  </data>
+  <data name="Save changes" xml:space="preserve">
+    <value>Save changes</value>
+  </data>
+  <data name="Save policy draft" xml:space="preserve">
+    <value>Save policy draft</value>
+  </data>
+  <data name="Saving changes…" xml:space="preserve">
+    <value>Saving changes…</value>
+  </data>
+  <data name="Saving…" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="Searching…" xml:space="preserve">
+    <value>Searching…</value>
+  </data>
+  <data name="Selectable" xml:space="preserve">
+    <value>Selectable</value>
+  </data>
+  <data name="Show {0}" xml:space="preserve">
+    <value>Show {0}</value>
+  </data>
+  <data name="Sign in" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Signing in…" xml:space="preserve">
+    <value>Signing in…</value>
+  </data>
+  <data name="Simulate policy" xml:space="preserve">
+    <value>Simulate policy</value>
+  </data>
+  <data name="Simulating…" xml:space="preserve">
+    <value>Simulating…</value>
+  </data>
+  <data name="Submit academic correction" xml:space="preserve">
+    <value>Submit academic correction</value>
+  </data>
+  <data name="Submitting…" xml:space="preserve">
+    <value>Submitting…</value>
+  </data>
+  <data name="Validate catalogue" xml:space="preserve">
+    <value>Validate catalogue</value>
+  </data>
+  <data name="Validating…" xml:space="preserve">
+    <value>Validating…</value>
+  </data>
+  <data name="Versioned aggregate editor" xml:space="preserve">
+    <value>Versioned aggregate editor</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+</root>

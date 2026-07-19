@@ -13,39 +13,39 @@
 @inject RegistrationApiClient RegistrationApi
 @inject IJSRuntime JavaScript
 
-<PageTitle>Registration history | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Registration history | Student Registration")</PageTitle>
 
 @if (_loading)
 {
     <div data-route-id="STU-07" data-state="loading" data-contract-state="STU-07-COMP-STATE-LOADING">
-        <a href="#main-content">Skip to main content</a>
-        <main id="main-content" tabindex="-1"><h1>Registration history</h1><p role="status" aria-busy="true">Loading registration records.</p></main>
+        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
+        <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Registration history")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading registration records.")</p></main>
     </div>
 }
 else if (_shellContext is not null)
 {
-    <AppShell Context="@_shellContext" MainContentId="main-content" SkipLinkLabel="Skip to main content"
+    <AppShell Context="@_shellContext" MainContentId="main-content" SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
               BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
-              SupportLinkLabel="Open support" LoadingLabel="Loading registration history">
-        <Navigation><RoleNavigation AccessibleName="Student role navigation" Items="@StudentNavigation" /></Navigation>
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading registration history"))">
+        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))" Items="@StudentNavigation" /></Navigation>
         <ChildContent>@HistoryContent</ChildContent>
     </AppShell>
 }
 else
 {
-    <a href="#main-content">Skip to main content</a><main id="main-content" tabindex="-1">@HistoryContent</main>
+    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@HistoryContent</main>
 }
 
 @code {
     private const int PageSize = 20;
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [new("Dashboard", "/student"), new("Current plan", "/student/schedule"), new("Registrations", "/student/registrations", IsActive: true)];
+    [new(LocalizedUiText.Get("Dashboard"), "/student"), new(LocalizedUiText.Get("Current plan"), "/student/schedule"), new(LocalizedUiText.Get("Registrations"), "/student/registrations", IsActive: true)];
 
     private FrontendAppContextView? _shellContext;
     private Page<RegistrationHistoryRowDto>? _history;
@@ -53,7 +53,7 @@ else
     private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
     private string _state = "loading";
     private string _reasonCode = "REGISTRATION_HISTORY_UNAVAILABLE";
-    private string _message = "Registration records could not be loaded safely.";
+    private string _message = LocalizedUiText.Get("Registration records could not be loaded safely.");
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
@@ -69,84 +69,84 @@ else
     private RenderFragment HistoryContent => @<article class="srs-registration-history"
         data-route-id="STU-07" data-state="@_state" data-contract-state="@ContractState">
         <header class="srs-registration-history__intro">
-            <div><p>Student registration</p><h1>Registrations</h1><p>Server-authored current and archived records.</p></div>
-            <button type="button" @onclick="PrintAsync">Print history</button>
+            <div><p>@LocalizedUiText.Get("Student registration")</p><h1>@LocalizedUiText.Get("Registrations")</h1><p>@LocalizedUiText.Get("Server-authored current and archived records.")</p></div>
+            <button type="button" @onclick="PrintAsync">@LocalizedUiText.Get("Print history")</button>
         </header>
 
         @if (_state is "service-error" or "unauthorized")
         {
             <section class="srs-registration-history__state" role="@(_state == "unauthorized" ? "alert" : "status")" aria-live="polite">
-                <h2>@(_state == "unauthorized" ? "Access denied" : "Registration history is unavailable")</h2>
+                <h2>@(_state == "unauthorized" ? LocalizedUiText.Get("Access denied") : LocalizedUiText.Get("Registration history is unavailable"))</h2>
                 <p><strong>@_reasonCode</strong></p><p>@_message</p>
-                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>Reference: <span>@_reference</span></p> }
-                @if (_state == "service-error") { <button type="button" disabled="@_requesting" @onclick="() => LoadRecordsAsync(1)">Retry registration records</button> }
-                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">Open safe support path</a>
+                @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") <span>@_reference</span></p> }
+                @if (_state == "service-error") { <button type="button" disabled="@_requesting" @onclick="() => LoadRecordsAsync(1)">@LocalizedUiText.Get("Retry registration records")</button> }
+                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">@LocalizedUiText.Get("Open safe support path")</a>
             </section>
         }
         else if (_state == "empty")
         {
             <section class="srs-registration-history__state" role="status" aria-live="polite">
-                <h2>No registrations for @(_timetable?.Term?.DisplayName ?? "this term")</h2><p>No accepted or rejected registration has been recorded.</p>
-                @if (CanFindSubjects) { <a href="@_timetable!.SubjectDiscoveryPath">Find subjects</a> }
+                <h2>@LocalizedUiText.Get("No registrations for") @(_timetable?.Term?.DisplayName ?? "this term")</h2><p>@LocalizedUiText.Get("No accepted or rejected registration has been recorded.")</p>
+                @if (CanFindSubjects) { <a href="@_timetable!.SubjectDiscoveryPath">@LocalizedUiText.Get("Find subjects")</a> }
             </section>
         }
         else if (_history is not null && _timetable is not null)
         {
-            <nav class="srs-registration-history__selector" aria-label="Registration view">
-                <a href="#current-registration">Current timetable</a>
-                <a href="#registration-records">History records</a>
+            <nav class="srs-registration-history__selector" aria-label="@(LocalizedUiText.Get("Registration view"))">
+                <a href="#current-registration">@LocalizedUiText.Get("Current timetable")</a>
+                <a href="#registration-records">@LocalizedUiText.Get("History records")</a>
             </nav>
             <section id="current-registration" aria-labelledby="current-timetable-heading">
-                <h2 id="current-timetable-heading">Current registration timetable</h2>
-                @if (_meetings.Count == 0) { <p>No current registered meetings.</p> }
+                <h2 id="current-timetable-heading">@LocalizedUiText.Get("Current registration timetable")</h2>
+                @if (_meetings.Count == 0) { <p>@LocalizedUiText.Get("No current registered meetings.")</p> }
                 else
                 {
                     <div class="srs-registration-history__schedule">
-                        <ScheduleCalendar Heading="Current registered timetable calendar" EquivalentListId="registration-history-list"
-                                          DayColumnLabel="Day" TimeColumnLabel="Time" MeetingColumnLabel="Meeting"
-                                          GroupLabel="Group" ActivityKindLabel="Activity" LecturerLabel="Lecturer"
-                                          TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location" ConflictLabel="Conflict" Meetings="@_meetings" />
+                        <ScheduleCalendar Heading="@(LocalizedUiText.Get("Current registered timetable calendar"))" EquivalentListId="registration-history-list"
+                                          DayColumnLabel="@(LocalizedUiText.Get("Day"))" TimeColumnLabel="@(LocalizedUiText.Get("Time"))" MeetingColumnLabel="@(LocalizedUiText.Get("Meeting"))"
+                                          GroupLabel="@(LocalizedUiText.Get("Group"))" ActivityKindLabel="@(LocalizedUiText.Get("Activity"))" LecturerLabel="@(LocalizedUiText.Get("Lecturer"))"
+                                          TeachingAssistantsLabel="@(LocalizedUiText.Get("Teaching assistants"))" LocationLabel="@(LocalizedUiText.Get("Location"))" ConflictLabel="@(LocalizedUiText.Get("Conflict"))" Meetings="@_meetings" />
                         <ScheduleList ComponentId="registration-history-list" EquivalentCalendarId="registration-history-list-calendar-heading"
-                                      Heading="Current registered timetable list" GroupLabel="Group" ActivityKindLabel="Activity"
-                                      LecturerLabel="Lecturer" TeachingAssistantsLabel="Teaching assistants" LocationLabel="Location"
-                                      DayLabel="Day" StartLabel="Starts" EndLabel="Ends" TimezoneLabel="Time zone" ConflictLabel="Conflict" Meetings="@_meetings" />
+                                      Heading="@(LocalizedUiText.Get("Current registered timetable list"))" GroupLabel="@(LocalizedUiText.Get("Group"))" ActivityKindLabel="@(LocalizedUiText.Get("Activity"))"
+                                      LecturerLabel="@(LocalizedUiText.Get("Lecturer"))" TeachingAssistantsLabel="@(LocalizedUiText.Get("Teaching assistants"))" LocationLabel="@(LocalizedUiText.Get("Location"))"
+                                      DayLabel="@(LocalizedUiText.Get("Day"))" StartLabel="@(LocalizedUiText.Get("Starts"))" EndLabel="@(LocalizedUiText.Get("Ends"))" TimezoneLabel="@(LocalizedUiText.Get("Time zone"))" ConflictLabel="@(LocalizedUiText.Get("Conflict"))" Meetings="@_meetings" />
                     </div>
                 }
             </section>
 
             <section id="registration-records" aria-labelledby="records-heading">
-                <h2 id="records-heading">Registration records</h2>
-                <p role="status">@_history.TotalCount registration records</p>
-                <div class="srs-registration-history__table" role="region" aria-label="Registration records table" tabindex="0">
-                    <table><caption>Current and archived registration outcomes</caption><thead><tr>
-                        <th scope="col">Reference</th><th scope="col">Term</th><th scope="col">Submitted</th>
-                        <th scope="col">Status</th><th scope="col">Groups</th><th scope="col">Credits</th><th scope="col">Details</th>
+                <h2 id="records-heading">@LocalizedUiText.Get("Registration records")</h2>
+                <p role="status">@_history.TotalCount @LocalizedUiText.Get("registration records")</p>
+                <div class="srs-registration-history__table" role="region" aria-label="@(LocalizedUiText.Get("Registration records table"))" tabindex="0">
+                    <table><caption>@LocalizedUiText.Get("Current and archived registration outcomes")</caption><thead><tr>
+                        <th scope="col">@LocalizedUiText.Get("Reference")</th><th scope="col">@LocalizedUiText.Get("Term")</th><th scope="col">@LocalizedUiText.Get("Submitted")</th>
+                        <th scope="col">@LocalizedUiText.Get("Status")</th><th scope="col">@LocalizedUiText.Get("Groups")</th><th scope="col">@LocalizedUiText.Get("Credits")</th><th scope="col">@LocalizedUiText.Get("Details")</th>
                     </tr></thead><tbody>
                     @foreach (var record in _history.Items)
                     {
                         <tr data-submission-id="@record.SubmissionId">
-                            <td>@(record.Reference ?? "Not issued")</td><td>@record.Term.DisplayName @ArchivedLabel(record)</td><td>@FormatDate(record.SubmittedAtUtc)</td>
-                            <td>@record.Status</td><td>@record.GroupCount</td><td>@record.TotalCredits.ToString("0.##", CultureInfo.InvariantCulture)</td>
-                            <td><a href="/student/registration/result/@record.SubmissionId.ToString("D")">View result</a></td>
+                            <td>@(record.Reference ?? LocalizedUiText.Get("Not issued"))</td><td>@record.Term.DisplayName @ArchivedLabel(record)</td><td>@FormatDate(record.SubmittedAtUtc)</td>
+                            <td>@record.Status</td><td>@record.GroupCount</td><td>@record.TotalCredits.ToString("0.##", CultureInfo.CurrentCulture)</td>
+                            <td><a href="/student/registration/result/@record.SubmissionId.ToString("D")">@LocalizedUiText.Get("View result")</a></td>
                         </tr>
                     }
                     </tbody></table>
                 </div>
-                <ol class="srs-registration-history__cards" aria-label="Registration records compact view">
+                <ol class="srs-registration-history__cards" aria-label="@(LocalizedUiText.Get("Registration records compact view"))">
                     @foreach (var record in _history.Items)
                     {
-                        <li><h3>Registration record</h3><p>Reference: @(record.Reference ?? "Not issued")</p><p>@record.Term.DisplayName @ArchivedLabel(record) · @FormatDate(record.SubmittedAtUtc)</p>
-                            <p>@record.GroupCount groups · @record.TotalCredits.ToString("0.##", CultureInfo.InvariantCulture) credits</p>
-                            <a href="/student/registration/result/@record.SubmissionId.ToString("D")">View result</a></li>
+                        <li><h3>@LocalizedUiText.Get("Registration record")</h3><p>@LocalizedUiText.Get("Reference:") @(record.Reference ?? "Not issued")</p><p>@record.Term.DisplayName @ArchivedLabel(record) · @FormatDate(record.SubmittedAtUtc)</p>
+                            <p>@record.GroupCount @LocalizedUiText.Get("groups ·") @record.TotalCredits.ToString("0.##", CultureInfo.CurrentCulture) @LocalizedUiText.Get("credits")</p>
+                            <a href="/student/registration/result/@record.SubmissionId.ToString("D")">@LocalizedUiText.Get("View result")</a></li>
                     }
                 </ol>
                 @if (TotalPages > 1)
                 {
-                    <Pagination AccessibleLabel="Registration history pages" PreviousLabel="Previous" NextLabel="Next"
+                    <Pagination AccessibleLabel="@(LocalizedUiText.Get("Registration history pages"))" PreviousLabel="@(LocalizedUiText.Get("Previous"))" NextLabel="@(LocalizedUiText.Get("Next"))"
                                 CurrentPage="@_history.PageNumber" TotalPages="@TotalPages" VisiblePages="@VisiblePages"
-                                PageLabel="@(page => page.ToString(CultureInfo.InvariantCulture))"
-                                CurrentPageLabel="@((page, total) => $"Page {page} of {total}")"
-                                PageChanged="LoadRecordsAsync" IsLoading="@_requesting" LoadingLabel="Loading registration records" />
+                                PageLabel="@(page => page.ToString(CultureInfo.CurrentCulture))"
+                                CurrentPageLabel="@((page, total) => LocalizedUiText.Format("Page {0} of {1}", page, total))"
+                                PageChanged="LoadRecordsAsync" IsLoading="@_requesting" LoadingLabel="@(LocalizedUiText.Get("Loading registration records"))" />
                 }
             </section>
         }
@@ -165,7 +165,7 @@ else
             var context = await AcademicApi.GetAppContextAsync();
             if (!context.IsSuccess || context.Value is null) { ApplyFailure(context.StatusCode, context.Error); return; }
             if (!RegistrationPageSupport.IsStudentContext(context.Value))
-            { ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "A Student session is required.", "STU-07-AUTH")); return; }
+            { ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", LocalizedUiText.Get("A Student session is required."), "STU-07-AUTH")); return; }
             _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
             await LoadRecordsAsync(1);
         }
@@ -197,12 +197,12 @@ else
     {
         _history = null; _timetable = null; _meetings = [];
         _reasonCode = error?.Code ?? "REGISTRATION_HISTORY_UNAVAILABLE";
-        _message = error?.Message ?? "Registration records could not be loaded safely.";
+        _message = error?.Message ?? LocalizedUiText.Get("Registration records could not be loaded safely.");
         _reference = error?.CorrelationId;
         _state = status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden ? "unauthorized" : "service-error";
     }
-    private void ApplyOffline() { _history = null; _timetable = null; _meetings = []; _state = "service-error"; _reasonCode = "OFFLINE"; _message = "Reconnect, then retry registration records."; _reference = null; }
-    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture);
+    private void ApplyOffline() { _history = null; _timetable = null; _meetings = []; _state = "service-error"; _reasonCode = "OFFLINE"; _message = LocalizedUiText.Get("Reconnect, then retry registration records."); _reference = null; }
+    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("g", CultureInfo.CurrentCulture);
     private static string ArchivedLabel(RegistrationHistoryRowDto record) =>
         string.Equals(record.TermState, "archived", StringComparison.OrdinalIgnoreCase) ? "(Archived)" : string.Empty;
     private Task PrintAsync() => JavaScript.InvokeVoidAsync("window.print").AsTask();

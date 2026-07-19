@@ -13,19 +13,19 @@
 @inject RegistrationApiClient RegistrationApi
 @inject NavigationManager Navigation
 
-<PageTitle>Registration review | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Registration review | Student Registration")</PageTitle>
 
 @if (_initialLoading)
 {
     <div data-route-id="STU-05"
          data-state="loading"
          data-contract-state="STU-05-COMP-STATE-LOADING">
-        <a href="#main-content">Skip to main content</a>
+        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1">
-            <h1>Registration review</h1>
+            <h1>@LocalizedUiText.Get("Registration review")</h1>
             <section role="status" aria-live="polite" aria-busy="true">
-                <h2>Loading registration review</h2>
-                <p>Loading the current server-authored plan.</p>
+                <h2>@LocalizedUiText.Get("Loading registration review")</h2>
+                <p>@LocalizedUiText.Get("Loading the current server-authored plan.")</p>
             </section>
         </main>
     </div>
@@ -34,24 +34,24 @@ else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext"
               MainContentId="main-content"
-              SkipLinkLabel="Skip to main content"
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
               BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time"
-              TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term"
-              RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term"
-              NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window"
-              AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role"
-              SessionLabel="Session"
-              ServiceLabel="Service"
-              SupportLinkLabel="Open support"
-              LoadingLabel="Loading registration review">
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+              SessionLabel="@(LocalizedUiText.Get("Session"))"
+              ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+              LoadingLabel="@(LocalizedUiText.Get("Loading registration review"))">
         <Navigation>
-            <RoleNavigation AccessibleName="Student role navigation"
+            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
                             Items="@StudentNavigation" />
         </Navigation>
         <ChildContent>
@@ -61,7 +61,7 @@ else if (_shellContext is not null)
 }
 else
 {
-    <a href="#main-content">Skip to main content</a>
+    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
     <main id="main-content" tabindex="-1">
         @ReviewContent
     </main>
@@ -80,9 +80,9 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new("Dashboard", "/student"),
-        new("Current plan", "/student/schedule"),
-        new("Registration review", "/student/review", IsActive: true)
+        new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule"),
+        new(LocalizedUiText.Get("Registration review"), "/student/review", IsActive: true)
     ];
 
     private FrontendAppContextView? _shellContext;
@@ -91,7 +91,7 @@ else
     private Guid _clientRequestId = Guid.NewGuid();
     private string _state = LoadingState;
     private string _reasonCode = "REGISTRATION_REVIEW_UNAVAILABLE";
-    private string _safeMessage = "The registration review could not be completed.";
+    private string _safeMessage = LocalizedUiText.Get("The registration review could not be completed.");
     private string? _referenceId;
     private bool _initialLoading = true;
     private bool _requestLoading;
@@ -121,12 +121,12 @@ else
 
     private string FailureHeading => _state switch
     {
-        UnauthorizedState => "Access denied",
-        SessionExpiredState => "Session expired",
-        StaleState => "Registration context changed",
-        ValidationErrorState => "Registration could not be accepted",
-        OfflineState => "Registration review is offline",
-        _ => "Registration review is unavailable"
+        UnauthorizedState => LocalizedUiText.Get("Access denied"),
+        SessionExpiredState => LocalizedUiText.Get("Session expired"),
+        StaleState => LocalizedUiText.Get("Registration context changed"),
+        ValidationErrorState => LocalizedUiText.Get("Registration could not be accepted"),
+        OfflineState => LocalizedUiText.Get("Registration review is offline"),
+        _ => LocalizedUiText.Get("Registration review is unavailable")
     };
 
     private RenderFragment ReviewContent => @<div
@@ -134,9 +134,9 @@ else
           data-state="@_state"
           data-contract-state="@ContractState">
         <header>
-            <p>Student registration</p>
-            <h1>Registration review</h1>
-            <p>Review the current plan. The server rechecks every rule and seat at submission.</p>
+            <p>@LocalizedUiText.Get("Student registration")</p>
+            <h1>@LocalizedUiText.Get("Registration review")</h1>
+            <p>@LocalizedUiText.Get("Review the current plan. The server rechecks every rule and seat at submission.")</p>
         </header>
 
         @if (_state is UnauthorizedState or SessionExpiredState or ServiceErrorState or OfflineState)
@@ -148,23 +148,23 @@ else
                 <p>@_safeMessage</p>
                 @if (!string.IsNullOrWhiteSpace(_referenceId))
                 {
-                    <p>Reference: @_referenceId</p>
+                    <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
                 }
                 @if (_state is ServiceErrorState or OfflineState)
                 {
                     <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
-                        Retry registration review
+                        @LocalizedUiText.Get("Retry registration review")
                     </button>
                 }
-                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">Open safe support path</a>
+                <a href="@(_shellContext?.SupportReferencePath ?? "/student")">@LocalizedUiText.Get("Open safe support path")</a>
             </section>
         }
         else if (_plan is null || _state == EmptyState)
         {
             <section role="status" aria-live="polite">
-                <h2>No reviewable registration plan</h2>
-                <p>Add subjects and groups before submission.</p>
-                <a href="/student/schedule">Add or edit plan</a>
+                <h2>@LocalizedUiText.Get("No reviewable registration plan")</h2>
+                <p>@LocalizedUiText.Get("Add subjects and groups before submission.")</p>
+                <a href="/student/schedule">@LocalizedUiText.Get("Add or edit plan")</a>
             </section>
         }
         else
@@ -177,7 +177,7 @@ else
                     <p><strong>@_reasonCode</strong></p>
                     <p>@_safeMessage</p>
                     <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
-                        Refresh and review
+                        @LocalizedUiText.Get("Refresh and review")
                     </button>
                 </section>
             }
@@ -185,30 +185,30 @@ else
             @if (_processing)
             {
                 <section role="status" aria-live="polite" aria-busy="true">
-                    <h2>Registration is still processing</h2>
-                    <p>No result is assumed until the server returns one authoritative outcome.</p>
+                    <h2>@LocalizedUiText.Get("Registration is still processing")</h2>
+                    <p>@LocalizedUiText.Get("No result is assumed until the server returns one authoritative outcome.")</p>
                     <button type="button" disabled="@_requestLoading" @onclick="LookupResultAsync">
-                        Retry result lookup
+                        @LocalizedUiText.Get("Retry result lookup")
                     </button>
                 </section>
             }
 
             <section aria-labelledby="selected-groups-heading">
-                <h2 id="selected-groups-heading">Selected groups</h2>
+                <h2 id="selected-groups-heading">@LocalizedUiText.Get("Selected groups")</h2>
                 <ul>
                     @foreach (var group in _plan.SelectedGroups)
                     {
                         <li data-group-id="@group.GroupId">
                             <h3>@group.CourseCode @group.SubjectTitle</h3>
-                            <p>Group @group.GroupCode · @group.Credits.ToString("0.##") credits</p>
-                            <p>Advisory capacity: @group.EnrolledCount of @group.Capacity enrolled.</p>
+                            <p>@LocalizedUiText.Get("Group") @group.GroupCode · @group.Credits.ToString("0.##") @LocalizedUiText.Get("credits")</p>
+                            <p>@LocalizedUiText.Get("Advisory capacity:") @group.EnrolledCount @LocalizedUiText.Get("of") @group.Capacity @LocalizedUiText.Get("enrolled.")</p>
                         </li>
                     }
                 </ul>
             </section>
 
             <section aria-labelledby="schedule-heading">
-                <h2 id="schedule-heading">Chronological schedule</h2>
+                <h2 id="schedule-heading">@LocalizedUiText.Get("Chronological schedule")</h2>
                 <ol>
                     @foreach (var meeting in Meetings())
                     {
@@ -225,18 +225,18 @@ else
             </section>
 
             <section aria-labelledby="policy-heading">
-                <h2 id="policy-heading">Credit and policy checks</h2>
+                <h2 id="policy-heading">@LocalizedUiText.Get("Credit and policy checks")</h2>
                 <dl>
-                    <div><dt>Total credits</dt><dd>@_plan.TotalCredits.ToString("0.##")</dd></div>
-                    <div><dt>Maximum allowed</dt><dd>@_plan.MaximumAllowedCredits.ToString("0.##")</dd></div>
-                    <div><dt>Policy version</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Total credits")</dt><dd>@_plan.TotalCredits.ToString("0.##")</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Maximum allowed")</dt><dd>@_plan.MaximumAllowedCredits.ToString("0.##")</dd></div>
+                    <div><dt>@LocalizedUiText.Get("Policy version")</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
                 </dl>
             </section>
 
             @if (_plan.SelectionIssues.Count > 0 || _plan.Conflicts.Count > 0)
             {
                 <section id="registration-blockers" role="alert" aria-live="assertive" tabindex="-1">
-                    <h2>Conflict</h2>
+                    <h2>@LocalizedUiText.Get("Conflict")</h2>
                     <ul>
                         @foreach (var issue in _plan.SelectionIssues)
                         {
@@ -258,18 +258,18 @@ else
             }
 
             <div class="srs-registration-review__actions">
-                <a class="srs-registration-review__action" href="/student/schedule">Edit plan</a>
+                <a class="srs-registration-review__action" href="/student/schedule">@LocalizedUiText.Get("Edit plan")</a>
                 <button @ref="_reviewTrigger"
                         class="srs-registration-review__action"
                         type="button"
                         aria-describedby="@(HasBlockers ? "registration-blockers review-disabled-reason" : null)"
                         disabled="@(HasBlockers || _requestLoading || _processing)"
                         @onclick="ReviewAsync">
-                    Review and submit
+                    @LocalizedUiText.Get("Review and submit")
                 </button>
                 @if (HasBlockers)
                 {
-                    <p id="review-disabled-reason">Resolve every blocker before submission.</p>
+                    <p id="review-disabled-reason">@LocalizedUiText.Get("Resolve every blocker before submission.")</p>
                 }
             </div>
 
@@ -277,12 +277,12 @@ else
                                 DialogId="registration-confirmation"
                                 TitleId="registration-confirmation-title"
                                 DescriptionId="registration-confirmation-description"
-                                Title="Confirm registration"
-                                Message="Submit this complete plan for one atomic server decision?"
-                                ConfirmLabel="Confirm registration"
-                                CancelLabel="Cancel"
+                                Title="@(LocalizedUiText.Get("Confirm registration"))"
+                                Message="@(LocalizedUiText.Get("Submit this complete plan for one atomic server decision?"))"
+                                ConfirmLabel="@(LocalizedUiText.Get("Confirm registration"))"
+                                CancelLabel="@(LocalizedUiText.Get("Cancel"))"
                                 IsBusy="@_requestLoading"
-                                BusyLabel="Submitting one registration request."
+                                BusyLabel="@(LocalizedUiText.Get("Submitting one registration request."))"
                                 IsConfirmDisabled="@_processing"
                                 ErrorMessage="@(_showConfirmation && _state is StaleState or ValidationErrorState ? _safeMessage : null)"
                                 OnConfirm="SubmitAsync"
@@ -305,14 +305,14 @@ else
             var context = contextResult.Value;
             if (!RegistrationPageSupport.IsStudentContext(context))
             {
-                ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", "A Student session is required.", "STU-05-AUTH"));
+            ApplyFailure(HttpStatusCode.Forbidden, new("FORBIDDEN", LocalizedUiText.Get("A Student session is required."), "STU-05-AUTH"));
                 return;
             }
 
             if (context.RegistrationTerm is null
                 || !Guid.TryParse(context.RegistrationTerm.Id, out _termId))
             {
-                ApplyFailure(HttpStatusCode.NotFound, new("REGISTRATION_CONTEXT_NOT_FOUND", "No authorized registration term is available.", "STU-05-CONTEXT"));
+            ApplyFailure(HttpStatusCode.NotFound, new("REGISTRATION_CONTEXT_NOT_FOUND", LocalizedUiText.Get("No authorized registration term is available."), "STU-05-CONTEXT"));
                 return;
             }
 
@@ -454,7 +454,7 @@ else
             _reasonCode = plan.SelectionIssues.FirstOrDefault(issue => issue.Blocking)?.Code
                 ?? plan.Conflicts.FirstOrDefault()?.Code
                 ?? "REGISTRATION_BLOCKED";
-            _safeMessage = "Resolve every server-reported blocker before submission.";
+            _safeMessage = LocalizedUiText.Get("Resolve every server-reported blocker before submission.");
         }
     }
 
@@ -462,7 +462,7 @@ else
     {
         if (!preservePlan) _plan = null;
         _reasonCode = error?.Code ?? "REGISTRATION_REVIEW_UNAVAILABLE";
-        _safeMessage = error?.Message ?? "The registration review could not be completed safely.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The registration review could not be completed safely.");
         _referenceId = error?.CorrelationId;
         _state = _reasonCode == "SESSION_EXPIRED"
             ? SessionExpiredState
@@ -484,7 +484,7 @@ else
         _plan = null;
         _state = OfflineState;
         _reasonCode = "OFFLINE";
-        _safeMessage = "Reconnect, then retry. No registration was queued.";
+        _safeMessage = LocalizedUiText.Get("Reconnect, then retry. No registration was queued.");
         _referenceId = null;
         _showConfirmation = false;
     }

@@ -7,6 +7,8 @@ using StudentRegistration.Client.Features.Operations;
 using StudentRegistration.Client.Features.Registration;
 using StudentRegistration.Client.Features.Scheduling;
 using StudentRegistration.Client.Features.Staff;
+using StudentRegistration.Client.Localization;
+using StudentRegistration.Client.UX;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -21,5 +23,6 @@ builder.Services.AddScoped<AdminOperationsApiClient>();
 builder.Services.AddScoped<RegistrationApiClient>();
 builder.Services.AddScoped<SchedulingApiClient>();
 builder.Services.AddScoped<StaffApiClient>();
+builder.Services.AddSingleton<IUiTextProvider, ResourceUiTextProvider>();
 
 await builder.Build().RunAsync();

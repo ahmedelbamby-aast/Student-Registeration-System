@@ -19,10 +19,11 @@ public sealed class StaffDashboardPageAccessibilityFrozenContractTests
 [Collection(AxeAccessibilityCollection.CollectionName)]
 public sealed class StaffDashboardPageAccessibilityTests(AxeAccessibilityFixture fixture)
 {
-    [Fact]
-    public async Task Stf_01_role_context_assignments_and_navigation_are_accessible()
+    [Theory]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
+    public async Task Stf_01_role_context_assignments_and_navigation_are_accessible(int width, float scale)
     {
-        await using var context = await fixture.OpenContextAsync(375, 1000);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/**", route => Spec016BrowserData.Path(route) switch
         {
@@ -48,5 +49,9 @@ public sealed class StaffDashboardPageAccessibilityTests(AxeAccessibilityFixture
         Assert.True(await roster.IsVisibleAsync());
         Assert.Equal("a", await page.EvaluateAsync<string>(
             "() => document.activeElement.tagName.toLowerCase()"));
+        Assert.True(await roster.EvaluateAsync<bool>(
+            "element => getComputedStyle(element).outlineStyle !== 'none'"));
+        Assert.True(await page.EvaluateAsync<bool>(
+            "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
     }
 }

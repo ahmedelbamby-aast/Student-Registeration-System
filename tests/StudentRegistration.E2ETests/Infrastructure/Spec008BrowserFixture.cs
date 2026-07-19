@@ -113,6 +113,11 @@ public sealed class Spec008BrowserFixture : IAsyncLifetime
 
     private Process StartClientHost(Uri address)
     {
+        var configuration = Environment.GetEnvironmentVariable(
+            "STUDENTREGISTRATION_BROWSER_CONFIGURATION");
+        configuration = string.Equals(configuration, "Release", StringComparison.OrdinalIgnoreCase)
+            ? "Release"
+            : "Debug";
         var startInfo = new ProcessStartInfo("dotnet")
         {
             CreateNoWindow = true,
@@ -126,7 +131,7 @@ public sealed class Spec008BrowserFixture : IAsyncLifetime
         startInfo.ArgumentList.Add(RepositoryFiles.PathTo(
             "src/StudentRegistration.Client/StudentRegistration.Client.csproj"));
         startInfo.ArgumentList.Add("--configuration");
-        startInfo.ArgumentList.Add("Debug");
+        startInfo.ArgumentList.Add(configuration);
         startInfo.ArgumentList.Add("--no-build");
         startInfo.ArgumentList.Add("--no-restore");
         startInfo.ArgumentList.Add("--no-launch-profile");

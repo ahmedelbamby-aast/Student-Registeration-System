@@ -1,13 +1,13 @@
 @page "/account/recovery"
 @inject IdentityApiClient IdentityApi
 
-<PageTitle>Account recovery</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Account recovery")</PageTitle>
 
 <IdentityPageShell HeadingId="account-recovery-heading"
-                   Heading="Account recovery"
-                   Introduction="Request recovery without revealing whether an account exists, or complete recovery with the code you received.">
+                   Heading="@(LocalizedUiText.Get("Account recovery"))"
+                   Introduction="@(LocalizedUiText.Get("Request recovery without revealing whether an account exists, or complete recovery with the code you received."))">
     <IdentityFeedback IsBusy="@(IsRequesting || IsCompleting)"
-                      BusyMessage="Submitting one recovery request."
+                      BusyMessage="@(LocalizedUiText.Get("Submitting one recovery request."))"
                       IsError="@_feedbackIsError"
                       Heading="@_feedbackHeading"
                       Message="@_feedbackMessage"
@@ -16,15 +16,15 @@
                       CorrelationId="@_correlationId" />
 
     <section class="srs-recovery-step" aria-labelledby="recovery-request-heading">
-        <h2 id="recovery-request-heading">Request recovery</h2>
+        <h2 id="recovery-request-heading">@LocalizedUiText.Get("Request recovery")</h2>
         <form @onsubmit="RequestAsync" @onsubmit:preventDefault data-testid="recovery-request-form">
             <AccessibleValidationSummary SummaryId="recovery-request-errors"
-                                         Heading="Review the recovery request"
+                                         Heading="@(LocalizedUiText.Get("Review the recovery request"))"
                                          Errors="@_requestErrors" />
 
             <FormField InputId="recovery-identifier"
                        Name="universityIdOrUserName"
-                       Label="University ID or Staff username"
+                       Label="@(LocalizedUiText.Get("University ID or Staff username"))"
                        Type="text"
                        autocomplete="username"
                        Required="true"
@@ -35,21 +35,21 @@
             <button class="srs-identity-command"
                     type="submit"
                     disabled="@(IsRequesting || IsCompleting)">
-                @(IsRequesting ? "Requesting…" : "Request recovery")
+                @(IsRequesting ? LocalizedUiText.Get("Requesting…") : LocalizedUiText.Get("Request recovery"))
             </button>
         </form>
     </section>
 
     <section class="srs-recovery-step" aria-labelledby="recovery-complete-heading">
-        <h2 id="recovery-complete-heading">Complete recovery</h2>
+        <h2 id="recovery-complete-heading">@LocalizedUiText.Get("Complete recovery")</h2>
         <form @onsubmit="CompleteAsync" @onsubmit:preventDefault data-testid="recovery-complete-form">
             <AccessibleValidationSummary SummaryId="recovery-complete-errors"
-                                         Heading="Review the recovery details"
+                                         Heading="@(LocalizedUiText.Get("Review the recovery details"))"
                                          Errors="@_completeErrors" />
 
             <FormField InputId="recovery-code"
                        Name="challengeToken"
-                       Label="Recovery code"
+                       Label="@(LocalizedUiText.Get("Recovery code"))"
                        Type="password"
                        autocomplete="one-time-code"
                        AllowSecretReveal="true"
@@ -60,8 +60,8 @@
 
             <FormField InputId="recovery-new-password"
                        Name="newPassword"
-                       Label="New password"
-                       Description="Use 15 to 128 characters. Spaces and Unicode are allowed."
+                       Label="@(LocalizedUiText.Get("New password"))"
+                       Description="@(LocalizedUiText.Get("Use 15 to 128 characters. Spaces and Unicode are allowed."))"
                        Type="password"
                        autocomplete="new-password"
                        AllowSecretReveal="true"
@@ -72,7 +72,7 @@
 
             <FormField InputId="recovery-confirm-password"
                        Name="confirmPassword"
-                       Label="Confirm new password"
+                       Label="@(LocalizedUiText.Get("Confirm new password"))"
                        Type="password"
                        autocomplete="new-password"
                        AllowSecretReveal="true"
@@ -84,15 +84,15 @@
             <button class="srs-identity-command"
                     type="submit"
                     disabled="@(IsRequesting || IsCompleting)">
-                @(IsCompleting ? "Completing…" : "Complete recovery")
+                @(IsCompleting ? LocalizedUiText.Get("Completing…") : LocalizedUiText.Get("Complete recovery"))
             </button>
         </form>
     </section>
 </IdentityPageShell>
 
 @code {
-    private const string GenericRequestConfirmation =
-        "If an eligible account matches, recovery instructions have been sent.";
+    private static readonly string GenericRequestConfirmation =
+        LocalizedUiText.Get("If an eligible account matches, recovery instructions have been sent.");
 
     private string _identifier = string.Empty;
     private string _challengeToken = string.Empty;
@@ -100,7 +100,7 @@
     private string _confirmPassword = string.Empty;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Recovery status";
+    private string _feedbackHeading = LocalizedUiText.Get("Recovery status");
     private string? _feedbackState;
     private string? _correlationId;
     private bool _feedbackIsError;
@@ -126,7 +126,7 @@
                 new RecoveryRequest(_identifier));
             if (result.IsSuccess)
             {
-                _feedbackHeading = "Check your recovery channel";
+                _feedbackHeading = LocalizedUiText.Get("Check your recovery channel");
                 _feedbackMessage = GenericRequestConfirmation;
                 _feedbackState = "success";
                 _feedbackIsError = false;
@@ -161,8 +161,8 @@
             ClearSecrets();
             if (result.IsSuccess)
             {
-                _feedbackHeading = "Recovery complete";
-                _feedbackMessage = "Your password was changed. You can now sign in.";
+                _feedbackHeading = LocalizedUiText.Get("Recovery complete");
+                _feedbackMessage = LocalizedUiText.Get("Your password was changed. You can now sign in.");
                 _feedbackState = "success";
                 _feedbackIsError = false;
                 return;
@@ -186,7 +186,7 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrWhiteSpace(_identifier))
         {
-            errors.Add(new("recovery-identifier", "Enter a University ID or Staff username."));
+            errors.Add(new("recovery-identifier", LocalizedUiText.Get("Enter a University ID or Staff username.")));
         }
 
         _requestErrors = errors;
@@ -198,17 +198,17 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrWhiteSpace(_challengeToken))
         {
-            errors.Add(new("recovery-code", "Enter the recovery code."));
+            errors.Add(new("recovery-code", LocalizedUiText.Get("Enter the recovery code.")));
         }
 
         if (_newPassword.Length is < 15 or > 128)
         {
-            errors.Add(new("recovery-new-password", "Use a password from 15 to 128 characters."));
+            errors.Add(new("recovery-new-password", LocalizedUiText.Get("Use a password from 15 to 128 characters.")));
         }
 
         if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
         {
-            errors.Add(new("recovery-confirm-password", "The new passwords must match."));
+            errors.Add(new("recovery-confirm-password", LocalizedUiText.Get("The new passwords must match.")));
         }
 
         _completeErrors = errors;
@@ -225,8 +225,8 @@
     {
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode is "CHALLENGE_INVALID" or "PASSWORD_REJECTED"
-            ? "Recovery not accepted"
-            : "Recovery service unavailable";
+            ? LocalizedUiText.Get("Recovery not accepted")
+            : LocalizedUiText.Get("Recovery service unavailable");
         _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
         _feedbackState = IdentityPageFeedback.MapFailure(
             IdentityRouteStateMapper.AccountRecoveryRecord,

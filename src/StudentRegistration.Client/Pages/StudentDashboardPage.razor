@@ -9,7 +9,7 @@
 @using StudentRegistration.Contracts.Academics
 @inject AcademicApiClient AcademicApi
 
-<PageTitle>Student dashboard | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Student dashboard | Student Registration")</PageTitle>
 
 @if (_isLoading)
 {
@@ -18,34 +18,33 @@
          data-state="loading"
          data-contract-state="STU-01-COMP-STATE-LOADING"
          data-contract-id="STU-01-CONTRACT-T148">
-        <a class="srs-dashboard-skip-link" href="#main-content">Skip to main content</a>
+        <a class="srs-dashboard-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <header class="srs-dashboard-standalone-header" role="banner">
             <img src="/brand/aastmt-logo.png"
-                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
             <div>
-                <strong>AASTMT Student Registration</strong>
-                <span>Student academic services</span>
+                <strong>@LocalizedUiText.Get("AASTMT Student Registration")</strong>
+                <span>@LocalizedUiText.Get("Student academic services")</span>
             </div>
         </header>
         <main id="main-content"
               data-testid="student-dashboard-page"
               tabindex="-1">
             <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
-                Student dashboard
+                @LocalizedUiText.Get("Student dashboard")
             </h1>
             <section data-testid="student-dashboard-loading"
                      role="status"
                      aria-live="polite"
                      aria-busy="true">
-                <h2>Loading your academic context</h2>
+                <h2>@LocalizedUiText.Get("Loading your academic context")</h2>
                 <p>
-                    Checking the server date, academic term, registration window,
-                    profile, and holds.
+                    @LocalizedUiText.Get("Checking the server date, academic term, registration window, profile, and holds.")
                 </p>
             </section>
         </main>
         <footer class="srs-dashboard-standalone-footer" role="contentinfo">
-            <span>AASTMT academic services demo</span>
+            <span>@LocalizedUiText.Get("AASTMT academic services demo")</span>
         </footer>
     </div>
 }
@@ -55,24 +54,24 @@ else if (UseAuthenticatedShell && _shellContext is not null)
         <AppShell Context="@_shellContext"
                   IsLoading="false"
                   MainContentId="main-content"
-                  SkipLinkLabel="Skip to main content"
+                  SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
                   BrandLogoSource="/brand/aastmt-logo.png"
-                  BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-                  ServerDateTimeLabel="Server date and time"
-                  TeachingTermLabel="Teaching term"
-                  RegistrationTermLabel="Registration term"
-                  RegistrationWindowLabel="Registration window"
-                  NoTeachingTermLabel="No current teaching term"
-                  NoRegistrationTermLabel="No current registration term"
-                  NoRegistrationWindowLabel="No registration window"
-                  AuthorizedRolesLabel="Authorized roles"
-                  ActiveRoleLabel="Active role"
-                  SessionLabel="Session"
-                  ServiceLabel="Service"
-                  SupportLinkLabel="Open support"
-                  LoadingLabel="Loading Student dashboard">
+                  BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+                  ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+                  TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+                  RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+                  RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+                  NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+                  NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+                  NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+                  AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+                  ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+                  SessionLabel="@(LocalizedUiText.Get("Session"))"
+                  ServiceLabel="@(LocalizedUiText.Get("Service"))"
+                  SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+                  LoadingLabel="@(LocalizedUiText.Get("Loading Student dashboard"))">
             <Navigation>
-                <RoleNavigation AccessibleName="Student role navigation"
+                <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
                                 Items="@StudentNavigation" />
             </Navigation>
             <ChildContent>
@@ -88,13 +87,12 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                      data-visual-test="STU-01-VIS-T151">
                     <header class="srs-student-dashboard__intro">
                         <div>
-                            <p class="srs-student-dashboard__eyebrow">Student academic services</p>
+                            <p class="srs-student-dashboard__eyebrow">@LocalizedUiText.Get("Student academic services")</p>
                             <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
-                                Student dashboard
+                                @LocalizedUiText.Get("Student dashboard")
                             </h1>
                             <p>
-                                Review the server-authoritative academic and registration
-                                status before continuing.
+                                @LocalizedUiText.Get("Review the server-authoritative academic and registration status before continuing.")
                             </p>
                         </div>
                         <button type="button"
@@ -102,7 +100,7 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                                 data-testid="student-dashboard-refresh"
                                 disabled="@_isRefreshing"
                                 @onclick="RefreshDashboardAsync">
-                            @(_isRefreshing ? "Refreshing dashboard…" : "Refresh dashboard")
+                            @(_isRefreshing ? LocalizedUiText.Get("Refreshing dashboard…") : LocalizedUiText.Get("Refresh dashboard"))
                         </button>
                     </header>
 
@@ -117,37 +115,37 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                         <section class="srs-dashboard-card"
                                  role="region"
                                  aria-labelledby="academic-summary-heading">
-                            <h2 id="academic-summary-heading">Academic summary</h2>
+                            <h2 id="academic-summary-heading">@LocalizedUiText.Get("Academic summary")</h2>
                             @if (_academicContext is not null)
                             {
                                 <dl class="srs-dashboard-facts">
                                     <div>
-                                        <dt>University ID</dt>
+                                        <dt>@LocalizedUiText.Get("University ID")</dt>
                                         <dd>@_academicContext.UniversityId</dd>
                                     </div>
                                     <div>
-                                        <dt>Program</dt>
+                                        <dt>@LocalizedUiText.Get("Program")</dt>
                                         <dd>@_academicContext.ProgramCode</dd>
                                     </div>
                                     <div>
-                                        <dt>Cohort</dt>
+                                        <dt>@LocalizedUiText.Get("Cohort")</dt>
                                         <dd>@_academicContext.Cohort</dd>
                                     </div>
                                     <div>
-                                        <dt>GPA</dt>
-                                        <dd>@_academicContext.CurrentGpa.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                                        <dt>@LocalizedUiText.Get("GPA")</dt>
+                                        <dd>@_academicContext.CurrentGpa.ToString("0.00", CultureInfo.CurrentCulture)</dd>
                                     </div>
                                     <div>
-                                        <dt>Earned credits</dt>
-                                        <dd>@_academicContext.EarnedCredits.ToString("0.##", CultureInfo.InvariantCulture)</dd>
+                                        <dt>@LocalizedUiText.Get("Earned credits")</dt>
+                                        <dd>@_academicContext.EarnedCredits.ToString("0.##", CultureInfo.CurrentCulture)</dd>
                                     </div>
                                     <div>
-                                        <dt>Standing</dt>
+                                        <dt>@LocalizedUiText.Get("Standing")</dt>
                                         <dd>@_academicContext.Standing</dd>
                                     </div>
                                 </dl>
                                 <p class="srs-dashboard-data-version">
-                                    Academic data as of
+                                    @LocalizedUiText.Get("Academic data as of")
                                     <time datetime="@UtcInstant(_academicContext.DataAsOfUtc)">
                                         @FormatCompactDateTime(_academicContext.DataAsOfUtc)
                                     </time>
@@ -155,20 +153,19 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                             }
                             else
                             {
-                                <p>Academic profile details are unavailable until the stated blocker is resolved.</p>
+                                <p>@LocalizedUiText.Get("Academic profile details are unavailable until the stated blocker is resolved.")</p>
                             }
                         </section>
 
                         <section class="srs-dashboard-card"
                                  role="region"
                                  aria-labelledby="registration-summary-heading">
-                            <h2 id="registration-summary-heading">Registration status</h2>
+                            <h2 id="registration-summary-heading">@LocalizedUiText.Get("Registration status")</h2>
                             @if (_appContext!.RegistrationTerm is null)
                             {
-                                <h3>No current registration term</h3>
+                                <h3>@LocalizedUiText.Get("No current registration term")</h3>
                                 <p>
-                                    The server has not published a current registration term.
-                                    Refresh the context later or use the support reference.
+                                    @LocalizedUiText.Get("The server has not published a current registration term. Refresh the context later or use the support reference.")
                                 </p>
                             }
                             else
@@ -195,7 +192,7 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                                  data-testid="registration-blockers"
                                  aria-labelledby="registration-blockers-heading"
                                  aria-live="assertive">
-                            <h2 id="registration-blockers-heading">Registration blocked</h2>
+                            <h2 id="registration-blockers-heading">@LocalizedUiText.Get("Registration blocked")</h2>
                             <p class="srs-dashboard-reason"
                                data-reason-code="@_reasonCode">@_reasonCode</p>
                             @if (_academicContext is not null)
@@ -219,12 +216,12 @@ else if (UseAuthenticatedShell && _shellContext is not null)
 
                     <section class="srs-dashboard-registration-action"
                              aria-labelledby="registration-action-heading">
-                        <h2 id="registration-action-heading">Online registration</h2>
+                        <h2 id="registration-action-heading">@LocalizedUiText.Get("Online registration")</h2>
                         @if (RegistrationEnabled)
                         {
                             <a class="srs-dashboard-primary-action"
                                data-testid="registration-primary-action"
-                               href="/student/subjects">Start registration</a>
+                               href="/student/subjects">@LocalizedUiText.Get("Start registration")</a>
                         }
                         else
                         {
@@ -235,7 +232,7 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                                     disabled
                                     aria-disabled="true"
                                     aria-describedby="@RegistrationActionDescriptionId">
-                                Start registration
+                                @LocalizedUiText.Get("Start registration")
                             </button>
                         }
                         @* The exact future SPEC-015 transition remains documented but is
@@ -248,17 +245,17 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                              aria-labelledby="current-timetable-heading"
                              data-testid="current-timetable-unavailable"
                              data-contributor-state="unavailable">
-                        <h2 id="current-timetable-heading">Current timetable</h2>
-                        <p>Current timetable is unavailable until SPEC-015 is delivered.</p>
+                        <h2 id="current-timetable-heading">@LocalizedUiText.Get("Current timetable")</h2>
+                        <p>@LocalizedUiText.Get("Current timetable is unavailable until SPEC-015 is delivered.")</p>
                         <p>
-                            Pending owner endpoint:
+                            @LocalizedUiText.Get("Pending owner endpoint:")
                             <code>/api/student/registrations/current/timetable</code>
                         </p>
                     </section>
 
-                    <nav class="srs-dashboard-related-links" aria-label="Student account and registration links">
-                        <a href="/student/registrations">Current registrations</a>
-                        <a href="/student/account">Account</a>
+                    <nav class="srs-dashboard-related-links" aria-label="@(LocalizedUiText.Get("Student account and registration links"))">
+                        <a href="/student/registrations">@LocalizedUiText.Get("Current registrations")</a>
+                        <a href="/student/account">@LocalizedUiText.Get("Account")</a>
                     </nav>
                 </div>
             </ChildContent>
@@ -271,20 +268,20 @@ else
          data-route-id="STU-01"
          data-state="@StateToken"
          data-contract-state="@ContractStateId">
-        <a class="srs-dashboard-skip-link" href="#main-content">Skip to main content</a>
+        <a class="srs-dashboard-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <header class="srs-dashboard-standalone-header" role="banner">
             <img src="/brand/aastmt-logo.png"
-                 alt="Arab Academy for Science, Technology and Maritime Transport" />
+                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
             <div>
-                <strong>AASTMT Student Registration</strong>
-                <span>Student academic services</span>
+                <strong>@LocalizedUiText.Get("AASTMT Student Registration")</strong>
+                <span>@LocalizedUiText.Get("Student academic services")</span>
             </div>
         </header>
         <main id="main-content"
               data-testid="student-dashboard-page"
               tabindex="-1">
             <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
-                Student dashboard
+                @LocalizedUiText.Get("Student dashboard")
             </h1>
             @if (IsAssertiveState)
             {
@@ -306,7 +303,7 @@ else
             }
         </main>
         <footer class="srs-dashboard-standalone-footer" role="contentinfo">
-            <a href="/status/support">Open safe support path</a>
+            <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
         </footer>
     </div>
 }
@@ -337,7 +334,7 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new("Student dashboard", "/student", IsActive: true)
+        new(LocalizedUiText.Get("Student dashboard"), "/student", IsActive: true)
     ];
 
     private AppContextDto? _appContext;
@@ -349,7 +346,7 @@ else
     private bool _isRefreshing;
     private bool _focusHeading;
     private string _reasonCode = ContextUnavailable;
-    private string _safeMessage = "Student dashboard context could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Student dashboard context could not be loaded.");
     private string? _referenceId;
 
     private string StateToken => _state switch
@@ -418,32 +415,32 @@ else
     private string WindowDescription => _appContext?.RegistrationWindow switch
     {
         { State: RegistrationWindowState.Open } window =>
-            $"Registration is open and closes {FormatDateTime(window.ClosesAtUtc)} ({_appContext.TimeZoneId}).",
+            LocalizedUiText.Format("Registration is open and closes {0} ({1}).", FormatDateTime(window.ClosesAtUtc), _appContext.TimeZoneId),
         { State: RegistrationWindowState.Upcoming } window =>
-            $"Registration opens {FormatDateTime(window.OpensAtUtc)} ({_appContext.TimeZoneId}).",
+            LocalizedUiText.Format("Registration opens {0} ({1}).", FormatDateTime(window.OpensAtUtc), _appContext.TimeZoneId),
         { State: RegistrationWindowState.Closed } window =>
-            $"Registration closed {FormatDateTime(window.ClosesAtUtc)} ({_appContext.TimeZoneId}).",
-        _ => "No registration window is available."
+            LocalizedUiText.Format("Registration closed {0} ({1}).", FormatDateTime(window.ClosesAtUtc), _appContext.TimeZoneId),
+        _ => LocalizedUiText.Get("No registration window is available.")
     };
 
     private string RegistrationActionReason => _state switch
     {
-        RouteUiState.ValidationError => "Resolve the listed blocker before starting registration.",
-        RouteUiState.Stale => "Registration is closed. Refresh the dashboard before continuing.",
-        RouteUiState.Empty => "Registration cannot start until the server publishes a registration term.",
+        RouteUiState.ValidationError => LocalizedUiText.Get("Resolve the listed blocker before starting registration."),
+        RouteUiState.Stale => LocalizedUiText.Get("Registration is closed. Refresh the dashboard before continuing."),
+        RouteUiState.Empty => LocalizedUiText.Get("Registration cannot start until the server publishes a registration term."),
         _ when _appContext?.RegistrationWindowState is RegistrationWindowState.Upcoming =>
-            "Registration has not opened. Review the server opening time above.",
-        _ => "Registration is not currently available."
+            LocalizedUiText.Get("Registration has not opened. Review the server opening time above."),
+        _ => LocalizedUiText.Get("Registration is not currently available.")
     };
 
     private string DashboardStatusText => _isRefreshing
-        ? "Refreshing server-authoritative dashboard context."
+        ? LocalizedUiText.Get("Refreshing server-authoritative dashboard context.")
         : _state switch
         {
-            RouteUiState.Empty => "No registration term is currently published.",
-            RouteUiState.ValidationError => "Registration is blocked until the listed issue is resolved.",
-            RouteUiState.Stale => "The registration window is closed or changed; refresh before continuing.",
-            _ => "Student dashboard context is current."
+            RouteUiState.Empty => LocalizedUiText.Get("No registration term is currently published."),
+            RouteUiState.ValidationError => LocalizedUiText.Get("Registration is blocked until the listed issue is resolved."),
+            RouteUiState.Stale => LocalizedUiText.Get("The registration window is closed or changed; refresh before continuing."),
+            _ => LocalizedUiText.Get("Student dashboard context is current.")
         };
 
     private RenderFragment FailureContent => @<text>
@@ -452,26 +449,26 @@ else
         <p>@_safeMessage</p>
         @if (!string.IsNullOrWhiteSpace(_referenceId))
         {
-            <p>Reference <strong>@_referenceId</strong></p>
+            <p>@LocalizedUiText.Get("Reference") <strong>@_referenceId</strong></p>
         }
         <div class="srs-dashboard-failure__actions">
             <button type="button"
                     data-testid="student-dashboard-refresh"
                     disabled="@_isRefreshing"
                     @onclick="RefreshDashboardAsync">
-                @(_isRefreshing ? "Refreshing dashboard…" : "Refresh dashboard")
+                @(_isRefreshing ? LocalizedUiText.Get("Refreshing dashboard…") : LocalizedUiText.Get("Refresh dashboard"))
             </button>
-            <a href="/student/login">Sign in again</a>
+            <a href="/student/login">@LocalizedUiText.Get("Sign in again")</a>
         </div>
     </text>;
 
     private string FailureHeading => _state switch
     {
-        RouteUiState.Unauthorized => "Student dashboard access denied",
-        RouteUiState.SessionExpired => "Session expired",
-        RouteUiState.Offline => "Offline Student dashboard status",
-        RouteUiState.Stale => "Student dashboard context changed",
-        _ => "Student dashboard unavailable"
+        RouteUiState.Unauthorized => LocalizedUiText.Get("Student dashboard access denied"),
+        RouteUiState.SessionExpired => LocalizedUiText.Get("Session expired"),
+        RouteUiState.Offline => LocalizedUiText.Get("Offline Student dashboard status"),
+        RouteUiState.Stale => LocalizedUiText.Get("Student dashboard context changed"),
+        _ => LocalizedUiText.Get("Student dashboard unavailable")
     };
 
     protected override Task OnInitializedAsync() =>
@@ -535,7 +532,7 @@ else
                 ApplyFailure(
                     new ApiError(
                         Forbidden,
-                        "The active server role is not authorized for the Student dashboard.",
+                        LocalizedUiText.Get("The active server role is not authorized for the Student dashboard."),
                         "STU-01-AUTHORIZATION"),
                     HttpStatusCode.Forbidden);
                 return;
@@ -549,7 +546,7 @@ else
                 ApplyFailure(
                     new ApiError(
                         code,
-                        "Student academic services are temporarily unavailable.",
+                        LocalizedUiText.Get("Student academic services are temporarily unavailable."),
                         "STU-01-SERVICE"),
                     HttpStatusCode.ServiceUnavailable);
                 return;
@@ -570,7 +567,7 @@ else
             ResetLoadedData();
             _state = RouteUiState.Offline;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach Student academic services. Reconnect and refresh the dashboard.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach Student academic services. Reconnect and refresh the dashboard.");
         }
         finally
         {
@@ -586,7 +583,7 @@ else
         {
             _state = RouteUiState.Empty;
             _reasonCode = "NO_REGISTRATION_TERM";
-            _safeMessage = "The server has not published a current registration term.";
+            _safeMessage = LocalizedUiText.Get("The server has not published a current registration term.");
             return;
         }
 
@@ -594,7 +591,7 @@ else
         {
             _state = RouteUiState.ValidationError;
             _reasonCode = RegistrationHold;
-            _safeMessage = "Registration is blocked by the listed active hold.";
+            _safeMessage = LocalizedUiText.Get("Registration is blocked by the listed active hold.");
             return;
         }
 
@@ -602,19 +599,19 @@ else
         {
             _state = RouteUiState.Stale;
             _reasonCode = WindowClosed;
-            _safeMessage = "The server reports that the registration window is closed.";
+            _safeMessage = LocalizedUiText.Get("The server reports that the registration window is closed.");
             return;
         }
 
         _state = RouteUiState.Success;
         _reasonCode = "AVAILABLE";
-        _safeMessage = "Student dashboard context is available.";
+        _safeMessage = LocalizedUiText.Get("Student dashboard context is available.");
     }
 
     private void ApplyFailure(ApiError? error, HttpStatusCode statusCode)
     {
         _reasonCode = error?.Code ?? ContextUnavailable;
-        _safeMessage = error?.Message ?? "Student dashboard context could not be loaded.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("Student dashboard context could not be loaded.");
         _referenceId = error?.CorrelationId;
 
         _state = _reasonCode switch
@@ -687,8 +684,8 @@ else
         value.ToString("O", CultureInfo.InvariantCulture);
 
     private static string FormatDateTime(DateTime value) =>
-        value.ToString("dd MMMM yyyy 'at' HH:mm 'UTC'", CultureInfo.InvariantCulture);
+        value.ToString("f", CultureInfo.CurrentCulture);
 
     private static string FormatCompactDateTime(DateTime value) =>
-        value.ToString("dd MMM yyyy 'at' HH:mm 'UTC'", CultureInfo.InvariantCulture);
+        value.ToString("g", CultureInfo.CurrentCulture);
 }

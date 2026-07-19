@@ -107,7 +107,7 @@
             || !VisiblePages.Contains(CurrentPage))
         {
             throw new ArgumentException(
-                "Visible pages must be unique, bounded, and contain the current page.",
+                LocalizedUiText.Get("Visible pages must be unique, bounded, and contain the current page."),
                 nameof(VisiblePages));
         }
 

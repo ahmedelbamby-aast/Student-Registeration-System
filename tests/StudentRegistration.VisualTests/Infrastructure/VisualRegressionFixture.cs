@@ -134,6 +134,7 @@ public sealed class VisualRegressionFixture : IAsyncLifetime
 
     private Process StartHost()
     {
+        var configuration = ResolveBrowserConfiguration();
         var startInfo = new ProcessStartInfo("dotnet")
         {
             CreateNoWindow = true,
@@ -147,7 +148,7 @@ public sealed class VisualRegressionFixture : IAsyncLifetime
                      "run", "--project",
                      RepositoryFiles.PathTo(
                          "src/StudentRegistration.Client/StudentRegistration.Client.csproj"),
-                     "--configuration", "Debug", "--no-build", "--no-restore",
+                     "--configuration", configuration, "--no-build", "--no-restore",
                      "--no-launch-profile", "--", "--urls",
                      BaseAddress.AbsoluteUri.TrimEnd('/')
                  })
@@ -162,6 +163,29 @@ public sealed class VisualRegressionFixture : IAsyncLifetime
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         return process;
+    }
+
+    private static string ResolveBrowserConfiguration()
+    {
+        var configured = Environment.GetEnvironmentVariable(
+            "STUDENTREGISTRATION_BROWSER_CONFIGURATION");
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            return "Debug";
+        }
+
+        if (string.Equals(configured, "Debug", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Debug";
+        }
+
+        if (string.Equals(configured, "Release", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Release";
+        }
+
+        throw new InvalidOperationException(
+            "STUDENTREGISTRATION_BROWSER_CONFIGURATION must be Debug or Release.");
     }
 
     private void CaptureOutput(object sender, DataReceivedEventArgs args)

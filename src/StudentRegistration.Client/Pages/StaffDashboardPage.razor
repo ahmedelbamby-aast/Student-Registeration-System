@@ -1,4 +1,5 @@
 @page "/staff"
+@using System.Globalization
 @using System.Net
 @using StudentRegistration.Client.Components.Display
 @using StudentRegistration.Client.Components.Layout
@@ -12,47 +13,47 @@
 @inject IdentityApiClient IdentityApi
 @inject StaffApiClient StaffApi
 
-<PageTitle>Staff workspace | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Staff workspace | Student Registration")</PageTitle>
 
 @if (_loading)
 {
     <div data-route-id="STF-01" data-state="loading" data-contract-state="STF-01-COMP-STATE-LOADING">
-        <a href="#main-content">Skip to main content</a>
+        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1">
-            <h1>Staff workspace</h1>
-            <p role="status" aria-live="polite" aria-busy="true">Loading authorized assignments.</p>
+            <h1>@LocalizedUiText.Get("Staff workspace")</h1>
+            <p role="status" aria-live="polite" aria-busy="true">@LocalizedUiText.Get("Loading authorized assignments.")</p>
         </main>
     </div>
 }
 else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="Skip to main content" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time" TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term" RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term" NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window" AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role" SessionLabel="Session" ServiceLabel="Service"
-              SupportLinkLabel="Open support" LoadingLabel="Loading staff workspace">
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading staff workspace"))">
         <Navigation>
-            <RoleNavigation AccessibleName="Staff role navigation" Items="@StaffNavigation" />
+            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" />
         </Navigation>
         <ChildContent>@DashboardContent</ChildContent>
     </AppShell>
 }
 else
 {
-    <a href="#main-content">Skip to main content</a>
+    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
     <main id="main-content" tabindex="-1">@DashboardContent</main>
 }
 
 @code {
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
     [
-        new("Staff home", "/staff", IsActive: true),
-        new("Timetable", "/staff/timetable"),
-        new("Availability", "/staff/availability")
+        new(LocalizedUiText.Get("Staff home"), "/staff", IsActive: true),
+        new(LocalizedUiText.Get("Timetable"), "/staff/timetable"),
+        new(LocalizedUiText.Get("Availability"), "/staff/availability")
     ];
 
     private FrontendAppContextView? _shellContext;
@@ -61,7 +62,7 @@ else
     private string? _selectedRole;
     private string _state = "loading";
     private string _reasonCode = "STAFF_WORKSPACE_UNAVAILABLE";
-    private string _message = "The staff workspace could not be loaded safely.";
+    private string _message = LocalizedUiText.Get("The staff workspace could not be loaded safely.");
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
@@ -81,35 +82,35 @@ else
     private RenderFragment DashboardContent => @<article data-route-id="STF-01"
         data-state="@_state" data-contract-state="@ContractState">
         <header>
-            <p>Lecturer and Teaching Assistant workspace</p>
-            <h1>Staff workspace</h1>
+            <p>@LocalizedUiText.Get("Lecturer and Teaching Assistant workspace")</p>
+            <h1>@LocalizedUiText.Get("Staff workspace")</h1>
             @if (_context?.ActiveRole is { } activeRole)
             {
-                <p><strong>Role context:</strong> @RoleLabel(activeRole)</p>
+                <p><strong>@LocalizedUiText.Get("Role context:")</strong> @RoleLabel(activeRole)</p>
             }
         </header>
 
         @if (_context?.SessionState is SessionState.RoleSelectionRequired)
         {
             <section aria-labelledby="role-context-heading">
-                <h2 id="role-context-heading">Role selection required</h2>
-                <p>Select one server-authorized context before assignments load. Roles are never combined.</p>
+                <h2 id="role-context-heading">@LocalizedUiText.Get("Role selection required")</h2>
+                <p>@LocalizedUiText.Get("Select one server-authorized context before assignments load. Roles are never combined.")</p>
                 @if (_state == "validation-error")
                 {
                     <div role="alert" aria-live="assertive" tabindex="-1">
-                        <h3>Context selection needs attention</h3>
+                        <h3>@LocalizedUiText.Get("Context selection needs attention")</h3>
                         <p><strong>@_reasonCode</strong> @_message</p>
                     </div>
                 }
-                <label for="staff-role-context">Authorized role context</label>
+                <label for="staff-role-context">@LocalizedUiText.Get("Authorized role context")</label>
                 <select id="staff-role-context" @bind="_selectedRole" disabled="@_requesting">
-                    <option value="">Select a role</option>
+                    <option value="">@LocalizedUiText.Get("Select a role")</option>
                     @foreach (var role in _context.AuthorizedRoles.Where(StaffPageSupport.IsStaffRole))
                     {
                         <option value="@role">@RoleLabel(role)</option>
                     }
                 </select>
-                <button type="button" disabled="@_requesting" @onclick="SwitchContextAsync">Switch context</button>
+                <button type="button" disabled="@_requesting" @onclick="SwitchContextAsync">@LocalizedUiText.Get("Switch context")</button>
             </section>
         }
         else if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
@@ -120,36 +121,36 @@ else
                 <p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference))
                 {
-                    <p>Reference: @_reference</p>
+                    <p>@LocalizedUiText.Get("Reference:") @_reference</p>
                 }
                 @if (_state is "service-error" or "offline")
                 {
-                    <button type="button" disabled="@_requesting" @onclick="LoadAsync">Retry</button>
+                    <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
                 }
-                <a href="/">Return to authorized home</a>
+                <a href="/">@LocalizedUiText.Get("Return to authorized home")</a>
             </section>
         }
         else if (_state == "stale")
         {
             <section role="status" aria-live="polite">
-                <h2>Assignments changed</h2>
+                <h2>@LocalizedUiText.Get("Assignments changed")</h2>
                 <p><strong>@_reasonCode</strong> @_message</p>
-                <button type="button" disabled="@_requesting" @onclick="LoadAsync">Refresh assignments</button>
+                <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh assignments")</button>
             </section>
         }
         else if (_state == "empty")
         {
             <section aria-labelledby="no-assignments-heading">
-                <h2 id="no-assignments-heading">No authorized assignments</h2>
-                <p>No current lecture, tutorial, or laboratory assignment is available for this role context.</p>
-                <a href="/staff/availability">Open availability</a>
+                <h2 id="no-assignments-heading">@LocalizedUiText.Get("No authorized assignments")</h2>
+                <p>@LocalizedUiText.Get("No current lecture, tutorial, or laboratory assignment is available for this role context.")</p>
+                <a href="/staff/availability">@LocalizedUiText.Get("Open availability")</a>
             </section>
         }
         else
         {
             <section aria-labelledby="assignment-heading">
-                <h2 id="assignment-heading">Authorized assignments</h2>
-                <p role="status">@_assignments.Count assigned groups</p>
+                <h2 id="assignment-heading">@LocalizedUiText.Get("Authorized assignments")</h2>
+                <p role="status">@_assignments.Count @LocalizedUiText.Get("assigned groups")</p>
                 <div>
                     @foreach (var assignment in _assignments)
                     {
@@ -158,33 +159,33 @@ else
                             <ChildContent>
                                 <p>@assignment.SubjectTitle</p>
                                 <dl>
-                                    <div><dt>Role</dt><dd>@RoleLabel(assignment.StaffRole)</dd></div>
-                                    <div><dt>Capacity</dt><dd>@assignment.Group.Capacity</dd></div>
-                                    <div><dt>Active roster count</dt><dd>@assignment.RosterCount</dd></div>
-                                    <div><dt>Role partners</dt><dd>@PartnerNames(assignment)</dd></div>
-                                    <div><dt>Meetings</dt><dd>@MeetingSummary(assignment)</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Role")</dt><dd>@RoleLabel(assignment.StaffRole)</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Capacity")</dt><dd>@assignment.Group.Capacity</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Active roster count")</dt><dd>@assignment.RosterCount</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Role partners")</dt><dd>@PartnerNames(assignment)</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Meetings")</dt><dd>@MeetingSummary(assignment)</dd></div>
                                 </dl>
                             </ChildContent>
                             <Actions>
-                                <a href="@($"/staff/groups/{assignment.Group.Id:D}/roster")">Open assigned roster</a>
+                                <a href="@($"/staff/groups/{assignment.Group.Id:D}/roster")">@LocalizedUiText.Get("Open assigned roster")</a>
                             </Actions>
                         </EntityCard>
                     }
                 </div>
             </section>
-            <nav aria-label="Staff workspace actions">
-                <a href="/staff/timetable">Open timetable</a>
-                <a href="/staff/availability">Open availability</a>
+            <nav aria-label="@(LocalizedUiText.Get("Staff workspace actions"))">
+                <a href="/staff/timetable">@LocalizedUiText.Get("Open timetable")</a>
+                <a href="/staff/availability">@LocalizedUiText.Get("Open availability")</a>
             </nav>
         }
     </article>;
 
     private string ErrorHeading => _state switch
     {
-        "session-expired" => "Session expired",
-        "unauthorized" => "Access denied",
-        "offline" => "You are offline",
-        _ => "Staff workspace unavailable"
+        "session-expired" => LocalizedUiText.Get("Session expired"),
+        "unauthorized" => LocalizedUiText.Get("Access denied"),
+        "offline" => LocalizedUiText.Get("You are offline"),
+        _ => LocalizedUiText.Get("Staff workspace unavailable")
     };
 
     protected override async Task OnInitializedAsync()
@@ -215,7 +216,7 @@ else
             if (!StaffPageSupport.HasStaffRole(_context))
             {
                 ApplyFailure(HttpStatusCode.Forbidden,
-                    new("FORBIDDEN", "An active staff context is required.", "STF-01-AUTH"));
+                new("FORBIDDEN", LocalizedUiText.Get("An active staff context is required."), "STF-01-AUTH"));
                 return;
             }
 
@@ -230,7 +231,7 @@ else
             if (!StaffPageSupport.HasActiveStaffContext(_context))
             {
                 ApplyFailure(HttpStatusCode.Forbidden,
-                    new("FORBIDDEN", "An active Lecturer or Teaching Assistant context is required.", "STF-01-AUTH"));
+                new("FORBIDDEN", LocalizedUiText.Get("An active Lecturer or Teaching Assistant context is required."), "STF-01-AUTH"));
                 return;
             }
 
@@ -269,7 +270,7 @@ else
         {
             _state = "validation-error";
             _reasonCode = "ROLE_CONTEXT_INVALID";
-            _message = "Select one role returned by the server.";
+            _message = LocalizedUiText.Get("Select one role returned by the server.");
             return;
         }
 
@@ -284,7 +285,7 @@ else
                     ? "validation-error"
                     : "service-error";
                 _reasonCode = result.Error?.Code ?? "ROLE_CONTEXT_REJECTED";
-                _message = result.Error?.Message ?? "The role context was not changed.";
+                _message = result.Error?.Message ?? LocalizedUiText.Get("The role context was not changed.");
                 _reference = result.Error?.CorrelationId;
                 return;
             }
@@ -306,7 +307,7 @@ else
     {
         _assignments = [];
         _reasonCode = error?.Code ?? "STAFF_WORKSPACE_UNAVAILABLE";
-        _message = error?.Message ?? "The staff workspace could not be loaded safely.";
+        _message = error?.Message ?? LocalizedUiText.Get("The staff workspace could not be loaded safely.");
         _reference = error?.CorrelationId;
         _state = _reasonCode is "ASSIGNMENT_CHANGED" or "STALE_VERSION"
             ? "stale"
@@ -324,7 +325,7 @@ else
         _assignments = [];
         _state = "offline";
         _reasonCode = "OFFLINE";
-        _message = "Reconnect, then retry the staff workspace.";
+        _message = LocalizedUiText.Get("Reconnect, then retry the staff workspace.");
         _reference = null;
     }
 
@@ -337,22 +338,28 @@ else
 
     private static string RoleLabel(string role) =>
         string.Equals(role, StaffWorkspaceContract.TeachingAssistantRole, StringComparison.Ordinal)
-            ? "Teaching Assistant"
+            ? LocalizedUiText.Get("Teaching Assistant")
             : role;
 
     private static string PartnerNames(StaffAssignmentDto assignment)
     {
         var names = assignment.Group.Staff
-            .Select(staff => $"{staff.Name} ({RoleLabel(staff.Role)})")
+            .Select(staff => LocalizedUiText.Format("{0} ({1})", staff.Name, RoleLabel(staff.Role)))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
-        return names.Length == 0 ? "No role partners" : string.Join(", ", names);
+        return names.Length == 0 ? LocalizedUiText.Get("No role partners") : string.Join(LocalizedUiText.Get(", "), names);
     }
 
     private static string MeetingSummary(StaffAssignmentDto assignment)
     {
-        var meetings = assignment.Group.Meetings.Select(meeting =>
-            $"{meeting.ActivityType} {meeting.DayOfWeek} {meeting.StartLocal:HH\\:mm}–{meeting.EndLocal:HH\\:mm}, {meeting.RoomCode} {meeting.Location}");
-        return string.Join("; ", meetings);
+        var meetings = assignment.Group.Meetings.Select(meeting => LocalizedUiText.Format(
+            "{0} {1} {2}–{3}, {4} {5}",
+            meeting.ActivityType,
+            meeting.DayOfWeek,
+            meeting.StartLocal.ToString("t", CultureInfo.CurrentCulture),
+            meeting.EndLocal.ToString("t", CultureInfo.CurrentCulture),
+            meeting.RoomCode,
+            meeting.Location));
+        return string.Join(LocalizedUiText.Get("; "), meetings);
     }
 }

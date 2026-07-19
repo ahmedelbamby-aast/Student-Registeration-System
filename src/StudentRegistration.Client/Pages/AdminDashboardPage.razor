@@ -12,42 +12,42 @@
 @inject AcademicApiClient AcademicApi
 @inject AdminOperationsApiClient AdminApi
 
-<PageTitle>Admin dashboard | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Admin dashboard | Student Registration")</PageTitle>
 
 <div class="srs-admin-dashboard-host">
     @if (_loading)
     {
-        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">Skip to main content</a>
+        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="admin-dashboard-main" tabindex="-1"
               data-route-id="ADM-01" data-state="loading"
               data-contract-state="ADM-01-COMP-STATE-LOADING">
-            <h1>Admin dashboard</h1>
+            <h1>@LocalizedUiText.Get("Admin dashboard")</h1>
             <p role="status" aria-live="polite" aria-busy="true">
-                Loading authoritative operational metrics.
+                @LocalizedUiText.Get("Loading authoritative operational metrics.")
             </p>
         </main>
     }
     else if (_shellContext is not null)
     {
         <AppShell Context="@_shellContext" MainContentId="admin-dashboard-main"
-                  SkipLinkLabel="Skip to main content"
+                  SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
                   BrandLogoSource="/brand/aastmt-logo.png"
-                  BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-                  ServerDateTimeLabel="Server date and time"
-                  TeachingTermLabel="Teaching term"
-                  RegistrationTermLabel="Registration term"
-                  RegistrationWindowLabel="Registration window"
-                  NoTeachingTermLabel="No current teaching term"
-                  NoRegistrationTermLabel="No current registration term"
-                  NoRegistrationWindowLabel="No registration window"
-                  AuthorizedRolesLabel="Authorized roles"
-                  ActiveRoleLabel="Active role"
-                  SessionLabel="Session"
-                  ServiceLabel="Service"
-                  SupportLinkLabel="Open support"
-                  LoadingLabel="Loading Admin dashboard">
+                  BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+                  ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+                  TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+                  RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+                  RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+                  NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+                  NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+                  NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+                  AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+                  ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+                  SessionLabel="@(LocalizedUiText.Get("Session"))"
+                  ServiceLabel="@(LocalizedUiText.Get("Service"))"
+                  SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+                  LoadingLabel="@(LocalizedUiText.Get("Loading Admin dashboard"))">
             <Navigation>
-                <RoleNavigation AccessibleName="Administration navigation"
+                <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
                                 Items="@AdminNavigation" />
             </Navigation>
             <ChildContent>@DashboardContent</ChildContent>
@@ -55,7 +55,7 @@
     }
     else
     {
-        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">Skip to main content</a>
+        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="admin-dashboard-main" tabindex="-1">@DashboardContent</main>
     }
 </div>
@@ -64,27 +64,27 @@
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdminNavigation =
     [
-        new("Dashboard", "/admin", IsActive: true),
-        new("Terms", "/admin/terms"),
-        new("Users", "/admin/users"),
-        new("Students", "/admin/students"),
-        new("Catalogue", "/admin/catalogue"),
-        new("Offerings", "/admin/offerings"),
-        new("Resources", "/admin/resources"),
-        new("Registrations", "/admin/registrations"),
-        new("Audit", "/admin/audit")
+        new(LocalizedUiText.Get("Dashboard"), "/admin", IsActive: true),
+        new(LocalizedUiText.Get("Terms"), "/admin/terms"),
+        new(LocalizedUiText.Get("Users"), "/admin/users"),
+        new(LocalizedUiText.Get("Students"), "/admin/students"),
+        new(LocalizedUiText.Get("Catalogue"), "/admin/catalogue"),
+        new(LocalizedUiText.Get("Offerings"), "/admin/offerings"),
+        new(LocalizedUiText.Get("Resources"), "/admin/resources"),
+        new(LocalizedUiText.Get("Registrations"), "/admin/registrations"),
+        new(LocalizedUiText.Get("Audit"), "/admin/audit")
     ];
     private static readonly IReadOnlyDictionary<string, string> MetricLabels =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["http.request.throughput"] = "Registration traffic",
-            ["registration.submissions.succeeded"] = "Successful registrations",
-            ["registration.business_rejections"] = "Expected rejections",
-            ["http.request.unexpected_errors"] = "Server failures",
-            ["registration.group.fill_rate"] = "Group fill rate",
-            ["sql.lock_wait.duration.ms"] = "Database lock wait",
-            ["registration.counter_mismatches"] = "Data-quality alerts",
-            ["registration.capacity_conflicts"] = "Capacity conflicts"
+            ["http.request.throughput"] = LocalizedUiText.Get("Registration traffic"),
+            ["registration.submissions.succeeded"] = LocalizedUiText.Get("Successful registrations"),
+            ["registration.business_rejections"] = LocalizedUiText.Get("Expected rejections"),
+            ["http.request.unexpected_errors"] = LocalizedUiText.Get("Server failures"),
+            ["registration.group.fill_rate"] = LocalizedUiText.Get("Group fill rate"),
+            ["sql.lock_wait.duration.ms"] = LocalizedUiText.Get("Database lock wait"),
+            ["registration.counter_mismatches"] = LocalizedUiText.Get("Data-quality alerts"),
+            ["registration.capacity_conflicts"] = LocalizedUiText.Get("Capacity conflicts")
         };
 
     private readonly CancellationTokenSource _pollingCancellation = new();
@@ -98,7 +98,7 @@
     private bool _disposed;
     private string _state = "loading";
     private string _reasonCode = "ADMIN_METRICS_UNAVAILABLE";
-    private string _message = "Operational metrics could not be loaded safely.";
+    private string _message = LocalizedUiText.Get("Operational metrics could not be loaded safely.");
     private string? _reference;
 
     private string ContractState => _state switch
@@ -114,12 +114,12 @@
     private string RefreshState => _paused ? "paused" : "running";
 
     private string MetricsStatusLabel => _paused
-        ? "Refresh paused"
+        ? LocalizedUiText.Get("Refresh paused")
         : _state switch
         {
-            "success" => "Live metrics",
-            "stale" => "Stale metrics",
-            _ => "Degraded metrics"
+            "success" => LocalizedUiText.Get("Live metrics"),
+            "stale" => LocalizedUiText.Get("Stale metrics"),
+            _ => LocalizedUiText.Get("Degraded metrics")
         };
 
     private bool HasDisplayableSnapshot => _snapshot is not null
@@ -135,24 +135,24 @@
         data-contract-state="@ContractState" data-refresh-state="@RefreshState">
         <header class="srs-admin-dashboard__intro">
             <div>
-                <p class="srs-admin-dashboard__eyebrow">Administration operations</p>
-                <h1>Admin dashboard</h1>
-                <p>Monitor the current registration window from timestamped server observations.</p>
+                <p class="srs-admin-dashboard__eyebrow">@LocalizedUiText.Get("Administration operations")</p>
+                <h1>@LocalizedUiText.Get("Admin dashboard")</h1>
+                <p>@LocalizedUiText.Get("Monitor the current registration window from timestamped server observations.")</p>
             </div>
-            <div class="srs-admin-dashboard__controls" aria-label="Metric refresh controls">
+            <div class="srs-admin-dashboard__controls" aria-label="@(LocalizedUiText.Get("Metric refresh controls"))">
                 @if (_paused)
                 {
                     <button type="button" disabled="@_requesting" @onclick="ResumeRefreshAsync">
-                        Resume refresh
+                        @LocalizedUiText.Get("Resume refresh")
                     </button>
                 }
                 else
                 {
                     <button type="button" disabled="@_requesting" @onclick="PauseRefresh">
-                        Pause refresh
+                        @LocalizedUiText.Get("Pause refresh")
                     </button>
                     <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
-                        Refresh metrics
+                        @LocalizedUiText.Get("Refresh metrics")
                     </button>
                 }
             </div>
@@ -167,15 +167,15 @@
                 <p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference))
                 {
-                    <p>Reference: @_reference</p>
+                    <p>@LocalizedUiText.Get("Reference:") @_reference</p>
                 }
                 @if (_state is "service-error" or "offline")
                 {
                     <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
-                        Retry metrics
+                        @LocalizedUiText.Get("Retry metrics")
                     </button>
                 }
-                <a href="/">Return to authorized home</a>
+                <a href="/">@LocalizedUiText.Get("Return to authorized home")</a>
             </section>
         }
         else if (HasDisplayableSnapshot)
@@ -186,19 +186,19 @@
                     <h2 id="admin-metrics-status">@MetricsStatusLabel</h2>
                     @if (_paused)
                     {
-                        <p>Refresh paused; metrics are not live and remain at the last server observation.</p>
+                        <p>@LocalizedUiText.Get("Refresh paused; metrics are not live and remain at the last server observation.")</p>
                     }
                     else if (_state == "stale")
                     {
-                        <p>The server marked this snapshot stale. Refresh and review before acting.</p>
+                        <p>@LocalizedUiText.Get("The server marked this snapshot stale. Refresh and review before acting.")</p>
                     }
                     else if (_state == "service-error")
                     {
-                        <p>Service degraded. The last safe server snapshot remains visible.</p>
+                        <p>@LocalizedUiText.Get("Service degraded. The last safe server snapshot remains visible.")</p>
                     }
                 </div>
                 <p>
-                    <strong>Snapshot observed:</strong>
+                    <strong>@LocalizedUiText.Get("Snapshot observed:")</strong>
                     <time datetime="@_snapshot!.ObservedAtUtc.ToString("O")">
                         @FormatTimestamp(_snapshot.ObservedAtUtc)
                     </time>
@@ -206,24 +206,24 @@
             </section>
 
             <section aria-labelledby="operational-metrics-heading">
-                <h2 id="operational-metrics-heading">Operational metrics</h2>
-                <div class="srs-admin-dashboard__metrics" aria-label="Operational metrics">
+                <h2 id="operational-metrics-heading">@LocalizedUiText.Get("Operational metrics")</h2>
+                <div class="srs-admin-dashboard__metrics" aria-label="@(LocalizedUiText.Get("Operational metrics"))">
                     @foreach (var metric in _snapshot!.Metrics)
                     {
                         <EntityCard HeadingId="@MetricHeadingId(metric)"
                                     Heading="@MetricLabel(metric.Name)">
                             <ChildContent>
                                 <dl class="srs-admin-dashboard__metric-text">
-                                    <div><dt>Value</dt><dd>@FormatMetric(metric)</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Value")</dt><dd>@FormatMetric(metric)</dd></div>
                                     <div>
-                                        <dt>Observed</dt>
+                                        <dt>@LocalizedUiText.Get("Observed")</dt>
                                         <dd>
                                             <time datetime="@metric.ObservedAtUtc.ToString("O")">
                                                 @FormatTimestamp(metric.ObservedAtUtc)
                                             </time>
                                         </dd>
                                     </div>
-                                    <div><dt>Status</dt><dd>@MetricAvailability(metric)</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Status")</dt><dd>@MetricAvailability(metric)</dd></div>
                                 </dl>
                             </ChildContent>
                         </EntityCard>
@@ -232,8 +232,8 @@
                 @if (MissingMetricLabels.Any())
                 {
                     <div class="srs-admin-dashboard__missing" role="status" aria-live="polite">
-                        <h3>Metrics not reported</h3>
-                        <p>Not reported by the server; no zero value has been assumed.</p>
+                        <h3>@LocalizedUiText.Get("Metrics not reported")</h3>
+                        <p>@LocalizedUiText.Get("Not reported by the server; no zero value has been assumed.")</p>
                         <ul>
                             @foreach (var label in MissingMetricLabels)
                             {
@@ -247,30 +247,30 @@
             @if (_snapshot.ReconciliationAlerts is { Count: > 0 })
             {
                 <section class="srs-admin-dashboard__warnings" aria-labelledby="admin-warning-heading">
-                    <h2 id="admin-warning-heading">Operational warnings</h2>
+                    <h2 id="admin-warning-heading">@LocalizedUiText.Get("Operational warnings")</h2>
                     <ul>
                         @foreach (var warning in _snapshot.ReconciliationAlerts!)
                         {
                             <li>
                                 <strong>@MetricLabel(warning.Metric)</strong>
-                                observed @FormatNumber(warning.ObservedValue), above threshold
+                                @LocalizedUiText.Get("observed") @FormatNumber(warning.ObservedValue)@LocalizedUiText.Get(", above threshold")
                                 @FormatNumber(warning.Threshold).
                                 <time datetime="@warning.ObservedAtUtc.ToString("O")">
                                     @FormatTimestamp(warning.ObservedAtUtc)
                                 </time>
-                                <a href="@SafeSupportPath(warning.SupportReferencePath)">Investigate warning</a>
+                                <a href="@SafeSupportPath(warning.SupportReferencePath)">@LocalizedUiText.Get("Investigate warning")</a>
                             </li>
                         }
                     </ul>
                 </section>
             }
 
-            <nav class="srs-admin-dashboard__modules" aria-label="Administration modules">
-                <h2>Administration modules</h2>
+            <nav class="srs-admin-dashboard__modules" aria-label="@(LocalizedUiText.Get("Administration modules"))">
+                <h2>@LocalizedUiText.Get("Administration modules")</h2>
                 <ul>
                     @foreach (var item in AdminNavigation.Where(item => !item.IsActive))
                     {
-                        <li><a href="@item.Href">Open @item.Label.ToLowerInvariant()</a></li>
+                        <li><a href="@item.Href">@LocalizedUiText.Get("Open") @item.Label.ToLowerInvariant()</a></li>
                     }
                 </ul>
             </nav>
@@ -279,10 +279,10 @@
 
     private string FailureHeading => _state switch
     {
-        "unauthorized" => "Access denied",
-        "session-expired" => "Session expired",
-        "offline" => "You are offline",
-        _ => "Service degraded"
+        "unauthorized" => LocalizedUiText.Get("Access denied"),
+        "session-expired" => LocalizedUiText.Get("Session expired"),
+        "offline" => LocalizedUiText.Get("You are offline"),
+        _ => LocalizedUiText.Get("Service degraded")
     };
 
     protected override async Task OnInitializedAsync()
@@ -316,7 +316,7 @@
             {
                 ApplyFailure(
                     HttpStatusCode.Forbidden,
-                    new("FORBIDDEN", "An active Admin context is required.", "ADM-01-AUTH"));
+                new("FORBIDDEN", LocalizedUiText.Get("An active Admin context is required."), "ADM-01-AUTH"));
                 return;
             }
         }
@@ -428,7 +428,7 @@
     private void ApplyFailure(HttpStatusCode status, ApiError? error)
     {
         _reasonCode = error?.Code ?? "ADMIN_METRICS_UNAVAILABLE";
-        _message = error?.Message ?? "Operational metrics could not be loaded safely.";
+        _message = error?.Message ?? LocalizedUiText.Get("Operational metrics could not be loaded safely.");
         _reference = error?.CorrelationId;
         _state = status switch
         {
@@ -447,7 +447,7 @@
     {
         _state = "service-error";
         _reasonCode = code;
-        _message = "The server metrics response was unavailable or invalid.";
+        _message = LocalizedUiText.Get("The server metrics response was unavailable or invalid.");
         _reference = reference;
     }
 
@@ -455,12 +455,12 @@
     {
         _state = "offline";
         _reasonCode = "OFFLINE";
-        _message = "Reconnect, then refresh metrics. No action was queued.";
+        _message = LocalizedUiText.Get("Reconnect, then refresh metrics. No action was queued.");
         _reference = null;
     }
 
     private static string MetricLabel(string name) =>
-        MetricLabels.TryGetValue(name, out var label) ? label : "Operational metric";
+        MetricLabels.TryGetValue(name, out var label) ? label : LocalizedUiText.Get("Operational metric");
 
     private static string MetricHeadingId(AdminOperationalMetricDto metric) =>
         $"metric-{new string(metric.Name.Select(character =>
@@ -468,12 +468,12 @@
 
     private string MetricAvailability(AdminOperationalMetricDto metric) =>
         string.IsNullOrWhiteSpace(_snapshot?.AvailabilityState)
-            ? "Timestamped observation"
+            ? LocalizedUiText.Get("Timestamped observation")
             : _snapshot.AvailabilityState.Trim().ToLowerInvariant() switch
             {
-                "live" => "Live observation",
-                "stale" => "Stale observation",
-                _ => "Degraded observation"
+                "live" => LocalizedUiText.Get("Live observation"),
+                "stale" => LocalizedUiText.Get("Stale observation"),
+                _ => LocalizedUiText.Get("Degraded observation")
             };
 
     private static string FormatMetric(AdminOperationalMetricDto metric)
@@ -482,22 +482,22 @@
         return metric.Name switch
         {
             "registration.group.fill_rate" => $"{value}%",
-            "sql.lock_wait.duration.ms" => $"{value} ms",
-            "http.request.throughput" => $"{value} requests",
-            "registration.submissions.succeeded" => $"{value} registrations",
-            "registration.business_rejections" => $"{value} rejections",
-            "http.request.unexpected_errors" => $"{value} failures",
-            "registration.counter_mismatches" => $"{value} alerts",
-            "registration.capacity_conflicts" => $"{value} conflicts",
+            "sql.lock_wait.duration.ms" => LocalizedUiText.Format("{0} ms", value),
+            "http.request.throughput" => LocalizedUiText.Format("{0} requests", value),
+            "registration.submissions.succeeded" => LocalizedUiText.Format("{0} registrations", value),
+            "registration.business_rejections" => LocalizedUiText.Format("{0} rejections", value),
+            "http.request.unexpected_errors" => LocalizedUiText.Format("{0} failures", value),
+            "registration.counter_mismatches" => LocalizedUiText.Format("{0} alerts", value),
+            "registration.capacity_conflicts" => LocalizedUiText.Format("{0} conflicts", value),
             _ => value
         };
     }
 
     private static string FormatNumber(double value) =>
-        value.ToString("0.##", CultureInfo.InvariantCulture);
+        value.ToString("0.##", CultureInfo.CurrentCulture);
 
     private static string FormatTimestamp(DateTime value) =>
-        value.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
+        value.ToString("g", CultureInfo.CurrentCulture);
 
     private static string SafeSupportPath(string? path) =>
         !string.IsNullOrWhiteSpace(path)

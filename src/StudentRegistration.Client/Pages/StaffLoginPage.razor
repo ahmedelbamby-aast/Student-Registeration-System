@@ -2,13 +2,13 @@
 @inject IdentityApiClient IdentityApi
 @inject NavigationManager Navigation
 
-<PageTitle>Staff login</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Staff login")</PageTitle>
 
 <IdentityPageShell HeadingId="staff-login-heading"
-                   Heading="Staff login"
-                   Introduction="Admin, Lecturer, and Teaching Assistant use this one password-only login. Roles come from the server after sign-in.">
+                   Heading="@(LocalizedUiText.Get("Staff login"))"
+                   Introduction="@(LocalizedUiText.Get("Admin, Lecturer, and Teaching Assistant use this one password-only login. Roles come from the server after sign-in."))">
     <IdentityFeedback IsBusy="IsSubmitting"
-                      BusyMessage="Signing in once."
+                      BusyMessage="@(LocalizedUiText.Get("Signing in once."))"
                       IsError="@(!string.IsNullOrWhiteSpace(_feedbackCode))"
                       Heading="@_feedbackHeading"
                       Message="@_feedbackMessage"
@@ -18,12 +18,12 @@
 
     <form @onsubmit="SubmitAsync" @onsubmit:preventDefault data-testid="staff-login-form">
         <AccessibleValidationSummary SummaryId="staff-login-errors"
-                                     Heading="Review the sign-in details"
+                                     Heading="@(LocalizedUiText.Get("Review the sign-in details"))"
                                      Errors="@_validationErrors" />
 
         <FormField InputId="staff-user-name"
                    Name="userName"
-                   Label="Staff username"
+                   Label="@(LocalizedUiText.Get("Staff username"))"
                    Type="text"
                    autocomplete="username"
                    Required="true"
@@ -33,7 +33,7 @@
 
         <FormField InputId="staff-password"
                    Name="password"
-                   Label="Password"
+                   Label="@(LocalizedUiText.Get("Password"))"
                    Type="password"
                    autocomplete="current-password"
                    AllowSecretReveal="true"
@@ -45,7 +45,7 @@
         <button class="srs-identity-command"
                 type="submit"
                 disabled="@IsSubmitting">
-            @(IsSubmitting ? "Signing in…" : "Sign in")
+            @(IsSubmitting ? LocalizedUiText.Get("Signing in…") : LocalizedUiText.Get("Sign in"))
         </button>
     </form>
 
@@ -54,15 +54,15 @@
         <section class="srs-role-selection"
                  aria-labelledby="staff-role-selection-heading"
                  data-state="role-selection-required">
-            <h2 id="staff-role-selection-heading">Choose an authorized staff context</h2>
-            <p>The server returned these roles. Choose one to continue.</p>
+            <h2 id="staff-role-selection-heading">@LocalizedUiText.Get("Choose an authorized staff context")</h2>
+            <p>@LocalizedUiText.Get("The server returned these roles. Choose one to continue.")</p>
             <div class="srs-role-selection__actions">
                 @foreach (var role in _availableRoles)
                 {
                     <button type="button"
                             disabled="@IsSelectingRole"
                             @onclick="() => SelectRoleAsync(role)">
-                        Continue as @DisplayRole(role)
+                        @LocalizedUiText.Get("Continue as") @DisplayRole(role)
                     </button>
                 }
             </div>
@@ -78,7 +78,7 @@
     private string _password = string.Empty;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Sign-in status";
+    private string _feedbackHeading = LocalizedUiText.Get("Sign-in status");
     private string? _feedbackState;
     private string? _correlationId;
     private IReadOnlyList<string> _availableRoles = [];
@@ -195,12 +195,12 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrWhiteSpace(_userName))
         {
-            errors.Add(new("staff-user-name", "Enter your Staff username."));
+            errors.Add(new("staff-user-name", LocalizedUiText.Get("Enter your Staff username.")));
         }
 
         if (string.IsNullOrEmpty(_password))
         {
-            errors.Add(new("staff-password", "Enter your password."));
+            errors.Add(new("staff-password", LocalizedUiText.Get("Enter your password.")));
         }
 
         _validationErrors = errors;
@@ -215,10 +215,10 @@
         _availableRoles = [];
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode == "RATE_LIMITED"
-            ? "Try again later"
+            ? LocalizedUiText.Get("Try again later")
             : _feedbackCode == "SERVICE_UNAVAILABLE"
-                ? "Staff sign-in unavailable"
-                : "Sign-in not accepted";
+                ? LocalizedUiText.Get("Staff sign-in unavailable")
+                : LocalizedUiText.Get("Sign-in not accepted");
         _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
         _feedbackState = IdentityPageFeedback.MapFailure(
             IdentityRouteStateMapper.StaffLoginRecord,
@@ -236,5 +236,5 @@
     }
 
     private static string DisplayRole(string role) =>
-        role == "TeachingAssistant" ? "Teaching Assistant" : role;
+        role == "TeachingAssistant" ? LocalizedUiText.Get("Teaching Assistant") : role;
 }

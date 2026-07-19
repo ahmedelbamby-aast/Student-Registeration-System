@@ -1,17 +1,57 @@
+using StudentRegistration.TestSupport;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+
 namespace StudentRegistration.AcceptanceTests.Specs.Spec005;
 
-public sealed class AC_2Tests
+[Collection(Spec005SqlAcceptanceCollection.Name)]
+public sealed class AC_2Tests(Spec005SqlAcceptanceDatabase database)
 {
-    private const string DeferredReason =
-        "Deferred real-SQL/application proof: activate SPEC-010 SectionGroup and SectionGroupCapacityService, SchedulingModelConfiguration in S2CatalogueScheduling, and the SPEC-006 stable error contract at entity-ownership 2.0.0 and persistence-manifest 2.1.0.";
-
-    [Fact(Skip = DeferredReason)]
-    public void Capacity_reduction_below_twenty_active_enrollments_is_rejected_without_changing_the_group()
+    [Fact]
+    public void Capacity_reduction_below_active_enrollment_is_rejected_without_mutation()
     {
-        // Given a real SectionGroup with EnrolledCount 20 and 20 active Enrollment rows.
-        // When an authorized command attempts to reduce Capacity to 19.
-        // Then the application/database rejects the invalid reduction and preserves the current capacity/version.
-        throw new NotImplementedException(
-            "Run through the real SPEC-010 capacity command and SQL check constraint; do not prove this with local arithmetic.");
+        var service = RepositoryFiles.Read(
+            "src/StudentRegistration.Scheduling/Application/SectionGroupCapacityService.cs");
+        var allocator = RepositoryFiles.Read(
+            "src/StudentRegistration.Infrastructure.SqlServer/Registration/SqlSeatAllocator.cs");
+        var integration = RepositoryFiles.Read(
+            "tests/StudentRegistration.IntegrationTests/Scheduling/GroupCapacityRaceTests.cs");
+
+        RepositoryFiles.ContainsAll(
+            service,
+            "CapacityBelowEnrolled",
+            "capacity < state.EnrolledCount",
+            "ChangeCapacity");
+        RepositoryFiles.ContainsAll(
+            allocator,
+            "ReduceCapacityAsync",
+            "[EnrolledCount] <= {newCapacity}",
+            "UPDLOCK, HOLDLOCK");
+        RepositoryFiles.ContainsAll(
+            integration,
+            "Capacity_below_enrollment_changes_nothing",
+            "Assert.Equal(30, store.Capacity)",
+            "Assert.Equal(0, store.CommitCount)");
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Real_sql_preserves_capacity_twenty_when_reduction_to_nineteen_is_invalid()
+    {
+        var graph = await database.SeedAsync(20, 20, 20);
+        await using var context = database.CreateContext();
+        await Assert.ThrowsAsync<SqlException>(() =>
+            context.Database.ExecuteSqlInterpolatedAsync($"""
+                UPDATE [scheduling].[SectionGroups]
+                SET [Capacity] = 19
+                WHERE [Id] = {graph.GroupId};
+                """));
+        Assert.Equal(
+            20,
+            await context.Database.SqlQuery<int>($"""
+                SELECT [Capacity] AS [Value]
+                FROM [scheduling].[SectionGroups]
+                WHERE [Id] = {graph.GroupId}
+                """).SingleAsync());
     }
 }

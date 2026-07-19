@@ -2,13 +2,13 @@
 @inject IdentityApiClient IdentityApi
 @inject NavigationManager Navigation
 
-<PageTitle>Student login</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Student login")</PageTitle>
 
 <IdentityPageShell HeadingId="student-login-heading"
-                   Heading="Student login"
-                   Introduction="Use your University ID and password. The server decides your account and access.">
+                   Heading="@(LocalizedUiText.Get("Student login"))"
+                   Introduction="@(LocalizedUiText.Get("Use your University ID and password. The server decides your account and access."))">
     <IdentityFeedback IsBusy="IsSubmitting"
-                      BusyMessage="Signing in once."
+                      BusyMessage="@(LocalizedUiText.Get("Signing in once."))"
                       IsError="@(!string.IsNullOrWhiteSpace(_feedbackCode))"
                       Heading="@_feedbackHeading"
                       Message="@_feedbackMessage"
@@ -18,12 +18,12 @@
 
     <form @onsubmit="SubmitAsync" @onsubmit:preventDefault data-testid="student-login-form">
         <AccessibleValidationSummary SummaryId="student-login-errors"
-                                     Heading="Review the sign-in details"
+                                     Heading="@(LocalizedUiText.Get("Review the sign-in details"))"
                                      Errors="@_validationErrors" />
 
         <FormField InputId="student-university-id"
                    Name="universityId"
-                   Label="University ID"
+                   Label="@(LocalizedUiText.Get("University ID"))"
                    Type="text"
                    autocomplete="username"
                    Required="true"
@@ -33,7 +33,7 @@
 
         <FormField InputId="student-password"
                    Name="password"
-                   Label="Password"
+                   Label="@(LocalizedUiText.Get("Password"))"
                    Type="password"
                    autocomplete="current-password"
                    AllowSecretReveal="true"
@@ -45,7 +45,7 @@
         <button class="srs-identity-command"
                 type="submit"
                 disabled="@IsSubmitting">
-            @(IsSubmitting ? "Signing in…" : "Sign in")
+            @(IsSubmitting ? LocalizedUiText.Get("Signing in…") : LocalizedUiText.Get("Sign in"))
         </button>
     </form>
 </IdentityPageShell>
@@ -55,7 +55,7 @@
     private string _password = string.Empty;
     private string? _feedbackCode;
     private string? _feedbackMessage;
-    private string _feedbackHeading = "Sign-in status";
+    private string _feedbackHeading = LocalizedUiText.Get("Sign-in status");
     private string? _feedbackState;
     private string? _correlationId;
     private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
@@ -103,12 +103,12 @@
         var errors = new List<AccessibleValidationSummary.ValidationItem>();
         if (string.IsNullOrWhiteSpace(_universityId))
         {
-            errors.Add(new("student-university-id", "Enter your University ID."));
+            errors.Add(new("student-university-id", LocalizedUiText.Get("Enter your University ID.")));
         }
 
         if (string.IsNullOrEmpty(_password))
         {
-            errors.Add(new("student-password", "Enter your password."));
+            errors.Add(new("student-password", LocalizedUiText.Get("Enter your password.")));
         }
 
         _validationErrors = errors;
@@ -122,10 +122,10 @@
     {
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode == "RATE_LIMITED"
-            ? "Try again later"
+            ? LocalizedUiText.Get("Try again later")
             : _feedbackCode == "SERVICE_UNAVAILABLE"
-                ? "Sign-in service unavailable"
-                : "Sign-in not accepted";
+                ? LocalizedUiText.Get("Sign-in service unavailable")
+                : LocalizedUiText.Get("Sign-in not accepted");
         _feedbackMessage = IdentityPageFeedback.SafeMessageFor(_feedbackCode);
         _feedbackState = IdentityPageFeedback.MapFailure(
             IdentityRouteStateMapper.StudentLoginRecord,

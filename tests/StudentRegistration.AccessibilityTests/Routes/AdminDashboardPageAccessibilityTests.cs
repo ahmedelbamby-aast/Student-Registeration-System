@@ -50,12 +50,12 @@ public sealed class AdminDashboardPageAccessibilityTests
 public sealed class AdminDashboardPageAxeTests(AxeAccessibilityFixture fixture)
 {
     [Theory]
-    [InlineData(320)]
-    [InlineData(1280)]
+    [MemberData(nameof(Spec003RequestedRouteAccessibilityAssertions.WidthProfiles), MemberType = typeof(Spec003RequestedRouteAccessibilityAssertions))]
     public async Task Adm_01_live_state_has_no_serious_axe_failures_and_controls_remain_operable(
-        int width)
+        int width,
+        float scale)
     {
-        await using var context = await fixture.OpenContextAsync(width);
+        await using var context = await fixture.OpenContextAsync(width, 1000, scale);
         var page = await context.NewPageAsync();
         await page.RouteAsync("**/api/**", route => Path(route) switch
         {
@@ -72,9 +72,13 @@ public sealed class AdminDashboardPageAxeTests(AxeAccessibilityFixture fixture)
             .BoundingBoxAsync();
         Assert.NotNull(pause);
         Assert.True(pause!.Height >= 44);
-        await page.Keyboard.PressAsync("Tab");
-        Assert.NotNull(await page.EvaluateAsync<string?>("document.activeElement?.tagName"));
+        var skip = page.GetByRole(AriaRole.Link, new() { Name = "Skip to main content", Exact = true });
+        await skip.FocusAsync();
+        Assert.True(await skip.EvaluateAsync<bool>(
+            "element => getComputedStyle(element).outlineStyle !== 'none'"));
         Assert.True(await page.GetByRole(AriaRole.Region, new() { Name = "Operational metrics" }).IsVisibleAsync());
+        Assert.True(await page.EvaluateAsync<bool>(
+            "() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
     }
 
     private const string Context = """

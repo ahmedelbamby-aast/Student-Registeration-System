@@ -10,7 +10,7 @@
 @inject AcademicApiClient AcademicApi
 @inject RegistrationApiClient RegistrationApi
 
-<PageTitle>Available subjects | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Available subjects | Student Registration")</PageTitle>
 
 @if (_initialLoading)
 {
@@ -18,12 +18,12 @@
          data-route-id="STU-02"
          data-state="loading"
          data-contract-state="STU-02-COMP-STATE-LOADING">
-        <a class="srs-subject-discovery__skip" href="#main-content">Skip to main content</a>
+        <a class="srs-subject-discovery__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1">
-            <h1>Available subjects</h1>
+            <h1>@LocalizedUiText.Get("Available subjects")</h1>
             <section role="status" aria-live="polite" aria-busy="true">
-                <h2>Loading available subjects</h2>
-                <p>Checking the current registration term and server eligibility.</p>
+                <h2>@LocalizedUiText.Get("Loading available subjects")</h2>
+                <p>@LocalizedUiText.Get("Checking the current registration term and server eligibility.")</p>
             </section>
         </main>
     </div>
@@ -32,24 +32,24 @@ else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext"
               MainContentId="main-content"
-              SkipLinkLabel="Skip to main content"
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
               BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time"
-              TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term"
-              RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term"
-              NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window"
-              AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role"
-              SessionLabel="Session"
-              ServiceLabel="Service"
-              SupportLinkLabel="Open support"
-              LoadingLabel="Loading available subjects">
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+              SessionLabel="@(LocalizedUiText.Get("Session"))"
+              ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+              LoadingLabel="@(LocalizedUiText.Get("Loading available subjects"))">
         <Navigation>
-            <RoleNavigation AccessibleName="Student role navigation"
+            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
                             Items="@StudentNavigation" />
         </Navigation>
         <ChildContent>
@@ -60,22 +60,21 @@ else if (_shellContext is not null)
                  data-contract-state="@ContractState">
                 <header class="srs-subject-discovery__intro">
                     <div>
-                        <p class="srs-subject-discovery__eyebrow">Student registration</p>
-                        <h1>Available subjects</h1>
+                        <p class="srs-subject-discovery__eyebrow">@LocalizedUiText.Get("Student registration")</p>
+                        <h1>@LocalizedUiText.Get("Available subjects")</h1>
                         <p>
-                            Search the bounded server result. Eligibility, load,
-                            capacity, and selectability are evaluated by the server.
+                            @LocalizedUiText.Get("Search the bounded server result. Eligibility, load, capacity, and selectability are evaluated by the server.")
                         </p>
                     </div>
-                    <a href="/student">Return to dashboard</a>
+                    <a href="/student">@LocalizedUiText.Get("Return to dashboard")</a>
                 </header>
 
-                <SearchFilter AccessibleName="Subject discovery search and filters"
+                <SearchFilter AccessibleName="@(LocalizedUiText.Get("Subject discovery search and filters"))"
                               InputId="subject-search"
                               Name="q"
-                              SearchLabel="Search by course code or title"
-                              SubmitLabel="Apply search and filters"
-                              ClearLabel="Reset filters"
+                              SearchLabel="@(LocalizedUiText.Get("Search by course code or title"))"
+                              SubmitLabel="@(LocalizedUiText.Get("Apply search and filters"))"
+                              ClearLabel="@(LocalizedUiText.Get("Reset filters"))"
                               Query="@_search"
                               QueryChanged="SetSearch"
                               OnSearch="ApplyFiltersAsync"
@@ -84,51 +83,51 @@ else if (_shellContext is not null)
                               LoadingAnnouncement="Refreshing server results">
                     <FilterContent>
                         <div>
-                            <label for="subject-eligibility">Eligibility</label>
+                            <label for="subject-eligibility">@LocalizedUiText.Get("Eligibility")</label>
                             <select id="subject-eligibility" @bind="_eligibility">
-                                <option value="eligible">Eligible</option>
-                                <option value="unavailable">Unavailable</option>
-                                <option value="all">All</option>
+                                <option value="eligible">@LocalizedUiText.Get("Eligible")</option>
+                                <option value="unavailable">@LocalizedUiText.Get("Unavailable")</option>
+                                <option value="all">@LocalizedUiText.Get("All")</option>
                             </select>
                         </div>
                         <div>
-                            <label for="subject-credits">Credits</label>
+                            <label for="subject-credits">@LocalizedUiText.Get("Credits")</label>
                             <input id="subject-credits"
                                    inputmode="decimal"
                                    value="@_credits"
                                    @oninput="SetCredits" />
                         </div>
                         <div>
-                            <label for="subject-day">Day</label>
+                            <label for="subject-day">@LocalizedUiText.Get("Day")</label>
                             <select id="subject-day" @bind="_day">
-                                <option value="">Any day</option>
-                                <option value="0">Sunday</option>
-                                <option value="1">Monday</option>
-                                <option value="2">Tuesday</option>
-                                <option value="3">Wednesday</option>
-                                <option value="4">Thursday</option>
-                                <option value="5">Friday</option>
-                                <option value="6">Saturday</option>
+                                <option value="">@LocalizedUiText.Get("Any day")</option>
+                                <option value="0">@LocalizedUiText.Get("Sunday")</option>
+                                <option value="1">@LocalizedUiText.Get("Monday")</option>
+                                <option value="2">@LocalizedUiText.Get("Tuesday")</option>
+                                <option value="3">@LocalizedUiText.Get("Wednesday")</option>
+                                <option value="4">@LocalizedUiText.Get("Thursday")</option>
+                                <option value="5">@LocalizedUiText.Get("Friday")</option>
+                                <option value="6">@LocalizedUiText.Get("Saturday")</option>
                             </select>
                         </div>
                         <div>
-                            <label for="subject-availability">Group availability</label>
+                            <label for="subject-availability">@LocalizedUiText.Get("Group availability")</label>
                             <select id="subject-availability" @bind="_availability">
-                                <option value="all">All</option>
-                                <option value="available">Available</option>
-                                <option value="full">Full</option>
-                                <option value="unavailable">Unavailable</option>
+                                <option value="all">@LocalizedUiText.Get("All")</option>
+                                <option value="available">@LocalizedUiText.Get("Available")</option>
+                                <option value="full">@LocalizedUiText.Get("Full")</option>
+                                <option value="unavailable">@LocalizedUiText.Get("Unavailable")</option>
                             </select>
                         </div>
                         <div>
-                            <label for="subject-sort">Sort</label>
+                            <label for="subject-sort">@LocalizedUiText.Get("Sort")</label>
                             <select id="subject-sort" @bind="_sort">
-                                <option value="courseCode,id">Course code</option>
-                                <option value="courseCode-desc,id">Course code descending</option>
-                                <option value="title,id">Title</option>
-                                <option value="title-desc,id">Title descending</option>
-                                <option value="credits,id">Credits</option>
-                                <option value="credits-desc,id">Credits descending</option>
+                                <option value="courseCode,id">@LocalizedUiText.Get("Course code")</option>
+                                <option value="courseCode-desc,id">@LocalizedUiText.Get("Course code descending")</option>
+                                <option value="title,id">@LocalizedUiText.Get("Title")</option>
+                                <option value="title-desc,id">@LocalizedUiText.Get("Title descending")</option>
+                                <option value="credits,id">@LocalizedUiText.Get("Credits")</option>
+                                <option value="credits-desc,id">@LocalizedUiText.Get("Credits descending")</option>
                             </select>
                         </div>
                     </FilterContent>
@@ -140,25 +139,24 @@ else if (_shellContext is not null)
                              aria-labelledby="subject-empty-heading"
                              role="status"
                              aria-live="polite">
-                        <h2 id="subject-empty-heading">No subjects match these criteria</h2>
+                        <h2 id="subject-empty-heading">@LocalizedUiText.Get("No subjects match these criteria")</h2>
                         <p>
-                            The server returned no results for @CriteriaSummary.
-                            This does not mean that the catalogue is empty.
+                            @LocalizedUiText.Get("The server returned no results for") @CriteriaSummary@LocalizedUiText.Get(". This does not mean that the catalogue is empty.")
                         </p>
                         @if (_metadata is not null)
                         {
                             <dl>
-                                <div><dt>Policy version</dt><dd>@ValueOrUnavailable(_metadata.PolicyVersion)</dd></div>
-                                <div><dt>Reason codes</dt><dd>@ValueOrUnavailable(_metadata.ReasonCodes)</dd></div>
-                                <div><dt>Registration window</dt><dd>@ValueOrUnavailable(_metadata.RegistrationWindowState)</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Policy version")</dt><dd>@ValueOrUnavailable(_metadata.PolicyVersion)</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Reason codes")</dt><dd>@ValueOrUnavailable(_metadata.ReasonCodes)</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Registration window")</dt><dd>@ValueOrUnavailable(_metadata.RegistrationWindowState)</dd></div>
                             </dl>
                             @if (EmptySupportPath is not null)
                             {
-                                <a href="@EmptySupportPath">Open Registrar support</a>
+                                <a href="@EmptySupportPath">@LocalizedUiText.Get("Open Registrar support")</a>
                             }
                         }
-                        <button type="button" @onclick="ResetFiltersAsync">Reset filters</button>
-                        <a href="/student/schedule">Open current plan</a>
+                        <button type="button" @onclick="ResetFiltersAsync">@LocalizedUiText.Get("Reset filters")</button>
+                        <a href="/student/schedule">@LocalizedUiText.Get("Open current plan")</a>
                     </section>
                 }
                 else if (IsFailureState)
@@ -172,17 +170,17 @@ else if (_shellContext is not null)
                         <p>@_safeMessage</p>
                         @if (!string.IsNullOrWhiteSpace(_referenceId))
                         {
-                            <p>Reference: <span>@_referenceId</span></p>
+                            <p>@LocalizedUiText.Get("Reference:") <span>@_referenceId</span></p>
                         }
                         @if (_state is ServiceErrorState or OfflineState or StaleState)
                         {
                             <button type="button"
                                     disabled="@_requestLoading"
                                     @onclick="RetryAsync">
-                                Retry subject discovery
+                                @LocalizedUiText.Get("Retry subject discovery")
                             </button>
                         }
-                        <a href="@_shellContext.SupportReferencePath">Open safe support path</a>
+                        <a href="@_shellContext.SupportReferencePath">@LocalizedUiText.Get("Open safe support path")</a>
                     </section>
                 }
                 else if (_page is not null)
@@ -192,16 +190,15 @@ else if (_shellContext is not null)
                         <section class="srs-subject-discovery__stale"
                                  role="status"
                                  aria-live="polite">
-                            <h2>Availability changed</h2>
+                            <h2>@LocalizedUiText.Get("Availability changed")</h2>
                             <p><strong>@_reasonCode</strong></p>
                             <p>
-                                The displayed result is the latest server refresh.
-                                Review the changed capacity and reasons before continuing.
+                                @LocalizedUiText.Get("The displayed result is the latest server refresh. Review the changed capacity and reasons before continuing.")
                             </p>
                             <button type="button"
                                     disabled="@_requestLoading"
                                     @onclick="RetryAsync">
-                                Retry subject discovery
+                                @LocalizedUiText.Get("Retry subject discovery")
                             </button>
                         </section>
                     }
@@ -209,8 +206,7 @@ else if (_shellContext is not null)
                     <p class="srs-subject-discovery__summary"
                        role="status"
                        aria-live="polite">
-                        Showing @_page.Items.Count of @_page.TotalCount server-evaluated subjects.
-                        Applied sort: @_page.Sort.
+                        @LocalizedUiText.Get("Showing") @_page.Items.Count @LocalizedUiText.Get("of") @_page.TotalCount @LocalizedUiText.Get("server-evaluated subjects. Applied sort:") @_page.Sort.
                     </p>
 
                     <div class="srs-subject-discovery__grid">
@@ -221,10 +217,10 @@ else if (_shellContext is not null)
                                      data-eligible="@offering.Eligible.ToString().ToLowerInvariant()">
                                 <header>
                                     <div>
-                                        <p>@offering.CourseCode · @Credits(offering.Credits) credits</p>
+                                        <p>@offering.CourseCode · @Credits(offering.Credits) @LocalizedUiText.Get("credits")</p>
                                         <h2>@offering.Title</h2>
                                     </div>
-                                    <StatusBadge Text="@(offering.Eligible ? "Eligible" : "Unavailable")"
+                                    <StatusBadge Text="@(offering.Eligible ? LocalizedUiText.Get("Eligible") : LocalizedUiText.Get("Unavailable"))"
                                                  Icon="@(offering.Eligible ? "✓" : "✕")"
                                                  Tone="@(offering.Eligible
                                                      ? StatusBadge.BadgeTone.Success
@@ -234,7 +230,7 @@ else if (_shellContext is not null)
                                                          IdPrefix="@($"offering-{offering.OfferingId:N}")" />
                                 <a class="srs-subject-discovery__details"
                                    href="@($"/student/subjects/{offering.OfferingId:D}")">
-                                    View @offering.CourseCode details
+                                    @LocalizedUiText.Get("View") @offering.CourseCode @LocalizedUiText.Get("details")
                                 </a>
                             </article>
                         }
@@ -242,9 +238,9 @@ else if (_shellContext is not null)
 
                     @if (TotalPages > 1)
                     {
-                        <Pagination AccessibleLabel="Subject result pages"
-                                    PreviousLabel="Previous page"
-                                    NextLabel="Next page"
+                        <Pagination AccessibleLabel="@(LocalizedUiText.Get("Subject result pages"))"
+                                    PreviousLabel="@(LocalizedUiText.Get("Previous page"))"
+                                    NextLabel="@(LocalizedUiText.Get("Next page"))"
                                     CurrentPage="@_pageNumber"
                                     TotalPages="@TotalPages"
                                     VisiblePages="@VisiblePages"
@@ -252,11 +248,11 @@ else if (_shellContext is not null)
                                     CurrentPageLabel="CurrentPageLabel"
                                     PageChanged="ChangePageAsync"
                                     IsLoading="@_requestLoading"
-                                    LoadingLabel="Loading subject page" />
+                                    LoadingLabel="@(LocalizedUiText.Get("Loading subject page"))" />
                     }
 
-                    <nav class="srs-subject-discovery__related" aria-label="Registration links">
-                        <a href="/student/schedule">Open current plan</a>
+                    <nav class="srs-subject-discovery__related" aria-label="@(LocalizedUiText.Get("Registration links"))">
+                        <a href="/student/schedule">@LocalizedUiText.Get("Open current plan")</a>
                     </nav>
                 }
             </div>
@@ -271,16 +267,16 @@ else
           data-state="@_state"
           data-contract-state="@ContractState"
           tabindex="-1">
-        <h1>Available subjects</h1>
+        <h1>@LocalizedUiText.Get("Available subjects")</h1>
         <section role="alert" aria-live="assertive">
             <h2>@FailureHeading</h2>
             <p><strong>@_reasonCode</strong></p>
             <p>@_safeMessage</p>
             @if (!string.IsNullOrWhiteSpace(_referenceId))
             {
-                <p>Reference: @_referenceId</p>
+                <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
             }
-            <a href="/student">Return to Student dashboard</a>
+            <a href="/student">@LocalizedUiText.Get("Return to Student dashboard")</a>
         </section>
     </main>
 }
@@ -298,9 +294,9 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new("Dashboard", "/student"),
-        new("Available subjects", "/student/subjects", IsActive: true),
-        new("Current plan", "/student/schedule")
+        new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Available subjects"), "/student/subjects", IsActive: true),
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule")
     ];
 
     private FrontendAppContextView? _shellContext;
@@ -314,7 +310,7 @@ else
     private string _availability = "all";
     private string _sort = "courseCode,id";
     private string _reasonCode = "DISCOVERY_UNAVAILABLE";
-    private string _safeMessage = "Subject discovery could not be loaded.";
+    private string _safeMessage = LocalizedUiText.Get("Subject discovery could not be loaded.");
     private string? _referenceId;
     private Guid _termId;
     private int _pageNumber = 1;
@@ -347,18 +343,20 @@ else
 
     private string FailureHeading => _state switch
     {
-        ValidationErrorState => "Review the search or registration context",
-        UnauthorizedState => "Access denied",
-        SessionExpiredState => "Session expired",
-        StaleState => "Availability changed",
-        OfflineState => "Subject discovery is offline",
-        _ => "Subject discovery is unavailable"
+        ValidationErrorState => LocalizedUiText.Get("Review the search or registration context"),
+        UnauthorizedState => LocalizedUiText.Get("Access denied"),
+        SessionExpiredState => LocalizedUiText.Get("Session expired"),
+        StaleState => LocalizedUiText.Get("Availability changed"),
+        OfflineState => LocalizedUiText.Get("Subject discovery is offline"),
+        _ => LocalizedUiText.Get("Subject discovery is unavailable")
     };
 
-    private string CriteriaSummary =>
-        $"search “{(string.IsNullOrWhiteSpace(_search) ? "any" : _search)}”, " +
-        $"eligibility {_eligibility}, credits {(string.IsNullOrWhiteSpace(_credits) ? "any" : _credits)}, " +
-        $"day {(string.IsNullOrWhiteSpace(_day) ? "any" : _day)}, availability {_availability}";
+    private string CriteriaSummary => LocalizedUiText.Format("search “{0}”, eligibility {1}, credits {2}, day {3}, availability {4}",
+        string.IsNullOrWhiteSpace(_search) ? LocalizedUiText.Get("any") : _search,
+        _eligibility,
+        string.IsNullOrWhiteSpace(_credits) ? LocalizedUiText.Get("any") : _credits,
+        string.IsNullOrWhiteSpace(_day) ? LocalizedUiText.Get("any") : _day,
+        _availability);
 
     private int TotalPages => _page is null
         ? 1
@@ -393,7 +391,7 @@ else
                     HttpStatusCode.Forbidden,
                     new ApiError(
                         "FORBIDDEN",
-                        "The active server role cannot open Student subject discovery.",
+                        LocalizedUiText.Get("The active server role cannot open Student subject discovery."),
                         "STU-02-AUTHORIZATION"));
                 return;
             }
@@ -407,7 +405,7 @@ else
                         context.ServiceState is ServiceState.Maintenance
                             ? "MAINTENANCE"
                             : "DISCOVERY_UNAVAILABLE",
-                        "Subject discovery is temporarily unavailable.",
+                LocalizedUiText.Get("Subject discovery is temporarily unavailable."),
                         "STU-02-SERVICE"));
                 return;
             }
@@ -417,7 +415,7 @@ else
             {
                 _state = EmptyState;
                 _reasonCode = "REGISTRATION_CONTEXT_NOT_FOUND";
-                _safeMessage = "The server has not supplied a current registration term.";
+                _safeMessage = LocalizedUiText.Get("The server has not supplied a current registration term.");
                 return;
             }
 
@@ -427,7 +425,7 @@ else
         {
             _state = OfflineState;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach subject discovery. No request was queued.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach subject discovery. No request was queued.");
             _page = null;
         }
         finally
@@ -524,7 +522,7 @@ else
         {
             _state = OfflineState;
             _reasonCode = "OFFLINE";
-            _safeMessage = "The browser cannot reach subject discovery. No request was queued.";
+            _safeMessage = LocalizedUiText.Get("The browser cannot reach subject discovery. No request was queued.");
             _page = null;
         }
         finally
@@ -537,7 +535,7 @@ else
     {
         _page = null;
         _reasonCode = error?.Code ?? "DISCOVERY_UNAVAILABLE";
-        _safeMessage = error?.Message ?? "The request could not be completed safely.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The request could not be completed safely.");
         _referenceId = error?.CorrelationId;
         _state = _reasonCode switch
         {
@@ -552,10 +550,10 @@ else
     }
 
     private static string Credits(decimal value) =>
-        value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
 
     private static string ValueOrUnavailable(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? "Not supplied" : value;
+        string.IsNullOrWhiteSpace(value) ? LocalizedUiText.Get("Not supplied") : value;
 
     private static bool IsCanonicalPath(string? value) =>
         !string.IsNullOrWhiteSpace(value)
@@ -567,5 +565,5 @@ else
     private static string PageLabel(int page) => page.ToString();
 
     private static string CurrentPageLabel(int page, int totalPages) =>
-        $"Current page {page} of {totalPages}";
+        LocalizedUiText.Format("Current page {0} of {1}", page, totalPages);
 }

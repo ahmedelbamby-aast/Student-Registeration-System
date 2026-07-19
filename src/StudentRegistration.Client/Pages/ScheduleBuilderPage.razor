@@ -1,4 +1,5 @@
 @page "/student/schedule"
+@using System.Globalization
 @using System.Net
 @using Microsoft.JSInterop
 @using StudentRegistration.Client.Components.Layout
@@ -15,7 +16,7 @@
 @inject RegistrationApiClient RegistrationApi
 @inject NavigationManager Navigation
 
-<PageTitle>Schedule builder | Student Registration</PageTitle>
+<PageTitle>@LocalizedUiText.Get("Schedule builder | Student Registration")</PageTitle>
 
 @if (_initialLoading)
 {
@@ -23,12 +24,12 @@
          data-route-id="STU-04"
          data-state="loading"
          data-contract-state="STU-04-COMP-STATE-LOADING">
-        <a href="#main-content">Skip to main content</a>
+        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1">
-            <h1>Schedule builder</h1>
+            <h1>@LocalizedUiText.Get("Schedule builder")</h1>
             <section role="status" aria-live="polite" aria-busy="true">
-                <h2>Loading schedule builder</h2>
-                <p>Loading the current server-authored registration plan.</p>
+                <h2>@LocalizedUiText.Get("Loading schedule builder")</h2>
+                <p>@LocalizedUiText.Get("Loading the current server-authored registration plan.")</p>
             </section>
         </main>
     </div>
@@ -37,24 +38,24 @@ else if (_shellContext is not null)
 {
     <AppShell Context="@_shellContext"
               MainContentId="main-content"
-              SkipLinkLabel="Skip to main content"
+              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
               BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time"
-              TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term"
-              RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term"
-              NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window"
-              AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role"
-              SessionLabel="Session"
-              ServiceLabel="Service"
-              SupportLinkLabel="Open support"
-              LoadingLabel="Loading schedule builder">
+              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
+              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
+              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
+              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
+              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
+              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
+              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
+              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
+              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
+              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
+              SessionLabel="@(LocalizedUiText.Get("Session"))"
+              ServiceLabel="@(LocalizedUiText.Get("Service"))"
+              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
+              LoadingLabel="@(LocalizedUiText.Get("Loading schedule builder"))">
         <Navigation>
-            <RoleNavigation AccessibleName="Student role navigation"
+            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
                             Items="@StudentNavigation" />
         </Navigation>
         <ChildContent>
@@ -65,18 +66,17 @@ else if (_shellContext is not null)
                   data-contract-state="@ContractState"
                   tabindex="-1">
                 <header>
-                    <p>Student registration</p>
-                    <h1>Schedule builder</h1>
+                    <p>@LocalizedUiText.Get("Student registration")</p>
+                    <h1>@LocalizedUiText.Get("Schedule builder")</h1>
                     <p>
-                        Edit the server-stored plan. Capacity is advisory until
-                        final submission revalidates every selection.
+                        @LocalizedUiText.Get("Edit the server-stored plan. Capacity is advisory until final submission revalidates every selection.")
                     </p>
                 </header>
 
                 @if (_requestLoading)
                 {
                     <p role="status" aria-live="polite" aria-busy="true">
-                        Recalculating the current plan.
+                        @LocalizedUiText.Get("Recalculating the current plan.")
                     </p>
                 }
 
@@ -90,17 +90,17 @@ else if (_shellContext is not null)
                         <p>@_safeMessage</p>
                         @if (!string.IsNullOrWhiteSpace(_referenceId))
                         {
-                            <p>Reference: @_referenceId</p>
+                            <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
                         }
                         @if (_state is ServiceErrorState or OfflineState)
                         {
                             <button type="button"
                                     disabled="@_requestLoading"
                                     @onclick="LoadPlanAsync">
-                                Retry schedule builder
+                                @LocalizedUiText.Get("Retry schedule builder")
                             </button>
                         }
-                        <a href="@_shellContext.SupportReferencePath">Open safe support path</a>
+                        <a href="@_shellContext.SupportReferencePath">@LocalizedUiText.Get("Open safe support path")</a>
                     </section>
                 }
                 else if (_plan is not null)
@@ -108,32 +108,32 @@ else if (_shellContext is not null)
                     @if (_state == StaleState)
                     {
                         <section role="status" aria-live="polite" aria-labelledby="plan-stale-heading">
-                            <h2 id="plan-stale-heading">Plan changed</h2>
+                            <h2 id="plan-stale-heading">@LocalizedUiText.Get("Plan changed")</h2>
                             <p><strong>@_reasonCode</strong></p>
                             <p>@_safeMessage</p>
-                            <p>The current authorized plan is shown below. Review it before editing again.</p>
+                            <p>@LocalizedUiText.Get("The current authorized plan is shown below. Review it before editing again.")</p>
                         </section>
                     }
 
                     <section aria-labelledby="credit-summary-heading">
-                        <h2 id="credit-summary-heading">Credit summary</h2>
+                        <h2 id="credit-summary-heading">@LocalizedUiText.Get("Credit summary")</h2>
                         <dl>
                             <div data-load-field="total-credits">
-                                <dt>Total credits</dt>
+                                <dt>@LocalizedUiText.Get("Total credits")</dt>
                                 <dd>@Credits(_plan.TotalCredits)</dd>
                             </div>
                             <div data-load-field="default-target">
-                                <dt>Default target</dt>
+                                <dt>@LocalizedUiText.Get("Default target")</dt>
                                 <dd>@Credits(_plan.DefaultTargetCredits)</dd>
                             </div>
                             <div data-load-field="maximum-allowed">
-                                <dt>Maximum allowed</dt>
+                                <dt>@LocalizedUiText.Get("Maximum allowed")</dt>
                                 <dd>@Credits(_plan.MaximumAllowedCredits)</dd>
                             </div>
                         </dl>
                         @if (_plan.LoadReasons.Count > 0)
                         {
-                            <h3>Load policy reasons</h3>
+                            <h3>@LocalizedUiText.Get("Load policy reasons")</h3>
                             <ul>
                                 @foreach (var reason in _plan.LoadReasons)
                                 {
@@ -141,8 +141,8 @@ else if (_shellContext is not null)
                                         <p><strong>@reason.Code</strong></p>
                                         <p>@reason.Message</p>
                                         <dl>
-                                            <div><dt>Policy version</dt><dd>@reason.PolicyVersion</dd></div>
-                                            <div><dt>Source</dt><dd>@reason.SourceReference</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Policy version")</dt><dd>@reason.PolicyVersion</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Source")</dt><dd>@reason.SourceReference</dd></div>
                                         </dl>
                                     </li>
                                 }
@@ -153,32 +153,32 @@ else if (_shellContext is not null)
                     @if (_state == EmptyState)
                     {
                         <section aria-labelledby="plan-empty-heading" role="status" aria-live="polite">
-                            <h2 id="plan-empty-heading">Your plan is empty</h2>
-                            <p>Add an eligible subject group to build your schedule.</p>
-                            <a href="/student/subjects">Add a subject</a>
+                            <h2 id="plan-empty-heading">@LocalizedUiText.Get("Your plan is empty")</h2>
+                            <p>@LocalizedUiText.Get("Add an eligible subject group to build your schedule.")</p>
+                            <a href="/student/subjects">@LocalizedUiText.Get("Add a subject")</a>
                         </section>
                     }
                     else
                     {
                         <section aria-labelledby="selected-groups-heading">
-                            <h2 id="selected-groups-heading">Selected groups</h2>
+                            <h2 id="selected-groups-heading">@LocalizedUiText.Get("Selected groups")</h2>
                             <ul>
                                 @foreach (var group in _plan.SelectedGroups)
                                 {
                                     <li data-selected-group-id="@group.GroupId">
                                         <article>
                                             <h3>@group.CourseCode @group.SubjectTitle</h3>
-                                            <p>Group <strong>@group.GroupCode</strong> · @Credits(group.Credits)</p>
+                                            <p>@LocalizedUiText.Get("Group") <strong>@group.GroupCode</strong> · @Credits(group.Credits)</p>
                                             <p>
-                                                Advisory capacity: @group.EnrolledCount of @group.Capacity enrolled.
+                                                @LocalizedUiText.Get("Advisory capacity:") @group.EnrolledCount @LocalizedUiText.Get("of") @group.Capacity @LocalizedUiText.Get("enrolled.")
                                             </p>
                                             <a href="@SafeRoute($"/student/subjects/{group.OfferingId:D}")">
-                                                Change @group.CourseCode group @group.GroupCode
+                                                @LocalizedUiText.Get("Change") @group.CourseCode @LocalizedUiText.Get("group") @group.GroupCode
                                             </a>
                                             <button type="button"
                                                     disabled="@_requestLoading"
                                                     @onclick="() => RemoveGroupAsync(group.GroupId)">
-                                                Remove @group.CourseCode group @group.GroupCode
+                                                @LocalizedUiText.Get("Remove") @group.CourseCode @LocalizedUiText.Get("group") @group.GroupCode
                                             </button>
                                         </article>
                                     </li>
@@ -187,34 +187,34 @@ else if (_shellContext is not null)
                         </section>
 
                         <div class="srs-schedule-builder__views">
-                            <ScheduleCalendar Heading="Schedule calendar"
+                            <ScheduleCalendar Heading="@(LocalizedUiText.Get("Schedule calendar"))"
                                               EquivalentListId="schedule-list"
-                                              DayColumnLabel="Day"
-                                              TimeColumnLabel="Time"
-                                              MeetingColumnLabel="Meeting"
-                                              GroupLabel="Group"
-                                              ActivityKindLabel="Activity"
-                                              LecturerLabel="Lecturer"
-                                              TeachingAssistantsLabel="Teaching assistants"
-                                              LocationLabel="Location"
-                                              ConflictLabel="Conflict status"
+                                              DayColumnLabel="@(LocalizedUiText.Get("Day"))"
+                                              TimeColumnLabel="@(LocalizedUiText.Get("Time"))"
+                                              MeetingColumnLabel="@(LocalizedUiText.Get("Meeting"))"
+                                              GroupLabel="@(LocalizedUiText.Get("Group"))"
+                                              ActivityKindLabel="@(LocalizedUiText.Get("Activity"))"
+                                              LecturerLabel="@(LocalizedUiText.Get("Lecturer"))"
+                                              TeachingAssistantsLabel="@(LocalizedUiText.Get("Teaching assistants"))"
+                                              LocationLabel="@(LocalizedUiText.Get("Location"))"
+                                              ConflictLabel="@(LocalizedUiText.Get("Conflict status"))"
                                               Meetings="@_meetingItems"
-                                              EmptyText="No meetings are selected." />
+                                              EmptyText="@(LocalizedUiText.Get("No meetings are selected."))" />
                             <ScheduleList ComponentId="schedule-list"
                                           EquivalentCalendarId="schedule-calendar"
-                                          Heading="Chronological schedule"
-                                          GroupLabel="Group"
-                                          ActivityKindLabel="Activity"
-                                          LecturerLabel="Lecturer"
-                                          TeachingAssistantsLabel="Teaching assistants"
-                                          LocationLabel="Location"
-                                          DayLabel="Day"
-                                          StartLabel="Starts"
-                                          EndLabel="Ends"
-                                          TimezoneLabel="Timezone"
-                                          ConflictLabel="Conflict status"
+                                          Heading="@(LocalizedUiText.Get("Chronological schedule"))"
+                                          GroupLabel="@(LocalizedUiText.Get("Group"))"
+                                          ActivityKindLabel="@(LocalizedUiText.Get("Activity"))"
+                                          LecturerLabel="@(LocalizedUiText.Get("Lecturer"))"
+                                          TeachingAssistantsLabel="@(LocalizedUiText.Get("Teaching assistants"))"
+                                          LocationLabel="@(LocalizedUiText.Get("Location"))"
+                                          DayLabel="@(LocalizedUiText.Get("Day"))"
+                                          StartLabel="@(LocalizedUiText.Get("Starts"))"
+                                          EndLabel="@(LocalizedUiText.Get("Ends"))"
+                                          TimezoneLabel="@(LocalizedUiText.Get("Timezone"))"
+                                          ConflictLabel="@(LocalizedUiText.Get("Conflict status"))"
                                           Meetings="@_meetingItems"
-                                          EmptyText="No meetings are selected." />
+                                          EmptyText="@(LocalizedUiText.Get("No meetings are selected."))" />
                         </div>
 
                         @if (_conflictState is { Conflicts.Count: > 0 })
@@ -222,19 +222,19 @@ else if (_shellContext is not null)
                             @foreach (var conflict in _conflictState.Conflicts)
                             {
                                 <ConflictPanel ComponentId="@($"conflict-{conflict.Source.First.GroupId}-{conflict.Source.Second.GroupId}")"
-                                               Heading="Conflict"
+                                               Heading="@(LocalizedUiText.Get("Conflict"))"
                                                Explanation="@conflict.Source.Message"
-                                               SubjectsHeading="Affected subjects"
-                                               SubjectLabel="Subject"
-                                               GroupLabel="Group"
-                                               OverlapsHeading="Exact overlap"
-                                               DayLabel="Day"
-                                               StartLabel="Starts"
-                                               EndLabel="Ends"
-                                               InvolvedGroupsLabel="Affected groups"
-                                               AlternativesHeading="Alternatives"
-                                               ReplacementGroupsLabel="Replacement groups"
-                                               ResolutionHeading="Resolve conflict"
+                                               SubjectsHeading="@(LocalizedUiText.Get("Affected subjects"))"
+                                               SubjectLabel="@(LocalizedUiText.Get("Subject"))"
+                                               GroupLabel="@(LocalizedUiText.Get("Group"))"
+                                               OverlapsHeading="@(LocalizedUiText.Get("Exact overlap"))"
+                                               DayLabel="@(LocalizedUiText.Get("Day"))"
+                                               StartLabel="@(LocalizedUiText.Get("Starts"))"
+                                               EndLabel="@(LocalizedUiText.Get("Ends"))"
+                                               InvolvedGroupsLabel="@(LocalizedUiText.Get("Affected groups"))"
+                                               AlternativesHeading="@(LocalizedUiText.Get("Alternatives"))"
+                                               ReplacementGroupsLabel="@(LocalizedUiText.Get("Replacement groups"))"
+                                               ResolutionHeading="@(LocalizedUiText.Get("Resolve conflict"))"
                                                Conflict="@conflict.Panel"
                                                ResolutionRequested="ResolveConflictAsync" />
                             }
@@ -243,7 +243,7 @@ else if (_shellContext is not null)
                         @if (_plan.SelectionIssues.Count > 0)
                         {
                             <section aria-labelledby="selection-issues-heading" role="alert">
-                                <h2 id="selection-issues-heading">Selections need attention</h2>
+                                <h2 id="selection-issues-heading">@LocalizedUiText.Get("Selections need attention")</h2>
                                 <ul>
                                     @foreach (var issue in _plan.SelectionIssues)
                                     {
@@ -272,7 +272,7 @@ else if (_shellContext is not null)
                         }
 
                         <ScheduleRecommendationsPanel
-                            FindLabel="Find schedule alternatives"
+                            FindLabel="@(LocalizedUiText.Get("Find schedule alternatives"))"
                             RequestCorrelationId="@RequestCorrelationId"
                             PlanRowVersion="@PlanRowVersion"
                             Result="@_recommendationResult"
@@ -284,12 +284,12 @@ else if (_shellContext is not null)
                             Apply="ApplyRecommendationAsync" />
 
                         <section aria-labelledby="validation-snapshot-heading">
-                            <h2 id="validation-snapshot-heading">Validation snapshot</h2>
+                            <h2 id="validation-snapshot-heading">@LocalizedUiText.Get("Validation snapshot")</h2>
                             <dl>
-                                <div><dt>Evaluated</dt><dd>@_plan.Validation.EvaluatedAtUtc.ToString("u")</dd></div>
-                                <div><dt>Academic context</dt><dd>@_plan.Validation.AcademicContextVersion</dd></div>
-                                <div><dt>Policy</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
-                                <div><dt>Catalogue</dt><dd>@_plan.Validation.CatalogueVersion</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Evaluated")</dt><dd>@_plan.Validation.EvaluatedAtUtc.ToString("u")</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Academic context")</dt><dd>@_plan.Validation.AcademicContextVersion</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Policy")</dt><dd>@_plan.Validation.PolicyVersion</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Catalogue")</dt><dd>@_plan.Validation.CatalogueVersion</dd></div>
                             </dl>
                         </section>
 
@@ -298,12 +298,12 @@ else if (_shellContext is not null)
                                     aria-describedby="@(_plan.ReviewBlocked ? "review-blocked-reason" : null)"
                                     disabled="@(_plan.ReviewBlocked || _requestLoading)"
                                     @onclick="ContinueAsync">
-                                Continue to review
+                                @LocalizedUiText.Get("Continue to review")
                             </button>
                             @if (_plan.ReviewBlocked)
                             {
                                 <p id="review-blocked-reason">
-                                    Resolve every conflict or unavailable selection before continuing.
+                                    @LocalizedUiText.Get("Resolve every conflict or unavailable selection before continuing.")
                                 </p>
                             }
                         </div>
@@ -321,16 +321,16 @@ else
           data-state="@_state"
           data-contract-state="@ContractState"
           tabindex="-1">
-        <h1>Schedule builder</h1>
+        <h1>@LocalizedUiText.Get("Schedule builder")</h1>
         <section role="alert" aria-live="assertive">
             <h2>@FailureHeading</h2>
             <p><strong>@_reasonCode</strong></p>
             <p>@_safeMessage</p>
             @if (!string.IsNullOrWhiteSpace(_referenceId))
             {
-                <p>Reference: @_referenceId</p>
+                <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
             }
-            <a href="/student">Return to Student dashboard</a>
+            <a href="/student">@LocalizedUiText.Get("Return to Student dashboard")</a>
         </section>
     </main>
 }
@@ -348,9 +348,9 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new("Dashboard", "/student"),
-        new("Available subjects", "/student/subjects"),
-        new("Current plan", "/student/schedule", IsActive: true)
+        new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Available subjects"), "/student/subjects"),
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule", IsActive: true)
     ];
 
     private FrontendAppContextView? _shellContext;
@@ -360,7 +360,7 @@ else
     private Guid _termId;
     private string _state = LoadingState;
     private string _reasonCode = "REGISTRATION_PLAN_UNAVAILABLE";
-    private string _safeMessage = "The schedule builder request could not be completed.";
+    private string _safeMessage = LocalizedUiText.Get("The schedule builder request could not be completed.");
     private string? _referenceId;
     private bool _initialLoading = true;
     private bool _requestLoading;
@@ -391,10 +391,10 @@ else
 
     private string FailureHeading => _state switch
     {
-        UnauthorizedState => "Access denied",
-        SessionExpiredState => "Session expired",
-        OfflineState => "Schedule builder is offline",
-        _ => "Schedule builder is unavailable"
+        UnauthorizedState => LocalizedUiText.Get("Access denied"),
+        SessionExpiredState => LocalizedUiText.Get("Session expired"),
+        OfflineState => LocalizedUiText.Get("Schedule builder is offline"),
+        _ => LocalizedUiText.Get("Schedule builder is unavailable")
     };
 
     protected override async Task OnInitializedAsync()
@@ -413,7 +413,7 @@ else
             {
                 ApplyFailure(
                     HttpStatusCode.Forbidden,
-                    new("FORBIDDEN", "A Student session is required.", "STU-04-AUTH"));
+                new("FORBIDDEN", LocalizedUiText.Get("A Student session is required."), "STU-04-AUTH"));
                 return;
             }
 
@@ -423,7 +423,7 @@ else
                     HttpStatusCode.NotFound,
                     new(
                         "REGISTRATION_CONTEXT_NOT_FOUND",
-                        "No authorized registration term is available.",
+                    LocalizedUiText.Get("No authorized registration term is available."),
                         "STU-04-CONTEXT"));
                 return;
             }
@@ -434,7 +434,7 @@ else
                     HttpStatusCode.ServiceUnavailable,
                     new(
                         "REGISTRATION_CONTEXT_INVALID",
-                        "The authorized registration term could not be loaded safely.",
+                        LocalizedUiText.Get("The authorized registration term could not be loaded safely."),
                         "STU-04-CONTEXT"));
                 return;
             }
@@ -532,7 +532,7 @@ else
             {
                 _reasonCode = result.Error?.Code ?? "STALE_VERSION";
                 _safeMessage = result.Error?.Message
-                    ?? "The plan changed in another editor.";
+                    ?? LocalizedUiText.Get("The plan changed in another editor.");
                 _referenceId = result.Error?.CorrelationId;
                 ApplyPlan(result.CurrentPlan, StaleState);
             }
@@ -587,7 +587,7 @@ else
                 _recommendationError = result.Error?.Code ??
                     "RECOMMENDATIONS_UNAVAILABLE";
                 _recommendationErrorMessage = result.Error?.Message ??
-                    "Schedule alternatives could not be loaded.";
+                    LocalizedUiText.Get("Schedule alternatives could not be loaded.");
             }
         }
         catch (OperationCanceledException)
@@ -628,7 +628,7 @@ else
             _recommendationError = result.Error?.Code ??
                 "RECOMMENDATIONS_UNAVAILABLE";
             _recommendationErrorMessage = result.Error?.Message ??
-                "The schedule option could not be applied.";
+                LocalizedUiText.Get("The schedule option could not be applied.");
             if (_recommendationError is
                 "PLAN_CHANGED" or "STALE_INPUT" or "OPTION_EXPIRED")
             {
@@ -735,7 +735,7 @@ else
         _meetingItems = [];
         _conflictState = null;
         _reasonCode = error?.Code ?? "REGISTRATION_PLAN_UNAVAILABLE";
-        _safeMessage = error?.Message ?? "The schedule builder request could not be completed.";
+        _safeMessage = error?.Message ?? LocalizedUiText.Get("The schedule builder request could not be completed.");
         _referenceId = error?.CorrelationId;
         _state = _reasonCode == "SESSION_EXPIRED"
             ? SessionExpiredState
@@ -750,7 +750,7 @@ else
         _meetingItems = [];
         _conflictState = null;
         _reasonCode = "OFFLINE";
-        _safeMessage = "Reconnect, then retry the current plan. No edit was queued.";
+        _safeMessage = LocalizedUiText.Get("Reconnect, then retry the current plan. No edit was queued.");
         _referenceId = null;
         _state = OfflineState;
     }
@@ -763,7 +763,7 @@ else
         var hasConflict = plan.Conflicts.Any(conflict =>
             conflict.First.GroupId == group.GroupId || conflict.Second.GroupId == group.GroupId);
         var issue = plan.SelectionIssues.FirstOrDefault(item => item.GroupId == group.GroupId);
-        var status = hasConflict ? "Conflict" : issue?.Code ?? "No conflict";
+        var status = hasConflict ? LocalizedUiText.Get("Conflict") : issue?.Code ?? LocalizedUiText.Get("No conflict");
         return new(
             meeting.MeetingId.ToString("D"),
             group.CourseCode,
@@ -772,14 +772,14 @@ else
             meeting.ActivityKind,
             meeting.LecturerName,
             meeting.TeachingAssistantNames,
-            $"{meeting.RoomCode} · {meeting.Location}",
+            LocalizedUiText.Format("{0} · {1}", meeting.RoomCode, meeting.Location),
             Day(meeting.DayOfWeek).ToString(),
-            meeting.StartLocal.ToString("HH:mm"),
-            meeting.EndLocal.ToString("HH:mm"),
+            meeting.StartLocal.ToString("t", CultureInfo.CurrentCulture),
+            meeting.EndLocal.ToString("t", CultureInfo.CurrentCulture),
             meeting.Timezone,
             status,
             $"/student/subjects/{group.OfferingId:D}",
-            $"Open {group.CourseCode} group {group.GroupCode} details");
+                LocalizedUiText.Format("Open {0} group {1} details", group.CourseCode, group.GroupCode));
     }
 
     private static ServerScheduleConflictPresentation Present(
@@ -827,7 +827,7 @@ else
     }
 
     private static string Credits(decimal value) =>
-        $"{value:0.##} credits";
+        LocalizedUiText.Format("{0:0.##} credits", value);
 
     private static DayOfWeek Day(int day) =>
         day is >= 0 and <= 6 ? (DayOfWeek)day : DayOfWeek.Sunday;
