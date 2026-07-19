@@ -57,6 +57,39 @@ public sealed class RegistrationIdempotencyFailureTests(
     }
 
     [Fact]
+    public async Task Scope_payload_time_and_observation_guards_fail_before_sql_mutation()
+    {
+        Assert.Throws<ArgumentException>(() => new RegistrationRequestScope(
+            Guid.Empty, Guid.NewGuid(), Guid.NewGuid()));
+        Assert.Throws<ArgumentException>(() => new RegistrationRequestScope(
+            Guid.NewGuid(), Guid.Empty, Guid.NewGuid()));
+        Assert.Throws<ArgumentException>(() => new RegistrationRequestScope(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.Empty));
+        Assert.Throws<ArgumentNullException>(() =>
+            new RegistrationSubmissionStore(null!, TimeProvider.System));
+
+        await using var context = CreateContext();
+        var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+        var scope = new RegistrationRequestScope(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            store.ClaimInsideTransactionAsync(scope, " ", DateTime.UtcNow));
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            store.ClaimInsideTransactionAsync(scope, "hash", DateTime.Now));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            store.WaitForFinalResultAsync(scope, "hash", TimeSpan.FromMilliseconds(-1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            store.ObserveScopedAsync(scope, "hash", TimeSpan.FromMilliseconds(-1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            store.ReadFinalByRequestBoundedAsync(scope, TimeSpan.FromMilliseconds(501)));
+        var immediate = await store.WaitForFinalResultAsync(
+            scope,
+            "hash",
+            TimeSpan.Zero);
+        Assert.Equal(SubmissionClaimStatus.InProgress, immediate.Status);
+    }
+
+    [Fact]
     [Trait("Dependency", "Docker")]
     public async Task Claim_requires_current_transaction_and_rollback_leaves_no_processing_row()
     {
@@ -183,6 +216,102 @@ public sealed class RegistrationIdempotencyFailureTests(
                 DateTime.UtcNow);
             await transaction.CommitAsync();
         }
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Claim_and_observation_distinguish_final_processing_and_missing_requests()
+    {
+        var seed = await database.SeedAsync();
+        var finalScope = new RegistrationRequestScope(
+            seed.StudentId,
+            seed.TermId,
+            Guid.NewGuid());
+        var processingScope = new RegistrationRequestScope(
+            seed.StudentId,
+            seed.TermId,
+            Guid.NewGuid());
+
+        await using (var context = database.CreateContext())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
+        {
+            var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+            var finalClaim = await store.ClaimOrObserveAsync(
+                finalScope,
+                "final-payload",
+                DateTime.UtcNow);
+            Assert.Equal(SubmissionClaimStatus.Claimed, finalClaim.Status);
+            Assert.Equal(
+                SubmissionClaimStatus.InProgress,
+                (await store.ClaimOrObserveAsync(
+                    finalScope,
+                    "final-payload",
+                    DateTime.UtcNow)).Status);
+            Assert.Equal(
+                SubmissionClaimStatus.PayloadMismatch,
+                (await store.ClaimOrObserveAsync(
+                    finalScope,
+                    "different-payload",
+                    DateTime.UtcNow)).Status);
+            await store.FinalizeAcceptedAsync(
+                finalClaim.Submission!,
+                "ACCEPTED",
+                $"REG-{Guid.NewGuid():N}",
+                "{}",
+                "{}",
+                DateTime.UtcNow);
+
+            var processingClaim = await store.ClaimInsideTransactionAsync(
+                processingScope,
+                "processing-payload",
+                DateTime.UtcNow);
+            Assert.Equal(SubmissionClaimStatus.Claimed, processingClaim.Status);
+            await transaction.CommitAsync();
+        }
+
+        await using var observerContext = database.CreateContext();
+        var observer = new RegistrationSubmissionStore(observerContext, TimeProvider.System);
+        Assert.Equal(
+            SubmissionClaimStatus.Replayed,
+            (await observer.ClaimOrObserveAsync(
+                finalScope,
+                "final-payload",
+                DateTime.UtcNow)).Status);
+        Assert.Equal(
+            SubmissionClaimStatus.Replayed,
+            (await observer.ObserveScopedAsync(
+                finalScope,
+                "final-payload",
+                TimeSpan.Zero)).Status);
+
+        var missingScope = new RegistrationRequestScope(
+            seed.StudentId,
+            seed.TermId,
+            Guid.NewGuid());
+        Assert.Equal(
+            SubmissionClaimStatus.NotFound,
+            (await observer.ObserveScopedAsync(
+                missingScope,
+                "missing-payload",
+                TimeSpan.Zero)).Status);
+
+        var finalObservation = await observer.ReadFinalByRequestBoundedAsync(
+            finalScope,
+            TimeSpan.Zero);
+        Assert.False(finalObservation.IsInProgress);
+        Assert.NotNull(finalObservation.Submission);
+        var processingObservation = await observer.ReadFinalByRequestBoundedAsync(
+            processingScope,
+            TimeSpan.Zero);
+        Assert.True(processingObservation.IsInProgress);
+        Assert.Null(processingObservation.Submission);
+        var missingObservation = await observer.ReadFinalByRequestBoundedAsync(
+            missingScope,
+            TimeSpan.Zero);
+        Assert.False(missingObservation.IsInProgress);
+        Assert.Null(missingObservation.Submission);
+        Assert.NotNull(await observer.ReadFinalByRequestAsync(finalScope));
+        Assert.Null(await observer.ReadFinalByRequestAsync(processingScope));
     }
 
     [Fact]

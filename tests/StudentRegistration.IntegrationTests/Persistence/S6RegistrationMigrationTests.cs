@@ -37,7 +37,6 @@ public sealed class S6RegistrationMigrationTests
         Assert.True(RepositoryFiles.Exists(MigrationDesignerPath));
         Assert.True(RepositoryFiles.Exists(SnapshotPath));
         Assert.Contains(MigrationId, migrationsAssembly.Migrations.Keys);
-        Assert.Equal(MigrationId, migrationsAssembly.Migrations.Keys.Order().Last());
 
         var migration = migrationsAssembly.CreateMigration(
             migrationsAssembly.Migrations[MigrationId],

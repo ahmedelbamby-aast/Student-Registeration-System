@@ -1590,6 +1590,9 @@ namespace StudentRegistration.Infrastructure.SqlServer.Migrations
                     b.HasIndex("StudentId", "TermId", "ClientRequestId")
                         .IsUnique();
 
+                    b.HasIndex("StudentId", "TermId", "ProcessingState", "ReceivedAtUtc", "Id")
+                        .HasDatabaseName("IX_RegistrationSubmissions_StudentTermStateReceived");
+
                     b.ToTable("RegistrationSubmissions", "registration", t =>
                         {
                             t.HasCheckConstraint("CK_RegistrationSubmissions_DecisionSnapshotJson", "[DecisionSnapshotJson] IS NULL OR ISJSON([DecisionSnapshotJson]) = 1");

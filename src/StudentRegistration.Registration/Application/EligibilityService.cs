@@ -330,7 +330,9 @@ public sealed class EligibilityService(
             Encode(academic.AcademicContextVersion),
             academic.Catalogue?.VersionCode ?? "unavailable",
             policy?.PolicySetId ?? Guid.Empty,
-            policy?.Version ?? "unavailable",
+            string.IsNullOrWhiteSpace(policy?.Version)
+                ? "unavailable"
+                : policy.Version,
             Encode(offering.RowVersion),
             string.IsNullOrWhiteSpace(plan.Version)
                 ? "unavailable"
@@ -537,8 +539,20 @@ public sealed class EligibilityService(
     private static EligibilityReason UnavailableReason(
         string code,
         string message,
-        EligibilityPolicySnapshot? policy) =>
-        new(
+        EligibilityPolicySnapshot? policy)
+    {
+        var effectiveFrom = policy?.EffectiveFromUtc is { Kind: DateTimeKind.Utc } from
+            ? from
+            : UnavailableEffectiveFromUtc;
+        DateTime? effectiveTo = policy?.EffectiveToUtc is { Kind: DateTimeKind.Utc } to &&
+            to > effectiveFrom
+                ? to
+                : null;
+        var sourceDate = policy?.Rules.FirstOrDefault()?.SourceAccessedOn;
+        var sourceAccessedOn = sourceDate is { } date && date != default
+            ? date
+            : UnavailableSourceDate;
+        return new(
             code,
             false,
             true,
@@ -546,15 +560,21 @@ public sealed class EligibilityService(
             null,
             null,
             policy?.PolicySetId ?? Guid.Empty,
-            policy?.Version ?? "unavailable",
-            policy?.ApprovalReference ?? "DEMO-APPROVAL-2026.1",
-            policy?.Rules.FirstOrDefault()?.SourceAccessedOn ??
-                UnavailableSourceDate,
-            policy?.ApprovedBy ?? "Ahmed ELbamby",
-            policy?.EffectiveFromUtc ?? UnavailableEffectiveFromUtc,
-            policy?.EffectiveToUtc,
+            string.IsNullOrWhiteSpace(policy?.Version)
+                ? "unavailable"
+                : policy.Version,
+            string.IsNullOrWhiteSpace(policy?.ApprovalReference)
+                ? "DEMO-APPROVAL-2026.1"
+                : policy.ApprovalReference,
+            sourceAccessedOn,
+            string.IsNullOrWhiteSpace(policy?.ApprovedBy)
+                ? "Ahmed ELbamby"
+                : policy.ApprovedBy,
+            effectiveFrom,
+            effectiveTo,
             false,
             SupportReferencePath);
+    }
 
     private static DiscoveryMetadata Metadata(
         EligibilityAcademicSnapshot academic,
@@ -566,7 +586,9 @@ public sealed class EligibilityService(
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         return new(
-            academic.Policy?.Version ?? "unavailable",
+            string.IsNullOrWhiteSpace(academic.Policy?.Version)
+                ? "unavailable"
+                : academic.Policy.Version,
             codes,
             academic.RegistrationWindow.IsOpen ? "open" : "closed",
             SupportReferencePath);

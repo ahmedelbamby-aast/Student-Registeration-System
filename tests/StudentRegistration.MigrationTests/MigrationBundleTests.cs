@@ -42,7 +42,8 @@ public sealed class MigrationBundleTests
                 "S2CatalogueScheduling",
                 "S4DiscoveryPlanning",
                 "S6Registration",
-                "S7StaffAdminOperations"
+                "S7StaffAdminOperations",
+                "S8Spec018RegistrationReadPerformance"
             ],
             migrations.Select(migration => migration.GetProperty("id").GetString()!).ToArray());
         Assert.All(

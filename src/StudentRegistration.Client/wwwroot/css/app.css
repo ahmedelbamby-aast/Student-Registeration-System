@@ -363,6 +363,15 @@ body {
     gap: var(--srs-spacing-primitive-3);
 }
 
+.srs-schedule-builder button {
+    min-block-size: calc(
+        var(--srs-sizing-interactive-minimum) + var(--srs-border-primitive-width));
+}
+
+[data-route-id="STF-04"] button {
+    min-block-size: var(--srs-sizing-interactive-minimum);
+}
+
 .srs-registration-review__action {
     display: inline-flex;
     align-items: center;

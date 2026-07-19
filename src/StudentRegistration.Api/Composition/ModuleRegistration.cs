@@ -1,5 +1,7 @@
 using StudentRegistration.Api.Endpoints;
+using StudentRegistration.Api.Development;
 using StudentRegistration.Api.Operations;
+using StudentRegistration.Academics.Application;
 using StudentRegistration.Academics.Endpoints;
 using StudentRegistration.Contracts.Operations;
 using StudentRegistration.IdentityAccess.Endpoints;
@@ -13,7 +15,9 @@ namespace StudentRegistration.Api.Composition;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    private const string InitializeDemoDatabaseArgument = "--initialize-demo-database";
+
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddStudentRegistrationSqlServer(builder.Configuration);
@@ -28,8 +32,28 @@ public static class Program
         builder.Services.AddStudentRegistrationModules();
         builder.Services.AddStudentRegistrationAcademicModule(builder.Configuration);
         builder.Services.AddStudentRegistrationRegistrationModule();
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddScoped<DemoStudentProfileSeedContributor>();
+            builder.Services.AddScoped<DemoDatabaseInitializer>();
+        }
 
         var app = builder.Build();
+        if (args.Contains(InitializeDemoDatabaseArgument, StringComparer.Ordinal))
+        {
+            if (!app.Environment.IsDevelopment())
+            {
+                throw new InvalidOperationException(
+                    "Synthetic database initialization is available only in Development.");
+            }
+
+            await using var scope = app.Services.CreateAsyncScope();
+            await scope.ServiceProvider
+                .GetRequiredService<DemoDatabaseInitializer>()
+                .InitializeAsync(CancellationToken.None);
+            return;
+        }
+
         app.UseSafeApiErrors();
         app.UseStudentRegistrationWebApp();
         app.UseStudentRegistrationObservability();

@@ -1,6 +1,6 @@
 {
   "version": "browser-matrix/1.0.0",
-  "verifiedOn": "2026-07-13",
+  "verifiedOn": "2026-07-18",
   "scope": "POC current-stable desktop compatibility and pinned Playwright WebKit",
   "executionOsImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
   "targets": [
@@ -12,9 +12,9 @@
       "engine": "Blink/Chromium 150.0.7871.101",
       "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
       "status": "required",
-      "result": "planned",
+      "result": "passed",
       "observedLocalVersion": "150.0.7871.101",
-      "preflightStatus": "ready",
+      "preflightStatus": "executed",
       "source": "https://chromereleases.googleblog.com/2026/07/stable-channel-update-for-desktop.html"
     },
     {
@@ -25,9 +25,9 @@
       "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)",
       "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
       "status": "required",
-      "result": "planned",
+      "result": "passed",
       "observedLocalVersion": "150.0.4078.65",
-      "preflightStatus": "ready",
+      "preflightStatus": "executed",
       "source": "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnotes-security"
     },
     {
@@ -38,9 +38,9 @@
       "engine": "Gecko 152",
       "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
       "status": "required",
-      "result": "planned",
-      "observedLocalVersion": "152.0.4",
-      "preflightStatus": "update-required-before-execution",
+      "result": "passed",
+      "observedLocalVersion": "152.0.6",
+      "preflightStatus": "executed",
       "source": "https://www.firefox.com/en-US/firefox/152.0.5/releasenotes/"
     },
     {
@@ -52,9 +52,9 @@
       "playwrightVersion": "1.61.0",
       "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
       "status": "required",
-      "result": "planned",
-      "observedLocalVersion": "not-installed",
-      "preflightStatus": "install-required-before-execution",
+      "result": "passed",
+      "observedLocalVersion": "WebKit 26.5 via Microsoft.Playwright 1.61.0",
+      "preflightStatus": "executed",
       "source": "https://playwright.dev/docs/release-notes#version-161"
     },
     {

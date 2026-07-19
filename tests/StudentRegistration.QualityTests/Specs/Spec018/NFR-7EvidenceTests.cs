@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.QualityTests.Specs.Spec018;
@@ -7,6 +8,8 @@ public sealed class Nfr7EvidenceTests
 {
     private const string RunbookPath = "docs/runbooks/RECOVERY_AND_ROLLBACK.md";
     private const string EvidencePath = "docs/release-evidence/SPEC-018-NFR-7.md";
+    private const string MeasuredEvidencePath =
+        "docs/release-evidence/SPEC-018-NFR-7-recovery.json";
 
     [Theory]
     [InlineData(0, 0, true)]
@@ -41,7 +44,7 @@ public sealed class Nfr7EvidenceTests
     }
 
     [Fact]
-    public void Versioned_evidence_is_pending_until_a_measured_rehearsal_exists()
+    public void Versioned_evidence_records_the_measured_recovery_pass()
     {
         var evidence = RepositoryFiles.Read(EvidencePath);
 
@@ -50,18 +53,33 @@ public sealed class Nfr7EvidenceTests
             "# SPEC-018 NFR-7 Release Evidence",
             "**Artifact version:** 1.0.0",
             "**Requirement:** NFR-7",
-            "**Release result:** PENDING",
+            "**Release result:** PASS",
             "Protocol result: PASS",
-            "Recovery rehearsal result: NOT EXECUTED",
-            "Runtime execution result: PENDING",
-            "Activation condition");
-        Assert.DoesNotContain("Runtime execution result: PASS", evidence, StringComparison.OrdinalIgnoreCase);
+            "Recovery rehearsal result: PASS",
+            "Runtime execution result: PASS",
+            "measured RPO was 1 second",
+            "measured RTO was 2 seconds");
+        Assert.DoesNotContain("Runtime execution result: PENDING", evidence, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip =
-        "Activation condition: an approved production-like backup, clean isolated recovery target, compatible application artifacts, and SPEC-007 through SPEC-014 migrated runtime must exist before measured RPO/RTO and reconciliation evidence can be recorded.")]
+    [Fact]
     public void Measured_restore_rehearsal_meets_rpo_rto_and_reconciliation_gates()
     {
+        using var evidence = JsonDocument.Parse(
+            RepositoryFiles.Read(MeasuredEvidencePath));
+        var root = evidence.RootElement;
+
+        Assert.Equal("1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("SPEC-018", root.GetProperty("ownerSpec").GetString());
+        Assert.Equal("isolated-recovery", root.GetProperty("restoreEnvironment").GetString());
+        Assert.Equal(1, root.GetProperty("measuredRpoSeconds").GetInt32());
+        Assert.Equal(2, root.GetProperty("measuredRtoSeconds").GetInt32());
+        Assert.Equal("pass", root.GetProperty("reconciliationStatus").GetString());
+        Assert.Equal("pass", root.GetProperty("status").GetString());
+        Assert.False(root.GetProperty("productionAuthorized").GetBoolean());
+        Assert.All(
+            root.GetProperty("integrityChecks").EnumerateArray(),
+            check => Assert.Equal("pass", check.GetProperty("status").GetString()));
     }
 
     private static bool ObjectivesPass(int measuredRpoSeconds, int measuredRtoSeconds) =>

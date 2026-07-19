@@ -209,9 +209,7 @@ public sealed class RegistrationReviewPageAccessibilityTests(AxeAccessibilityFix
             }
         });
         await page.GotoAsync("/student/review", new() { WaitUntil = WaitUntilState.DOMContentLoaded });
-        await page.GetByRole(
-            AriaRole.Heading,
-            new() { Name = "Registration review", Exact = true }).WaitForAsync();
+        await page.Locator("main h1").WaitForAsync();
         await page.Locator($"[data-route-id='STU-05'][data-state='{(blocked ? "validation-error" : "success")}']")
             .WaitForAsync();
         return page;

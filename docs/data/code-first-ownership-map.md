@@ -87,8 +87,9 @@ tests pass; one shared snapshot is advanced in dependency order.
 | Initial | `S1IdentityAcademicFoundation` | SPEC-008 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713010000_IdentityAcademicFoundation.cs` |
 | Incremental | `S2CatalogueScheduling` | SPEC-010 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713020000_CatalogueScheduling.cs` |
 | Incremental | `S4DiscoveryPlanning` | SPEC-012 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713040000_DiscoveryPlanning.cs` |
-| Incremental | `S6Registration` | SPEC-015 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs` |
+| Incremental | `S6Registration` | SPEC-014 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs` |
 | Incremental | `S7StaffAdminOperations` | SPEC-017 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs` |
+| Incremental performance | `S8Spec018RegistrationReadPerformance` | SPEC-018 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260717222551_Spec018RegistrationReadPerformance.cs` |
 
 ## Environment and production boundary
 

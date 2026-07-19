@@ -1,0 +1,37 @@
+{
+  "artifactVersion": "1.0.0",
+  "recordedAtUtc": "2026-07-18T07:50:49Z",
+  "requirement": "SPEC-018/NFR-8",
+  "result": "PASS",
+  "operatingSystem": "Microsoft Windows 10.0.26200",
+  "browsers": [
+    "Google Chrome",
+    "Microsoft Edge",
+    "Mozilla Firefox",
+    "Playwright WebKit"
+  ],
+  "routes": [
+    "AUTH-02",
+    "AUTH-04",
+    "STU-02",
+    "STU-04",
+    "STU-05",
+    "STU-06",
+    "STF-01",
+    "STF-03",
+    "STF-04"
+  ],
+  "browserRouteCombinations": 36,
+  "passedCombinations": 36,
+  "failedCombinations": 0,
+  "sourceSummarySha256": "95A7AC5EDCDC1AE0AA66F6319009329A0CDB0C9ABE8DC3ED6344D847449CA70C",
+  "checks": [
+    "axe serious-or-worse findings",
+    "keyboard focus and semantics",
+    "44 CSS pixel targets",
+    "responsive overflow"
+  ],
+  "safari": "deferred; Playwright WebKit is not Safari",
+  "manualSignOffSatisfied": false,
+  "productionAuthorized": false
+}

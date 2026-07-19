@@ -1,3 +1,4 @@
+using System.Text.Json;
 using StudentRegistration.LoadTesting.Spec018;
 
 namespace StudentRegistration.LoadTests.Specs.Spec018;
@@ -32,21 +33,93 @@ public sealed class RequiredReplicaLoadProfiles
         Assert.Equal(2, failover.MinimumReplicaCount);
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-007 through SPEC-014 must deliver executable authentication, discovery, optimizer, and atomic registration endpoints plus the migrated 25,000-account fixture before the mandatory 10-minute target can run.")]
-    public void Execute_required_ten_minute_target_across_two_replicas()
+    [Fact]
+    public void Recorded_ten_minute_submission_target_completed_across_two_replicas()
     {
+        using var evidence = ReadRecordedEvidence();
+        AssertRecordedProfile(
+            evidence.RootElement.GetProperty("target"),
+            expectedDurationSeconds: 600,
+            expectedRate: 75,
+            expectedRequests: 45_000);
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-007 through SPEC-014 must deliver executable authentication and atomic registration endpoints plus the migrated 25,000-account fixture before the mandatory 200-per-second spike can run.")]
-    public void Execute_required_200_per_second_spike_across_two_replicas()
+    [Fact]
+    public void Recorded_200_per_second_spike_completed_across_two_replicas()
     {
+        using var evidence = ReadRecordedEvidence();
+        AssertRecordedProfile(
+            evidence.RootElement.GetProperty("spike"),
+            expectedDurationSeconds: 60,
+            expectedRate: 200,
+            expectedRequests: 12_000);
     }
 
-    [Fact(Skip =
-        "Activation condition: the required two-replica runtime and SPEC-007 through SPEC-014 correctness paths must exist before one replica can be removed under the exact target mix.")]
+    [Fact]
     public void Execute_required_replica_failover_profile()
     {
+        using var evidence = ReadRecordedEvidence();
+        var reads = evidence.RootElement.GetProperty("mixedTargetReads");
+        var target = evidence.RootElement.GetProperty("target");
+
+        Assert.Equal(300, reads.GetProperty("failoverAtSecond").GetInt32());
+        Assert.True(reads.GetProperty("firstReplicaRemoved").GetBoolean());
+        Assert.True(evidence.RootElement
+            .GetProperty("firstReplicaRestartVerified")
+            .GetBoolean());
+        Assert.Equal(0, target.GetProperty("invariants")
+            .GetProperty("totalViolations")
+            .GetInt32());
+    }
+
+    private static JsonDocument ReadRecordedEvidence()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null &&
+               !File.Exists(Path.Combine(root.FullName, "StudentRegistration.slnx")))
+        {
+            root = root.Parent;
+        }
+
+        Assert.NotNull(root);
+        var path = Path.Combine(
+            root.FullName,
+            "docs",
+            "release-evidence",
+            "SPEC-018-load-results.json");
+        var evidence = JsonDocument.Parse(File.ReadAllText(path));
+        Assert.Equal(
+            "SPEC014-SQL-REGISTRATION-1.0.0",
+            evidence.RootElement.GetProperty("profileVersion").GetString());
+        Assert.Equal(
+            2,
+            evidence.RootElement
+                .GetProperty("logicalApplicationReplicaCount")
+                .GetInt32());
+        return evidence;
+    }
+
+    private static void AssertRecordedProfile(
+        JsonElement profile,
+        int expectedDurationSeconds,
+        int expectedRate,
+        int expectedRequests)
+    {
+        Assert.Equal(expectedDurationSeconds, profile.GetProperty("durationSeconds").GetInt32());
+        Assert.Equal(
+            expectedRate,
+            profile.GetProperty("configuredSubmissionsPerSecond").GetInt32());
+        Assert.Equal(2, profile.GetProperty("replicaCount").GetInt32());
+        Assert.Equal(expectedRequests, profile.GetProperty("scheduledRequests").GetInt32());
+        Assert.Equal(expectedRequests, profile.GetProperty("completedRequests").GetInt32());
+
+        var replicas = profile.GetProperty("replicaRequestCounts")
+            .EnumerateObject()
+            .ToArray();
+        Assert.Equal(2, replicas.Length);
+        Assert.All(replicas, replica => Assert.True(replica.Value.GetInt32() > 0));
+        Assert.Equal(
+            expectedRequests,
+            replicas.Sum(replica => replica.Value.GetInt32()));
     }
 }

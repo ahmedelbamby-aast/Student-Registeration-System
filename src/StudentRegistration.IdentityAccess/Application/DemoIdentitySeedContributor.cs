@@ -9,9 +9,6 @@ public sealed class DemoIdentitySeedContributor
 {
     private const string ClientRequestId = "spec007-demo-seed-v1";
     private const string UniversityIdSeedPrefix = "AI26";
-    private static readonly char[] SecretAlphabet =
-        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_".ToCharArray();
-
     private readonly IIdentitySeedStore _store;
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly TimeProvider _timeProvider;
@@ -61,10 +58,10 @@ public sealed class DemoIdentitySeedContributor
                 credentials);
         }
 
-        AddIdentity("admin.demo", null, "Demo Administrator", "ADM-0001", ["Admin"], provisionedAtUtc, identities, credentials);
-        AddIdentity("lecturer.demo", null, "Demo Lecturer", "LEC-0001", ["Lecturer"], provisionedAtUtc, identities, credentials);
-        AddIdentity("ta.demo", null, "Demo Teaching Assistant", "TA-0001", ["TeachingAssistant"], provisionedAtUtc, identities, credentials);
-        AddIdentity("dual.demo", null, "Demo Lecturer and TA", "DUAL-0001", ["Lecturer", "TeachingAssistant"], provisionedAtUtc, identities, credentials);
+        AddIdentity("ADM-0001", null, "Demo Administrator", "ADM-0001", ["Admin"], provisionedAtUtc, identities, credentials);
+        AddIdentity("LEC-0001", null, "Demo Lecturer", "LEC-0001", ["Lecturer"], provisionedAtUtc, identities, credentials);
+        AddIdentity("TA-0001", null, "Demo Teaching Assistant", "TA-0001", ["TeachingAssistant"], provisionedAtUtc, identities, credentials);
+        AddIdentity("DUAL-0001", null, "Demo Lecturer and TA", "DUAL-0001", ["Lecturer", "TeachingAssistant"], provisionedAtUtc, identities, credentials);
 
         // The store performs an idempotent reconciliation by stable synthetic keys.
         var provisionedUserIds = await _store.ReconcileAsync(
@@ -88,7 +85,7 @@ public sealed class DemoIdentitySeedContributor
         ICollection<GeneratedDemoCredential> credentials)
     {
         var normalizedUserName = IdentityTextNormalizer.NormalizeUserName(userName);
-        var secret = RandomNumberGenerator.GetString(SecretAlphabet, 24);
+        var secret = $"Demo@2026-{userName}";
         var userId = StableGuid(normalizedUserName);
         var stamp = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var transient = new ApplicationUser(

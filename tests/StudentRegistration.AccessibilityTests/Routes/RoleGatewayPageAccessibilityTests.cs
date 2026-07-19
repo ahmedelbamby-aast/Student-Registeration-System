@@ -140,10 +140,7 @@ public sealed class RoleGatewayPageAccessibilityTests(AxeAccessibilityFixture fi
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
-        await page.GetByRole(
-                AriaRole.Heading,
-                new PageGetByRoleOptions { Name = "Role gateway", Exact = true })
-            .WaitForAsync();
+        await page.Locator("h1#role-gateway-heading").WaitForAsync();
         return page;
     }
 }

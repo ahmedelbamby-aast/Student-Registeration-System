@@ -54,25 +54,25 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
     private static readonly IReadOnlyList<StaffFixture> StaffFixtures =
     [
         StaffFixture.Create(
-            "admin.demo",
+            "ADM-0001",
             "ADMIN.DEMO",
             "ADM-0001",
             "Demo Administrator",
             RolePolicies.Admin),
         StaffFixture.Create(
-            "lecturer.demo",
+            "LEC-0001",
             "LECTURER.DEMO",
             "LEC-0001",
             "Demo Lecturer",
             RolePolicies.Lecturer),
         StaffFixture.Create(
-            "ta.demo",
+            "TA-0001",
             "TA.DEMO",
             "TA-0001",
             "Demo Teaching Assistant",
             RolePolicies.TeachingAssistant),
         StaffFixture.Create(
-            "dual.demo",
+            "DUAL-0001",
             "DUAL.DEMO",
             "DUAL-0001",
             "Demo Lecturer and TA",
@@ -81,6 +81,7 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
     ];
     private readonly MsSqlContainer _container;
     private readonly int _studentCount;
+    private readonly bool _enableReadCommittedSnapshot;
     private readonly string _artifactRoot;
     private WebApplication? _firstReplica;
     private WebApplication? _secondReplica;
@@ -93,7 +94,9 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
     private bool _initializationAttempted;
     private bool _disposed;
 
-    public Spec008TwoReplicaSharedSqlFixture(int studentCount = DefaultStudentCount)
+    public Spec008TwoReplicaSharedSqlFixture(
+        int studentCount = DefaultStudentCount,
+        bool enableReadCommittedSnapshot = false)
     {
         if (studentCount is < 1 or > DefaultStudentCount)
         {
@@ -101,6 +104,7 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
         }
 
         _studentCount = studentCount;
+        _enableReadCommittedSnapshot = enableReadCommittedSnapshot;
         RunId = Guid.NewGuid().ToString("N");
         DatabaseName = $"StudentRegistration_Test_{RunId}";
         _artifactRoot = Path.Combine(
@@ -146,6 +150,44 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
 
     public IReadOnlyList<HttpClient> ReplicaClients =>
         [FirstReplicaClient, SecondReplicaClient];
+
+    public async Task StopFirstReplicaAsync()
+    {
+        if (_firstReplica is null || _firstClient is null)
+        {
+            throw new InvalidOperationException("The first API replica is not running.");
+        }
+
+        _firstClient.Dispose();
+        _firstClient = null;
+        var replica = _firstReplica;
+        _firstReplica = null;
+        await StopReplicaAsync(replica).ConfigureAwait(false);
+    }
+
+    public async Task RestartFirstReplicaAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (_firstReplica is not null || _firstClient is not null ||
+            ConnectionString is null)
+        {
+            throw new InvalidOperationException(
+                "Only a stopped, initialized first API replica can be restarted.");
+        }
+
+        _firstReplica = await StartReplicaAsync(
+                FirstReplicaAddress,
+                ConnectionString,
+                cancellationToken)
+            .ConfigureAwait(false);
+        _firstClient = _firstReplica.GetTestClient();
+        _firstClient.BaseAddress = FirstReplicaAddress;
+        await VerifyAuthenticatedContextAsync(
+                _firstClient,
+                StudentSessions[0],
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -931,7 +973,10 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
         application.UseStudentRegistrationIdentitySecurity();
         application.MapSpec007Endpoints();
         application.MapSpec008Endpoints();
+        application.MapSpec011Endpoints();
+        application.MapSpec012Endpoints();
         application.MapSpec014Endpoints();
+        application.MapSpec015Endpoints();
         await application.StartAsync(cancellationToken).ConfigureAwait(false);
         return application;
     }
@@ -954,11 +999,15 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
 
     private async Task CreateDatabaseAsync(CancellationToken cancellationToken)
     {
+        var readCommittedSnapshotSql = _enableReadCommittedSnapshot
+            ? $"ALTER DATABASE [{DatabaseName}] SET READ_COMMITTED_SNAPSHOT ON;"
+            : string.Empty;
         var result = await _container.ExecScriptAsync($"""
             IF DB_ID(N'{DatabaseName}') IS NOT NULL
                 THROW 51030, 'Per-run load database already exists.', 1;
             CREATE DATABASE [{DatabaseName}];
             ALTER DATABASE [{DatabaseName}] SET COMPATIBILITY_LEVEL = 160;
+            {readCommittedSnapshotSql}
             """, cancellationToken).ConfigureAwait(false);
         if (result.ExitCode is not 0)
         {

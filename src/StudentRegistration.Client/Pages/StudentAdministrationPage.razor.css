@@ -246,7 +246,10 @@
 .srs-student-admin__dialog button,
 .srs-student-admin__dialog input,
 .srs-student-admin__dialog textarea {
-    min-height: 2.75rem;
+    min-block-size: calc(
+        var(--srs-sizing-interactive-minimum) + var(--srs-border-primitive-width));
+    min-height: calc(
+        var(--srs-sizing-interactive-minimum) + var(--srs-border-primitive-width));
     border-radius: 0.5rem;
     font: inherit;
 }

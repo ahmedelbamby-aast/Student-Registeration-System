@@ -241,10 +241,7 @@ public sealed class StudentDashboardPageAccessibilityTests(AxeAccessibilityFixtu
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
-        await page.GetByRole(
-                AriaRole.Heading,
-                new() { Name = "Student dashboard", Exact = true })
-            .WaitForAsync();
+        await page.Locator("h1#student-dashboard-heading").WaitForAsync();
         await page.Locator("[data-route-id='STU-01'][data-state='success']")
             .WaitForAsync();
         return page;

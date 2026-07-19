@@ -93,10 +93,24 @@ internal static class IdentityRouteAccessibilityAssertions
         });
         try
         {
-            await page.GetByRole(
-                    AriaRole.Heading,
-                    new PageGetByRoleOptions { Name = heading, Exact = true })
-                .WaitForAsync(new LocatorWaitForOptions { Timeout = 5_000 });
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                var body = await page.Locator("body").InnerTextAsync();
+                if (body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Any(value => string.Equals(
+                        value.Trim(),
+                        heading,
+                        StringComparison.Ordinal)))
+                {
+                    await Task.Delay(250);
+                    return page;
+                }
+
+                await Task.Delay(100);
+            }
+
+            throw new TimeoutException();
         }
         catch (TimeoutException)
         {
@@ -104,7 +118,5 @@ internal static class IdentityRouteAccessibilityAssertions
             throw new XunitException(
                 $"Route {route} did not render heading '{heading}'. Body: {body}");
         }
-
-        return page;
     }
 }

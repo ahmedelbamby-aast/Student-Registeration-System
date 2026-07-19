@@ -59,6 +59,45 @@ public sealed record Spec014ProfileEvidence(
     Spec014InvariantEvidence Invariants,
     IReadOnlyDictionary<string, int> ReplicaRequestCounts);
 
+public sealed record Spec018MixedReadEvidence(
+    string Name,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset CompletedAtUtc,
+    int DurationSeconds,
+    int ConfiguredReadsPerSecond,
+    int ReplicaCount,
+    int ScheduledRequests,
+    int CompletedRequests,
+    int DiscoveryReads,
+    int EligibilityReads,
+    int PlanAndTimetableReads,
+    int RegistrationRecordReads,
+    int UnexpectedFailures,
+    double UnexpectedFailureRatePercent,
+    double DiscoveryP95Milliseconds,
+    double EligibilityP95Milliseconds,
+    double PlanAndTimetableP95Milliseconds,
+    double RegistrationRecordsP95Milliseconds,
+    int FailoverAtSecond,
+    bool FirstReplicaRemoved,
+    IReadOnlyDictionary<string, int> ReplicaRequestCounts,
+    IReadOnlyDictionary<int, int> StatusCounts,
+    IReadOnlyDictionary<string, int> FailureKinds);
+
+public sealed record Spec018MixedDiagnosticEvidence(
+    bool ReadCommittedSnapshotEnabled,
+    Spec014ProfileEvidence Submissions,
+    Spec018MixedReadEvidence Reads,
+    IReadOnlyList<Spec018SqlHotspotEvidence> SqlHotspots);
+
+public sealed record Spec018SqlHotspotEvidence(
+    string QueryHash,
+    string Category,
+    long ExecutionCount,
+    double TotalElapsedMilliseconds,
+    double AverageElapsedMilliseconds,
+    long TotalLogicalReads);
+
 public sealed record Spec014MetricEvidence(
     IReadOnlyList<string> PublishedMetricNames,
     long DeadlockCount,
@@ -102,6 +141,7 @@ public sealed record Spec014LoadEvidence(
     string DatabaseEngine,
     string ExecutionBoundary,
     Spec014ProfileEvidence Target,
+    Spec018MixedReadEvidence MixedTargetReads,
     Spec014ProfileEvidence Spike,
     Spec014CollisionEvidence Collision,
     Spec014BoundaryEvidence Boundary,
@@ -111,7 +151,8 @@ public sealed record Spec014LoadEvidence(
     int RemoteCallsInsideTransactions,
     bool CancellationBeforeCommitVerified,
     int PrivacyViolations,
-    bool EndpointSmokeExecuted)
+    bool EndpointSmokeExecuted,
+    bool FirstReplicaRestartVerified)
 {
     public const string CheckedInArtifactPath =
         "docs/release-evidence/SPEC-014-load-results.json";
@@ -145,6 +186,7 @@ public static class Spec014RegistrationLoadHarness
     private static readonly string[] FingerprintedFiles =
     [
         "tests/StudentRegistration.QualityTests/Specs/Spec014/Spec014RegistrationLoadHarness.cs",
+        "tests/StudentRegistration.LoadTests/Infrastructure/Spec008TwoReplicaSharedSqlFixture.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/RegistrationSubmissionStore.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/SqlSeatAllocator.cs",
         "src/StudentRegistration.Infrastructure.SqlServer/Registration/EnrollmentCounterReconciler.cs",
@@ -180,7 +222,9 @@ public static class Spec014RegistrationLoadHarness
     public static async Task<Spec014LoadEvidence> RunExactProfilesAsync(
         CancellationToken cancellationToken = default)
     {
-        await using var database = new Spec008TwoReplicaSharedSqlFixture(AccountCount);
+        await using var database = new Spec008TwoReplicaSharedSqlFixture(
+            AccountCount,
+            enableReadCommittedSnapshot: true);
         await database.InitializeAsync(cancellationToken);
         var connectionString = database.ConnectionString ??
             throw new InvalidOperationException("The shared SQL fixture is not ready.");
@@ -210,7 +254,7 @@ public static class Spec014RegistrationLoadHarness
             database,
             cancellationToken);
 
-        var target = await RunProfileAsync(
+        var targetTask = RunProfileAsync(
             "required-target",
             TargetDurationSeconds,
             TargetRate,
@@ -219,7 +263,16 @@ public static class Spec014RegistrationLoadHarness
             replicas,
             dataset,
             metrics,
+            cancellationToken,
+            failureInjectionAtSecond: TargetDurationSeconds / 2);
+        var mixedReadsTask = RunMixedReadProfileAsync(
+            database,
+            dataset,
             cancellationToken);
+        await Task.WhenAll(targetTask, mixedReadsTask);
+        var target = await targetTask;
+        var mixedTargetReads = await mixedReadsTask;
+        await database.RestartFirstReplicaAsync(cancellationToken);
         var spike = await RunProfileAsync(
             "required-200-per-second-spike",
             SpikeDurationSeconds,
@@ -259,9 +312,10 @@ public static class Spec014RegistrationLoadHarness
             AccountCount,
             LogicalSessionCount,
             ReplicaCount,
-            "SQL Server 2022 Developer compatibility 160 (Testcontainers)",
+            "SQL Server 2022 Developer compatibility 160 (Testcontainers; READ_COMMITTED_SNAPSHOT ON)",
             "RegistrationSubmissionStore + SqlSeatAllocator + Enrollment/Audit atomic commit",
             target,
+            mixedTargetReads,
             spike,
             collision,
             boundary,
@@ -273,7 +327,8 @@ public static class Spec014RegistrationLoadHarness
             privacyViolations,
             EndpointSmokeExecuted:
                 boundary.HttpUnauthorizedResponses == 1 &&
-                boundary.HttpAntiforgeryRejections == 1);
+                boundary.HttpAntiforgeryRejections == 1,
+            FirstReplicaRestartVerified: true);
     }
 
     public static async Task RunRetriableTransactionSmokeAsync(
@@ -289,6 +344,7 @@ public static class Spec014RegistrationLoadHarness
             connectionString,
             cancellationToken,
             smokeAccountCount);
+        await VerifyMixedReadEndpointsAsync(database, dataset, cancellationToken);
         var replica = new LogicalRegistrationReplica("smoke-replica", connectionString);
         using var metrics = new RegistrationMetricCollector();
         await VerifyRetriableTransactionSmokeAsync(
@@ -340,6 +396,190 @@ public static class Spec014RegistrationLoadHarness
         {
             throw new InvalidOperationException(
                 "The fast SPEC-014 transaction/invariant/metric smoke did not satisfy its evidence contract.");
+        }
+    }
+
+    public static async Task<Spec018MixedDiagnosticEvidence> RunMixedDiagnosticAsync(
+        CancellationToken cancellationToken = default)
+    {
+        const int durationSeconds = 30;
+        var enableReadCommittedSnapshot = string.Equals(
+            Environment.GetEnvironmentVariable("SPEC018_ENABLE_RCSI"),
+            "1",
+            StringComparison.Ordinal);
+        await using var database = new Spec008TwoReplicaSharedSqlFixture(
+            AccountCount,
+            enableReadCommittedSnapshot);
+        await database.InitializeAsync(cancellationToken);
+        var connectionString = database.ConnectionString ??
+            throw new InvalidOperationException("The diagnostic SQL fixture is not ready.");
+        var dataset = await SeedRegistrationDatasetAsync(connectionString, cancellationToken);
+        var replicas = new[]
+        {
+            new LogicalRegistrationReplica("replica-a", connectionString),
+            new LogicalRegistrationReplica("replica-b", connectionString)
+        };
+        using var metrics = new RegistrationMetricCollector();
+        var submissions = RunProfileAsync(
+            "diagnostic-mixed-submissions",
+            durationSeconds,
+            TargetRate,
+            "diagnostic",
+            0,
+            replicas,
+            dataset,
+            metrics,
+            cancellationToken);
+        var reads = RunMixedReadProfileAsync(
+            database,
+            dataset,
+            cancellationToken,
+            durationSeconds,
+            failoverAtSecond: null);
+        await Task.WhenAll(submissions, reads);
+        var evidence = new Spec018MixedDiagnosticEvidence(
+            await ReadCommittedSnapshotEnabledAsync(
+                connectionString,
+                cancellationToken),
+            await submissions,
+            await reads,
+            await QuerySqlHotspotsAsync(connectionString, cancellationToken));
+        var path = Path.Combine(
+            FindRepositoryRoot(),
+            ".local",
+            "evidence",
+            "SPEC-018-mixed-diagnostic.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(
+            path,
+            JsonSerializer.Serialize(evidence, JsonOptions),
+            cancellationToken);
+        return evidence;
+    }
+
+    private static async Task<bool> ReadCommittedSnapshotEnabledAsync(
+        string connectionString,
+        CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT [is_read_committed_snapshot_on]
+            FROM [sys].[databases]
+            WHERE [database_id] = DB_ID();
+            """;
+        return Convert.ToBoolean(
+            await command.ExecuteScalarAsync(cancellationToken),
+            CultureInfo.InvariantCulture);
+    }
+
+    private static async Task<IReadOnlyList<Spec018SqlHotspotEvidence>>
+        QuerySqlHotspotsAsync(
+            string connectionString,
+            CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandTimeout = 120;
+        command.CommandText = """
+            SELECT TOP (20)
+                CONVERT(varchar(64), qs.query_hash, 2) AS QueryHash,
+                qs.execution_count,
+                qs.total_elapsed_time / 1000.0 AS TotalElapsedMilliseconds,
+                (qs.total_elapsed_time / NULLIF(qs.execution_count, 0)) / 1000.0
+                    AS AverageElapsedMilliseconds,
+                qs.total_logical_reads,
+                SUBSTRING(
+                    text.text,
+                    (qs.statement_start_offset / 2) + 1,
+                    ((CASE qs.statement_end_offset
+                        WHEN -1 THEN DATALENGTH(text.text)
+                        ELSE qs.statement_end_offset
+                      END - qs.statement_start_offset) / 2) + 1) AS StatementText
+            FROM sys.dm_exec_query_stats AS qs
+            CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) AS text
+            WHERE text.dbid = DB_ID()
+               OR CHARINDEX(N'[auth].', text.text) > 0
+               OR CHARINDEX(N'[academics].', text.text) > 0
+               OR CHARINDEX(N'[scheduling].', text.text) > 0
+               OR CHARINDEX(N'[registration].', text.text) > 0
+               OR CHARINDEX(N'[audit].', text.text) > 0
+            ORDER BY qs.total_elapsed_time DESC;
+            """;
+        var results = new List<Spec018SqlHotspotEvidence>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var statement = reader.GetString(5);
+            results.Add(new Spec018SqlHotspotEvidence(
+                reader.GetString(0),
+                ClassifySql(statement),
+                reader.GetInt64(1),
+                Convert.ToDouble(reader.GetValue(2), CultureInfo.InvariantCulture),
+                Convert.ToDouble(reader.GetValue(3), CultureInfo.InvariantCulture),
+                reader.GetInt64(4)));
+        }
+
+        return results;
+    }
+
+    private static string ClassifySql(string statement)
+    {
+        if (statement.Contains("ApplicationUsers", StringComparison.Ordinal))
+        {
+            return "identity-security-stamp";
+        }
+
+        if (statement.Contains("CourseOfferings", StringComparison.Ordinal) ||
+            statement.Contains("OfferingEligibility", StringComparison.Ordinal))
+        {
+            return "offering-discovery";
+        }
+
+        if (statement.Contains("RegistrationPlans", StringComparison.Ordinal) ||
+            statement.Contains("CurrentRegistration", StringComparison.Ordinal))
+        {
+            return "plan-or-timetable";
+        }
+
+        if (statement.Contains("RegistrationSubmissions", StringComparison.Ordinal) ||
+            statement.Contains("Enrollments", StringComparison.Ordinal))
+        {
+            return "registration-write-or-records";
+        }
+
+        if (statement.Contains("Students", StringComparison.Ordinal) ||
+            statement.Contains("AcademicTerms", StringComparison.Ordinal))
+        {
+            return "academic-context";
+        }
+
+        return "other-bounded-sql";
+    }
+
+    private static async Task VerifyMixedReadEndpointsAsync(
+        Spec008TwoReplicaSharedSqlFixture fixture,
+        RegistrationLoadDataset dataset,
+        CancellationToken cancellationToken)
+    {
+        var kinds = Enum.GetValues<Spec018ReadKind>();
+        for (var index = 0; index < kinds.Length; index++)
+        {
+            var kind = kinds[index];
+            using var request = fixture.StudentSessions[index].CreateRequest(
+                HttpMethod.Get,
+                ReadPath(kind, dataset));
+            using var response = await fixture.ReplicaClients[index % 2].SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+            if (!ExpectedReadStatus(kind, response.StatusCode))
+            {
+                throw new InvalidOperationException(
+                    $"The {kind} read smoke returned HTTP {(int)response.StatusCode}.");
+            }
         }
     }
 
@@ -545,6 +785,19 @@ public static class Spec014RegistrationLoadHarness
             evidence.Target.TransactionP95Milliseconds > 2_000 ||
             evidence.Target.UnexpectedFailureRatePercent >= 0.1 ||
             evidence.Target.Invariants.TotalViolations != 0 ||
+            evidence.MixedTargetReads.DurationSeconds != TargetDurationSeconds ||
+            evidence.MixedTargetReads.ConfiguredReadsPerSecond != 300 ||
+            evidence.MixedTargetReads.ScheduledRequests != 180_000 ||
+            evidence.MixedTargetReads.CompletedRequests != 180_000 ||
+            evidence.MixedTargetReads.DiscoveryReads != 90_000 ||
+            evidence.MixedTargetReads.EligibilityReads != 45_000 ||
+            evidence.MixedTargetReads.PlanAndTimetableReads != 27_000 ||
+            evidence.MixedTargetReads.RegistrationRecordReads != 18_000 ||
+            evidence.MixedTargetReads.UnexpectedFailureRatePercent >= 0.1 ||
+            evidence.MixedTargetReads.DiscoveryP95Milliseconds > 300 ||
+            evidence.MixedTargetReads.FailoverAtSecond != 300 ||
+            !evidence.MixedTargetReads.FirstReplicaRemoved ||
+            !evidence.FirstReplicaRestartVerified ||
             evidence.Spike.ConfiguredSubmissionsPerSecond != SpikeRate ||
             evidence.Spike.DurationSeconds != SpikeDurationSeconds ||
             evidence.Spike.ScheduledRequests != SpikeRate * SpikeDurationSeconds ||
@@ -579,7 +832,14 @@ public static class Spec014RegistrationLoadHarness
             evidence.PrivacyViolations != 0)
         {
             throw new InvalidOperationException(
-                "SPEC-014 release evidence failed one or more NFR gates and cannot be published.");
+                "SPEC-014 release evidence failed one or more NFR gates and cannot be published. " +
+                $"target={JsonSerializer.Serialize(evidence.Target, JsonOptions)}; " +
+                $"reads={JsonSerializer.Serialize(evidence.MixedTargetReads, JsonOptions)}; " +
+                $"spike={JsonSerializer.Serialize(evidence.Spike, JsonOptions)}; " +
+                $"collision={JsonSerializer.Serialize(evidence.Collision, JsonOptions)}; " +
+                $"boundary={JsonSerializer.Serialize(evidence.Boundary, JsonOptions)}; " +
+                $"metrics={JsonSerializer.Serialize(evidence.Metrics, JsonOptions)}; " +
+                $"privacyViolations={evidence.PrivacyViolations}.");
         }
 
         var requiredMetrics = new[]
@@ -654,7 +914,8 @@ public static class Spec014RegistrationLoadHarness
         IReadOnlyList<LogicalRegistrationReplica> replicas,
         RegistrationLoadDataset dataset,
         RegistrationMetricCollector metrics,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        int? failureInjectionAtSecond = null)
     {
         var totalRequests = checked(durationSeconds * requestsPerSecond);
         var samples = new double[totalRequests];
@@ -684,7 +945,12 @@ public static class Spec014RegistrationLoadHarness
             }
 
             var requestIndex = index;
-            var replicaIndex = index % replicas.Count;
+            var failoverRequestIndex = failureInjectionAtSecond.HasValue
+                ? checked(failureInjectionAtSecond.Value * requestsPerSecond)
+                : int.MaxValue;
+            var replicaIndex = index >= failoverRequestIndex
+                ? replicas.Count - 1
+                : index % replicas.Count;
             Interlocked.Increment(ref replicaCounts[replicaIndex]);
             tasks[index] = Task.Run(async () =>
             {
@@ -763,6 +1029,251 @@ public static class Spec014RegistrationLoadHarness
                 [replicas[0].Name] = replicaCounts[0],
                 [replicas[1].Name] = replicaCounts[1]
             });
+    }
+
+    private static async Task<Spec018MixedReadEvidence> RunMixedReadProfileAsync(
+        Spec008TwoReplicaSharedSqlFixture fixture,
+        RegistrationLoadDataset dataset,
+        CancellationToken cancellationToken,
+        int durationSeconds = 600,
+        int? failoverAtSecond = 300)
+    {
+        const int readsPerSecond = 300;
+        var totalRequests = checked(readsPerSecond * durationSeconds);
+        var failoverRequestIndex = failoverAtSecond.HasValue
+            ? checked(readsPerSecond * failoverAtSecond.Value)
+            : int.MaxValue;
+        var firstClient = fixture.FirstReplicaClient;
+        var secondClient = fixture.SecondReplicaClient;
+        var clients = new[] { firstClient, secondClient };
+        var discoverySamples = new ConcurrentBag<double>();
+        var eligibilitySamples = new ConcurrentBag<double>();
+        var planSamples = new ConcurrentBag<double>();
+        var recordSamples = new ConcurrentBag<double>();
+        var replicaCounts = new int[2];
+        var statusCounts = new ConcurrentDictionary<int, int>();
+        var failureKinds = new ConcurrentDictionary<string, int>(StringComparer.Ordinal);
+        var completed = 0;
+        var unexpected = 0;
+        var tasks = new Task[totalRequests];
+        var startedAtUtc = DateTimeOffset.UtcNow;
+        var profileStarted = Stopwatch.GetTimestamp();
+
+        for (var index = 0; index < totalRequests; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var scheduledAt = profileStarted +
+                (long)(index * (Stopwatch.Frequency / (double)readsPerSecond));
+            var delayTicks = scheduledAt - Stopwatch.GetTimestamp();
+            if (delayTicks > 0)
+            {
+                await Task.Delay(
+                    TimeSpan.FromSeconds(delayTicks / (double)Stopwatch.Frequency),
+                    cancellationToken);
+            }
+
+            if (failoverAtSecond.HasValue && index == failoverRequestIndex)
+            {
+                await Task.WhenAll(tasks.Take(index));
+                await fixture.StopFirstReplicaAsync();
+            }
+
+            var requestIndex = index;
+            var replicaIndex = index >= failoverRequestIndex ? 1 : index % 2;
+            Interlocked.Increment(ref replicaCounts[replicaIndex]);
+            var kind = ReadKindFor(index);
+            tasks[index] = ExecuteReadAsync(
+                clients[replicaIndex],
+                fixture.StudentSessions[index % LogicalSessionCount],
+                ReadPath(kind, dataset),
+                kind,
+                discoverySamples,
+                eligibilitySamples,
+                planSamples,
+                recordSamples,
+                statusCounts,
+                failureKinds,
+                () => Interlocked.Increment(ref unexpected),
+                () => Interlocked.Increment(ref completed),
+                cancellationToken);
+        }
+
+        await Task.WhenAll(tasks);
+        var completedAtUtc = DateTimeOffset.UtcNow;
+        return new Spec018MixedReadEvidence(
+            "required-target-read-mix",
+            startedAtUtc,
+            completedAtUtc,
+            durationSeconds,
+            readsPerSecond,
+            2,
+            totalRequests,
+            completed,
+            discoverySamples.Count,
+            eligibilitySamples.Count,
+            planSamples.Count,
+            recordSamples.Count,
+            unexpected,
+            unexpected * 100d / totalRequests,
+            Percentile95(discoverySamples.Order().ToArray()),
+            Percentile95(eligibilitySamples.Order().ToArray()),
+            Percentile95(planSamples.Order().ToArray()),
+            Percentile95(recordSamples.Order().ToArray()),
+            failoverAtSecond ?? -1,
+            FirstReplicaRemoved: failoverAtSecond.HasValue,
+            new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["replica-1"] = replicaCounts[0],
+                ["replica-2"] = replicaCounts[1]
+            },
+            statusCounts.OrderBy(pair => pair.Key).ToDictionary(),
+            failureKinds.OrderBy(pair => pair.Key)
+                .ToDictionary(StringComparer.Ordinal));
+    }
+
+    private static async Task ExecuteReadAsync(
+        HttpClient client,
+        Spec008AuthenticatedStudentSession session,
+        string path,
+        Spec018ReadKind kind,
+        ConcurrentBag<double> discoverySamples,
+        ConcurrentBag<double> eligibilitySamples,
+        ConcurrentBag<double> planSamples,
+        ConcurrentBag<double> recordSamples,
+        ConcurrentDictionary<int, int> statusCounts,
+        ConcurrentDictionary<string, int> failureKinds,
+        Action observeUnexpected,
+        Action observeCompleted,
+        CancellationToken cancellationToken)
+    {
+        var started = Stopwatch.GetTimestamp();
+        try
+        {
+            using var request = session.CreateRequest(HttpMethod.Get, path);
+            using var response = await client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+            statusCounts.AddOrUpdate((int)response.StatusCode, 1, (_, count) => count + 1);
+            if (!ExpectedReadStatus(kind, response.StatusCode))
+            {
+                var failureKind = await SafeReadFailureKindAsync(
+                    response,
+                    kind,
+                    cancellationToken);
+                failureKinds.AddOrUpdate(
+                    failureKind,
+                    1,
+                    (_, count) => count + 1);
+                observeUnexpected();
+            }
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            failureKinds.AddOrUpdate(
+                exception.GetBaseException().GetType().Name,
+                1,
+                (_, count) => count + 1);
+            observeUnexpected();
+        }
+        finally
+        {
+            var elapsed = (Stopwatch.GetTimestamp() - started) * 1_000d /
+                Stopwatch.Frequency;
+            SampleBag(
+                kind,
+                discoverySamples,
+                eligibilitySamples,
+                planSamples,
+                recordSamples).Add(elapsed);
+            observeCompleted();
+        }
+    }
+
+    private static async Task<string> SafeReadFailureKindAsync(
+        HttpResponseMessage response,
+        Spec018ReadKind kind,
+        CancellationToken cancellationToken)
+    {
+        const string unknownCode = "unknown";
+        var code = unknownCode;
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var document = JsonDocument.Parse(body);
+            if (document.RootElement.TryGetProperty("code", out var codeElement))
+            {
+                var candidate = codeElement.GetString();
+                if (!string.IsNullOrWhiteSpace(candidate) &&
+                    candidate.Length <= 100 &&
+                    candidate.All(character =>
+                        char.IsAsciiLetterOrDigit(character) || character is '_' or '-'))
+                {
+                    code = candidate;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        return $"http-{(int)response.StatusCode}:{kind}:{code}";
+    }
+
+    private static Spec018ReadKind ReadKindFor(int index) => (index % 100) switch
+    {
+        < 50 => Spec018ReadKind.Discovery,
+        < 75 => Spec018ReadKind.Eligibility,
+        < 90 => Spec018ReadKind.PlanAndTimetable,
+        _ => Spec018ReadKind.RegistrationRecords
+    };
+
+    private static string ReadPath(
+        Spec018ReadKind kind,
+        RegistrationLoadDataset dataset) => kind switch
+    {
+        Spec018ReadKind.Discovery =>
+            $"/api/student/terms/{dataset.TermId:D}/offerings?page=1&pageSize=20&sort=courseCode%2Cid",
+        Spec018ReadKind.Eligibility =>
+            $"/api/student/offerings/{dataset.OfferingIds[0]:D}/eligibility",
+        Spec018ReadKind.PlanAndTimetable =>
+            "/api/student/registrations/current/timetable",
+        Spec018ReadKind.RegistrationRecords =>
+            $"/api/student/registrations?page=1&pageSize=20&termId={dataset.TermId:D}",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private static bool ExpectedReadStatus(
+        Spec018ReadKind kind,
+        HttpStatusCode statusCode) => kind switch
+    {
+        Spec018ReadKind.Discovery or Spec018ReadKind.Eligibility =>
+            statusCode == HttpStatusCode.OK,
+        Spec018ReadKind.PlanAndTimetable or Spec018ReadKind.RegistrationRecords =>
+            statusCode is HttpStatusCode.OK or HttpStatusCode.NotFound,
+        _ => false
+    };
+
+    private static ConcurrentBag<double> SampleBag(
+        Spec018ReadKind kind,
+        ConcurrentBag<double> discovery,
+        ConcurrentBag<double> eligibility,
+        ConcurrentBag<double> plan,
+        ConcurrentBag<double> records) => kind switch
+    {
+        Spec018ReadKind.Discovery => discovery,
+        Spec018ReadKind.Eligibility => eligibility,
+        Spec018ReadKind.PlanAndTimetable => plan,
+        Spec018ReadKind.RegistrationRecords => records,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private enum Spec018ReadKind
+    {
+        Discovery,
+        Eligibility,
+        PlanAndTimetable,
+        RegistrationRecords
     }
 
     private static async Task<RegistrationLoadOutcome> ExecuteRequestAsync(
@@ -849,12 +1360,11 @@ public static class Spec014RegistrationLoadHarness
             claim.Submission.CompleteAccepted(
                 "ACCEPTED",
                 reference,
-                JsonSerializer.Serialize(new
-                {
-                    reference,
-                    offering = identity.OfferingId,
-                    group = identity.GroupId
-                }),
+                CreateCanonicalReceiptSnapshot(
+                    dataset,
+                    identity.OfferingId,
+                    identity.GroupId,
+                    identity.ReceivedAtUtc),
                 "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
                 completedAt);
             claim.Submission.EnsureFinalForCommit();
@@ -1000,12 +1510,11 @@ public static class Spec014RegistrationLoadHarness
             claim.Submission!.CompleteAccepted(
                 "ACCEPTED",
                 reference,
-                JsonSerializer.Serialize(new
-                {
-                    reference,
-                    offering = dataset.OfferingIds[5],
-                    group = dataset.GroupIds[5]
-                }),
+                CreateCanonicalReceiptSnapshot(
+                    dataset,
+                    dataset.OfferingIds[5],
+                    dataset.GroupIds[5],
+                    completedAt),
                 "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
                 completedAt);
             claim.Submission.EnsureFinalForCommit();
@@ -1416,6 +1925,61 @@ public static class Spec014RegistrationLoadHarness
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
         return new Guid(bytes.AsSpan(0, 16));
+    }
+
+    private static string CreateCanonicalReceiptSnapshot(
+        RegistrationLoadDataset dataset,
+        Guid offeringId,
+        Guid groupId,
+        DateTime submittedAtUtc)
+    {
+        var offeringIndex = Array.IndexOf(dataset.OfferingIds, offeringId);
+        if (offeringIndex < 0 || dataset.GroupIds[offeringIndex] != groupId)
+        {
+            throw new InvalidOperationException(
+                "The load request does not reference a seeded offering/group pair.");
+        }
+
+        return JsonSerializer.Serialize(new
+        {
+            term = new
+            {
+                id = dataset.TermId,
+                code = "SPEC014-LOAD",
+                displayName = "Synthetic load term",
+                timeZoneId = "Africa/Cairo"
+            },
+            groups = new[]
+            {
+                new
+                {
+                    offeringId,
+                    courseCode = $"L{offeringIndex + 1:000}",
+                    subjectTitle = $"Synthetic load course {offeringIndex + 1}",
+                    groupId,
+                    groupCode = $"LOAD-{offeringIndex + 1}",
+                    credits = 3m,
+                    meetings = new[]
+                    {
+                        new
+                        {
+                            meetingId = StableGuid($"spec014-load:meeting:{offeringIndex}"),
+                            activityType = "lecture",
+                            dayOfWeek = offeringIndex,
+                            startLocal = "09:00:00",
+                            endLocal = "10:00:00",
+                            roomCode = "SPEC014-LOAD",
+                            location = "Synthetic load facility",
+                            staff = Array.Empty<object>()
+                        }
+                    }
+                }
+            },
+            totalCredits = 3m,
+            policySetId = StableGuid("spec014-load:policy-set"),
+            policyVersion = "DEMO-POC-2026.1",
+            submittedAtUtc = DateTime.SpecifyKind(submittedAtUtc, DateTimeKind.Utc)
+        });
     }
 
     private sealed record RegistrationLoadDataset(

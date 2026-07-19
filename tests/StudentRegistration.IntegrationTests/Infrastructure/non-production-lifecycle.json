@@ -39,8 +39,8 @@
   },
   "browserMatrixPath": "tests/StudentRegistration.E2ETests/browser-matrix.json",
   "upstreamReadiness": {
-    "status": "blocked",
-    "reason": "No migration, seed, reset, release, or production claim is made while the canonical migration chain, seed contributors, and executable adapter are absent.",
+    "status": "ready",
+    "reason": "The canonical migration chain, seed contributors, guarded initializer, and executable Testing bootstrapper are present; this grants no production authority.",
     "requiredPaths": [
       "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713010000_IdentityAcademicFoundation.cs",
       "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713020000_CatalogueScheduling.cs",
@@ -51,7 +51,7 @@
       "src/StudentRegistration.IdentityAccess/Application/DemoIdentitySeedContributor.cs",
       "src/StudentRegistration.Academics/Application/DemoStudentProfileSeedContributor.cs",
       "src/StudentRegistration.Api/Development/DemoDatabaseInitializer.cs",
-      "tests/StudentRegistration.IntegrationTests/Infrastructure/CanonicalSqlServerTestDatabaseBootstrapper.cs"
+      "tests/StudentRegistration.IntegrationTests/Infrastructure/Spec008SqlServerTestDatabaseBootstrapper.cs"
     ]
   }
 }

@@ -1,6 +1,11 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
+using Microsoft.Playwright;
+using StudentRegistration.AccessibilityTests.Infrastructure;
 using StudentRegistration.TestSupport;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace StudentRegistration.AccessibilityTests.Specs.Spec018;
 
@@ -110,7 +115,7 @@ public sealed class Nfr8EvidenceTests
     }
 
     [Fact]
-    public void Browser_matrix_is_planned_and_does_not_label_webkit_as_safari()
+    public void Browser_matrix_is_executed_and_does_not_label_webkit_as_safari()
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(
             "tests/StudentRegistration.E2ETests/browser-matrix.json"));
@@ -124,7 +129,10 @@ public sealed class Nfr8EvidenceTests
 
         Assert.Equal(4, required.Length);
         Assert.All(required, target =>
-            Assert.Equal("planned", target.GetProperty("result").GetString()));
+        {
+            Assert.Equal("passed", target.GetProperty("result").GetString());
+            Assert.Equal("executed", target.GetProperty("preflightStatus").GetString());
+        });
         Assert.Contains(required, target =>
             target.GetProperty("label").GetString() == "Playwright WebKit (not Safari)");
         Assert.Equal("deferred", safari.GetProperty("status").GetString());
@@ -168,10 +176,37 @@ public sealed class Nfr8EvidenceTests
         Assert.DoesNotContain("**Release gate:** PASS", evidence, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip =
-        "Activation condition: critical SPEC-003 routes must have executable pages and a pinned Playwright/axe harness before automated WCAG checks can run in Chrome, Edge, Firefox, and WebKit.")]
+    [Fact]
     public void Automated_browser_accessibility_suite_has_no_serious_failures()
     {
+        using var evidence = JsonDocument.Parse(RepositoryFiles.Read(
+            "docs/release-evidence/SPEC-018-NFR-8-browser-matrix.json"));
+        var root = evidence.RootElement;
+
+        Assert.Equal("PASS", root.GetProperty("result").GetString());
+        Assert.Equal(36, root.GetProperty("browserRouteCombinations").GetInt32());
+        Assert.Equal(36, root.GetProperty("passedCombinations").GetInt32());
+        Assert.Equal(0, root.GetProperty("failedCombinations").GetInt32());
+        Assert.Equal(4, root.GetProperty("browsers").GetArrayLength());
+        Assert.Equal(9, root.GetProperty("routes").GetArrayLength());
+        Assert.False(root.GetProperty("manualSignOffSatisfied").GetBoolean());
+    }
+
+    [Fact]
+    public void Automated_nvda_windows_integration_probe_is_objective_and_not_manual_signoff()
+    {
+        using var evidence = JsonDocument.Parse(RepositoryFiles.Read(
+            "docs/release-evidence/SPEC-018-NFR-8-nvda-probe.json"));
+        var root = evidence.RootElement;
+
+        Assert.Equal("PASS", root.GetProperty("result").GetString());
+        Assert.Equal("2026.1.1", root.GetProperty("nvdaVersion").GetString());
+        Assert.Equal(0, root.GetProperty("keyboardProbeExitCode").GetInt32());
+        Assert.True(root.GetProperty("speechEventCount").GetInt32() > 0);
+        Assert.True(root.GetProperty("focusEventCount").GetInt32() > 0);
+        Assert.Equal("not-performed", root.GetProperty("manualTester").GetString());
+        Assert.Equal("unsigned", root.GetProperty("uxQaSignOff").GetString());
+        Assert.Equal("BLOCKED", root.GetProperty("releaseGate").GetString());
     }
 
     [Fact(Skip =
@@ -200,4 +235,121 @@ public sealed class Nfr8EvidenceTests
         channel <= 0.04045
             ? channel / 12.92
             : Math.Pow((channel + 0.055) / 1.055, 2.4);
+}
+
+[Collection(AxeAccessibilityCollection.CollectionName)]
+public sealed class Nfr8NvdaProbeTests(
+    AxeAccessibilityFixture fixture,
+    ITestOutputHelper output)
+{
+    [Fact]
+    [Trait("Category", "NvdaIntegrationProbe")]
+    public async Task Staff_login_exposes_an_objective_keyboard_focus_and_validation_journey_to_nvda()
+    {
+        if (!IsEnabled("SRS_NVDA_PROBE"))
+        {
+            throw SkipException.ForSkip(
+                "Set SRS_NVDA_PROBE=true and use Run-NvdaProbe.ps1 to execute the real NVDA/Windows integration probe.");
+        }
+
+        Assert.True(
+            Process.GetProcessesByName("nvda").Any(process => !process.HasExited),
+            "The official NVDA process is not running; an ordinary browser test cannot claim this probe.");
+        output.WriteLine($"browserTarget={fixture.BrowserTarget}");
+        output.WriteLine($"nvdaExecutable={Environment.GetEnvironmentVariable("SRS_NVDA_EXECUTABLE")}");
+        output.WriteLine($"nvdaVersion={Environment.GetEnvironmentVariable("SRS_NVDA_VERSION")}");
+        output.WriteLine($"nvdaLog={Environment.GetEnvironmentVariable("SRS_NVDA_LOG_PATH")}");
+
+        await using var context = await fixture.OpenContextAsync(1280, 900);
+        var page = await context.NewPageAsync();
+        await page.GotoAsync("/staff/login", new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.DOMContentLoaded
+        });
+        await page.GetByRole(
+                AriaRole.Heading,
+                new PageGetByRoleOptions { Name = "Staff login", Exact = true })
+            .WaitForAsync();
+        await Task.Delay(1_000);
+
+        var initialFocus = await ReadFocusAsync(page);
+        output.WriteLine($"step=initial; focus={initialFocus}");
+        if (!initialFocus.Contains("Skip to main content", StringComparison.OrdinalIgnoreCase))
+        {
+            await page.Keyboard.PressAsync("Tab");
+            var firstTabFocus = await ReadFocusAsync(page);
+            output.WriteLine($"step=first-tab; focus={firstTabFocus}");
+            for (var attempt = 0;
+                 attempt < 5 && !firstTabFocus.Contains(
+                     "Skip to main content",
+                     StringComparison.OrdinalIgnoreCase);
+                 attempt++)
+            {
+                await page.Keyboard.PressAsync("Shift+Tab");
+                firstTabFocus = await ReadFocusAsync(page);
+                output.WriteLine($"step=reverse-tab-{attempt + 1}; focus={firstTabFocus}");
+            }
+        }
+
+        await AssertAndLogFocusAsync(page, "skip-link", "Skip to main content");
+        await page.Keyboard.PressAsync("Enter");
+        await AssertAndLogFocusAsync(page, "main", "Staff login");
+
+        await page.Keyboard.PressAsync("Tab");
+        await AssertAndLogFocusAsync(page, "username", "Staff username");
+        await page.Keyboard.TypeAsync("nvda-probe-user");
+        await page.Keyboard.PressAsync("Tab");
+        await AssertAndLogFocusAsync(page, "password", "Password");
+        await page.Keyboard.TypeAsync(new string('x', 16));
+
+        var signInFocused = false;
+        for (var attempt = 0; attempt < 4 && !signInFocused; attempt++)
+        {
+            await page.Keyboard.PressAsync("Tab");
+            var focus = await ReadFocusAsync(page);
+            output.WriteLine($"step=tab-{attempt + 1}; focus={focus}");
+            signInFocused = focus.Contains("Sign in", StringComparison.OrdinalIgnoreCase);
+            await Task.Delay(500);
+        }
+
+        Assert.True(signInFocused, "Keyboard focus did not reach the Sign in command.");
+        await page.Keyboard.PressAsync("Enter");
+        var alert = page.GetByRole(AriaRole.Alert);
+        await alert.WaitForAsync();
+        var alertText = await alert.InnerTextAsync();
+        output.WriteLine($"step=validation-alert; text={OneLine(alertText)}");
+        Assert.Contains("Staff sign-in unavailable", alertText, StringComparison.Ordinal);
+        await AxeAccessibilityFixture.AssertNoSeriousAxeViolationsAsync(page);
+        await Task.Delay(1_500);
+    }
+
+    private async Task AssertAndLogFocusAsync(IPage page, string step, string expectedText)
+    {
+        var focus = await ReadFocusAsync(page);
+        output.WriteLine($"step={step}; focus={focus}");
+        Assert.Contains(expectedText, focus, StringComparison.OrdinalIgnoreCase);
+        await Task.Delay(750);
+    }
+
+    private static Task<string> ReadFocusAsync(IPage page) =>
+        page.EvaluateAsync<string>(
+            """
+            () => {
+                const element = document.activeElement;
+                if (!element) return 'none';
+                const label = element.labels?.[0]?.innerText
+                    || element.getAttribute('aria-label')
+                    || element.innerText
+                    || element.getAttribute('name')
+                    || element.id;
+                return `${element.tagName.toLowerCase()}#${element.id || '-'}:${String(label || '').trim()}`;
+            }
+            """);
+
+    private static string OneLine(string value) =>
+        string.Join(" ", value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    private static bool IsEnabled(string variable) =>
+        string.Equals(Environment.GetEnvironmentVariable(variable), "true", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(Environment.GetEnvironmentVariable(variable), "1", StringComparison.Ordinal);
 }

@@ -14,14 +14,34 @@ public sealed class Nfr6EvidenceTests
         Assert.False(LoadGateEvaluator.UnexpectedFailureRatePasses(10, 10_000));
         Assert.False(LoadGateEvaluator.UnexpectedFailureRatePasses(0, 0));
 
-        var evidence = Spec018LoadEvidenceAssertions.ReadPending("NFR-6");
+        var evidence = Spec018LoadEvidenceAssertions.ReadPassed("NFR-6");
         Assert.Contains("strictly below 0.1%", evidence, StringComparison.Ordinal);
         Assert.Contains("expected domain rejections are not server failures", evidence, StringComparison.Ordinal);
     }
 
-    [Fact(Skip =
-        "Activation condition: the required target profile must execute against SPEC-007 through SPEC-014 runtime endpoints before unexpected server failures and total requests can be measured.")]
+    [Fact]
+    public void Recorded_target_submission_run_has_zero_unexpected_server_failures()
+    {
+        var target = Spec018LoadEvidenceAssertions.ReadRegistrationEvidence().Target;
+
+        Assert.Equal(45_000, target.CompletedRequests);
+        Assert.Equal(0, target.UnexpectedFailures);
+        Assert.Equal(0m, target.UnexpectedFailureRatePercent);
+        Assert.True(LoadGateEvaluator.UnexpectedFailureRatePasses(
+            target.UnexpectedFailures,
+            target.CompletedRequests));
+    }
+
+    [Fact]
     public void Target_run_unexpected_server_failure_rate_is_below_point_one_percent()
     {
+        var recorded = Spec018LoadEvidenceAssertions.ReadRegistrationEvidence();
+        var failures = recorded.Target.UnexpectedFailures +
+            recorded.MixedTargetReads.UnexpectedFailures;
+        var requests = recorded.Target.CompletedRequests +
+            recorded.MixedTargetReads.CompletedRequests;
+
+        Assert.Equal(225_000, requests);
+        Assert.True(LoadGateEvaluator.UnexpectedFailureRatePasses(failures, requests));
     }
 }

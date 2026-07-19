@@ -91,6 +91,15 @@ public sealed class RegistrationModelConfiguration :
                 submission.ClientRequestId
             })
             .IsUnique();
+        builder.HasIndex(submission => new
+            {
+                submission.StudentId,
+                submission.TermId,
+                submission.ProcessingState,
+                submission.ReceivedAtUtc,
+                submission.Id
+            })
+            .HasDatabaseName("IX_RegistrationSubmissions_StudentTermStateReceived");
         builder.HasIndex(submission => submission.Reference)
             .IsUnique()
             .HasFilter("[Reference] IS NOT NULL");

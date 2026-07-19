@@ -1,3 +1,4 @@
+using System.Text.Json;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.QualityTests.Specs.Spec018;
@@ -5,6 +6,8 @@ namespace StudentRegistration.QualityTests.Specs.Spec018;
 public sealed class Nfr9EvidenceTests
 {
     private const string EvidencePath = "docs/release-evidence/SPEC-018-NFR-9.md";
+    private const string MeasurementPath =
+        "docs/release-evidence/SPEC-018-NFR-9-coverage.json";
 
     [Theory]
     [InlineData(90, 100, true)]
@@ -21,7 +24,7 @@ public sealed class Nfr9EvidenceTests
     }
 
     [Fact]
-    public void Versioned_evidence_is_pending_and_never_substitutes_coverage_for_behavior()
+    public void Versioned_evidence_passes_and_never_substitutes_coverage_for_behavior()
     {
         var evidence = RepositoryFiles.Read(EvidencePath);
 
@@ -30,23 +33,38 @@ public sealed class Nfr9EvidenceTests
             "# SPEC-018 NFR-9 Release Evidence",
             "**Artifact version:** 1.0.0",
             "**Requirement:** NFR-9",
-            "**Release result:** PENDING",
-            "Coverage measurement result: NOT EXECUTED",
+            "**Release result:** PASS",
+            "Coverage measurement result: EXECUTED AND PASSED",
             ">= 90% branch coverage",
             "Eligibility",
             "conflict",
             "capacity",
             "coverage never replaces behavior tests",
             "boundary, authorization, real-SQL concurrency, and invariant tests",
-            "Runtime execution result: PENDING",
-            "Activation condition");
-        Assert.DoesNotContain("Runtime execution result: PASS", evidence, StringComparison.OrdinalIgnoreCase);
+            "Runtime execution result: PASS");
+        Assert.DoesNotContain("Runtime execution result: PENDING", evidence, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-011 eligibility, SPEC-012 conflict, and SPEC-014 capacity implementations plus their behavior suites must exist before branch coverage can be collected and evaluated.")]
-    public void Downstream_rule_owners_reach_90_percent_branch_coverage_with_behavior_tests_passing()
+    [Fact]
+    public void Measured_coverage_and_behavior_suite_pass_for_each_manifest_owner()
     {
+        using var evidence = JsonDocument.Parse(RepositoryFiles.Read(MeasurementPath));
+        var root = evidence.RootElement;
+
+        Assert.Equal("PASS", root.GetProperty("result").GetString());
+        Assert.Equal(133, root.GetProperty("behaviorTestsPassed").GetInt32());
+        Assert.Equal(0, root.GetProperty("behaviorTestsFailed").GetInt32());
+        Assert.False(string.IsNullOrWhiteSpace(
+            root.GetProperty("coverageReportSha256").GetString()));
+        Assert.Equal(0.90m, root.GetProperty("minimumRequiredBranchRate").GetDecimal());
+        Assert.True(root.GetProperty("coverageNeverReplacesBehaviorTests").GetBoolean());
+        Assert.All(root.GetProperty("owners").EnumerateArray(), owner =>
+        {
+            var covered = owner.GetProperty("coveredBranches").GetInt32();
+            var total = owner.GetProperty("totalBranches").GetInt32();
+            Assert.True(CoveragePasses(covered, total));
+            Assert.True(owner.GetProperty("branchRate").GetDecimal() >= 0.90m);
+        });
     }
 
     private static bool CoveragePasses(int coveredBranches, int totalBranches) =>

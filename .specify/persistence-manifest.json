@@ -1,5 +1,5 @@
 {
-  "version": "2.1.2",
+  "version": "2.1.3",
   "dbContext": {
     "owner": "004",
     "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
@@ -131,6 +131,14 @@
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs",
       "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
       "prerequisiteSpecs": ["017"]
+    },
+    {
+      "id": "S8Spec018RegistrationReadPerformance",
+      "kind": "incremental-performance",
+      "owner": "018",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260717222551_Spec018RegistrationReadPerformance.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["014", "018"]
     }
   ]
 }

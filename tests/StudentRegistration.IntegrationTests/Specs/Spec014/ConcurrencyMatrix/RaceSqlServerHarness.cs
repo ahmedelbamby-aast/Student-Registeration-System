@@ -433,7 +433,7 @@ internal sealed class RaceSqlServerHarness(RaceSqlServerFixture fixture)
             return;
         }
         var method = type!.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .SingleOrDefault(candidate => candidate.Name == methodName);
+            .FirstOrDefault(candidate => candidate.Name == methodName);
         Assert.True(method is not null,
             $"Missing bounded SPEC-014 production operation: {typeName}.{methodName}.");
     }

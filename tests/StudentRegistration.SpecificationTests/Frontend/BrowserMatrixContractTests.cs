@@ -16,7 +16,7 @@ public sealed class BrowserMatrixContractTests
         var targets = root.GetProperty("targets").EnumerateArray().ToArray();
 
         Assert.Equal("browser-matrix/1.0.0", root.GetProperty("version").GetString());
-        Assert.Equal("2026-07-13", root.GetProperty("verifiedOn").GetString());
+        Assert.Equal("2026-07-18", root.GetProperty("verifiedOn").GetString());
         Assert.Equal(5, targets.Length);
 
         AssertTarget(targets, "Google Chrome", "150.0.7871.101", "required");

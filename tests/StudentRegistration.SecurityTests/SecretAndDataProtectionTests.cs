@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,9 @@ using StudentRegistration.Api.Operations;
 using StudentRegistration.IdentityAccess.Application;
 using StudentRegistration.IdentityAccess.Application.Ports;
 using StudentRegistration.IdentityAccess.Domain;
+using StudentRegistration.Registration.Application;
+using StudentRegistration.Registration.Application.Ports;
+using StudentRegistration.Registration.Domain;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.SecurityTests;
@@ -75,6 +79,16 @@ public sealed class SecretAndDataProtectionTests
                 discriminators.Add(
                     provider.GetRequiredService<IOptions<DataProtectionOptions>>()
                         .Value.ApplicationDiscriminator);
+                var keyManagement = provider
+                    .GetRequiredService<IOptions<KeyManagementOptions>>()
+                    .Value;
+                Assert.Contains(
+                    "EntityFrameworkCoreXmlRepository",
+                    keyManagement.XmlRepository?.GetType().Name,
+                    StringComparison.Ordinal);
+                Assert.Equal(
+                    "CertificateXmlEncryptor",
+                    keyManagement.XmlEncryptor?.GetType().Name);
             }
 
             Assert.Equal(new[] { applicationName, applicationName }, discriminators);
@@ -133,6 +147,35 @@ public sealed class SecretAndDataProtectionTests
             "PRODUCTION_DATA_PROTECTION_AUTHORITY_REQUIRED",
             exception.Message,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Production_cannot_promote_the_local_poc_provider_by_configuration()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DataProtection:ApplicationName"] = "AASTMT.StudentRegistration",
+                ["DataProtection:Repository"] = "SqlServer",
+                ["DataProtection:Encryption"] = "ExternalCertificate",
+                ["DataProtection:CertificatePath"] = Path.GetFullPath("local-poc.pfx"),
+                ["DataProtection:CertificatePassword"] = "Transient-Test-Input",
+                ["DataProtection:ProductionRepositoryApproved"] = "true",
+                ["DataProtection:ProductionEncryptionApproved"] = "true"
+            })
+            .Build();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new ServiceCollection().AddStudentRegistrationSecurity(
+                configuration,
+                new TestHostEnvironment(Environments.Production)));
+
+        Assert.Contains(
+            "PRODUCTION_DATA_PROTECTION_AUTHORITY_REQUIRED",
+            exception.Message,
+            StringComparison.Ordinal);
+        Assert.Contains("remain undecided", exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("Transient-Test-Input", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -254,10 +297,78 @@ public sealed class SecretAndDataProtectionTests
         }
     }
 
-    [Fact(Skip =
-        "Activation condition: SPEC-013 must deliver the executable protected option-token runtime before a cross-replica token round trip can be claimed.")]
-    public void Cross_replica_protected_option_token_round_trip_succeeds()
+    [Fact]
+    public async Task Cross_replica_protected_option_token_round_trip_succeeds()
     {
+        var keyDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"srs-spec018-option-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(keyDirectory);
+
+        try
+        {
+            const string applicationName = "AASTMT.StudentRegistration.SecurityTests";
+            var replicaOne = DataProtectionProvider.Create(
+                new DirectoryInfo(keyDirectory),
+                builder => builder.SetApplicationName(applicationName));
+            var replicaTwo = DataProtectionProvider.Create(
+                new DirectoryInfo(keyDirectory),
+                builder => builder.SetApplicationName(applicationName));
+            var writer = new RejectingRecommendationWriter();
+            var issuedAt = new DateTimeOffset(2026, 7, 18, 9, 0, 0, TimeSpan.Zero);
+            var descriptor = OptionDescriptor();
+            var issuer = new RecommendationApplicationService(
+                replicaOne,
+                writer,
+                new FixedTimeProvider(issuedAt));
+            var consumer = new RecommendationApplicationService(
+                replicaTwo,
+                writer,
+                new FixedTimeProvider(issuedAt.AddMinutes(1)));
+
+            var token = issuer.IssueOptionToken(descriptor);
+            var result = await consumer.ApplyAsync(
+                descriptor.StudentId,
+                descriptor.TermId,
+                token,
+                descriptor.PlanRowVersion,
+                descriptor.RequestCorrelationId);
+
+            Assert.Equal(RecommendationApplyOutcome.Unavailable, result.Outcome);
+            Assert.Equal("RECOMMENDATIONS_UNAVAILABLE", result.SafeCode);
+            Assert.Equal(1, writer.CallCount);
+        }
+        finally
+        {
+            Directory.Delete(keyDirectory, recursive: true);
+        }
+    }
+
+    private static RecommendationOptionDescriptor OptionDescriptor()
+    {
+        var courseId = Guid.Parse("00000000-0000-0000-0000-000000000101");
+        var offeringId = Guid.Parse("00000000-0000-0000-0000-000000000102");
+        var groupId = Guid.Parse("00000000-0000-0000-0000-000000000103");
+        return new RecommendationOptionDescriptor(
+            Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            Guid.Parse("00000000-0000-0000-0000-000000000002"),
+            Guid.Parse("00000000-0000-0000-0000-000000000003"),
+            "plan-version-1",
+            [new ScheduleOptionSelection(courseId, offeringId, groupId)],
+            "academic-version-1",
+            "catalogue-version-1",
+            Guid.Parse("00000000-0000-0000-0000-000000000004"),
+            "policy-version-1",
+            new Dictionary<string, string>
+            {
+                [offeringId.ToString("N")] = "offering-version-1"
+            },
+            new Dictionary<string, string>
+            {
+                [groupId.ToString("N")] = "group-version-1"
+            },
+            "optimizer-version-1",
+            "request-0001");
     }
 
     private static IConfiguration Configuration(
@@ -296,6 +407,26 @@ public sealed class SecretAndDataProtectionTests
             "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware",
             scheme,
             "v2"));
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class RejectingRecommendationWriter : IRecommendationPlanWriter
+    {
+        public int CallCount { get; private set; }
+
+        public Task<RecommendationPlanWriteResult> ReplaceAsync(
+            RecommendationPlanReplacement replacement,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(
+                new RecommendationPlanWriteResult(
+                    RecommendationPlanWriteOutcome.Unavailable));
+        }
+    }
 
     private sealed class SharedIdentityStore(ApplicationUser user) : IIdentityAccountStore
     {

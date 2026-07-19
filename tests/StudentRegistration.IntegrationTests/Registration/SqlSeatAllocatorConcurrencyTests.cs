@@ -51,6 +51,36 @@ public sealed class SqlSeatAllocatorConcurrencyTests(
     }
 
     [Fact]
+    public async Task Allocator_rejects_invalid_batches_and_requires_the_callers_transaction()
+    {
+        Assert.Throws<ArgumentNullException>(() => new SqlSeatAllocator(null!));
+        await using var context = CreateContext();
+        var allocator = new SqlSeatAllocator(context);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => allocator.AllocateAsync(Guid.Empty));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => allocator.AllocateAsync(Guid.NewGuid()));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            allocator.ReduceCapacityAsync(Guid.NewGuid(), -1));
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            allocator.AllocateWithSavepointAsync(null!));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            allocator.AllocateWithSavepointAsync([]));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            allocator.RollbackAllocationAsync());
+
+        await using var databaseContext = database.CreateContext();
+        await using var transaction = await databaseContext.Database.BeginTransactionAsync();
+        var transactionalAllocator = new SqlSeatAllocator(databaseContext);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            transactionalAllocator.AllocateWithSavepointAsync([]));
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            transactionalAllocator.AllocateWithSavepointAsync([Guid.Empty]));
+        var duplicate = Guid.NewGuid();
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            transactionalAllocator.AllocateWithSavepointAsync([duplicate, duplicate]));
+    }
+
+    [Fact]
     [Trait("Dependency", "Docker")]
     public async Task Conditional_final_seat_update_has_one_winner_and_never_overbooks()
     {
@@ -105,6 +135,29 @@ public sealed class SqlSeatAllocatorConcurrencyTests(
         await transaction.CommitAsync();
         Assert.Equal(
             0,
+            await database.ScalarAsync<int>(
+                "SELECT SUM([EnrolledCount]) FROM [scheduling].[SectionGroups] WHERE [OfferingId] = @id",
+                new SqlParameter("@id", seed.OfferingId)));
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Successful_batch_and_capacity_reduction_share_the_callers_transaction()
+    {
+        var seed = await database.SeedAsync(groupCapacities: [2, 2]);
+        await using var context = database.CreateContext();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        var allocator = new SqlSeatAllocator(context);
+
+        Assert.True(await allocator.ReduceCapacityAsync(seed.GroupIds[0], 2));
+        var result = await allocator.AllocateAllOrRejectAsync(seed.GroupIds);
+        Assert.True(result.IsAccepted);
+        Assert.Equal(seed.GroupIds.Order(), result.AllocatedGroupIds);
+        Assert.False(await allocator.ReduceCapacityAsync(seed.GroupIds[0], 0));
+
+        await transaction.CommitAsync();
+        Assert.Equal(
+            2,
             await database.ScalarAsync<int>(
                 "SELECT SUM([EnrolledCount]) FROM [scheduling].[SectionGroups] WHERE [OfferingId] = @id",
                 new SqlParameter("@id", seed.OfferingId)));

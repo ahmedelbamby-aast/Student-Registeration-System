@@ -60,15 +60,16 @@ public sealed class Nfr1EvidenceTests
     }
 
     [Fact]
-    public void Evidence_distinguishes_logical_fixture_pass_from_runtime_pending()
+    public void Evidence_records_the_executed_logical_sql_and_authenticated_scale_proofs()
     {
-        var evidence = Spec018LoadEvidenceAssertions.ReadPending("NFR-1");
+        var evidence = Spec018LoadEvidenceAssertions.ReadPassed("NFR-1");
 
         Assert.Contains("Logical fixture contract result: PASS", evidence, StringComparison.Ordinal);
         Assert.Contains("25,000", evidence, StringComparison.Ordinal);
         Assert.Contains("5,000", evidence, StringComparison.Ordinal);
         Assert.Contains("salted password", evidence, StringComparison.Ordinal);
         Assert.Contains("hashes are never byte-compared", evidence, StringComparison.Ordinal);
+        Assert.Contains("180,000", evidence, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -120,6 +121,17 @@ public sealed class Nfr1EvidenceTests
                     identity.PasswordHash,
                     credential.Secret));
         }
+    }
+
+    [Fact]
+    public void Recorded_sql_profile_proves_the_required_account_and_session_scale()
+    {
+        var recorded = Spec018LoadEvidenceAssertions.ReadRegistrationEvidence();
+
+        Assert.Equal(25_000, recorded.SyntheticAccountCount);
+        Assert.Equal(5_000, recorded.LogicalSessionCount);
+        Assert.Equal(2, recorded.LogicalApplicationReplicaCount);
+        Assert.Equal(0, recorded.PrivacyViolations);
     }
 
     private sealed class CapturingIdentitySeedStore : IIdentitySeedStore

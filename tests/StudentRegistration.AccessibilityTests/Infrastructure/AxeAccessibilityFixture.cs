@@ -17,6 +17,10 @@ public sealed class AxeAccessibilityCollection : ICollectionFixture<AxeAccessibi
 
 public sealed class AxeAccessibilityFixture : IAsyncLifetime
 {
+    private const string BrowserTargetVariable = "SRS_BROWSER_TARGET";
+    private const string RequireRuntimeVariable = "SRS_ACCESSIBILITY_REQUIRE_RUNTIME";
+    private const string HeadedVariable = "SRS_ACCESSIBILITY_HEADED";
+
     private readonly ConcurrentQueue<string> _hostOutput = new();
     private Process? _host;
     private IPlaywright? _playwright;
@@ -25,6 +29,8 @@ public sealed class AxeAccessibilityFixture : IAsyncLifetime
     private string? _hostFailure;
 
     public Uri BaseAddress { get; private set; } = new("http://127.0.0.1/");
+
+    public string BrowserTarget { get; private set; } = "Playwright Chromium";
 
     public async Task InitializeAsync()
     {
@@ -48,13 +54,30 @@ public sealed class AxeAccessibilityFixture : IAsyncLifetime
         try
         {
             _playwright = await Playwright.CreateAsync();
-            _browser = await _playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions { Headless = true });
+            BrowserTarget = Environment.GetEnvironmentVariable(BrowserTargetVariable)
+                ?? "Playwright Chromium";
+            var headless = !IsEnabled(HeadedVariable);
+            _browser = BrowserTarget switch
+            {
+                "Google Chrome" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = headless, Channel = "chrome" }),
+                "Microsoft Edge" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = headless, Channel = "msedge" }),
+                "Mozilla Firefox" => await _playwright.Firefox.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = headless }),
+                "Playwright WebKit" => await _playwright.Webkit.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = headless }),
+                "Playwright Chromium" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = headless }),
+                _ => throw new InvalidOperationException(
+                    $"Unsupported {BrowserTargetVariable} value '{BrowserTarget}'.")
+            };
         }
-        catch (PlaywrightException exception)
+        catch (Exception exception) when (
+            exception is PlaywrightException or InvalidOperationException)
         {
             _runtimeUnavailable =
-                $"The pinned Playwright Chromium runtime is unavailable: {exception.Message}";
+                $"The required {BrowserTarget} runtime is unavailable: {exception.Message}";
         }
     }
 
@@ -95,6 +118,11 @@ public sealed class AxeAccessibilityFixture : IAsyncLifetime
 
         if (_runtimeUnavailable is not null)
         {
+            if (IsEnabled(RequireRuntimeVariable))
+            {
+                throw new XunitException(_runtimeUnavailable);
+            }
+
             throw SkipException.ForSkip(_runtimeUnavailable);
         }
 
@@ -206,4 +234,11 @@ public sealed class AxeAccessibilityFixture : IAsyncLifetime
         listener.Start();
         return ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
     }
+
+    private static bool IsEnabled(string variable) =>
+        string.Equals(
+            Environment.GetEnvironmentVariable(variable),
+            "true",
+            StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(Environment.GetEnvironmentVariable(variable), "1", StringComparison.Ordinal);
 }

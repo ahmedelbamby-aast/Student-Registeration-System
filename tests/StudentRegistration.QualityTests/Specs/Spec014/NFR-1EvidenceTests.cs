@@ -39,8 +39,8 @@ internal static class Spec014EvidenceGate
                 StringComparison.Ordinal))
         {
             var measured = await Spec014RegistrationLoadHarness.RunExactProfilesAsync();
-            Spec014RegistrationLoadHarness.ValidateReleaseEvidence(measured);
             await Spec014RegistrationLoadHarness.WriteLocalArtifactAsync(measured);
+            Spec014RegistrationLoadHarness.ValidateReleaseEvidence(measured);
             await Spec014RegistrationLoadHarness.WriteCheckedInArtifactAsync(measured);
             return measured;
         }

@@ -1,0 +1,16 @@
+{
+  "artifactVersion": "1.0.0",
+  "recordedAtUtc": "2026-07-18T07:30:46.0762781Z",
+  "behaviorTestsPassed": 133,
+  "behaviorTestsFailed": 0,
+  "result": "PASS",
+  "coverageReportSha256": "36C1F2E449C75C2237428AFCF589EBDD35591BE4DAA087FBFD4FBE8E0D0E070E",
+  "owners": [
+    { "ownerSpec": "SPEC-011", "matchedClasses": 17, "coveredBranches": 351, "totalBranches": 375, "branchRate": 0.9360, "averageClassBranchRate": 0.9216, "classesBelowMinimum": 2 },
+    { "ownerSpec": "SPEC-012", "matchedClasses": 30, "coveredBranches": 168, "totalBranches": 186, "branchRate": 0.9032, "averageClassBranchRate": 0.9408, "classesBelowMinimum": 4 },
+    { "ownerSpec": "SPEC-014", "matchedClasses": 23, "coveredBranches": 104, "totalBranches": 112, "branchRate": 0.9286, "averageClassBranchRate": 0.9565, "classesBelowMinimum": 5 }
+  ],
+  "minimumRequiredBranchRate": 0.90,
+  "coverageNeverReplacesBehaviorTests": true,
+  "productionAuthorized": false
+}

@@ -1,17 +1,52 @@
+using StudentRegistration.TestSupport;
+
 namespace StudentRegistration.AcceptanceTests.Specs.Spec018;
 
 public sealed class AC_4Tests
 {
-    private const string ActivationGate =
-        "Activation condition: SPEC-003 route records must advance from design-only after implementation-owner specs SPEC-007 through SPEC-017 deliver the critical routes, and SPEC-018 T067 must run automated WCAG checks plus signed keyboard and NVDA/Windows manual evidence.";
-
-    [Fact(Skip = ActivationGate)]
+    [Fact]
     public void Critical_routes_pass_automated_keyboard_and_signed_screen_reader_gates()
     {
-        // Given implemented critical student/staff routes in staging.
-        // When automated, keyboard, and representative NVDA journeys run.
-        // Then no serious or critical/major barrier remains and signed evidence is complete.
-        throw new NotImplementedException(
-            "Design records and planned fixtures are not executable accessibility evidence.");
+        var evidence = RepositoryFiles.Read(
+            "docs/release-evidence/SPEC-018-screen-reader-manual.md");
+
+        Spec018AcceptanceEvidence.Matches(evidence, @"(?im)^\*\*Status:\*\*\s+PASS\s*$");
+        Spec018AcceptanceEvidence.Matches(
+            evidence,
+            @"(?im)^\*\*Release gate:\*\*\s+PASS\s*$");
+        Assert.DoesNotMatch(
+            @"(?i)NOT EXECUTED|NOT RECORDED|UNSIGNED|UNKNOWN - EXECUTION REQUIRED",
+            evidence);
+        Spec018AcceptanceEvidence.ContainsAll(
+            evidence,
+            "Chrome",
+            "Edge",
+            "Firefox",
+            "Playwright WebKit",
+            "NVDA",
+            "Windows");
+        foreach (var field in new[]
+                 {
+                     "tester",
+                     "date",
+                     "assistiveTechnology",
+                     "route",
+                     "scenario",
+                     "result",
+                     "defectLinks",
+                     "uxQaSignOff"
+                 })
+        {
+            Spec018AcceptanceEvidence.Matches(
+                evidence,
+                $@"(?im)^\s*{field}\s*:\s*\S.+$");
+        }
+
+        Spec018AcceptanceEvidence.Matches(
+            evidence,
+            @"(?im)Serious automated findings unresolved\s*\|\s*0\s*\|");
+        Spec018AcceptanceEvidence.Matches(
+            evidence,
+            @"(?im)Critical/major manual barriers unresolved\s*\|\s*0\s*\|");
     }
 }

@@ -43,6 +43,106 @@ public sealed class EnrollmentCounterReconciliationTests(
     }
 
     [Fact]
+    public async Task Identity_request_and_evidence_guards_reject_incomplete_reconciliation_scope()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            new ReconciliationServiceIdentity(" ", true, []));
+        Assert.Throws<ArgumentNullException>(() =>
+            new ReconciliationServiceIdentity("worker", true, null!));
+        Assert.Throws<ArgumentNullException>(() =>
+            EnrollmentCounterReconciler.ComputeEvidenceHash(null!));
+        var identity = new ReconciliationServiceIdentity(
+            " worker ",
+            true,
+            ["", EnrollmentCounterReconciler.ReconcilePermission,
+                EnrollmentCounterReconciler.ReconcilePermission]);
+        Assert.Equal("worker", identity.Subject);
+        Assert.Single(identity.Permissions);
+        Assert.True(identity.HasPermission(EnrollmentCounterReconciler.ReconcilePermission));
+        Assert.False(identity.HasPermission("other"));
+        Assert.NotEqual(
+            EnrollmentCounterReconciler.ComputeEvidenceHash([Guid.NewGuid()]),
+            EnrollmentCounterReconciler.ComputeEvidenceHash([]));
+
+        await using var context = CreateContext();
+        Assert.Throws<ArgumentNullException>(() =>
+            new EnrollmentCounterReconciler(null!, TimeProvider.System));
+        Assert.Throws<ArgumentNullException>(() =>
+            new EnrollmentCounterReconciler(context, null!));
+        var reconciler = new EnrollmentCounterReconciler(context, TimeProvider.System);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            reconciler.ReconcileAsync(Guid.Empty));
+        await Assert.ThrowsAsync<ArgumentException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(Guid.Empty, new byte[8], "hash", "correlation")));
+        await Assert.ThrowsAsync<ArgumentException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(Guid.NewGuid(), new byte[7], "hash", "correlation")));
+        await Assert.ThrowsAsync<ArgumentException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(Guid.NewGuid(), null!, "hash", "correlation")));
+        await Assert.ThrowsAsync<ArgumentException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(Guid.NewGuid(), new byte[8], " ", "correlation")));
+        await Assert.ThrowsAsync<ArgumentException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(Guid.NewGuid(), new byte[8], "hash", " ")));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => reconciler.RepairAsync(
+            null!,
+            new CounterRepairRequest(Guid.NewGuid(), new byte[8], "hash", "correlation")));
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Reconciliation_is_transaction_composable_and_repair_rechecks_version_and_evidence()
+    {
+        var consistent = await database.SeedAsync(
+            groupCapacities: [2],
+            initialEnrolledCount: 0,
+            activeEnrollmentCount: 0);
+        await using (var context = database.CreateContext())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
+        {
+            var result = await new EnrollmentCounterReconciler(
+                context,
+                TimeProvider.System).ReconcileAsync(consistent.GroupIds[0]);
+            Assert.False(result.MismatchDetected);
+            Assert.False(result.RegistrationPaused);
+            await transaction.CommitAsync();
+        }
+
+        var mismatchSeed = await database.SeedAsync(
+            groupCapacities: [2],
+            initialEnrolledCount: 1,
+            activeEnrollmentCount: 0);
+        await using var mismatchContext = database.CreateContext();
+        var reconciler = new EnrollmentCounterReconciler(
+            mismatchContext,
+            TimeProvider.System);
+        var mismatch = await reconciler.ReconcileAsync(mismatchSeed.GroupIds[0]);
+        Assert.True(mismatch.MismatchDetected);
+        var identity = new ReconciliationServiceIdentity(
+            "registration-reconciliation-worker",
+            true,
+            [EnrollmentCounterReconciler.ReconcilePermission]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(
+                mismatchSeed.GroupIds[0],
+                new byte[8],
+                mismatch.EnrollmentEvidenceHash,
+                "changed-version")));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => reconciler.RepairAsync(
+            identity,
+            new CounterRepairRequest(
+                mismatchSeed.GroupIds[0],
+                mismatch.ObservedGroupVersion,
+                "changed-evidence",
+                "changed-evidence")));
+    }
+
+    [Fact]
     [Trait("Dependency", "Docker")]
     public async Task Mismatch_pauses_and_two_replicas_share_one_authorized_audited_repair()
     {

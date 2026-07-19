@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "frontend-route-readiness/1.0",
+  "approvalVersion": "SPEC-003-ROUTE-READINESS-2026-07-19",
+  "approvedBy": "Ahmed ELbamby",
+  "approvedOn": "2026-07-19",
+  "scope": "Non-production design-capability demo implementation and executable evidence",
+  "sourceCommit": "09f1140836ae939b2e9ef5bfa04458c6ba61fc13",
+  "decision": "implementation-ready",
+  "contractPins": {
+    "SPEC-007": { "path": "specs/007-identity-account-lifecycle/contracts/api.md", "sha256": "28b2cd5b9e1ecc3152cd6bf5ba2ba48bb85255a94c7ad44fdce72a9c04997e5b" },
+    "SPEC-008": { "path": "specs/008-academic-term-student-profile/contracts/api.md", "sha256": "2e4d6177c66ab60c2214e9fd008c8531c7fecb28dfccfcc804cb50debc61e257" },
+    "SPEC-009": { "path": "specs/009-catalog-prerequisites-policy-admin/contracts/api.md", "sha256": "1a809fec654af45577b4ce73407690dddd678dfdffc4f943658c06ef4c10fb58" },
+    "SPEC-010": { "path": "specs/010-offerings-groups-resources/contracts/api.md", "sha256": "e17932d1088b28ac9738cc874bc269103cd0609e0af35d012a00384703e078c4" },
+    "SPEC-011": { "path": "specs/011-eligibility-subject-discovery/contracts/api.md", "sha256": "1674c5992f8ae9035a7125ad5c2c2446232bffbff85bb59386b0ed094358e994" },
+    "SPEC-012": { "path": "specs/012-schedule-builder-conflicts/contracts/api.md", "sha256": "3f07c011e1fd64e208b28576aaef01aebd2ce0191a8f0ba03e63a844ff9f7ba3" },
+    "SPEC-013": { "path": "specs/013-schedule-recommendations/contracts/api.md", "sha256": "0fb69cb8dd38200d086f5899c36814aed8ba744351b6de66591ecd55095cc31d" },
+    "SPEC-014": { "path": "specs/014-registration-capacity-concurrency/contracts/api.md", "sha256": "9f222078261d4be486de20e9cb101e6ea102ac5bcf63dc52c90bc70ef25cfb07" },
+    "SPEC-015": { "path": "specs/015-student-registration-records/contracts/api.md", "sha256": "0814f0aa9a80ac17a5c48b93e1ca68eb594a610988cf1ae4a9e271859aa16648" },
+    "SPEC-016": { "path": "specs/016-lecturer-ta-workspace/contracts/api.md", "sha256": "d63754d9f624e9ffc77d78c6e81ec890f20b0d4179fdb2374a0b81864c740eeb" },
+    "SPEC-017": { "path": "specs/017-admin-operations-audit-reporting/contracts/api.md", "sha256": "8911772dbc102a7f264f4a26bfadc725135c81de483ac11ba9277c74c3e899a1" }
+  },
+  "routes": [
+    { "routeId": "STU-02", "implementationOwner": "SPEC-011", "contributors": ["SPEC-011"] },
+    { "routeId": "STU-03", "implementationOwner": "SPEC-011", "contributors": ["SPEC-010", "SPEC-011"] },
+    { "routeId": "STU-04", "implementationOwner": "SPEC-012", "contributors": ["SPEC-012", "SPEC-013"] },
+    { "routeId": "STU-05", "implementationOwner": "SPEC-014", "contributors": ["SPEC-012", "SPEC-014"] },
+    { "routeId": "STU-06", "implementationOwner": "SPEC-015", "contributors": ["SPEC-014", "SPEC-015"] },
+    { "routeId": "STU-07", "implementationOwner": "SPEC-015", "contributors": ["SPEC-015"] },
+    { "routeId": "ADM-01", "implementationOwner": "SPEC-017", "contributors": ["SPEC-007", "SPEC-008", "SPEC-010", "SPEC-017"] },
+    { "routeId": "ADM-05", "implementationOwner": "SPEC-009", "contributors": ["SPEC-009", "SPEC-017"] },
+    { "routeId": "ADM-06", "implementationOwner": "SPEC-010", "contributors": ["SPEC-010", "SPEC-017"] },
+    { "routeId": "ADM-07", "implementationOwner": "SPEC-010", "contributors": ["SPEC-010", "SPEC-017"] },
+    { "routeId": "ADM-08", "implementationOwner": "SPEC-017", "contributors": ["SPEC-014", "SPEC-015", "SPEC-017"] },
+    { "routeId": "ADM-09", "implementationOwner": "SPEC-017", "contributors": ["SPEC-017"] },
+    { "routeId": "STF-01", "implementationOwner": "SPEC-016", "contributors": ["SPEC-007", "SPEC-008", "SPEC-016"] },
+    { "routeId": "STF-02", "implementationOwner": "SPEC-016", "contributors": ["SPEC-016"] },
+    { "routeId": "STF-03", "implementationOwner": "SPEC-016", "contributors": ["SPEC-016"] },
+    { "routeId": "STF-04", "implementationOwner": "SPEC-016", "contributors": ["SPEC-016"] }
+  ],
+  "limitations": [
+    "This approval is for the non-production demo and executable evidence only.",
+    "It does not grant production release authority or official AASTMT authorization.",
+    "WebKit evidence must not be labelled Safari; actual Safari/macOS remains deferred."
+  ]
+}

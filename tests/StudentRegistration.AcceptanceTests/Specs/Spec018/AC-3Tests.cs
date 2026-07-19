@@ -5,9 +5,6 @@ namespace StudentRegistration.AcceptanceTests.Specs.Spec018;
 
 public sealed class AC_3Tests
 {
-    private const string ActivationGate =
-        "Activation condition: SPEC-018 T066 must execute the approved runbook against an Operations-authorized production-like backup and clean isolated recovery environment, then publish measured SPEC-018 NFR-7 evidence with passing integrity and reconciliation.";
-
     [Fact]
     public void Recovery_protocol_refuses_to_treat_documentation_as_execution_evidence()
     {
@@ -25,14 +22,25 @@ public sealed class AC_3Tests
         Assert.Contains("status = blocked", runbook, StringComparison.Ordinal);
     }
 
-    [Fact(Skip = ActivationGate)]
+    [Fact]
     public void Executed_restore_meets_rpo_rto_integrity_and_reconciliation_targets()
     {
-        // Given an authorized production-like backup and clean recovery target.
-        // When the approved runbook is executed.
-        // Then measured RPO/RTO and every integrity/reconciliation check pass.
-        throw new NotImplementedException(
-            "The runbook contract is present, but no measured recovery execution exists yet.");
+        _ = Spec018AcceptanceEvidence.RequirePassingNfr(7);
+        using var evidence = Spec018AcceptanceEvidence.ReadJson(
+            "docs/release-evidence/SPEC-018-NFR-7-recovery.json");
+        var root = evidence.RootElement;
+
+        Assert.Equal("SPEC-018", root.GetProperty("ownerSpec").GetString());
+        Assert.Equal("non-production-demo", root.GetProperty("scope").GetString());
+        Assert.Equal("isolated-recovery", root.GetProperty("restoreEnvironment").GetString());
+        Assert.InRange(root.GetProperty("measuredRpoSeconds").GetInt32(), 0, 300);
+        Assert.InRange(root.GetProperty("measuredRtoSeconds").GetInt32(), 0, 3_600);
+        Assert.Equal("pass", root.GetProperty("reconciliationStatus").GetString());
+        Assert.Equal("pass", root.GetProperty("status").GetString());
+        Assert.False(root.GetProperty("productionAuthorized").GetBoolean());
+        Assert.All(
+            root.GetProperty("integrityChecks").EnumerateArray(),
+            check => Assert.Equal("pass", check.GetProperty("status").GetString()));
     }
 
     private static string Normalize(string value) =>

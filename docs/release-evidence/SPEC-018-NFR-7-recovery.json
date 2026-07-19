@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "ownerSpec": "SPEC-018",
+  "scope": "non-production-demo",
+  "evidenceId": "backup-evidence-20260717-7bc1df3f",
+  "evidenceVersion": 1,
+  "sourceCommit": "09f1140836ae939b2e9ef5bfa04458c6ba61fc13",
+  "recordedAtUtc": "2026-07-17T21:29:39.9962842+00:00",
+  "backupId": "spec018-7bc1df3ff9794cbd9653ac61ad4aecd2",
+  "backupCreatedAtUtc": "2026-07-17T21:29:38.5124323+00:00",
+  "restoreEnvironment": "isolated-recovery",
+  "restoreStartedAtUtc": "2026-07-17T21:29:38.2825818+00:00",
+  "restoreCompletedAtUtc": "2026-07-17T21:29:39.933272+00:00",
+  "rpoTargetSeconds": 300,
+  "measuredRpoSeconds": 1,
+  "rtoTargetSeconds": 3600,
+  "measuredRtoSeconds": 2,
+  "integrityChecks": [
+    {
+      "checkId": "dbcc-checkdb",
+      "status": "pass",
+      "details": "DBCC CHECKDB completed without an error."
+    },
+    {
+      "checkId": "migration-history",
+      "status": "pass",
+      "details": "Restored migration rows: 6."
+    },
+    {
+      "checkId": "registration-invariants",
+      "status": "pass",
+      "details": "Restored overbooking/duplicate violations: 0."
+    },
+    {
+      "checkId": "compatibility-level",
+      "status": "pass",
+      "details": "Restored compatibility level: 160."
+    }
+  ],
+  "reconciliationStatus": "pass",
+  "status": "pass",
+  "approvedBy": "Ahmed ELbamby",
+  "productionAuthorized": false
+}

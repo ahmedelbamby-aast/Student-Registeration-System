@@ -24,7 +24,7 @@ public sealed class UserAdministrationPageVisualTests(VisualRegressionFixture fi
             {
               "id": "00000000-0000-0000-0000-000000007301",
               "displayName": "Synthetic Lecturer",
-              "loginIdentifier": "lecturer.demo",
+              "loginIdentifier": "LEC-0001",
               "enabled": true,
               "roles": ["Lecturer"],
               "rowVersion": "AQIDBA=="

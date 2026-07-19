@@ -211,10 +211,7 @@ public sealed class StudentAdministrationPageAccessibilityTests(
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
-        await page.GetByRole(
-                AriaRole.Heading,
-                new() { Name = "Student administration", Exact = true })
-            .WaitForAsync();
+        await page.Locator("h1#student-administration-heading").WaitForAsync();
         await page.Locator("[data-testid='student-search-input']").FillAsync("20260001");
         await page.GetByRole(AriaRole.Button, new() { Name = "Search Students", Exact = true })
             .ClickAsync();

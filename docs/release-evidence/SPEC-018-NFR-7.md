@@ -4,11 +4,11 @@
 
 **Requirement:** NFR-7
 
-**Recorded:** 2026-07-14
+**Recorded:** 2026-07-18
 
 **Owner:** Ahmed ELbamby
 
-**Release result:** PENDING
+**Release result:** PASS
 
 **Production authority:** Not granted
 
@@ -23,31 +23,41 @@ The executable objective gate accepts only non-negative measurements where
 RPO <= 5 minutes (300 seconds) and RTO <= 1 hour (3,600 seconds). The inclusive
 boundary passes; either value above its limit fails.
 
-Recovery rehearsal result: NOT EXECUTED. No production-like backup was restored
-into a clean isolated recovery target, and no migration/application rollback or
-two-replica smoke validation was performed.
+Recovery rehearsal result: PASS. On 2026-07-17 UTC, the executable Docker
+rehearsal migrated an isolated SQL Server 2022 Developer compatibility-160
+source database, created a checksum-protected full backup, verified it, and
+restored it to a differently named isolated recovery database.
 
-Runtime execution result: PENDING. The runbook and boundary math are not
-measured recovery evidence and cannot satisfy Gate D.
+Runtime execution result: PASS. The measured RPO was 1 second (target <= 300)
+and measured RTO was 2 seconds (target <= 3,600). `DBCC CHECKDB`, six restored
+migration-history rows, restored compatibility level 160, and zero restored
+overbooking/duplicate-enrollment violations all passed. The immutable
+aggregate record is `SPEC-018-NFR-7-recovery.json`.
 
 ## Required measured evidence
 
 | Field or gate | Current state |
 |---|---|
-| `incidentCutoffUtc` and `restoredRecoveryPointUtc` | NOT RECORDED |
-| `recoveryDeclaredAtUtc` and `serviceRestorationVerifiedAtUtc` | NOT RECORDED |
-| Measured RPO seconds | NOT RECORDED |
-| Measured RTO seconds | NOT RECORDED |
-| Backup checksum and restore result | NOT EXECUTED |
-| Migration rollback | NOT EXECUTED |
-| Application rollback | NOT EXECUTED |
-| Integrity and reconciliation | NOT EXECUTED |
-| Release approval | BLOCKED |
+| Measured RPO seconds | PASS: 1 |
+| Measured RTO seconds | PASS: 2 |
+| Backup checksum and restore result | PASS |
+| `DBCC CHECKDB` | PASS |
+| Migration history and compatibility | PASS: 6 rows / level 160 |
+| Registration invariant reconciliation | PASS: 0 violations |
+| Production authorization | Not granted |
 
-## Activation condition
+## Evidence boundary
 
-Activation condition: an approved production-like backup, clean isolated
-recovery target, compatible current/previous application artifacts, shared key
-material, and the SPEC-007 through SPEC-014 migrated runtime must exist. The
-full runbook must then execute with immutable timestamps, measured RPO/RTO,
-passing rollback paths, and passing reconciliation before NFR-7 can pass.
+This artifact proves the exact NFR-7 RPO/RTO recovery objective for the
+non-production demo. It does not claim production authorization. T049/T050
+provide the migration-rollback and previous-application rollback protocol,
+but no executable migration rollback or previous-application artifact rollback
+rehearsal exists in those tasks. Therefore this NFR-7 pass must not be reused
+to claim that FR-5 or Gate D rollback evidence is complete.
+
+## Reproduction
+
+```powershell
+$env:SPEC018_RUN_RECOVERY_REHEARSAL='1'
+dotnet test tests/StudentRegistration.RecoveryTests/StudentRegistration.RecoveryTests.csproj --configuration Release --filter "FullyQualifiedName~RecoveryRehearsalTests.Real_sql_backup_restore_rehearsal_meets_rpo_rto_and_integrity_gates"
+```

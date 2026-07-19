@@ -4,7 +4,7 @@
 
 **Requirement:** NFR-8 / SC-2
 
-**Recorded:** 2026-07-14
+**Recorded:** 2026-07-18
 
 **Status:** NOT EXECUTED
 
@@ -14,16 +14,16 @@
 
 ## Evidence boundary
 
-This artifact is an unsigned execution template, not a test result. Existing
-static checks verify selected token contrast, visible-focus variables, 44 CSS
-px target sizing, reduced-motion/forced-color rules, 27 design-record focus
-orders, and semantic markup in shared components. They do not represent an
-axe/browser run, keyboard journey, NVDA journey, WCAG 2.2 AA pass, or signed
-manual evidence.
+This artifact remains the unsigned manual execution record. Static checks and
+the automated evidence are now complete: all 36 combinations of nine critical
+routes across Chrome, Edge, Firefox, and pinned Playwright WebKit passed axe,
+keyboard/focus, target-size, and responsive checks. WebKit is not Safari;
+actual Safari on macOS is deferred and not passed.
 
-The browser matrix remains planned for current stable Chrome, Edge, and
-Firefox plus pinned Playwright WebKit. WebKit is not Safari. Actual Safari on
-macOS is deferred and not passed.
+An objective Windows integration probe also passed with official NVDA 2026.1.1
+and headed Chrome, recording 16 speech events, two focus events, and hashed
+NVDA/TRX/log artifacts. Those automated results do not represent a human NVDA
+usability verdict or signed manual evidence.
 
 ## Required evidence record
 
@@ -82,11 +82,12 @@ uxQaSignOff: UNSIGNED
 
 | Gate | Current result |
 |---|---|
-| Chrome axe and keyboard/focus journeys | NOT EXECUTED |
-| Edge axe and keyboard/focus journeys | NOT EXECUTED |
-| Firefox axe and keyboard/focus journeys | NOT EXECUTED |
-| Playwright WebKit axe and keyboard/focus journeys | NOT EXECUTED |
-| Serious automated findings unresolved | UNKNOWN - EXECUTION REQUIRED |
+| Chrome axe and keyboard/focus journeys | PASS - 9/9 routes |
+| Edge axe and keyboard/focus journeys | PASS - 9/9 routes |
+| Firefox axe and keyboard/focus journeys | PASS - 9/9 routes |
+| Playwright WebKit axe and keyboard/focus journeys | PASS - 9/9 routes |
+| Official NVDA 2026.1.1 + headed Chrome integration probe | PASS - automated boundary only |
+| Serious automated findings unresolved | 0 |
 
 ## Sign-off
 
@@ -98,9 +99,7 @@ uxQaSignOff: UNSIGNED
 
 ## Activation condition
 
-Activation condition: the critical routes must be executable with their
-approved states and fixtures; a pinned Playwright/axe environment must run the
-required browser matrix; and an identified tester on Windows must complete the
-keyboard and representative NVDA journeys. Every defect must be linked and all
-critical/major barriers resolved before UX and QA sign the evidence. Until
-then, NFR-8 and the release gate remain blocked.
+Activation condition: an identified tester on Windows must complete the
+keyboard and representative NVDA journeys, record defect links, and obtain UX
+and QA sign-off. Until then, NFR-8 and the release gate remain blocked even
+though all automated browser and NVDA integration evidence passes.

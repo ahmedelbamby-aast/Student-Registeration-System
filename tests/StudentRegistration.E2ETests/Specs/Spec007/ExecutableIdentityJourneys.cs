@@ -169,7 +169,7 @@ public sealed class ExecutableIdentityJourneys
         using var context = CreateContext(handler);
         var page = context.Render<StaffLoginPage>();
 
-        page.Find("#staff-user-name").Input("lecturer.demo");
+        page.Find("#staff-user-name").Input("LEC-0001");
         page.Find("#staff-password").Input(CreateSecret());
         page.Find("form[data-testid=staff-login-form]").Submit();
 
@@ -293,7 +293,7 @@ public sealed class ExecutableIdentityJourneys
         var user = new IdentityUserSummaryDto(
             Guid.NewGuid(),
             "Demo Lecturer",
-            "lecturer.demo",
+            "LEC-0001",
             true,
             ["Lecturer"],
             Convert.ToBase64String([1, 2, 3, 4]));
@@ -326,7 +326,7 @@ public sealed class ExecutableIdentityJourneys
         var current = new IdentityUserSummaryDto(
             userId,
             "Demo Lecturer",
-            "lecturer.demo",
+            "LEC-0001",
             true,
             ["Lecturer"],
             Convert.ToBase64String([1, 2, 3, 4]));

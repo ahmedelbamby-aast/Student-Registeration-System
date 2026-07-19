@@ -30,6 +30,7 @@ public static class SecurityConfiguration
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(environment);
 
+        EnsurePocEnvironment(environment);
         RequirePocSecretInput(configuration, CertificatePathKey);
         RequirePocSecretInput(configuration, CertificatePasswordKey);
 
@@ -37,6 +38,16 @@ public static class SecurityConfiguration
         // external-certificate protection, and production authority remain
         // fail closed in one place.
         return services.AddStudentRegistrationDataProtection(configuration, environment);
+    }
+
+    private static void EnsurePocEnvironment(IHostEnvironment environment)
+    {
+        if (environment.IsProduction())
+        {
+            throw new InvalidOperationException(
+                "PRODUCTION_DATA_PROTECTION_AUTHORITY_REQUIRED: " +
+                "The POC production repository and protection provider remain undecided.");
+        }
     }
 
     private static void RequirePocSecretInput(

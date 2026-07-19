@@ -1,0 +1,21 @@
+{
+  "artifactVersion": "1.0.0",
+  "recordedAtUtc": "2026-07-18T07:51:35.4103508Z",
+  "requirement": "SPEC-018/NFR-8",
+  "result": "PASS",
+  "operatingSystem": "Microsoft Windows 10.0.26200",
+  "browser": "Google Chrome headed",
+  "nvdaVersion": "2026.1.1",
+  "nvdaExecutableSha256": "2153e5317ee926f5e97dba71cc73f9f95eba59b0e20199c0e3717958a6c1c899",
+  "nvdaLogSha256": "2e94b26c63a1620aadea392acf9b7b63d376e278712cdede1ceac54da9589a3a",
+  "keyboardProbeTrxSha256": "599884a109584843a6571212515619286d9e2edf83ded1d226f7a79e1e5ffd49",
+  "sourceSummarySha256": "EF0865CC32BB43FA9FD099ACD0A18C4D7C33CD011D8C20A819DC56CF6D416781",
+  "speechEventCount": 16,
+  "focusEventCount": 2,
+  "keyboardProbeExitCode": 0,
+  "evidenceBoundary": "Objective automated NVDA/Windows integration probe only; no human usability verdict.",
+  "manualTester": "not-performed",
+  "uxQaSignOff": "unsigned",
+  "releaseGate": "BLOCKED",
+  "productionAuthorized": false
+}

@@ -63,9 +63,12 @@
 .srs-eligibility__reason-heading,
 .srs-eligibility__group header {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--srs-spacing-primitive-3);
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
 }
 
 .srs-eligibility__group-grid {

@@ -29,6 +29,8 @@
   <ItemGroup>
     <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
              Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../StudentRegistration.E2ETests/Specs/Spec016/Spec016BrowserData.cs"
+             Link="TestSupport/Spec016BrowserData.cs" />
   </ItemGroup>
 
 </Project>

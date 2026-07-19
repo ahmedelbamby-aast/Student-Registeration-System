@@ -204,6 +204,48 @@ public sealed class RegistrationPlanConcurrencyTests
         Assert.False(validation.Plan.ReviewBlocked);
     }
 
+    [Fact]
+    public async Task Owner_and_replacement_validation_fail_closed_before_plan_mutation()
+    {
+        var store = new FakePlanStore();
+        var service = Service(store, new FakePlanContextReader());
+
+        Assert.Equal(
+            RegistrationPlanOperationOutcome.NotFound,
+            (await service.GetAsync(Guid.Empty, TermId)).Outcome);
+        Assert.Equal(
+            RegistrationPlanOperationOutcome.NotFound,
+            (await service.ValidateAsync(ApplicationUserId, Guid.Empty)).Outcome);
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            service.ReplaceAsync(ApplicationUserId, TermId, null!));
+        Assert.Equal(
+            "PLAN_REPLACEMENT_INVALID",
+            (await service.ReplaceAsync(
+                ApplicationUserId,
+                TermId,
+                new(" ", []))).ErrorCode);
+        Assert.Equal(
+            "PLAN_REPLACEMENT_INVALID",
+            (await service.ReplaceAsync(
+                ApplicationUserId,
+                TermId,
+                new(RegistrationPlanService.InitialEmptyVersion, null!))).ErrorCode);
+        Assert.Equal(
+            "DUPLICATE_GROUP_SELECTION",
+            (await service.ReplaceAsync(
+                ApplicationUserId,
+                TermId,
+                new(RegistrationPlanService.InitialEmptyVersion, [Guid.Empty]))).ErrorCode);
+        var duplicate = Id(20);
+        Assert.Equal(
+            "DUPLICATE_GROUP_SELECTION",
+            (await service.ReplaceAsync(
+                ApplicationUserId,
+                TermId,
+                new(RegistrationPlanService.InitialEmptyVersion, [duplicate, duplicate]))).ErrorCode);
+        Assert.Equal(0, store.ReplaceCalls);
+    }
+
     [Theory]
     [InlineData("draft", false, "GROUP_UNPUBLISHED")]
     [InlineData("closed", false, "GROUP_CLOSED")]
@@ -258,6 +300,136 @@ public sealed class RegistrationPlanConcurrencyTests
         Assert.Contains(
             validation.Plan.SelectionIssues,
             issue => issue.Code == "GROUP_CHANGED" && issue.OfferingId == Id(10));
+    }
+
+    [Fact]
+    public void Plan_and_conflict_guards_reject_ambiguous_or_incomplete_state()
+    {
+        Assert.Throws<ArgumentException>(() => new RegistrationPlan(
+            Guid.Empty, StudentId, TermId, 0m, RegistrationPlanState.Draft));
+        Assert.Throws<ArgumentException>(() => new RegistrationPlan(
+            Id(700), Guid.Empty, TermId, 0m, RegistrationPlanState.Draft));
+        Assert.Throws<ArgumentException>(() => new RegistrationPlan(
+            Id(700), StudentId, Guid.Empty, 0m, RegistrationPlanState.Draft));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RegistrationPlan(
+            Id(700), StudentId, TermId, 0m, (RegistrationPlanState)999));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RegistrationPlan(
+            Id(700), StudentId, TermId, -1m, RegistrationPlanState.Draft));
+        Assert.Throws<ArgumentException>(() => new RegistrationPlan(
+            Id(700), StudentId, TermId, 0m, RegistrationPlanState.Draft, [null!]));
+
+        var plan = new RegistrationPlan(
+            Id(700),
+            StudentId,
+            TermId,
+            0m,
+            RegistrationPlanState.Draft);
+        var selection = new RegistrationPlanSelection(
+            Id(701), Id(10), Id(20), "offering/10", "group/20");
+        var validation = new ValidationSnapshot(
+            new DateTime(2026, 7, 18, 10, 0, 0, DateTimeKind.Utc),
+            "academic/1",
+            "policy/1",
+            "catalogue/1",
+            new Dictionary<Guid, string>(),
+            new Dictionary<Guid, string>());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => plan.ReplaceSelections(
+            [selection], -1m, RegistrationPlanState.Draft, [], validation));
+        Assert.Throws<ArgumentException>(() => plan.ReplaceSelections(
+            [selection, selection], 3m, RegistrationPlanState.Draft, [], validation));
+        Assert.Throws<ArgumentException>(() => plan.ReplaceSelections(
+            [null!], 3m, RegistrationPlanState.Draft, [], validation));
+        Assert.Throws<ArgumentException>(() => plan.ReplaceSelections(
+            [selection], 3m, RegistrationPlanState.Draft, [null!], validation));
+
+        var first = new ScheduleConflictParticipant(
+            Id(20), "G20", "CS101", "Course", new TimeOnly(10, 0), new TimeOnly(12, 0));
+        var second = new ScheduleConflictParticipant(
+            Id(21), "G21", "DS201", "Course", new TimeOnly(9, 0), new TimeOnly(11, 0));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflictParticipant(
+            Id(22), "G22", "AI301", "Course", new TimeOnly(10, 0), new TimeOnly(10, 0)));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflictParticipant(
+            Id(22), null!, "AI301", "Course", new TimeOnly(10, 0), new TimeOnly(11, 0)));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflictAction(
+            "unknown", Id(20), "Label", "/student/schedule"));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP",
+            first,
+            first,
+            DayOfWeek.Monday,
+            new TimeOnly(10, 0),
+            new TimeOnly(12, 0),
+            "Conflict",
+            []));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP",
+            first,
+            second,
+            DayOfWeek.Monday,
+            new TimeOnly(9, 0),
+            new TimeOnly(11, 0),
+            "Conflict",
+            []));
+
+        ScheduleConflictAction Action(string action, Guid groupId) =>
+            new(action, groupId, "Resolve", "/student/schedule");
+        var completeActions = new[]
+        {
+            Action("change-group", first.GroupId),
+            Action("remove-group", first.GroupId),
+            Action("change-group", second.GroupId),
+            Action("remove-group", second.GroupId)
+        };
+        var validConflict = new ScheduleConflict(
+            "MEETING_OVERLAP",
+            first,
+            second,
+            DayOfWeek.Monday,
+            new TimeOnly(10, 0),
+            new TimeOnly(11, 0),
+            "Conflict",
+            completeActions);
+        Assert.Equal(4, validConflict.Actions.Count);
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP", first, second, DayOfWeek.Monday,
+            new TimeOnly(10, 0), new TimeOnly(11, 0), "Conflict", [null!]));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP", first, second, DayOfWeek.Monday,
+            new TimeOnly(10, 0), new TimeOnly(11, 0), "Conflict",
+            [completeActions[0], completeActions[0], .. completeActions[1..]]));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP", first, second, DayOfWeek.Monday,
+            new TimeOnly(10, 0), new TimeOnly(11, 0), "Conflict",
+            completeActions[..3]));
+        Assert.Throws<ArgumentException>(() => new ScheduleConflict(
+            "MEETING_OVERLAP", first, second, DayOfWeek.Monday,
+            new TimeOnly(10, 0), new TimeOnly(11, 0), "Conflict",
+            [.. completeActions, Action("change-group", Id(99))]));
+    }
+
+    [Fact]
+    public void Conflict_detector_covers_null_non_overlap_and_both_intersection_orders()
+    {
+        var detector = new ScheduleConflictDetector();
+        Assert.Throws<ArgumentException>(() => detector.Detect([null!]));
+        var first = new SelectedScheduleGroup(
+            Id(20), "G20", "CS101", "Course",
+            [new(Id(800), DayOfWeek.Monday, new TimeOnly(10, 0), new TimeOnly(12, 0))]);
+        var differentDay = new SelectedScheduleGroup(
+            Id(21), "G21", "DS201", "Course",
+            [new(Id(801), DayOfWeek.Tuesday, new TimeOnly(10, 0), new TimeOnly(12, 0))]);
+        var before = new SelectedScheduleGroup(
+            Id(22), "G22", "AI301", "Course",
+            [new(Id(802), DayOfWeek.Monday, new TimeOnly(8, 0), new TimeOnly(10, 0))]);
+        var containing = new SelectedScheduleGroup(
+            Id(23), "G23", "SE401", "Course",
+            [new(Id(803), DayOfWeek.Monday, new TimeOnly(9, 0), new TimeOnly(13, 0))]);
+
+        Assert.Empty(detector.Detect([first, differentDay, before]));
+        var conflict = Assert.Single(detector.Detect([first, containing]));
+        Assert.Equal(new TimeOnly(10, 0), conflict.OverlapStartLocal);
+        Assert.Equal(new TimeOnly(12, 0), conflict.OverlapEndLocal);
     }
 
     private static RegistrationPlanService Service(

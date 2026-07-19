@@ -4,11 +4,11 @@
 
 **Requirement:** NFR-9
 
-**Recorded:** 2026-07-14
+**Recorded:** 2026-07-18
 
 **Owner:** Ahmed ELbamby
 
-**Release result:** PENDING
+**Release result:** PASS
 
 **Production authority:** Not granted
 
@@ -18,13 +18,25 @@ Coverage-gate definition result: PASS. The executable gate requires
 >= 90% branch coverage and fails when no branches exist, covered branches are
 invalid, or the ratio is below `0.90`.
 
-Coverage measurement result: NOT EXECUTED. Eligibility is owned by SPEC-011,
-conflict behavior by SPEC-012, and capacity/concurrency behavior by SPEC-014.
-Those downstream implementations are not present, so there is no source-owner
-coverage report and no measured percentage to publish.
+Coverage measurement result: EXECUTED AND PASSED. The focused integration run
+executed 133 behavior tests and all 133 passed. The Cobertura report produced
+these manifest-owner results by summing covered and valid branches in the
+matched classes:
 
-Runtime execution result: PENDING. A sample ratio used to test gate math is not
-coverage evidence.
+| Owner | Matched classes | Covered / valid | Branch rate |
+|---|---:|---:|---:|
+| SPEC-011 eligibility | 17 | 351 / 375 | 93.60% |
+| SPEC-012 conflict/plan | 30 | 168 / 186 | 90.32% |
+| SPEC-014 capacity/concurrency | 23 | 104 / 112 | 92.86% |
+
+The machine-readable aggregate and source-report SHA-256 are recorded in
+`SPEC-018-NFR-9-coverage.json`. Per-class below-threshold counts remain
+diagnostic; the approved manifest gate measures each named owner's total
+covered branches divided by total valid branches.
+
+Runtime execution result: PASS. Every measured owner is at or above 90%, the
+behavior suite is fully green, and no production code was excluded from the
+existing owner patterns to obtain the result.
 
 ## Behavior remains authoritative
 
@@ -37,10 +49,3 @@ percentage can pass only while the owning boundary, authorization, real-SQL conc
   alternatives, and protected-option validation.
 - capacity requires real-SQL contention, idempotency, atomicity, zero
   overbooking, zero duplicate enrollment, and zero partial submission.
-
-## Activation condition
-
-Activation condition: SPEC-011, SPEC-012, and SPEC-014 must deliver their
-canonical source and complete behavior suites. CI must then collect a
-versioned branch report scoped to those owner assemblies, prove at least 90%,
-and retain passing behavior/concurrency evidence before NFR-9 can pass.

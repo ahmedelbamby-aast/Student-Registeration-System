@@ -205,10 +205,7 @@ public sealed class TermAdministrationPageAccessibilityTests(AxeAccessibilityFix
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
-        await page.GetByRole(
-                AriaRole.Heading,
-                new PageGetByRoleOptions { Name = "Term administration", Exact = true })
-            .WaitForAsync();
+        await page.Locator("h1#term-administration-heading").WaitForAsync();
         await page.Locator("[data-route-id='ADM-02'][data-state='success']")
             .WaitForAsync();
         return page;
