@@ -334,13 +334,17 @@
                     <div class="srs-catalogue__heading-row">
                         <div>
                             <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Typed policy")</p>
-                            <h2 id="policy-editor-heading">@_policy?.Version</h2>
+                            <h2 id="policy-editor-heading">@(_policy?.Version ?? LocalizedUiText.Get("Policy service unavailable"))</h2>
                         </div>
                         <span class="srs-catalogue__status">@_policy?.State</span>
                     </div>
                     <p>
                         @LocalizedUiText.Get("Values are typed data only. Scripts and executable expressions are not accepted.")
                     </p>
+                    @if (_policy is null)
+                    {
+                        <p role="status">@LocalizedUiText.Get("Catalogue editing remains available. Policy editing and simulation are disabled until the policy owner API is available.")</p>
+                    }
                     <form @onsubmit="SavePolicyAsync" @onsubmit:preventDefault>
                         <div class="srs-catalogue__field-grid">
                             <label class="srs-catalogue__field">
@@ -362,7 +366,7 @@
                                 @FieldError("probation-max-credits")
                             </label>
                         </div>
-                        <button type="submit" disabled="@_isSavingPolicy">
+                        <button type="submit" disabled="@(_isSavingPolicy || _policy is null)">
                             @(_isSavingPolicy ? LocalizedUiText.Get("Saving…") : LocalizedUiText.Get("Save policy draft"))
                         </button>
                     </form>
@@ -586,7 +590,7 @@
             var programs = await programsTask;
             var versions = await versionsTask;
             var policies = await policiesTask;
-            var failure = FirstFailure(programs, versions, policies);
+            var failure = FirstFailure(programs, versions);
             if (failure is not null)
             {
                 ApplyFailure(failure.Value.StatusCode, failure.Value.Error);
@@ -595,7 +599,7 @@
 
             _versions.Clear();
             _versions.AddRange(versions.Value!.Items);
-            _policy = policies.Value!.Items.FirstOrDefault();
+            _policy = policies.IsSuccess ? policies.Value?.Items.FirstOrDefault() : null;
             var baseVersion = _versions.FirstOrDefault(item =>
                 string.Equals(item.State, "published", StringComparison.OrdinalIgnoreCase))
                 ?? _versions.FirstOrDefault();
@@ -987,12 +991,10 @@
 
     private static (HttpStatusCode StatusCode, ApiError? Error)? FirstFailure(
         AcademicApiResult<Page<ProgramAdminDto>> programs,
-        AcademicApiResult<Page<CatalogueVersionSummaryDto>> versions,
-        AcademicApiResult<Page<PolicySetAdminDto>> policies)
+        AcademicApiResult<Page<CatalogueVersionSummaryDto>> versions)
     {
         if (!programs.IsSuccess) return (programs.StatusCode, programs.Error);
         if (!versions.IsSuccess) return (versions.StatusCode, versions.Error);
-        if (!policies.IsSuccess) return (policies.StatusCode, policies.Error);
         return null;
     }
 
