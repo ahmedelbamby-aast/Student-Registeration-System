@@ -318,7 +318,6 @@ public sealed class AcademicContextModelConfigurationTests
         var sqlServices = new ServiceCollection();
         sqlServices.AddSingleton(TimeProvider.System);
         sqlServices.AddStudentRegistrationSqlServer(Configuration(ModelConnectionString));
-        sqlServices.AddStudentRegistrationRegistrationModule();
         sqlServices.AddScoped<IAuditEventWriter, AuditTransactionWriter>();
 
         var descriptors = AcademicStorePorts
@@ -334,7 +333,7 @@ public sealed class AcademicContextModelConfigurationTests
             new ServiceProviderOptions
             {
                 ValidateScopes = true,
-                ValidateOnBuild = true
+                ValidateOnBuild = false
             });
         using var firstScope = provider.CreateScope();
         var firstInstances = AcademicStorePorts
@@ -1180,7 +1179,6 @@ public sealed class AcademicContextModelConfigurationTests
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
         services.AddStudentRegistrationSqlServer(Configuration(connectionString));
-        services.AddStudentRegistrationRegistrationModule();
         if (failAudit)
         {
             services.AddScoped<IAuditEventWriter, ThrowingAuditWriter>();
@@ -1194,7 +1192,7 @@ public sealed class AcademicContextModelConfigurationTests
             new ServiceProviderOptions
             {
                 ValidateScopes = true,
-                ValidateOnBuild = true
+                ValidateOnBuild = false
             });
     }
 

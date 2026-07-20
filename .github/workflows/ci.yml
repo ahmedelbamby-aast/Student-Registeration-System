@@ -159,6 +159,7 @@ jobs:
           dotnet restore tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj
           dotnet restore tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj
           dotnet build tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-restore --configuration Release
+          dotnet publish src/StudentRegistration.Client/StudentRegistration.Client.csproj --no-restore --configuration Release
 
       - name: Gate 10 - E2E browser matrix
         shell: pwsh

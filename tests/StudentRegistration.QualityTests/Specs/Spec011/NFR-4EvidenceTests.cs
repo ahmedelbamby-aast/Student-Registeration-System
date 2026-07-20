@@ -16,20 +16,20 @@ public sealed class NFR_4EvidenceTests
 
         RepositoryFiles.ContainsAll(
             presentation,
-            "Text=\"@(reason.Passed ? \"Passed\" : \"Unavailable\")\"",
+            "Text=\"@(reason.Passed ? LocalizedUiText.Get(\"Passed\") : LocalizedUiText.Get(\"Unavailable\"))\"",
             "Icon=\"@(reason.Passed ? \"✓\" : \"✕\")\"",
             "<strong>@reason.Code</strong>",
             "<p>@reason.Message</p>",
-            "Text=\"@(group.Selectable ? \"Selectable\" : \"Unavailable\")\"",
+            "Text=\"@(group.Selectable ? LocalizedUiText.Get(\"Selectable\") : LocalizedUiText.Get(\"Unavailable\"))\"",
             "Icon=\"@(group.Selectable ? \"✓\" : \"✕\")\"",
             "<span>@reason.Message</span>");
         RepositoryFiles.ContainsAll(
             discovery,
-            "Text=\"@(offering.Eligible ? \"Eligible\" : \"Unavailable\")\"",
+            "Text=\"@(offering.Eligible ? LocalizedUiText.Get(\"Eligible\") : LocalizedUiText.Get(\"Unavailable\"))\"",
             "Icon=\"@(offering.Eligible ? \"✓\" : \"✕\")\"");
         RepositoryFiles.ContainsAll(
             details,
-            "Text=\"@(_offering.Eligible ? \"Eligible\" : \"Unavailable\")\"",
+            "Text=\"@(_offering.Eligible ? LocalizedUiText.Get(\"Eligible\") : LocalizedUiText.Get(\"Unavailable\"))\"",
             "Icon=\"@(_offering.Eligible ? \"✓\" : \"✕\")\"");
     }
 

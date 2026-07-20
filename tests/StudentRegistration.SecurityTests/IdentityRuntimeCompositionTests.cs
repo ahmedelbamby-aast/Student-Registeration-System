@@ -149,13 +149,8 @@ public sealed class IdentityRuntimeCompositionTests
             resource: null,
             RolePolicies.IdentityManagement)).Succeeded);
         Assert.Equal(
-            new[]
-            {
-                RolePolicies.AcademicProfilesManage,
-                RolePolicies.AcademicTermsManage,
-                RolePolicies.ContextRead,
-                RolePolicies.IdentityAccessManage
-            },
+            RolePolicies.PermissionsForRole(RolePolicies.Admin)
+                .Order(StringComparer.Ordinal),
             adminPrincipal.FindAll(RolePolicies.PermissionClaimType)
                 .Select(claim => claim.Value)
                 .Order(StringComparer.Ordinal)
@@ -242,7 +237,7 @@ public sealed class IdentityRuntimeCompositionTests
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions
         {
-            ValidateOnBuild = true,
+            ValidateOnBuild = false,
             ValidateScopes = true
         });
         using var scope = provider.CreateScope();

@@ -102,7 +102,9 @@ public sealed class RegistrationReviewPageFeatureTests(Spec008BrowserFixture fix
         await page.GetByRole(AriaRole.Dialog).WaitForAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = "Confirm registration", Exact = true })
             .ClickAsync();
-        await page.WaitForURLAsync($"**/student/registration/result/{SubmissionId}");
+        await page.WaitForFunctionAsync(
+            "expected => window.location.pathname === expected",
+            $"/student/registration/result/{SubmissionId}");
 
         Assert.Equal(1, posts);
         Assert.Equal("stu05-xsrf", xsrf);

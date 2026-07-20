@@ -108,7 +108,7 @@ public sealed class AdministrationAuditModelConfigurationTests
         await using var context = CreateContext(connectionString);
         try
         {
-            await context.Database.MigrateAsync("20260713070000_StaffAdminOperations");
+            await context.Database.MigrateAsync("20260717120000_Spec017ExportFilter");
             var ownerId = Guid.NewGuid();
             var clientRequestId = Guid.NewGuid();
             var createdAtUtc = new DateTime(2026, 7, 17, 12, 0, 0, DateTimeKind.Utc);

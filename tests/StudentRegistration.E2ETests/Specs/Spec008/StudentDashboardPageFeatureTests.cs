@@ -86,7 +86,11 @@ public sealed class StudentDashboardPageFeatureTests(Spec008BrowserFixture fixtu
         await NavigateAndWaitAsync(page, "success");
 
         Assert.True(await page.Locator("[data-window-state='upcoming']").IsVisibleAsync());
-        Assert.True(await page.GetByText("20 July 2026", new() { Exact = false }).IsVisibleAsync());
+        Assert.StartsWith(
+            "2026-07-20T08:00:00",
+            await page.Locator("[data-registration-window-summary]")
+                .GetAttributeAsync("data-window-opens-at"),
+            StringComparison.Ordinal);
         Assert.True(await page.GetByText("Africa/Cairo", new() { Exact = true }).IsVisibleAsync());
         var action = page.Locator("[data-testid='registration-primary-action']");
         Assert.Equal("true", await action.GetAttributeAsync("aria-disabled"));
@@ -107,7 +111,11 @@ public sealed class StudentDashboardPageFeatureTests(Spec008BrowserFixture fixtu
 
         Assert.True(await page.Locator("[data-window-state='closed']").IsVisibleAsync());
         Assert.True(await page.Locator("[data-reason-code='WINDOW_CLOSED']").IsVisibleAsync());
-        Assert.True(await page.GetByText("19 July 2026", new() { Exact = false }).IsVisibleAsync());
+        Assert.StartsWith(
+            "2026-07-19T18:00:00",
+            await page.Locator("[data-registration-window-summary]")
+                .GetAttributeAsync("data-window-closes-at"),
+            StringComparison.Ordinal);
         await AssertRegistrationNavigationUnavailableAsync(page);
     }
 

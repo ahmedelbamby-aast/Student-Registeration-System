@@ -39,6 +39,8 @@ public sealed class Spec003PublishedBrowserFixture : IAsyncLifetime
 
     public Uri BaseAddress { get; private set; } = new("http://127.0.0.1/");
 
+    public string BuildConfiguration => "Release";
+
     public async Task InitializeAsync()
     {
         try

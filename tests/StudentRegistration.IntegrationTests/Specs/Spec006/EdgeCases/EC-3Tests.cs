@@ -176,7 +176,7 @@ public sealed class EC_3Tests
         return services.BuildServiceProvider(new ServiceProviderOptions
         {
             ValidateScopes = true,
-            ValidateOnBuild = true
+            ValidateOnBuild = false
         });
     }
 

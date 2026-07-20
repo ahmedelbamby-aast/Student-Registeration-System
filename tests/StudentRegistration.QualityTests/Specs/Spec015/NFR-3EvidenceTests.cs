@@ -45,9 +45,9 @@ public sealed class NFR_3EvidenceTests
             "Meetings=\"@_meetings\"",
             "<ScheduleList",
             "EquivalentCalendarId=\"registration-history-list-calendar-heading\"",
-            "<caption>Current and archived registration outcomes</caption>",
-            "<th scope=\"col\">Reference</th>",
-            "aria-label=\"Registration records table\"",
+            "<caption>@LocalizedUiText.Get(\"Current and archived registration outcomes\")</caption>",
+            "<th scope=\"col\">@LocalizedUiText.Get(\"Reference\")</th>",
+            "aria-label=\"@(LocalizedUiText.Get(\"Registration records table\"))\"",
             "private Task PrintAsync() => JavaScript.InvokeVoidAsync(\"window.print\")");
         RepositoryFiles.ContainsAll(
             calendar,

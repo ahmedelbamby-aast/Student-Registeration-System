@@ -75,7 +75,7 @@ public sealed class Spec003LcpEvidenceTests(
     {
         Assert.Equal(
             "Release",
-            Environment.GetEnvironmentVariable("STUDENTREGISTRATION_BROWSER_CONFIGURATION"));
+            fixture.BuildConfiguration);
 
         var results = new Dictionary<string, List<double>>(StringComparer.Ordinal);
         var measurements = new Dictionary<string, List<PerformanceMeasurement>>(StringComparer.Ordinal);

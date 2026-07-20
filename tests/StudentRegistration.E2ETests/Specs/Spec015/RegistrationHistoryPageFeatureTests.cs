@@ -45,7 +45,7 @@ public sealed class RegistrationHistoryPageFeatureTests(Spec008BrowserFixture fi
         Assert.True(await page.GetByText("Fall 2026", new() { Exact = true }).First.IsVisibleAsync());
         Assert.True(await page.GetByText("REG-2026-015001", new() { Exact = true }).IsVisibleAsync());
         Assert.True(await page.GetByText("Fall 2025 (Archived)", new() { Exact = true }).IsVisibleAsync());
-        Assert.True(await page.GetByText("2 registration records", new() { Exact = true }).IsVisibleAsync());
+        Assert.True(await page.GetByText("2 Registration records", new() { Exact = true }).IsVisibleAsync());
         var calendar = await page.Locator(".srs-schedule-calendar [data-meeting-id]")
             .EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('data-meeting-id'))");
         var list = await page.Locator(".srs-schedule-list [data-meeting-id]")

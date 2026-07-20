@@ -115,9 +115,9 @@ public sealed class Spec008BrowserFixture : IAsyncLifetime
     {
         var configuration = Environment.GetEnvironmentVariable(
             "STUDENTREGISTRATION_BROWSER_CONFIGURATION");
-        configuration = string.Equals(configuration, "Release", StringComparison.OrdinalIgnoreCase)
-            ? "Release"
-            : "Debug";
+        configuration = string.Equals(configuration, "Debug", StringComparison.OrdinalIgnoreCase)
+            ? "Debug"
+            : "Release";
         var startInfo = new ProcessStartInfo("dotnet")
         {
             CreateNoWindow = true,

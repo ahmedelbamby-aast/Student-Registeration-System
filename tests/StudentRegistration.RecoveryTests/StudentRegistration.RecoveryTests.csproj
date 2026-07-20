@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="../StudentRegistration.TestSupport/**/*.cs"
              Link="TestSupport/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

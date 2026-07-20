@@ -53,8 +53,8 @@
                     <li data-overlap-slot>
                         <dl>
                             <div><dt>@DayLabel</dt><dd>@slot.Day</dd></div>
-                            <div><dt>@StartLabel</dt><dd><time>@FormatTime(slot.StartsAt)</time></dd></div>
-                            <div><dt>@EndLabel</dt><dd><time>@FormatTime(slot.EndsAt)</time></dd></div>
+                            <div><dt>@StartLabel</dt><dd><time datetime="@FormatTimeToken(slot.StartsAt)">@FormatTime(slot.StartsAt)</time></dd></div>
+                            <div><dt>@EndLabel</dt><dd><time datetime="@FormatTimeToken(slot.EndsAt)">@FormatTime(slot.EndsAt)</time></dd></div>
                             <div>
                                 <dt>@InvolvedGroupsLabel</dt>
                                 <dd>@string.Join(", ", slot.SubjectGroupReferences)</dd>
@@ -240,6 +240,9 @@
 
     private static string FormatTime(TimeOnly value) =>
         value.ToString("t", System.Globalization.CultureInfo.CurrentCulture);
+
+    private static string FormatTimeToken(TimeOnly value) =>
+        value.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
     private Task RequestResolutionAsync(ConflictResolutionLinkView link) =>
         ResolutionRequested.InvokeAsync(new ConflictResolutionRequest(

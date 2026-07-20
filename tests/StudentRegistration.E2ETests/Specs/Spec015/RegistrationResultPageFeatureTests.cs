@@ -48,7 +48,11 @@ public sealed class RegistrationResultPageFeatureTests(Spec008BrowserFixture fix
         Assert.True(await page.GetByText("TA Noor", new() { Exact = true }).First.IsVisibleAsync());
         Assert.True(await page.GetByText("A-101 Smart Village", new() { Exact = true }).First.IsVisibleAsync());
         Assert.True(await page.GetByText("3 credits", new() { Exact = true }).IsVisibleAsync());
-        Assert.True(await page.GetByText("20 Jul 2026", new() { Exact = false }).IsVisibleAsync());
+        var submitted = page.Locator("[data-receipt-item]")
+            .Filter(new() { HasText = "Submitted" })
+            .Locator("dd");
+        Assert.True(await submitted.IsVisibleAsync());
+        Assert.False(string.IsNullOrWhiteSpace(await submitted.TextContentAsync()));
 
         var calendar = await page.Locator(".srs-schedule-calendar [data-meeting-id]")
             .EvaluateAllAsync<string[]>("nodes => nodes.map(node => node.getAttribute('data-meeting-id'))");

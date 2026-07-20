@@ -46,7 +46,7 @@ public sealed class AdminUserLifecycleStorePersistenceTests
             await seed.SeedAsync("Testing", 1);
             var admin = await setup.Set<ApplicationUser>()
                 .AsNoTracking()
-                .SingleAsync(user => user.NormalizedUserName == "ADMIN.DEMO");
+                .SingleAsync(user => user.NormalizedUserName == "ADM-0001");
             var handoff = new DelayedStrictCredentialHandoff();
             var creationStore = CreateAdminStore(setup, hasher, handoff);
             var created = await creationStore.CreateImportAsync(
@@ -136,13 +136,13 @@ public sealed class AdminUserLifecycleStorePersistenceTests
             await seed.SeedAsync("Testing", 1);
             var users = await setup.Set<ApplicationUser>()
                 .AsNoTracking()
-                .Where(user => user.NormalizedUserName == "ADMIN.DEMO"
-                    || user.NormalizedUserName == "LECTURER.DEMO"
-                    || user.NormalizedUserName == "TA.DEMO")
+                .Where(user => user.NormalizedUserName == "ADM-0001"
+                    || user.NormalizedUserName == "LEC-0001"
+                    || user.NormalizedUserName == "TA-0001")
                 .ToDictionaryAsync(user => user.NormalizedUserName);
-            var admin = users["ADMIN.DEMO"];
-            var lecturer = users["LECTURER.DEMO"];
-            var teachingAssistant = users["TA.DEMO"];
+            var admin = users["ADM-0001"];
+            var lecturer = users["LEC-0001"];
+            var teachingAssistant = users["TA-0001"];
 
             var statusFault = new PostCommitTransientFaultInterceptor();
             await using (var statusContext = CreateFaultRetryContext(
@@ -235,7 +235,7 @@ public sealed class AdminUserLifecycleStorePersistenceTests
             Assert.Equal(5, (await seed.SeedAsync("Testing", 1)).Count);
             var firstAdmin = await setup.Set<ApplicationUser>()
                 .AsNoTracking()
-                .SingleAsync(user => user.NormalizedUserName == "ADMIN.DEMO");
+                .SingleAsync(user => user.NormalizedUserName == "ADM-0001");
             var secondAdmin = await AddSecondAdminAsync(setup);
 
             var handoff = new FaultableCredentialHandoff { FailNextCompletion = true };

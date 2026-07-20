@@ -173,7 +173,9 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                                 <p>
                                     <strong>@_appContext.RegistrationTerm.Label</strong>
                                 </p>
-                                <p data-registration-window-summary="@WindowStateToken">
+                                <p data-registration-window-summary="@WindowStateToken"
+                                   data-window-opens-at="@WindowOpensAtUtc"
+                                   data-window-closes-at="@WindowClosesAtUtc">
                                     @WindowDescription
                                 </p>
                                 @if (_state is RouteUiState.Stale)
@@ -411,6 +413,12 @@ else
         RegistrationWindowState.Closed => "closed",
         _ => "none"
     };
+
+    private string? WindowOpensAtUtc =>
+        _appContext?.RegistrationWindow?.OpensAtUtc.ToString("O", CultureInfo.InvariantCulture);
+
+    private string? WindowClosesAtUtc =>
+        _appContext?.RegistrationWindow?.ClosesAtUtc.ToString("O", CultureInfo.InvariantCulture);
 
     private string WindowDescription => _appContext?.RegistrationWindow switch
     {

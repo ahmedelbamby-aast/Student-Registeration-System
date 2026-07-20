@@ -45,9 +45,9 @@ public sealed class SubjectDiscoveryPageFeatureTests(Spec008BrowserFixture fixtu
 
         await OpenAsync(page, "success");
 
-        Assert.True(await page.GetByText("15 of 18 credits", new() { Exact = true })
+        Assert.True(await page.GetByText("15 of 18 Credits", new() { Exact = true })
             .IsVisibleAsync());
-        Assert.True(await page.GetByText("18 of 18 credits", new() { Exact = true })
+        Assert.True(await page.GetByText("18 of 18 Credits", new() { Exact = true })
             .IsVisibleAsync());
         var offeringCard = page.Locator(
             "[data-offering-id='00000000-0000-0000-0000-000000011100']");
@@ -74,7 +74,7 @@ public sealed class SubjectDiscoveryPageFeatureTests(Spec008BrowserFixture fixtu
             "/student/subjects/00000000-0000-0000-0000-000000011100",
             await page.GetByRole(
                     AriaRole.Link,
-                    new() { Name = "View DS413 details", Exact = true })
+                    new() { Name = "View DS413 Details", Exact = true })
                 .GetAttributeAsync("href"));
     }
 

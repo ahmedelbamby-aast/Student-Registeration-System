@@ -58,7 +58,7 @@ public sealed class SubjectDetailsPageFeatureTests(Spec008BrowserFixture fixture
             .IsVisibleAsync());
         Assert.True(await page.GetByText("✓", new() { Exact = true }).First
             .IsVisibleAsync());
-        Assert.True(await page.GetByText("15 of 18 credits", new() { Exact = true })
+        Assert.True(await page.GetByText("15 of 18 Credits", new() { Exact = true })
             .IsVisibleAsync());
         Assert.True(await page.GetByText("Dr. Nadia", new() { Exact = true })
             .IsVisibleAsync());

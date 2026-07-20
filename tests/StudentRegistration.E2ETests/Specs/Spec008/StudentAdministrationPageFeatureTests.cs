@@ -64,10 +64,10 @@ public sealed class StudentAdministrationPageFeatureTests(Spec008BrowserFixture 
         await AssertRegionShowsExactTextAsync(page, "academic-transcript", "AIC401");
         await AssertRegionShowsExactTextAsync(page, "academic-holds", "ADVISING");
         await AssertRegionShowsExactTextAsync(page, "academic-provenance", "Synthetic SIS");
-        Assert.Contains(
-            "2026-07-14",
-            await page.Locator("[data-testid='academic-summary']").InnerTextAsync(),
-            StringComparison.Ordinal);
+        Assert.Equal(
+            1,
+            await page.Locator("[data-testid='academic-summary'] time[datetime^='2026-07-14']")
+                .CountAsync());
         await AssertRegionShowsExactTextAsync(page, "academic-summary", "student-rv-7");
         Assert.Equal(0, await page.Locator("[contenteditable='true']").CountAsync());
         Assert.Equal(0, await page.Locator("input[type='number']").CountAsync());

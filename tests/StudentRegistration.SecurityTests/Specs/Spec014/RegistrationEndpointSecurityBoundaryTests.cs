@@ -116,6 +116,8 @@ public sealed class RegistrationEndpointSecurityBoundaryTests
         builder.Services.AddScoped<RegistrationCommandFactory>();
         builder.Services.AddScoped<RegistrationEndpointService>();
         builder.Services.AddScoped<StudentAcademicProfileService>();
+        builder.Services.AddScoped<IRegistrationBoundary>(services =>
+            services.GetRequiredService<StudentAcademicProfileService>());
         builder.Services.AddScoped<RegistrationTransactionCoordinator>();
         builder.Services
             .AddAuthentication(AuthenticationScheme)

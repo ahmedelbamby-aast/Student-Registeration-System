@@ -103,7 +103,7 @@ public sealed class ScheduleBuilderPageFeatureTests(Spec008BrowserFixture fixtur
         Assert.True(await page.GetByText("Conflict", new() { Exact = true }).First
             .IsVisibleAsync());
         Assert.True(await page.Locator("[data-conflict-icon]").First.IsVisibleAsync());
-        Assert.True(await page.GetByText("11:00", new() { Exact = true }).First
+        Assert.True(await page.Locator("[data-overlap-slot] time[datetime='11:00']").First
             .IsVisibleAsync());
         Assert.True(await page.GetByRole(
             AriaRole.Button,
@@ -159,7 +159,7 @@ public sealed class ScheduleBuilderPageFeatureTests(Spec008BrowserFixture fixtur
 
         await page.GetByRole(
                 AriaRole.Button,
-                new() { Name = "Remove AI401 group G02", Exact = true })
+                new() { Name = "Remove AI401 Group G02", Exact = true })
             .ClickAsync();
         await WaitForStateAsync(page, "empty");
 
@@ -183,7 +183,7 @@ public sealed class ScheduleBuilderPageFeatureTests(Spec008BrowserFixture fixtur
         await OpenAsync(page, "/student/schedule", "success");
         await page.GetByRole(
                 AriaRole.Button,
-                new() { Name = "Remove AI401 group G01", Exact = true })
+                new() { Name = "Remove AI401 Group G01", Exact = true })
             .ClickAsync();
         await WaitForStateAsync(page, "stale");
 

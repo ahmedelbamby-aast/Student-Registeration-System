@@ -62,7 +62,8 @@ public sealed class AdminDashboardPageBrowserTests(Spec008BrowserFixture fixture
         await page.Locator("[data-route-id='ADM-01'][data-state='success']").WaitForAsync();
         Assert.True(await page.GetByText("Live metrics", new() { Exact = true }).IsVisibleAsync());
         Assert.True(await page.GetByText("75 requests", new() { Exact = true }).IsVisibleAsync());
-        Assert.True(await page.GetByText("2026-07-17 09:30:00 UTC", new() { Exact = true }).First.IsVisibleAsync());
+        Assert.True(await page.Locator("time[datetime^='2026-07-17T09:30:00']").First
+            .IsVisibleAsync());
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Pause refresh", Exact = true }).ClickAsync();
         await page.Locator("[data-refresh-state='paused']").WaitForAsync();

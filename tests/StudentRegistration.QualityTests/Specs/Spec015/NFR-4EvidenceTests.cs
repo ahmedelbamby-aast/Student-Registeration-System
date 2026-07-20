@@ -19,7 +19,10 @@ public sealed class NFR_4EvidenceTests(Spec015SqlEvidenceFixture fixture)
                 "20260713010000_IdentityAcademicFoundation",
                 "20260713020000_CatalogueScheduling",
                 "20260713040000_DiscoveryPlanning",
-                "20260713060000_Registration"
+                "20260713060000_Registration",
+                "20260713070000_StaffAdminOperations",
+                "20260717120000_Spec017ExportFilter",
+                "20260717222551_Spec018RegistrationReadPerformance"
             ],
             applied);
 
