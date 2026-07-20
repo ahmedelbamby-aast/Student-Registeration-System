@@ -41,6 +41,8 @@ public sealed class Spec003PublishedBrowserFixture : IAsyncLifetime
 
     public string BuildConfiguration => "Release";
 
+    public string BrowserTarget => "Google Chrome Stable";
+
     public async Task InitializeAsync()
     {
         try
@@ -65,12 +67,16 @@ public sealed class Spec003PublishedBrowserFixture : IAsyncLifetime
         {
             _playwright = await Playwright.CreateAsync();
             _browser = await _playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions { Headless = true });
+                new BrowserTypeLaunchOptions
+                {
+                    Channel = "chrome",
+                    Headless = true
+                });
         }
         catch (PlaywrightException exception)
         {
             _runtimeUnavailable =
-                $"The pinned Playwright Chromium runtime is unavailable: {exception.Message}";
+                $"Google Chrome Stable is unavailable: {exception.Message}";
         }
     }
 

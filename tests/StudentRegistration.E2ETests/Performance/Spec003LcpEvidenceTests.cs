@@ -76,6 +76,9 @@ public sealed class Spec003LcpEvidenceTests(
         Assert.Equal(
             "Release",
             fixture.BuildConfiguration);
+        Assert.Equal(
+            "Google Chrome Stable",
+            fixture.BrowserTarget);
 
         var results = new Dictionary<string, List<double>>(StringComparer.Ordinal);
         var measurements = new Dictionary<string, List<PerformanceMeasurement>>(StringComparer.Ordinal);
