@@ -87,10 +87,8 @@ public sealed class RoleGatewayPageVisualTests(VisualRegressionFixture fixture)
             .WaitForAsync();
         await page.EvaluateAsync("() => document.fonts.ready");
 
-        var actual = await page.ScreenshotAsync(new PageScreenshotOptions
-        {
-            FullPage = true
-        });
+        var actual = await StableVisualCapture.CaptureAsync(
+            page, "AUTH-01", browserName, width);
         var fileName = $"{browserName}-{width}-success.png";
         var baselinePath = RepositoryFiles.PathTo(
             $"tests/StudentRegistration.VisualTests/Baselines/Spec008/AUTH-01/{fileName}");

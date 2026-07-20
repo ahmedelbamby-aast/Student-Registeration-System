@@ -54,10 +54,8 @@ internal static class IdentityRouteVisualAssertions
             .WaitForAsync();
         await page.EvaluateAsync("() => document.fonts.ready");
 
-        var actual = await page.ScreenshotAsync(new PageScreenshotOptions
-        {
-            FullPage = true
-        });
+        var actual = await StableVisualCapture.CaptureAsync(
+            page, routeId, browserName, width);
         var fileName = $"{browserName}-{width}-default.png";
         var folder =
             $"tests/StudentRegistration.VisualTests/Baselines/{baselineOwner}/{routeId}";

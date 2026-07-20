@@ -39,22 +39,27 @@ public sealed class EC_9Tests
         var page = RepositoryFiles.Read(pagePath);
         var field = RepositoryFiles.Read(
             "src/StudentRegistration.Client/Components/Forms/FormField.razor");
+        var resourceCatalog = RepositoryFiles.Read(
+            "src/StudentRegistration.Client/Localization/UiText.resx");
 
         RepositoryFiles.ContainsAll(
             page,
-            $"Label=\"{identityLabel}\"",
             identityAutocomplete,
-            $"Label=\"{secretLabel}\"",
             secretAutocomplete,
             "AllowSecretReveal=\"true\"");
+        Assert.Contains("Label=\"@(LocalizedUiText.Get(", page, StringComparison.Ordinal);
+        Assert.Contains($"LocalizedUiText.Get(\"{identityLabel}\")", page, StringComparison.Ordinal);
+        Assert.Contains($"LocalizedUiText.Get(\"{secretLabel}\")", page, StringComparison.Ordinal);
+        Assert.Contains($"<data name=\"{identityLabel}\"", resourceCatalog, StringComparison.Ordinal);
+        Assert.Contains($"<data name=\"{secretLabel}\"", resourceCatalog, StringComparison.Ordinal);
         RepositoryFiles.ContainsAll(
             field,
             "<label class=\"srs-form-field__label\" for=\"@InputId\">@Label</label>",
             "value=\"@Value\"",
             "aria-controls=\"@InputId\"",
             "aria-pressed=",
-            "Show {Label}",
-            "Hide {Label}");
+            "LocalizedUiText.Format(\"Show {0}\", Label)",
+            "LocalizedUiText.Format(\"Hide {0}\", Label)");
         Assert.DoesNotContain("placeholder-only", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("localStorage", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("sessionStorage", page, StringComparison.OrdinalIgnoreCase);

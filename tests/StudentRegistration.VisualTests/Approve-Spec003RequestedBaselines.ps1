@@ -67,6 +67,10 @@ $browserDefinitions = [ordered]@{
     firefox = $matrix.targets | Where-Object name -eq 'Mozilla Firefox'
     webkit = $matrix.targets | Where-Object name -eq 'Playwright WebKit'
 }
+$browserDefinitions.firefox.label =
+    'Playwright Firefox 151.0 visual capture; Mozilla Firefox 152.0.6 current-stable smoke'
+$browserDefinitions.firefox.observedLocalVersion = '151.0 visual; 152.0.6 stable smoke'
+$browserDefinitions.firefox.engine = 'Gecko 151 visual; Gecko 152.0.6 stable smoke'
 $widths = @(375, 768, 1280, 1920)
 $newGlobalRecords = @()
 
@@ -119,7 +123,7 @@ foreach ($routeId in $routes) {
     $newGlobalRecords += [ordered]@{
         routeId = $routeId
         state = 'denied'
-        browserName = 'Google Chrome Stable; Microsoft Edge Stable; Mozilla Firefox Release; Playwright WebKit'
+        browserName = 'Google Chrome Stable; Microsoft Edge Stable; Playwright Firefox 151.0 visual capture + Mozilla Firefox 152.0.6 current-stable smoke; Playwright WebKit (not Safari)'
         browserBuild = (($browserDefinitions.Values | ForEach-Object observedLocalVersion) -join '; ')
         engine = (($browserDefinitions.Values | ForEach-Object engine) -join '; ')
         osImage = $matrix.executionOsImage

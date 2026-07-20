@@ -52,7 +52,7 @@ public sealed class StudentDashboardPageVisualFrozenContractTests
         if (string.Equals(status, "approved", StringComparison.Ordinal))
         {
             Assert.Equal("Ahmed ELbamby", root.GetProperty("approvedBy").GetString());
-            Assert.Equal("2026-07-14", root.GetProperty("approvedOn").GetString());
+            Assert.Equal("2026-07-19", root.GetProperty("approvedOn").GetString());
         }
         Assert.True(
             RepositoryFiles.Exists(
@@ -190,10 +190,8 @@ public sealed class StudentDashboardPageVisualTests(VisualRegressionFixture fixt
             .WaitForAsync();
         await page.EvaluateAsync("() => document.fonts.ready");
 
-        var actual = await page.ScreenshotAsync(new PageScreenshotOptions
-        {
-            FullPage = true
-        });
+        var actual = await StableVisualCapture.CaptureAsync(
+            page, "STU-01", browserName, width);
         var fileName = $"{browserName}-{width}-success.png";
         var baselinePath = RepositoryFiles.PathTo(
             $"tests/StudentRegistration.VisualTests/Baselines/Spec008/STU-01/{fileName}");

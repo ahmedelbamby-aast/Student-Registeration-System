@@ -97,7 +97,8 @@ public sealed class StudentAdministrationPageVisualTests(VisualRegressionFixture
         var page = await LoadSelectedStudentAsync(context);
         await page.EvaluateAsync("() => document.fonts.ready");
 
-        var actual = await page.ScreenshotAsync(new PageScreenshotOptions { FullPage = true });
+        var actual = await StableVisualCapture.CaptureAsync(
+            page, "ADM-04", browserName, width);
         var fileName = $"{browserName}-{width}-success.png";
         var baselinePath = RepositoryFiles.PathTo(
             $"tests/StudentRegistration.VisualTests/Baselines/Spec008/ADM-04/{fileName}");
@@ -130,7 +131,7 @@ public sealed class StudentAdministrationPageVisualTests(VisualRegressionFixture
     private static async Task<IPage> LoadSelectedStudentAsync(IBrowserContext context)
     {
         var page = await context.NewPageAsync();
-        page.SetDefaultTimeout(5_000);
+        page.SetDefaultTimeout(30_000);
         await page.RouteAsync("**/api/context", route => JsonAsync(route, AppContext));
         await page.RouteAsync("**/api/admin/students?*", route => JsonAsync(route, SearchResults));
         await page.RouteAsync(

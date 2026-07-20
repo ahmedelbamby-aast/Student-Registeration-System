@@ -20,6 +20,11 @@ body {
     line-height: var(--srs-typography-primitive-line-height-body);
 }
 
+a,
+a:visited {
+    color: var(--srs-color-semantic-link);
+}
+
 .startup-progress {
     block-size: var(--srs-sizing-progress-thickness);
     background: var(--srs-color-semantic-information-text);

@@ -6,6 +6,15 @@ namespace StudentRegistration.QualityTests.Specs.Spec003;
 
 public sealed class NFR_3EvidenceTests
 {
+    [Fact]
+    public void Visited_links_cannot_escape_the_governed_semantic_link_color()
+    {
+        RepositoryFiles.ContainsAll(
+            RepositoryFiles.Read("src/StudentRegistration.Client/wwwroot/css/app.css"),
+            "a:visited",
+            "color: var(--srs-color-semantic-link)");
+    }
+
     [Theory]
     [InlineData("semantic-text-primary", "semantic-surface-default", 4.5)]
     [InlineData("semantic-text-secondary", "semantic-surface-default", 4.5)]

@@ -8,24 +8,168 @@
   "automaticReplacementAllowed": false,
   "approvalAuthority": "Ahmed ELbamby",
   "approvedBy": "Ahmed ELbamby",
-  "approvedOn": "2026-07-14",
+  "approvedOn": "2026-07-19",
   "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
   "targets": [
-    { "browser": "chrome", "browserName": "Google Chrome Stable", "browserBuild": "150.0.7871.115", "engine": "Blink/Chromium 150.0.7871.115", "viewport": 375, "file": "chrome-375-success.png", "sha256": "5c1bf82ecc85df554787a7f5e471b054323b4eea1ba6d5b9d8efe301951b2e0a", "artifactSha256": "5c1bf82ecc85df554787a7f5e471b054323b4eea1ba6d5b9d8efe301951b2e0a" },
-    { "browser": "chrome", "browserName": "Google Chrome Stable", "browserBuild": "150.0.7871.115", "engine": "Blink/Chromium 150.0.7871.115", "viewport": 768, "file": "chrome-768-success.png", "sha256": "085998dbc092dbca737bca6f34d19396191e433c2622cde8dd39e08633696787", "artifactSha256": "085998dbc092dbca737bca6f34d19396191e433c2622cde8dd39e08633696787" },
-    { "browser": "chrome", "browserName": "Google Chrome Stable", "browserBuild": "150.0.7871.115", "engine": "Blink/Chromium 150.0.7871.115", "viewport": 1280, "file": "chrome-1280-success.png", "sha256": "f071bba8ce1767732ebbb1face3bbfa54167670c932b82a803ea98656fbb63f8", "artifactSha256": "f071bba8ce1767732ebbb1face3bbfa54167670c932b82a803ea98656fbb63f8" },
-    { "browser": "chrome", "browserName": "Google Chrome Stable", "browserBuild": "150.0.7871.115", "engine": "Blink/Chromium 150.0.7871.115", "viewport": 1920, "file": "chrome-1920-success.png", "sha256": "7b5a7b88e71d76d047253c6f280dfb69838b308827f1a3f3a8c7d4a36aaaab33", "artifactSha256": "7b5a7b88e71d76d047253c6f280dfb69838b308827f1a3f3a8c7d4a36aaaab33" },
-    { "browser": "edge", "browserName": "Microsoft Edge Stable", "browserBuild": "150.0.4078.65", "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)", "viewport": 375, "file": "edge-375-success.png", "sha256": "5c1bf82ecc85df554787a7f5e471b054323b4eea1ba6d5b9d8efe301951b2e0a", "artifactSha256": "5c1bf82ecc85df554787a7f5e471b054323b4eea1ba6d5b9d8efe301951b2e0a" },
-    { "browser": "edge", "browserName": "Microsoft Edge Stable", "browserBuild": "150.0.4078.65", "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)", "viewport": 768, "file": "edge-768-success.png", "sha256": "085998dbc092dbca737bca6f34d19396191e433c2622cde8dd39e08633696787", "artifactSha256": "085998dbc092dbca737bca6f34d19396191e433c2622cde8dd39e08633696787" },
-    { "browser": "edge", "browserName": "Microsoft Edge Stable", "browserBuild": "150.0.4078.65", "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)", "viewport": 1280, "file": "edge-1280-success.png", "sha256": "f071bba8ce1767732ebbb1face3bbfa54167670c932b82a803ea98656fbb63f8", "artifactSha256": "f071bba8ce1767732ebbb1face3bbfa54167670c932b82a803ea98656fbb63f8" },
-    { "browser": "edge", "browserName": "Microsoft Edge Stable", "browserBuild": "150.0.4078.65", "engine": "Blink/Chromium 150 (Edge 150.0.4078.65)", "viewport": 1920, "file": "edge-1920-success.png", "sha256": "7b5a7b88e71d76d047253c6f280dfb69838b308827f1a3f3a8c7d4a36aaaab33", "artifactSha256": "7b5a7b88e71d76d047253c6f280dfb69838b308827f1a3f3a8c7d4a36aaaab33" },
-    { "browser": "firefox", "browserName": "Playwright Firefox", "browserBuild": "151.0", "engine": "Gecko 151", "viewport": 375, "file": "firefox-375-success.png", "sha256": "cc3c443b1e2460e856b43630feb0550655b2a9e7bd2cd03902aec7d3bacf510e", "artifactSha256": "cc3c443b1e2460e856b43630feb0550655b2a9e7bd2cd03902aec7d3bacf510e" },
-    { "browser": "firefox", "browserName": "Playwright Firefox", "browserBuild": "151.0", "engine": "Gecko 151", "viewport": 768, "file": "firefox-768-success.png", "sha256": "8b2c1cde71b7d8966ffdcdaff36e8233176283210d47c6a80cf32bc602617788", "artifactSha256": "8b2c1cde71b7d8966ffdcdaff36e8233176283210d47c6a80cf32bc602617788" },
-    { "browser": "firefox", "browserName": "Playwright Firefox", "browserBuild": "151.0", "engine": "Gecko 151", "viewport": 1280, "file": "firefox-1280-success.png", "sha256": "de0406522035dabca2750b6fd895eb2d9d8be47126a5cdd746212155cbc29fe6", "artifactSha256": "de0406522035dabca2750b6fd895eb2d9d8be47126a5cdd746212155cbc29fe6" },
-    { "browser": "firefox", "browserName": "Playwright Firefox", "browserBuild": "151.0", "engine": "Gecko 151", "viewport": 1920, "file": "firefox-1920-success.png", "sha256": "49fb859d824dac1952187fcbd08d4dcebe4375e9d52cf0d91d6b59a5d84d6bcb", "artifactSha256": "49fb859d824dac1952187fcbd08d4dcebe4375e9d52cf0d91d6b59a5d84d6bcb" },
-    { "browser": "webkit", "browserName": "Playwright WebKit", "browserBuild": "26.5", "engine": "WebKit 26.5", "viewport": 375, "file": "webkit-375-success.png", "sha256": "8d27c4b3968c255bb74274195c4db22545be0bc09aba4cab45afb2772710899d", "artifactSha256": "8d27c4b3968c255bb74274195c4db22545be0bc09aba4cab45afb2772710899d" },
-    { "browser": "webkit", "browserName": "Playwright WebKit", "browserBuild": "26.5", "engine": "WebKit 26.5", "viewport": 768, "file": "webkit-768-success.png", "sha256": "0e87d68ced691bfa6e6e9da08e01087ec249ce8e559da5b58b3e19c9e961159d", "artifactSha256": "0e87d68ced691bfa6e6e9da08e01087ec249ce8e559da5b58b3e19c9e961159d" },
-    { "browser": "webkit", "browserName": "Playwright WebKit", "browserBuild": "26.5", "engine": "WebKit 26.5", "viewport": 1280, "file": "webkit-1280-success.png", "sha256": "4493fcdd8c144d9dbafaaab5ea0a560122e34b778d00c716eaedcb12ee25f8ee", "artifactSha256": "4493fcdd8c144d9dbafaaab5ea0a560122e34b778d00c716eaedcb12ee25f8ee" },
-    { "browser": "webkit", "browserName": "Playwright WebKit", "browserBuild": "26.5", "engine": "WebKit 26.5", "viewport": 1920, "file": "webkit-1920-success.png", "sha256": "929509ce27a22abb6fcbb22869ca2d935df21959c7b3537fee94ec2550299f26", "artifactSha256": "929509ce27a22abb6fcbb22869ca2d935df21959c7b3537fee94ec2550299f26" }
+    {
+      "browser": "chrome",
+      "browserName": "Google Chrome Stable",
+      "browserBuild": "150.0.7871.125",
+      "engine": "Blink/Chromium 150.0.7871.125",
+      "viewport": 375,
+      "file": "chrome-375-success.png",
+      "sha256": "dd98f6e61d10656abe68aaa10bed4a5ca170ff84f5d2a4465bdc0289df07ab68",
+      "artifactSha256": "dd98f6e61d10656abe68aaa10bed4a5ca170ff84f5d2a4465bdc0289df07ab68"
+    },
+    {
+      "browser": "chrome",
+      "browserName": "Google Chrome Stable",
+      "browserBuild": "150.0.7871.125",
+      "engine": "Blink/Chromium 150.0.7871.125",
+      "viewport": 768,
+      "file": "chrome-768-success.png",
+      "sha256": "c87cf49423063f6e10c42e191181a146f1bff88e086780ad9a415edf00d44c44",
+      "artifactSha256": "c87cf49423063f6e10c42e191181a146f1bff88e086780ad9a415edf00d44c44"
+    },
+    {
+      "browser": "chrome",
+      "browserName": "Google Chrome Stable",
+      "browserBuild": "150.0.7871.125",
+      "engine": "Blink/Chromium 150.0.7871.125",
+      "viewport": 1280,
+      "file": "chrome-1280-success.png",
+      "sha256": "5c3aade443355d4fb4cd8e731f48162cfd59ad4334364e751324d1612ebf5287",
+      "artifactSha256": "5c3aade443355d4fb4cd8e731f48162cfd59ad4334364e751324d1612ebf5287"
+    },
+    {
+      "browser": "chrome",
+      "browserName": "Google Chrome Stable",
+      "browserBuild": "150.0.7871.125",
+      "engine": "Blink/Chromium 150.0.7871.125",
+      "viewport": 1920,
+      "file": "chrome-1920-success.png",
+      "sha256": "a967f607c3f97006b6f0cd41ef68dccb31a87e78299e683316e59baed2e9399c",
+      "artifactSha256": "a967f607c3f97006b6f0cd41ef68dccb31a87e78299e683316e59baed2e9399c"
+    },
+    {
+      "browser": "edge",
+      "browserName": "Microsoft Edge Stable",
+      "browserBuild": "150.0.4078.83",
+      "engine": "Blink/Chromium 150 (Edge 150.0.4078.83)",
+      "viewport": 375,
+      "file": "edge-375-success.png",
+      "sha256": "dd98f6e61d10656abe68aaa10bed4a5ca170ff84f5d2a4465bdc0289df07ab68",
+      "artifactSha256": "dd98f6e61d10656abe68aaa10bed4a5ca170ff84f5d2a4465bdc0289df07ab68"
+    },
+    {
+      "browser": "edge",
+      "browserName": "Microsoft Edge Stable",
+      "browserBuild": "150.0.4078.83",
+      "engine": "Blink/Chromium 150 (Edge 150.0.4078.83)",
+      "viewport": 768,
+      "file": "edge-768-success.png",
+      "sha256": "c87cf49423063f6e10c42e191181a146f1bff88e086780ad9a415edf00d44c44",
+      "artifactSha256": "c87cf49423063f6e10c42e191181a146f1bff88e086780ad9a415edf00d44c44"
+    },
+    {
+      "browser": "edge",
+      "browserName": "Microsoft Edge Stable",
+      "browserBuild": "150.0.4078.83",
+      "engine": "Blink/Chromium 150 (Edge 150.0.4078.83)",
+      "viewport": 1280,
+      "file": "edge-1280-success.png",
+      "sha256": "5c3aade443355d4fb4cd8e731f48162cfd59ad4334364e751324d1612ebf5287",
+      "artifactSha256": "5c3aade443355d4fb4cd8e731f48162cfd59ad4334364e751324d1612ebf5287"
+    },
+    {
+      "browser": "edge",
+      "browserName": "Microsoft Edge Stable",
+      "browserBuild": "150.0.4078.83",
+      "engine": "Blink/Chromium 150 (Edge 150.0.4078.83)",
+      "viewport": 1920,
+      "file": "edge-1920-success.png",
+      "sha256": "a967f607c3f97006b6f0cd41ef68dccb31a87e78299e683316e59baed2e9399c",
+      "artifactSha256": "a967f607c3f97006b6f0cd41ef68dccb31a87e78299e683316e59baed2e9399c"
+    },
+    {
+      "browser": "firefox",
+      "browserName": "Playwright Firefox 151.0 visual capture; Mozilla Firefox 152.0.6 current-stable smoke",
+      "browserBuild": "151.0 visual; 152.0.6 stable smoke",
+      "engine": "Gecko 151 visual; Gecko 152.0.6 stable smoke",
+      "viewport": 375,
+      "file": "firefox-375-success.png",
+      "sha256": "5b98839eb2f5dccda5b882fc28f27f4bed649d8fa71f7df422a511ffae98ff84",
+      "artifactSha256": "5b98839eb2f5dccda5b882fc28f27f4bed649d8fa71f7df422a511ffae98ff84"
+    },
+    {
+      "browser": "firefox",
+      "browserName": "Playwright Firefox 151.0 visual capture; Mozilla Firefox 152.0.6 current-stable smoke",
+      "browserBuild": "151.0 visual; 152.0.6 stable smoke",
+      "engine": "Gecko 151 visual; Gecko 152.0.6 stable smoke",
+      "viewport": 768,
+      "file": "firefox-768-success.png",
+      "sha256": "94d75999c2550be921d34918016affef714b991eb81c2786522747d6f0b12b56",
+      "artifactSha256": "94d75999c2550be921d34918016affef714b991eb81c2786522747d6f0b12b56"
+    },
+    {
+      "browser": "firefox",
+      "browserName": "Playwright Firefox 151.0 visual capture; Mozilla Firefox 152.0.6 current-stable smoke",
+      "browserBuild": "151.0 visual; 152.0.6 stable smoke",
+      "engine": "Gecko 151 visual; Gecko 152.0.6 stable smoke",
+      "viewport": 1280,
+      "file": "firefox-1280-success.png",
+      "sha256": "929349efe158812223ae37969fe136410c87adcf06218b1d2578caa0b04fb64f",
+      "artifactSha256": "929349efe158812223ae37969fe136410c87adcf06218b1d2578caa0b04fb64f"
+    },
+    {
+      "browser": "firefox",
+      "browserName": "Playwright Firefox 151.0 visual capture; Mozilla Firefox 152.0.6 current-stable smoke",
+      "browserBuild": "151.0 visual; 152.0.6 stable smoke",
+      "engine": "Gecko 151 visual; Gecko 152.0.6 stable smoke",
+      "viewport": 1920,
+      "file": "firefox-1920-success.png",
+      "sha256": "8e23904f4b6e12c1fe414f2dee43ed15254822e72435a400e3bd02930a76dc43",
+      "artifactSha256": "8e23904f4b6e12c1fe414f2dee43ed15254822e72435a400e3bd02930a76dc43"
+    },
+    {
+      "browser": "webkit",
+      "browserName": "Playwright WebKit (not Safari)",
+      "browserBuild": "WebKit 26.5 via Microsoft.Playwright 1.61.0",
+      "engine": "WebKit 26.5 bundled by Microsoft.Playwright 1.61.0",
+      "viewport": 375,
+      "file": "webkit-375-success.png",
+      "sha256": "462cad675d865a2ef5ca2960eb99c68bf562cff551b18b33f3d8904db4191bbf",
+      "artifactSha256": "462cad675d865a2ef5ca2960eb99c68bf562cff551b18b33f3d8904db4191bbf"
+    },
+    {
+      "browser": "webkit",
+      "browserName": "Playwright WebKit (not Safari)",
+      "browserBuild": "WebKit 26.5 via Microsoft.Playwright 1.61.0",
+      "engine": "WebKit 26.5 bundled by Microsoft.Playwright 1.61.0",
+      "viewport": 768,
+      "file": "webkit-768-success.png",
+      "sha256": "aca58e23280caba0753acacb1b884d8681c2fcbf24dcf4a98bbf5efddbbfd6ae",
+      "artifactSha256": "aca58e23280caba0753acacb1b884d8681c2fcbf24dcf4a98bbf5efddbbfd6ae"
+    },
+    {
+      "browser": "webkit",
+      "browserName": "Playwright WebKit (not Safari)",
+      "browserBuild": "WebKit 26.5 via Microsoft.Playwright 1.61.0",
+      "engine": "WebKit 26.5 bundled by Microsoft.Playwright 1.61.0",
+      "viewport": 1280,
+      "file": "webkit-1280-success.png",
+      "sha256": "fb81bdee3d2a6d218986fdff54140b594c10f73ddbe0638f5de80bc203bc5064",
+      "artifactSha256": "fb81bdee3d2a6d218986fdff54140b594c10f73ddbe0638f5de80bc203bc5064"
+    },
+    {
+      "browser": "webkit",
+      "browserName": "Playwright WebKit (not Safari)",
+      "browserBuild": "WebKit 26.5 via Microsoft.Playwright 1.61.0",
+      "engine": "WebKit 26.5 bundled by Microsoft.Playwright 1.61.0",
+      "viewport": 1920,
+      "file": "webkit-1920-success.png",
+      "sha256": "09a1125857664693babb0e3df7d9ebda4e1174d42373fee9505557193721d5b7",
+      "artifactSha256": "09a1125857664693babb0e3df7d9ebda4e1174d42373fee9505557193721d5b7"
+    }
   ]
 }

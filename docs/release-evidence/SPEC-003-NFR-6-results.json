@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "spec003-lcp-evidence/1.0",
+  "recordedOn": "2026-07-19",
+  "result": "WAIVED-DEMO",
+  "configuration": "Release",
+  "publishedReleaseHostVerified": true,
+  "productionCompressionVerified": true,
+  "thresholdMilliseconds": 2500,
+  "thresholdExceeded": true,
+  "productionGoLiveApproved": false,
+  "observedCompressionEncodings": [
+    "br"
+  ],
+  "profile": {
+    "kind": "simulated-browser-client-profile",
+    "logicalCores": 4,
+    "memoryGb": 4,
+    "cpuThrottlingRate": 2,
+    "downloadMbps": 10,
+    "uploadMbps": 2,
+    "roundTripLatencyMs": 100,
+    "coldBrowserCache": true
+  },
+  "apiP95Milliseconds": 289.3,
+  "apiSamples": 24,
+  "apiEvidenceScope": "deterministic Playwright API fixtures; live SQL/API latency is not claimed",
+  "routes": [
+    {
+      "routeId": "STU-02",
+      "canonicalSuccessStateVerified": true,
+      "samplesMilliseconds": [
+        5328,
+        4664,
+        5808,
+        5604
+      ],
+      "p75Milliseconds": 5604,
+      "measurements": [
+        {
+          "lcpMilliseconds": 5328,
+          "fcpMilliseconds": 328,
+          "totalEncodedBytes": 2800664,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 4664,
+          "fcpMilliseconds": 320,
+          "totalEncodedBytes": 2800664,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5808,
+          "fcpMilliseconds": 288,
+          "totalEncodedBytes": 2800664,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5604,
+          "fcpMilliseconds": 300,
+          "totalEncodedBytes": 2800664,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        }
+      ]
+    },
+    {
+      "routeId": "STU-04",
+      "canonicalSuccessStateVerified": true,
+      "samplesMilliseconds": [
+        5144,
+        5104,
+        4744,
+        5280
+      ],
+      "p75Milliseconds": 5144,
+      "measurements": [
+        {
+          "lcpMilliseconds": 5144,
+          "fcpMilliseconds": 292,
+          "totalEncodedBytes": 2799812,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5104,
+          "fcpMilliseconds": 296,
+          "totalEncodedBytes": 2799812,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 4744,
+          "fcpMilliseconds": 296,
+          "totalEncodedBytes": 2799812,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5280,
+          "fcpMilliseconds": 288,
+          "totalEncodedBytes": 2799812,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        }
+      ]
+    },
+    {
+      "routeId": "STU-05",
+      "canonicalSuccessStateVerified": true,
+      "samplesMilliseconds": [
+        4900,
+        5732,
+        4880,
+        5004
+      ],
+      "p75Milliseconds": 5004,
+      "measurements": [
+        {
+          "lcpMilliseconds": 4900,
+          "fcpMilliseconds": 288,
+          "totalEncodedBytes": 2799292,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5732,
+          "fcpMilliseconds": 292,
+          "totalEncodedBytes": 2799292,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 4880,
+          "fcpMilliseconds": 292,
+          "totalEncodedBytes": 2799292,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        },
+        {
+          "lcpMilliseconds": 5004,
+          "fcpMilliseconds": 292,
+          "totalEncodedBytes": 2799292,
+          "frameworkEncodedBytes": 2767874,
+          "frameworkResourceCount": 48,
+          "lcpEntrySize": 33000,
+          "lcpEntryTagName": "IMG",
+          "lcpEntryCurrentSrc": "http://127.0.0.1:61647/brand/aastmt-logo.png"
+        }
+      ]
+    }
+  ],
+  "waiver": {
+    "approvedBy": "Ahmed ELbamby",
+    "approvedOn": "2026-07-19",
+    "reason": "Non-production design-capability demo accepts measured latency; production release remains withheld."
+  }
+}

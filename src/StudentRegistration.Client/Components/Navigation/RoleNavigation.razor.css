@@ -11,7 +11,8 @@
     list-style: none;
 }
 
-.srs-role-navigation__link {
+.srs-role-navigation__link,
+.srs-role-navigation__link:visited {
     display: inline-flex;
     align-items: center;
     min-height: var(--srs-sizing-interactive-minimum);

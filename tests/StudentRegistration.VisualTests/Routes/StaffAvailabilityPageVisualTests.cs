@@ -1,4 +1,4 @@
 using StudentRegistration.VisualTests.Infrastructure;
 namespace StudentRegistration.VisualTests.Routes;
-public sealed class StaffAvailabilityPageVisualContractTests { [Fact] public void Stf_04_visual_contract_is_frozen() => Spec003RouteVisualAssertions.AssertFrozenContract("STF-04", "T251", "StaffAvailabilityPage"); }
+public sealed class StaffAvailabilityPageVisualContractTests { [Fact] public void Stf_04_visual_contract_is_frozen() => Spec003RouteVisualAssertions.AssertFrozenContract("STF-04", "T251", "StaffAvailabilityPage", usesIntrinsicTableReflow: true); }
 [Collection(VisualRegressionCollection.CollectionName)] public sealed class StaffAvailabilityPageVisualTests(VisualRegressionFixture fixture) { [Theory] [MemberData(nameof(Spec003RouteVisualAssertions.BrowserWidths), MemberType=typeof(Spec003RouteVisualAssertions))] public Task Stf_04_matches_approved_baseline(string browser,int width) => Spec003RouteVisualAssertions.AssertApprovedBaselineAsync(fixture,"STF-04","/staff/availability",browser,width); }

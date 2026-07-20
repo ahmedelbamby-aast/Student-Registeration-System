@@ -6,7 +6,9 @@
 }
 
 .srs-skip-link,
-.srs-app-shell a {
+.srs-skip-link:visited,
+.srs-app-shell a,
+.srs-app-shell a:visited {
     color: var(--srs-color-semantic-link);
 }
 
