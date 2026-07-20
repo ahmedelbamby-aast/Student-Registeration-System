@@ -1,8 +1,10 @@
+/* ── Student Dashboard host ── */
 .srs-student-dashboard-host {
     min-block-size: 100vh;
     color: var(--srs-color-semantic-text-primary);
     background:
-        radial-gradient(circle at 95% 0%, var(--srs-color-primitive-blue-50), transparent 28rem),
+        radial-gradient(ellipse at 90% 0%,   rgba(79,70,229,0.08) 0%, transparent 45%),
+        radial-gradient(ellipse at  5% 80%,  rgba(124,58,237,0.06) 0%, transparent 40%),
         var(--srs-color-semantic-surface-default);
     overflow-wrap: anywhere;
 }
@@ -25,42 +27,10 @@
     margin-inline: auto;
 }
 
-.srs-student-dashboard-host ::deep .srs-app-shell__header,
-.srs-student-dashboard-host ::deep .srs-app-shell__footer,
-.srs-dashboard-standalone-header,
-.srs-dashboard-standalone-footer {
-    background: color-mix(
-        in srgb,
-        var(--srs-color-semantic-surface-muted) 92%,
-        transparent);
-    border-color: var(--srs-color-semantic-border);
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__header,
-.srs-dashboard-standalone-header {
-    border-block-end: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__footer,
-.srs-dashboard-standalone-footer {
-    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__logo,
-.srs-dashboard-standalone-header img {
-    inline-size: auto;
-    block-size: 4rem;
-    max-inline-size: 11rem;
-    padding: var(--srs-spacing-primitive-2);
-    object-fit: contain;
-    background: var(--srs-color-primitive-blue-900);
-    border-radius: var(--srs-border-primitive-radius-medium);
-}
-
 .srs-student-dashboard-host ::deep .srs-app-shell__identity {
     margin-block: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-2);
-    color: var(--srs-color-primitive-blue-900);
-    font-size: 1.125rem;
+    color: rgba(255,255,255,0.9);
+    font-size: 1.0625rem;
 }
 
 .srs-student-dashboard-host ::deep .srs-app-shell__context {
@@ -73,15 +43,14 @@
     display: block;
     min-inline-size: 0;
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
-    background: var(--srs-color-semantic-surface-default);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-small);
+    background: rgba(255,255,255,0.10);
+    border: var(--srs-border-primitive-width) solid rgba(255,255,255,0.18);
+    border-radius: var(--srs-border-primitive-radius-medium);
 }
 
 .srs-student-dashboard-host ::deep .srs-app-shell__context dd {
     display: grid;
     margin-block-start: var(--srs-spacing-primitive-1);
-    color: var(--srs-color-semantic-text-secondary);
 }
 
 .srs-student-dashboard-host ::deep .srs-role-navigation {
@@ -100,8 +69,10 @@
     padding-inline: var(--srs-spacing-primitive-4);
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    box-shadow: var(--srs-elevation-overlay);
     transform: translateY(-200%);
+    transition: transform var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-student-dashboard-host ::deep .srs-skip-link:focus,
@@ -113,6 +84,7 @@
     padding-block: clamp(1.5rem, 4vw, 3rem);
 }
 
+/* ── Dashboard layout ── */
 .srs-student-dashboard {
     min-inline-size: 0;
 }
@@ -131,10 +103,10 @@
 
 .srs-student-dashboard__eyebrow {
     margin: 0;
-    color: var(--srs-color-primitive-blue-700);
+    color: var(--srs-color-primitive-violet-600);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: var(--srs-typography-component-control-weight);
-    letter-spacing: 0.08em;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
@@ -143,15 +115,20 @@
     margin-block: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
     color: var(--srs-color-primitive-blue-900);
     font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 800;
     line-height: 1.1;
+    letter-spacing: -0.02em;
 }
 
 .srs-student-dashboard__intro p:last-child {
     max-inline-size: var(--srs-sizing-content-readable);
     margin-block: 0;
     color: var(--srs-color-semantic-text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.65;
 }
 
+/* ── Dashboard action buttons ── */
 .srs-dashboard-refresh,
 .srs-dashboard-primary-action,
 .srs-dashboard-related-links a,
@@ -162,13 +139,16 @@
     align-items: center;
     justify-content: center;
     min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-4);
-    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-small);
+    padding-inline: var(--srs-spacing-primitive-5);
+    border: var(--srs-border-primitive-width-strong) solid transparent;
+    border-radius: var(--srs-border-primitive-radius-medium);
     font: inherit;
     font-weight: var(--srs-typography-component-control-weight);
     text-align: center;
     text-decoration: none;
+    transition:
+        filter var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-dashboard-refresh,
@@ -176,6 +156,14 @@
 .srs-dashboard-failure__actions button {
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
+    border-color: var(--srs-color-component-button-primary-background);
+}
+
+.srs-dashboard-refresh:hover:not(:disabled),
+.srs-dashboard-primary-action:hover:not(:disabled),
+.srs-dashboard-failure__actions button:hover:not(:disabled) {
+    filter: brightness(1.12);
+    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
 }
 
 .srs-dashboard-refresh:disabled,
@@ -184,18 +172,22 @@
 .srs-dashboard-failure__actions button:disabled {
     color: var(--srs-color-semantic-disabled-text);
     background: var(--srs-color-semantic-disabled-surface);
-    border-color: var(--srs-color-semantic-disabled-text);
+    border-color: transparent;
+    cursor: not-allowed;
 }
 
+/* ── Status banner ── */
 .srs-student-dashboard__status {
     margin-block: 0 var(--srs-spacing-primitive-5);
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
     color: var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
     border-inline-start: 0.3rem solid var(--srs-color-semantic-information-text);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    font-weight: 500;
 }
 
+/* ── Summary grid ── */
 .srs-student-dashboard__summary-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -210,8 +202,9 @@
     min-inline-size: 0;
     padding: clamp(1rem, 3vw, 1.5rem);
     background: var(--srs-color-component-panel-background);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
+    border-radius: var(--srs-border-primitive-radius-large);
+    box-shadow: var(--srs-elevation-card);
 }
 
 .srs-dashboard-card h2,
@@ -221,8 +214,10 @@
 [data-testid="student-dashboard-loading"] h2 {
     margin-block-start: 0;
     color: var(--srs-color-primitive-blue-900);
+    font-weight: 700;
 }
 
+/* ── Facts DL ── */
 .srs-dashboard-facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -233,17 +228,21 @@
 .srs-dashboard-facts > div {
     min-inline-size: 0;
     padding-inline-start: var(--srs-spacing-primitive-3);
-    border-inline-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-inline-start: 0.1875rem solid var(--srs-color-primitive-blue-100);
 }
 
 .srs-dashboard-facts dt {
     color: var(--srs-color-semantic-text-secondary);
     font-size: var(--srs-typography-primitive-font-size-small);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .srs-dashboard-facts dd {
     margin: var(--srs-spacing-primitive-1) 0 0;
-    font-weight: var(--srs-typography-component-control-weight);
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-900);
 }
 
 .srs-dashboard-data-version {
@@ -252,11 +251,13 @@
     font-size: var(--srs-typography-primitive-font-size-small);
 }
 
+/* ── Blockers ── */
 .srs-dashboard-blockers {
     margin-block-start: var(--srs-spacing-primitive-5);
     color: var(--srs-color-semantic-danger-text);
     background: var(--srs-color-semantic-danger-surface);
-    border-inline-start: 0.35rem solid var(--srs-color-semantic-danger-text);
+    border-inline-start: 0.3rem solid var(--srs-color-semantic-danger-text);
+    border-color: rgba(190,18,60,0.2);
 }
 
 .srs-dashboard-blockers ul {
@@ -271,21 +272,26 @@
     display: inline-block;
     max-inline-size: 100%;
     padding: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
-    background: var(--srs-color-semantic-surface-default);
+    background: rgba(255,255,255,0.65);
     border-radius: var(--srs-border-primitive-radius-small);
-    font-family: ui-monospace, "Cascadia Code", monospace;
-    font-weight: var(--srs-typography-component-control-weight);
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-900);
 }
 
+/* ── Registration action card ── */
 .srs-dashboard-registration-action {
     margin-block-start: var(--srs-spacing-primitive-5);
-    border-inline-start: 0.35rem solid var(--srs-color-primitive-blue-700);
+    border-inline-start: 0.3rem solid var(--srs-color-primitive-blue-600);
 }
 
+/* ── Timetable ── */
 .srs-dashboard-timetable {
     margin-block-start: var(--srs-spacing-primitive-5);
     color: var(--srs-color-semantic-text-secondary);
     background: var(--srs-color-semantic-surface-muted);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
+    border-radius: var(--srs-border-primitive-radius-large);
 }
 
 .srs-dashboard-timetable code {
@@ -293,6 +299,7 @@
     white-space: normal;
 }
 
+/* ── Related links ── */
 .srs-dashboard-related-links,
 .srs-dashboard-failure__actions {
     display: flex;
@@ -306,8 +313,17 @@
 .srs-dashboard-standalone-footer a {
     color: var(--srs-color-component-button-secondary-text);
     background: var(--srs-color-component-button-secondary-background);
+    border-color: var(--srs-color-primitive-blue-100);
 }
 
+.srs-dashboard-related-links a:hover,
+.srs-dashboard-failure__actions a:hover,
+.srs-dashboard-standalone-footer a:hover {
+    background: var(--srs-color-primitive-blue-100);
+    border-color: var(--srs-color-primitive-blue-400);
+}
+
+/* ── Standalone header/footer ── */
 .srs-dashboard-standalone-header {
     display: flex;
     align-items: center;
@@ -336,13 +352,16 @@
     color: var(--srs-color-semantic-text-secondary);
 }
 
+/* ── Failure panel ── */
 .srs-dashboard-failure {
     max-inline-size: var(--srs-sizing-content-readable);
     color: var(--srs-color-semantic-danger-text);
     background: var(--srs-color-semantic-danger-surface);
-    border-inline-start: 0.35rem solid var(--srs-color-semantic-danger-text);
+    border-inline-start: 0.3rem solid var(--srs-color-semantic-danger-text);
+    border-color: rgba(190,18,60,0.2);
 }
 
+/* ── Responsive ── */
 @media (max-width: 64rem) {
     .srs-student-dashboard-host ::deep .srs-app-shell__context {
         grid-template-columns: repeat(2, minmax(0, 1fr));

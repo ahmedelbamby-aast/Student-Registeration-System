@@ -1,7 +1,11 @@
+/* ── Admin Dashboard host ── */
 .srs-admin-dashboard-host {
     min-block-size: 100vh;
     color: var(--srs-color-semantic-text-primary);
-    background: var(--srs-color-semantic-surface-default);
+    background:
+        radial-gradient(ellipse at 80% 0%,   rgba(79,70,229,0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at  5% 100%, rgba(124,58,237,0.05) 0%, transparent 40%),
+        var(--srs-color-semantic-surface-default);
     overflow-wrap: anywhere;
 }
 
@@ -21,8 +25,8 @@
 .srs-admin-dashboard__skip-link {
     position: fixed;
     z-index: var(--srs-zIndex-urgent-feedback);
-    inset-block-start: .5rem;
-    inset-inline-start: .5rem;
+    inset-block-start: 0.5rem;
+    inset-inline-start: 0.5rem;
     transform: translateY(-200%);
 }
 
@@ -30,6 +34,7 @@
     transform: translateY(0);
 }
 
+/* ── Intro / header ── */
 .srs-admin-dashboard__intro,
 .srs-admin-dashboard__observation {
     display: flex;
@@ -41,26 +46,34 @@
 
 .srs-admin-dashboard__eyebrow {
     margin: 0;
-    color: var(--srs-color-primitive-blue-700);
+    color: var(--srs-color-primitive-violet-600);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 700;
-    letter-spacing: .08em;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
-.srs-admin-dashboard__intro h1,
+.srs-admin-dashboard__intro h1 {
+    margin-block: 0 0.5rem;
+    color: var(--srs-color-primitive-blue-900);
+    font-weight: 800;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    letter-spacing: -0.01em;
+}
+
 .srs-admin-dashboard__intro p,
 .srs-admin-dashboard__observation h2,
 .srs-admin-dashboard__observation p {
-    margin-block: 0 .5rem;
+    margin-block: 0 0.5rem;
 }
 
 .srs-admin-dashboard__controls {
     display: flex;
     flex-wrap: wrap;
-    gap: .75rem;
+    gap: 0.75rem;
 }
 
+/* ── Buttons / links inside admin dashboard ── */
 .srs-admin-dashboard button,
 .srs-admin-dashboard a {
     min-block-size: var(--srs-sizing-interactive-minimum);
@@ -73,14 +86,28 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-small);
-    padding: .6rem 1rem;
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-primitive-blue-100);
+    border-radius: var(--srs-border-primitive-radius-medium);
+    padding: 0.6rem 1rem;
     color: var(--srs-color-component-button-secondary-text);
     background: var(--srs-color-component-button-secondary-background);
     font: inherit;
-    font-weight: 650;
+    font-weight: var(--srs-typography-component-control-weight);
     text-decoration: none;
+    cursor: pointer;
+    transition:
+        background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        border-color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
+}
+
+.srs-admin-dashboard button:hover,
+.srs-admin-dashboard__modules a:hover,
+.srs-admin-dashboard__warnings a:hover,
+.srs-admin-dashboard__failure a:hover {
+    background: var(--srs-color-primitive-blue-100);
+    border-color: var(--srs-color-primitive-blue-400);
+    box-shadow: 0 0.125rem 0.5rem rgba(79,70,229,0.18);
 }
 
 .srs-admin-dashboard button:focus-visible,
@@ -89,22 +116,26 @@
     outline-offset: var(--srs-focus-outline-offset);
 }
 
+/* ── Panels ── */
 .srs-admin-dashboard__observation,
 .srs-admin-dashboard__missing,
 .srs-admin-dashboard__warnings,
 .srs-admin-dashboard__modules,
 .srs-admin-dashboard__failure {
-    border: 1px solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
+    border-radius: var(--srs-border-primitive-radius-large);
     margin-block: 1rem;
     padding: clamp(1rem, 3vw, 1.5rem);
+    box-shadow: var(--srs-elevation-card);
 }
 
 .srs-admin-dashboard__observation {
-    border-inline-start: .35rem solid var(--srs-color-semantic-information-text);
+    border-inline-start: 0.3125rem solid var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
+    border-color: rgba(3,105,161,0.2);
 }
 
+/* ── Metrics grid ── */
 .srs-admin-dashboard__metrics {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -113,30 +144,35 @@
 
 .srs-admin-dashboard__metric-text {
     display: grid;
-    gap: .5rem;
+    gap: 0.5rem;
     margin: 0;
 }
 
 .srs-admin-dashboard__metric-text > div {
-    border-block-start: 1px solid var(--srs-color-semantic-border);
-    padding-block-start: .5rem;
+    border-block-start: 0.1875rem solid var(--srs-color-primitive-blue-100);
+    padding-block-start: 0.5rem;
 }
 
 .srs-admin-dashboard__metric-text dd {
-    margin: .2rem 0 0;
-    font-weight: 650;
+    margin: 0.2rem 0 0;
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-900);
+    font-size: 1.25rem;
 }
 
+/* ── Warning / missing ── */
 .srs-admin-dashboard__missing,
 .srs-admin-dashboard__warnings {
     color: var(--srs-color-semantic-warning-text);
     background: var(--srs-color-semantic-warning-surface);
+    border-inline-start: 0.3125rem solid var(--srs-color-semantic-warning-text);
+    border-color: rgba(180,83,9,0.2);
 }
 
 .srs-admin-dashboard__warnings ul,
 .srs-admin-dashboard__modules ul {
     display: grid;
-    gap: .75rem;
+    gap: 0.75rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -144,18 +180,27 @@
 
 .srs-admin-dashboard__warnings li {
     display: grid;
-    gap: .5rem;
+    gap: 0.5rem;
 }
 
 .srs-admin-dashboard__modules ul {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/* ── Modules ── */
+.srs-admin-dashboard__modules {
+    background: var(--srs-color-component-panel-background);
+}
+
+/* ── Failure ── */
 .srs-admin-dashboard__failure {
     color: var(--srs-color-semantic-danger-text);
     background: var(--srs-color-semantic-danger-surface);
+    border-inline-start: 0.3125rem solid var(--srs-color-semantic-danger-text);
+    border-color: rgba(190,18,60,0.2);
 }
 
+/* ── Responsive ── */
 @media (max-width: 64rem) {
     .srs-admin-dashboard__metrics,
     .srs-admin-dashboard__modules ul {
@@ -207,6 +252,6 @@
     .srs-admin-dashboard-host *::before,
     .srs-admin-dashboard-host *::after {
         scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
+        transition-duration: 0.01ms !important;
     }
 }

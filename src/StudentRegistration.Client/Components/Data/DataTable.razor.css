@@ -1,51 +1,84 @@
 .srs-data-table__viewport {
     overflow-x: auto;
+    border-radius: var(--srs-border-primitive-radius-large);
+    box-shadow: var(--srs-elevation-card);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
 }
 
 .srs-data-table {
     background: var(--srs-color-component-panel-background);
     border-collapse: collapse;
     color: var(--srs-color-semantic-text-primary);
+    inline-size: 100%;
 }
 
 .srs-data-table caption {
     font-size: var(--srs-typography-primitive-font-size-heading);
-    font-weight: var(--srs-typography-component-control-weight);
-    padding: var(--srs-spacing-primitive-3);
+    font-weight: 700;
+    padding: var(--srs-spacing-primitive-4) var(--srs-spacing-primitive-4) var(--srs-spacing-primitive-3);
     text-align: start;
+    color: var(--srs-color-primitive-blue-900);
+    letter-spacing: -0.01em;
 }
 
-.srs-data-table th,
-.srs-data-table td {
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    padding: var(--srs-spacing-primitive-3);
+.srs-data-table th {
+    background: var(--srs-color-primitive-blue-50);
+    color: var(--srs-color-primitive-blue-900);
+    border-block-end: 0.125rem solid var(--srs-color-primitive-blue-100);
+    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
     text-align: start;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.srs-data-table td {
+    border-block-end: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-50);
+    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
+    text-align: start;
+    vertical-align: middle;
 }
 
 .srs-data-table tbody tr:hover {
-    background: var(--srs-color-semantic-surface-muted);
+    background: var(--srs-color-primitive-blue-50);
+    transition: background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-data-table th button {
-    background: var(--srs-color-component-button-secondary-background);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    color: var(--srs-color-component-button-secondary-text);
+    background: transparent;
+    border: none;
+    color: var(--srs-color-primitive-blue-700);
     min-block-size: var(--srs-sizing-interactive-minimum);
     padding: var(--srs-spacing-primitive-2);
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--srs-spacing-primitive-1);
+    transition: color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
+}
+
+.srs-data-table th button:hover {
+    color: var(--srs-color-primitive-violet-600);
 }
 
 .srs-data-table th button:active {
-    border-color: var(--srs-color-semantic-focus-ring);
+    color: var(--srs-color-primitive-blue-900);
 }
 
 .srs-data-table th button:focus-visible {
     outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
     outline-offset: var(--srs-focus-outline-offset);
+    border-radius: var(--srs-border-primitive-radius-small);
 }
 
 .srs-data-table th button:disabled {
-    background: var(--srs-color-semantic-disabled-surface);
     color: var(--srs-color-semantic-disabled-text);
+    cursor: not-allowed;
 }
 
 .srs-data-table[aria-busy="true"] {
@@ -55,9 +88,13 @@
 .srs-data-table [role="alert"] {
     background: var(--srs-color-semantic-danger-surface);
     color: var(--srs-color-semantic-danger-text);
+    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
+    font-weight: 500;
 }
 
 .srs-data-table [role="status"] {
     background: var(--srs-color-semantic-information-surface);
     color: var(--srs-color-semantic-information-text);
+    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
+    font-weight: 500;
 }

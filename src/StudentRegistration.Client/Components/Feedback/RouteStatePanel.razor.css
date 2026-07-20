@@ -85,6 +85,10 @@
     background: rgba(0,0,0,0.06);
 }
 
+.srs-state-panel__action:active {
+    background: rgba(0,0,0,0.12);
+}
+
 .srs-state-panel__action:focus-visible {
     outline: var(--srs-focus-outline-width) var(--srs-focus-outline-style) var(--srs-focus-ring-color);
     outline-offset: var(--srs-focus-outline-offset);
