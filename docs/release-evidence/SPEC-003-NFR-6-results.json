@@ -1,8 +1,10 @@
 {
-  "schemaVersion": "spec003-lcp-evidence/1.0",
-  "recordedOn": "2026-07-19",
+  "schemaVersion": "spec003-lcp-evidence/1.1",
+  "recordedOn": "2026-07-20",
+  "lcpMeasuredOn": "2026-07-19",
   "result": "WAIVED-DEMO",
   "configuration": "Release",
+  "browserTarget": "Google Chrome Stable",
   "publishedReleaseHostVerified": true,
   "productionCompressionVerified": true,
   "thresholdMilliseconds": 2500,
@@ -21,7 +23,10 @@
     "roundTripLatencyMs": 100,
     "coldBrowserCache": true
   },
-  "apiP95Milliseconds": 289.3,
+  "apiP95Milliseconds": 541.7,
+  "apiThresholdMilliseconds": 300,
+  "apiThresholdExceeded": true,
+  "approvedDemoObservedApiP95Milliseconds": 541.7,
   "apiSamples": 24,
   "apiEvidenceScope": "deterministic Playwright API fixtures; live SQL/API latency is not claimed",
   "routes": [
@@ -187,7 +192,7 @@
   ],
   "waiver": {
     "approvedBy": "Ahmed ELbamby",
-    "approvedOn": "2026-07-19",
-    "reason": "Non-production design-capability demo accepts measured latency; production release remains withheld."
+    "approvedOn": "2026-07-20",
+    "reason": "Non-production design-capability demo accepts the measured frontend LCP and the observed deterministic API fixture p95 of 541.7 ms; the 300 ms target remains unmet and production release remains withheld."
   }
 }

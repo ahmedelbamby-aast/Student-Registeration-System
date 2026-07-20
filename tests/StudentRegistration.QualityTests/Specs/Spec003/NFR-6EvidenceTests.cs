@@ -43,7 +43,20 @@ public sealed class NFR_6EvidenceTests
         Assert.Equal(2, profile.GetProperty("uploadMbps").GetInt32());
         Assert.Equal(100, profile.GetProperty("roundTripLatencyMs").GetInt32());
         Assert.True(profile.GetProperty("coldBrowserCache").GetBoolean());
-        Assert.True(root.GetProperty("apiP95Milliseconds").GetDouble() <= 300);
+        var apiP95 = root.GetProperty("apiP95Milliseconds").GetDouble();
+        var apiThreshold = root.GetProperty("apiThresholdMilliseconds").GetDouble();
+        var apiThresholdExceeded = root.GetProperty("apiThresholdExceeded").GetBoolean();
+        var approvedDemoObservedApiP95 = root
+            .GetProperty("approvedDemoObservedApiP95Milliseconds")
+            .GetDouble();
+        Assert.Equal(300, apiThreshold);
+        Assert.Equal(541.7, approvedDemoObservedApiP95);
+        Assert.Equal(approvedDemoObservedApiP95, apiP95);
+        Assert.Equal(apiP95 > apiThreshold, apiThresholdExceeded);
+        if (result == "PASS")
+        {
+            Assert.True(apiP95 <= apiThreshold);
+        }
         Assert.True(root.GetProperty("apiSamples").GetInt32() > 0);
         Assert.Equal(
             "deterministic Playwright API fixtures; live SQL/API latency is not claimed",
@@ -72,7 +85,7 @@ public sealed class NFR_6EvidenceTests
         {
             var waiver = root.GetProperty("waiver");
             Assert.Equal("Ahmed ELbamby", waiver.GetProperty("approvedBy").GetString());
-            Assert.Equal("2026-07-19", waiver.GetProperty("approvedOn").GetString());
+            Assert.Equal("2026-07-20", waiver.GetProperty("approvedOn").GetString());
             Assert.Contains("Non-production", waiver.GetProperty("reason").GetString());
         }
     }

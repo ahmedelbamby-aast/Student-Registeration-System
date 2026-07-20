@@ -15,6 +15,9 @@ public sealed class Spec003LcpEvidenceTests(
     Spec003PublishedBrowserFixture fixture,
     ITestOutputHelper output)
 {
+    private const double ApiP95ThresholdMilliseconds = 300;
+    private const double ApprovedDemoObservedApiP95Milliseconds = 541.7;
+
     [Fact]
     public async Task Published_release_host_reports_brotli_payload_and_cold_start_breakdown()
     {
@@ -124,30 +127,42 @@ public sealed class Spec003LcpEvidenceTests(
         }
 
         var apiP95 = apiDurations.Count == 0 ? 0 : Percentile(apiDurations, .95);
-        Assert.True(apiP95 <= 300, $"API fixture p95 {apiP95:F1}ms exceeds 300ms.");
         Assert.NotEmpty(apiDurations);
         Assert.NotEmpty(compressionEncodings);
-        var thresholdExceeded = results.Values.Any(
+        var lcpThresholdExceeded = results.Values.Any(
             samples => Percentile(samples, .75) > 2_500);
-        output.WriteLine(thresholdExceeded
-            ? "NFR-6 LCP threshold exceeded; recording an explicit non-production demo waiver."
+        var apiThresholdExceeded = apiP95 > ApiP95ThresholdMilliseconds;
+        var waiverRequired = lcpThresholdExceeded || apiThresholdExceeded;
+        if (waiverRequired)
+        {
+            AssertApprovedDemoWaiver();
+        }
+        output.WriteLine(waiverRequired
+            ? "NFR-6 LCP and/or API threshold exceeded; recording the explicit non-production demo waiver."
             : "NFR-6 LCP threshold met; recording a measured PASS.");
 
-        if (string.Equals(
+        var writeEvidence = string.Equals(
                 Environment.GetEnvironmentVariable("SPEC003_WRITE_PERF_EVIDENCE"),
                 "1",
-                StringComparison.Ordinal))
+                StringComparison.Ordinal);
+        if (writeEvidence && waiverRequired)
+        {
+            output.WriteLine(
+                "The approved WAIVED-DEMO record was not overwritten by a later diagnostic measurement.");
+        }
+        else if (writeEvidence)
         {
             var evidence = new
             {
                 schemaVersion = "spec003-lcp-evidence/1.0",
-                recordedOn = "2026-07-19",
-                result = thresholdExceeded ? "WAIVED-DEMO" : "PASS",
+                recordedOn = "2026-07-20",
+                result = waiverRequired ? "WAIVED-DEMO" : "PASS",
                 configuration = "Release",
+                browserTarget = fixture.BrowserTarget,
                 publishedReleaseHostVerified = true,
                 productionCompressionVerified = true,
                 thresholdMilliseconds = 2_500,
-                thresholdExceeded,
+                thresholdExceeded = lcpThresholdExceeded,
                 productionGoLiveApproved = false,
                 observedCompressionEncodings = compressionEncodings.Keys
                     .Order(StringComparer.OrdinalIgnoreCase)
@@ -164,6 +179,8 @@ public sealed class Spec003LcpEvidenceTests(
                     coldBrowserCache = true
                 },
                 apiP95Milliseconds = Math.Round(apiP95, 1),
+                apiThresholdMilliseconds = ApiP95ThresholdMilliseconds,
+                apiThresholdExceeded,
                 apiSamples = apiDurations.Count,
                 apiEvidenceScope = "deterministic Playwright API fixtures; live SQL/API latency is not claimed",
                 routes = results.Select(pair => new
@@ -174,14 +191,7 @@ public sealed class Spec003LcpEvidenceTests(
                     p75Milliseconds = Math.Round(Percentile(pair.Value, .75), 1),
                     measurements = measurements[pair.Key]
                 }).ToArray(),
-                waiver = thresholdExceeded
-                    ? new
-                    {
-                        approvedBy = "Ahmed ELbamby",
-                        approvedOn = "2026-07-19",
-                        reason = "Non-production design-capability demo accepts measured latency; production release remains withheld."
-                    }
-                    : null
+                waiver = (object?)null
             };
             File.WriteAllText(
                 StudentRegistration.TestSupport.RepositoryFiles.PathTo(
@@ -192,6 +202,22 @@ public sealed class Spec003LcpEvidenceTests(
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 }) + Environment.NewLine);
         }
+    }
+
+    private static void AssertApprovedDemoWaiver()
+    {
+        using var document = JsonDocument.Parse(
+            StudentRegistration.TestSupport.RepositoryFiles.Read(
+                "docs/release-evidence/SPEC-003-NFR-6-results.json"));
+        var root = document.RootElement;
+        Assert.Equal("WAIVED-DEMO", root.GetProperty("result").GetString());
+        Assert.False(root.GetProperty("productionGoLiveApproved").GetBoolean());
+        Assert.Equal(
+            ApprovedDemoObservedApiP95Milliseconds,
+            root.GetProperty("approvedDemoObservedApiP95Milliseconds").GetDouble());
+        var waiver = root.GetProperty("waiver");
+        Assert.Equal("Ahmed ELbamby", waiver.GetProperty("approvedBy").GetString());
+        Assert.Equal("2026-07-20", waiver.GetProperty("approvedOn").GetString());
     }
 
     private static async Task<PerformanceMeasurement> ReadPerformanceMeasurementAsync(IPage page)

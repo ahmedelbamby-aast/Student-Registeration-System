@@ -95,6 +95,7 @@ public sealed class NFR_10EvidenceTests
     {
         var rules = new[]
         {
+            new MachineCultureRule("Components/Scheduling/ConflictPanel.razor", "FormatTimeToken", "semantic HTML time token"),
             new MachineCultureRule("Features/Registration/EligibilityPresentation.razor", "SourceAccessedOn.ToString", "HTML date attribute"),
             new MachineCultureRule("Features/Registration/EligibilityPresentation.razor", "EffectiveFromUtc.ToString", "HTML instant attribute"),
             new MachineCultureRule("Features/Registration/EligibilityPresentation.razor", "effectiveTo.ToString", "HTML instant attribute"),

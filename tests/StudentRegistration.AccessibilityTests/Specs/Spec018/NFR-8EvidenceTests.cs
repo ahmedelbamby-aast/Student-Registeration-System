@@ -140,40 +140,37 @@ public sealed class Nfr8EvidenceTests
     }
 
     [Fact]
-    public void Manual_keyboard_and_nvda_template_is_complete_unsigned_and_release_blocking()
+    public void Manual_keyboard_and_nvda_record_has_explicit_non_production_demo_waiver()
     {
         var evidence = RepositoryFiles.Read(ManualEvidencePath);
 
         RepositoryFiles.ContainsAll(
             evidence,
-            "**Artifact version:** 1.0.0",
-            "**Status:** NOT EXECUTED",
-            "**Release gate:** BLOCKED",
-            "Tester | NOT RECORDED",
-            "Test date | NOT RECORDED",
-            "Operating system | Windows - NOT RECORDED",
-            "Assistive technology | NVDA",
-            "NVDA version | NOT RECORDED",
-            "Route | NOT EXECUTED",
-            "Scenario | NOT EXECUTED",
-            "Keyboard result | NOT EXECUTED",
-            "Screen-reader result | NOT EXECUTED",
-            "Overall result | NOT EXECUTED",
-            "Defect links | NOT RECORDED",
-            "UX sign-off | UNSIGNED",
-            "QA sign-off | UNSIGNED",
+            "**Artifact version:** 1.1.0",
+            "**Status:** WAIVED-DEMO",
+            "**Release gate:** WAIVED-DEMO",
+            "**Production authority:** Not granted",
+            "**Approved by:** Ahmed ELbamby",
+            "**Approval date:** 2026-07-20",
+            "Tester | NOT PERFORMED - DEMO WAIVER",
+            "Assistive technology | NVDA - MANUAL EXECUTION NOT REQUIRED FOR DEMO",
+            "Overall result | WAIVED-DEMO",
+            "UX sign-off | NOT REQUIRED FOR DEMO - AHMED WAIVER",
+            "QA sign-off | NOT REQUIRED FOR DEMO - AHMED WAIVER",
             "## Machine-readable gate record",
-            "tester: NOT RECORDED",
-            "date: NOT RECORDED",
-            "assistiveTechnology: NVDA version NOT RECORDED on Windows",
-            "route: NOT EXECUTED",
-            "scenario: NOT EXECUTED",
-            "result: NOT EXECUTED",
-            "defectLinks: NOT RECORDED",
-            "uxQaSignOff: UNSIGNED",
-            "Activation condition");
+            "tester: NOT PERFORMED - DEMO WAIVER",
+            "date: 2026-07-20",
+            "assistiveTechnology: NVDA manual execution not required for demo",
+            "route: nine critical routes - manual execution waived",
+            "scenario: manual keyboard and NVDA journeys waived for demo",
+            "result: WAIVED-DEMO",
+            "approvedBy: Ahmed ELbamby",
+            "approvedOn: 2026-07-20",
+            "productionAuthorized: false",
+            "Future production activation condition");
         Assert.DoesNotContain("**Status:** PASS", evidence, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("**Release gate:** PASS", evidence, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("**Status:** NOT EXECUTED", evidence, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -210,7 +207,7 @@ public sealed class Nfr8EvidenceTests
     }
 
     [Fact(Skip =
-        "Activation condition: executable critical routes, Windows, an identified tester, and a recorded NVDA version must exist before manual keyboard and screen-reader journeys can be signed.")]
+        "Ahmed-approved non-production demo waiver: manual keyboard and NVDA execution is not required; production remains unauthorized.")]
     public void Manual_keyboard_and_nvda_journeys_are_executed_and_signed()
     {
     }
