@@ -85,20 +85,20 @@ public sealed class RegistrationModelConfiguration :
         builder.Ignore(submission => submission.IsFinal);
 
         builder.HasIndex(submission => new
-            {
-                submission.StudentId,
-                submission.TermId,
-                submission.ClientRequestId
-            })
+        {
+            submission.StudentId,
+            submission.TermId,
+            submission.ClientRequestId
+        })
             .IsUnique();
         builder.HasIndex(submission => new
-            {
-                submission.StudentId,
-                submission.TermId,
-                submission.ProcessingState,
-                submission.ReceivedAtUtc,
-                submission.Id
-            })
+        {
+            submission.StudentId,
+            submission.TermId,
+            submission.ProcessingState,
+            submission.ReceivedAtUtc,
+            submission.Id
+        })
             .HasDatabaseName("IX_RegistrationSubmissions_StudentTermStateReceived");
         builder.HasIndex(submission => submission.Reference)
             .IsUnique()
@@ -140,10 +140,10 @@ public sealed class RegistrationModelConfiguration :
             .IsRequired();
 
         builder.HasIndex(enrollment => new
-            {
-                enrollment.StudentId,
-                enrollment.OfferingId
-            })
+        {
+            enrollment.StudentId,
+            enrollment.OfferingId
+        })
             .IsUnique();
         builder.HasOne<Student>()
             .WithMany()

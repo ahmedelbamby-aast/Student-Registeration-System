@@ -25,7 +25,7 @@ public sealed class AdminDashboardPageAccessibilityTests
             "aria-live=\"assertive\"",
             "<time datetime=",
             "type=\"button\"",
-            "aria-label=\"Operational metrics\"",
+            "aria-label=\"@(LocalizedUiText.Get(\"Operational metrics\"))\"",
             "<dl",
             "<dt>",
             "<dd>",

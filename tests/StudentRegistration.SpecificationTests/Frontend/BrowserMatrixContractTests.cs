@@ -16,12 +16,12 @@ public sealed class BrowserMatrixContractTests
         var targets = root.GetProperty("targets").EnumerateArray().ToArray();
 
         Assert.Equal("browser-matrix/1.0.0", root.GetProperty("version").GetString());
-        Assert.Equal("2026-07-18", root.GetProperty("verifiedOn").GetString());
+        Assert.Equal("2026-07-19", root.GetProperty("verifiedOn").GetString());
         Assert.Equal(5, targets.Length);
 
-        AssertTarget(targets, "Google Chrome", "150.0.7871.101", "required");
-        AssertTarget(targets, "Microsoft Edge", "150.0.4078.65", "required");
-        AssertTarget(targets, "Mozilla Firefox", "152.0.5", "required");
+        AssertTarget(targets, "Google Chrome", "150.0.7871.125", "required");
+        AssertTarget(targets, "Microsoft Edge", "150.0.4078.83", "required");
+        AssertTarget(targets, "Mozilla Firefox", "152.0.6", "required");
         AssertTarget(targets, "Playwright WebKit", "26.5", "required");
         AssertTarget(targets, "Apple Safari", "not-run", "deferred");
 

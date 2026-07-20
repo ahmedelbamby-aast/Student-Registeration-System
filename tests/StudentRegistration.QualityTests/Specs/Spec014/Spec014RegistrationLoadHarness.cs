@@ -1231,28 +1231,28 @@ public static class Spec014RegistrationLoadHarness
     private static string ReadPath(
         Spec018ReadKind kind,
         RegistrationLoadDataset dataset) => kind switch
-    {
-        Spec018ReadKind.Discovery =>
-            $"/api/student/terms/{dataset.TermId:D}/offerings?page=1&pageSize=20&sort=courseCode%2Cid",
-        Spec018ReadKind.Eligibility =>
-            $"/api/student/offerings/{dataset.OfferingIds[0]:D}/eligibility",
-        Spec018ReadKind.PlanAndTimetable =>
-            "/api/student/registrations/current/timetable",
-        Spec018ReadKind.RegistrationRecords =>
-            $"/api/student/registrations?page=1&pageSize=20&termId={dataset.TermId:D}",
-        _ => throw new ArgumentOutOfRangeException(nameof(kind))
-    };
+        {
+            Spec018ReadKind.Discovery =>
+                $"/api/student/terms/{dataset.TermId:D}/offerings?page=1&pageSize=20&sort=courseCode%2Cid",
+            Spec018ReadKind.Eligibility =>
+                $"/api/student/offerings/{dataset.OfferingIds[0]:D}/eligibility",
+            Spec018ReadKind.PlanAndTimetable =>
+                "/api/student/registrations/current/timetable",
+            Spec018ReadKind.RegistrationRecords =>
+                $"/api/student/registrations?page=1&pageSize=20&termId={dataset.TermId:D}",
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
 
     private static bool ExpectedReadStatus(
         Spec018ReadKind kind,
         HttpStatusCode statusCode) => kind switch
-    {
-        Spec018ReadKind.Discovery or Spec018ReadKind.Eligibility =>
-            statusCode == HttpStatusCode.OK,
-        Spec018ReadKind.PlanAndTimetable or Spec018ReadKind.RegistrationRecords =>
-            statusCode is HttpStatusCode.OK or HttpStatusCode.NotFound,
-        _ => false
-    };
+        {
+            Spec018ReadKind.Discovery or Spec018ReadKind.Eligibility =>
+                statusCode == HttpStatusCode.OK,
+            Spec018ReadKind.PlanAndTimetable or Spec018ReadKind.RegistrationRecords =>
+                statusCode is HttpStatusCode.OK or HttpStatusCode.NotFound,
+            _ => false
+        };
 
     private static ConcurrentBag<double> SampleBag(
         Spec018ReadKind kind,
@@ -1260,13 +1260,13 @@ public static class Spec014RegistrationLoadHarness
         ConcurrentBag<double> eligibility,
         ConcurrentBag<double> plan,
         ConcurrentBag<double> records) => kind switch
-    {
-        Spec018ReadKind.Discovery => discovery,
-        Spec018ReadKind.Eligibility => eligibility,
-        Spec018ReadKind.PlanAndTimetable => plan,
-        Spec018ReadKind.RegistrationRecords => records,
-        _ => throw new ArgumentOutOfRangeException(nameof(kind))
-    };
+        {
+            Spec018ReadKind.Discovery => discovery,
+            Spec018ReadKind.Eligibility => eligibility,
+            Spec018ReadKind.PlanAndTimetable => plan,
+            Spec018ReadKind.RegistrationRecords => records,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        };
 
     private enum Spec018ReadKind
     {
@@ -1320,89 +1320,89 @@ public static class Spec014RegistrationLoadHarness
         var strategy = context.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
-        context.ChangeTracker.Clear();
-        await using var transaction = await context.Database.BeginTransactionAsync(
-            cancellationToken);
-        var transactionStarted = Stopwatch.GetTimestamp();
-        using var transactionTrace = RemoteActivityTrace.EnterTransaction();
-        try
-        {
-            var store = new RegistrationSubmissionStore(context, TimeProvider.System);
-            var claim = await store.ClaimInsideTransactionAsync(
-                identity.Scope,
-                identity.PayloadHash,
-                identity.ReceivedAtUtc,
+            context.ChangeTracker.Clear();
+            await using var transaction = await context.Database.BeginTransactionAsync(
                 cancellationToken);
-            if (!claim.MayExecute || claim.Submission is null)
+            var transactionStarted = Stopwatch.GetTimestamp();
+            using var transactionTrace = RemoteActivityTrace.EnterTransaction();
+            try
             {
-                await transaction.RollbackAsync(CancellationToken.None);
-                return RegistrationLoadOutcome.Unexpected;
-            }
+                var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+                var claim = await store.ClaimInsideTransactionAsync(
+                    identity.Scope,
+                    identity.PayloadHash,
+                    identity.ReceivedAtUtc,
+                    cancellationToken);
+                if (!claim.MayExecute || claim.Submission is null)
+                {
+                    await transaction.RollbackAsync(CancellationToken.None);
+                    return RegistrationLoadOutcome.Unexpected;
+                }
 
-            var allocation = await new SqlSeatAllocator(context).AllocateAsync(
-                identity.GroupId,
-                cancellationToken);
-            var completedAt = DateTime.UtcNow;
-            if (!allocation.IsAllocated)
-            {
-                claim.Submission.CompleteRejected(
-                    "GROUP_FULL",
-                    "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"GROUP_FULL\"}",
+                var allocation = await new SqlSeatAllocator(context).AllocateAsync(
+                    identity.GroupId,
+                    cancellationToken);
+                var completedAt = DateTime.UtcNow;
+                if (!allocation.IsAllocated)
+                {
+                    claim.Submission.CompleteRejected(
+                        "GROUP_FULL",
+                        "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"GROUP_FULL\"}",
+                        completedAt);
+                    claim.Submission.EnsureFinalForCommit();
+                    await context.SaveChangesAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await transaction.CommitAsync(cancellationToken);
+                    return RegistrationLoadOutcome.ExpectedConflict;
+                }
+
+                var reference = $"REG-{profileCode.ToUpperInvariant()}-{requestIndex:D8}";
+                claim.Submission.CompleteAccepted(
+                    "ACCEPTED",
+                    reference,
+                    CreateCanonicalReceiptSnapshot(
+                        dataset,
+                        identity.OfferingId,
+                        identity.GroupId,
+                        identity.ReceivedAtUtc),
+                    "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
                     completedAt);
                 claim.Submission.EnsureFinalForCommit();
+                context.Set<Enrollment>().Add(new Enrollment(
+                    StableGuid($"enrollment:{profileCode}:{requestIndex}"),
+                    identity.Scope.StudentId,
+                    identity.OfferingId,
+                    identity.GroupId,
+                    claim.Submission.Id,
+                    EnrollmentState.Active,
+                    completedAt));
+                context.AuditEvents.Add(new AuditEvent(
+                    StableGuid($"audit:{profileCode}:{requestIndex}"),
+                    "authenticated-student",
+                    "registration-owner",
+                    "RegistrationAccepted",
+                    "RegistrationSubmission",
+                    claim.Submission.Id.ToString("N"),
+                    "ACCEPTED",
+                    null,
+                    "{\"result\":\"accepted\"}",
+                    identity.Scope.ClientRequestId.ToString("N"),
+                    completedAt));
                 await context.SaveChangesAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 await transaction.CommitAsync(cancellationToken);
-                return RegistrationLoadOutcome.ExpectedConflict;
+                return RegistrationLoadOutcome.Accepted;
             }
-
-            var reference = $"REG-{profileCode.ToUpperInvariant()}-{requestIndex:D8}";
-            claim.Submission.CompleteAccepted(
-                "ACCEPTED",
-                reference,
-                CreateCanonicalReceiptSnapshot(
-                    dataset,
-                    identity.OfferingId,
-                    identity.GroupId,
-                    identity.ReceivedAtUtc),
-                "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
-                completedAt);
-            claim.Submission.EnsureFinalForCommit();
-            context.Set<Enrollment>().Add(new Enrollment(
-                StableGuid($"enrollment:{profileCode}:{requestIndex}"),
-                identity.Scope.StudentId,
-                identity.OfferingId,
-                identity.GroupId,
-                claim.Submission.Id,
-                EnrollmentState.Active,
-                completedAt));
-            context.AuditEvents.Add(new AuditEvent(
-                StableGuid($"audit:{profileCode}:{requestIndex}"),
-                "authenticated-student",
-                "registration-owner",
-                "RegistrationAccepted",
-                "RegistrationSubmission",
-                claim.Submission.Id.ToString("N"),
-                "ACCEPTED",
-                null,
-                "{\"result\":\"accepted\"}",
-                identity.Scope.ClientRequestId.ToString("N"),
-                completedAt));
-            await context.SaveChangesAsync(cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-            await transaction.CommitAsync(cancellationToken);
-            return RegistrationLoadOutcome.Accepted;
-        }
-        catch
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            throw;
-        }
-        finally
-        {
-            transactionSamples.Add(
-                Stopwatch.GetElapsedTime(transactionStarted).TotalMilliseconds);
-        }
+            catch
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
+            }
+            finally
+            {
+                transactionSamples.Add(
+                    Stopwatch.GetElapsedTime(transactionStarted).TotalMilliseconds);
+            }
         });
     }
 
@@ -1478,75 +1478,75 @@ public static class Spec014RegistrationLoadHarness
         var strategy = context.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
-        context.ChangeTracker.Clear();
-        await using var transaction = await context.Database.BeginTransactionAsync(
-            cancellationToken);
-        using var transactionTrace = RemoteActivityTrace.EnterTransaction();
-        try
-        {
-            var store = new RegistrationSubmissionStore(context, TimeProvider.System);
-            var claim = await store.ClaimInsideTransactionAsync(
-                scope,
-                payloadHash,
-                DateTime.UtcNow,
+            context.ChangeTracker.Clear();
+            await using var transaction = await context.Database.BeginTransactionAsync(
                 cancellationToken);
-            var allocation = await new SqlSeatAllocator(context).AllocateAsync(
-                dataset.GroupIds[5],
-                cancellationToken);
-            var completedAt = DateTime.UtcNow;
-            if (!allocation.IsAllocated)
+            using var transactionTrace = RemoteActivityTrace.EnterTransaction();
+            try
             {
-                claim.Submission!.CompleteRejected(
-                    "GROUP_FULL",
-                    "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"GROUP_FULL\"}",
+                var store = new RegistrationSubmissionStore(context, TimeProvider.System);
+                var claim = await store.ClaimInsideTransactionAsync(
+                    scope,
+                    payloadHash,
+                    DateTime.UtcNow,
+                    cancellationToken);
+                var allocation = await new SqlSeatAllocator(context).AllocateAsync(
+                    dataset.GroupIds[5],
+                    cancellationToken);
+                var completedAt = DateTime.UtcNow;
+                if (!allocation.IsAllocated)
+                {
+                    claim.Submission!.CompleteRejected(
+                        "GROUP_FULL",
+                        "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"GROUP_FULL\"}",
+                        completedAt);
+                    claim.Submission.EnsureFinalForCommit();
+                    await context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                    return RegistrationLoadOutcome.ExpectedConflict;
+                }
+
+                var reference = $"REG-COLLISION-{requestIndex:D3}";
+                claim.Submission!.CompleteAccepted(
+                    "ACCEPTED",
+                    reference,
+                    CreateCanonicalReceiptSnapshot(
+                        dataset,
+                        dataset.OfferingIds[5],
+                        dataset.GroupIds[5],
+                        completedAt),
+                    "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
                     completedAt);
                 claim.Submission.EnsureFinalForCommit();
-                await context.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-                return RegistrationLoadOutcome.ExpectedConflict;
-            }
-
-            var reference = $"REG-COLLISION-{requestIndex:D3}";
-            claim.Submission!.CompleteAccepted(
-                "ACCEPTED",
-                reference,
-                CreateCanonicalReceiptSnapshot(
-                    dataset,
+                context.Set<Enrollment>().Add(new Enrollment(
+                    StableGuid($"enrollment:collision:{requestIndex}"),
+                    scope.StudentId,
                     dataset.OfferingIds[5],
                     dataset.GroupIds[5],
-                    completedAt),
-                "{\"policyVersion\":\"DEMO-POC-2026.1\",\"resultCode\":\"ACCEPTED\"}",
-                completedAt);
-            claim.Submission.EnsureFinalForCommit();
-            context.Set<Enrollment>().Add(new Enrollment(
-                StableGuid($"enrollment:collision:{requestIndex}"),
-                scope.StudentId,
-                dataset.OfferingIds[5],
-                dataset.GroupIds[5],
-                claim.Submission.Id,
-                EnrollmentState.Active,
-                completedAt));
-            context.AuditEvents.Add(new AuditEvent(
-                StableGuid($"audit:collision:{requestIndex}"),
-                "authenticated-student",
-                "registration-owner",
-                "RegistrationAccepted",
-                "RegistrationSubmission",
-                claim.Submission.Id.ToString("N"),
-                "ACCEPTED",
-                null,
-                "{\"result\":\"accepted\"}",
-                scope.ClientRequestId.ToString("N"),
-                completedAt));
-            await context.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return RegistrationLoadOutcome.Accepted;
-        }
-        catch
-        {
-            await transaction.RollbackAsync(CancellationToken.None);
-            throw;
-        }
+                    claim.Submission.Id,
+                    EnrollmentState.Active,
+                    completedAt));
+                context.AuditEvents.Add(new AuditEvent(
+                    StableGuid($"audit:collision:{requestIndex}"),
+                    "authenticated-student",
+                    "registration-owner",
+                    "RegistrationAccepted",
+                    "RegistrationSubmission",
+                    claim.Submission.Id.ToString("N"),
+                    "ACCEPTED",
+                    null,
+                    "{\"result\":\"accepted\"}",
+                    scope.ClientRequestId.ToString("N"),
+                    completedAt));
+                await context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return RegistrationLoadOutcome.Accepted;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
+            }
         });
     }
 

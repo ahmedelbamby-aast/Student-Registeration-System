@@ -56,32 +56,32 @@ public sealed class VisualBaselineManifestTests
             "Spec008/AUTH-01/baseline-targets.json",
             baselines[0].GetProperty("targetManifest").GetString());
         Assert.Equal(
-            "3521d944c1ca61125e8f37544b249ae621e778697ecdd0f87d94662d3ab78b39",
+            "29954198b34f08f56174902f08440bf1f8620731b62b4e7fece75551b08957bf",
             baselines[0].GetProperty("artifactSha256").GetString());
         Assert.Equal(
             "Spec008/STU-01/baseline-targets.json",
             baselines[1].GetProperty("targetManifest").GetString());
         Assert.Equal(
-            "89c913e0780e88d91aa7e55b34c70d0cdb363824e2641c90405eedef9cff0d12",
+            "072002fbe932665081a7b00bdff74dff6f5376646362e4dff2c01d42e5561a28",
             baselines[1].GetProperty("artifactSha256").GetString());
         Assert.Equal(
             "Spec008/ADM-02/baseline-targets.json",
             baselines[2].GetProperty("targetManifest").GetString());
         Assert.Equal(
-            "65432a3af5a0629cd44bc3afed763e52f770804e855cc121d1b714421300ad72",
+            "aa4d4e66fe37644032cf6a579f99d56c8e72b01bcac131fba4543a4a29c6d817",
             baselines[2].GetProperty("artifactSha256").GetString());
         Assert.Equal(
             "Spec008/ADM-04/baseline-targets.json",
             baselines[3].GetProperty("targetManifest").GetString());
         Assert.Equal(
-            "a328536996ac8631ee7d5e713e4a60eb3dc581fbc5ce471d8daa521f132f6f82",
+            "b791f8a05b4cac4a737ed655ec162bd53bd5ce2d3e5b2ad7de594a4af0151534",
             baselines[3].GetProperty("artifactSha256").GetString());
 
         foreach (var baseline in baselines)
         {
             Assert.Equal("success", baseline.GetProperty("state").GetString());
             Assert.Equal("Ahmed ELbamby", baseline.GetProperty("approvedBy").GetString());
-            Assert.Equal("2026-07-14", baseline.GetProperty("approvedOn").GetString());
+            Assert.Equal("2026-07-19", baseline.GetProperty("approvedOn").GetString());
             Assert.Equal(16, baseline.GetProperty("targetCount").GetInt32());
             Assert.Equal(
                 [375, 768, 1280, 1920],

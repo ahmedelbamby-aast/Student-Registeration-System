@@ -58,7 +58,7 @@ public sealed class AcademicContextModelConfigurationTests
                 typeof(TranscriptAttempt)
             },
             context.Model.GetEntityTypes()
-                .Where(entity => entity.GetSchema() == "academics")
+                .Where(entity => entities.Contains(entity))
                 .Select(entity => entity.ClrType)
                 .OrderBy(type => type.FullName, StringComparer.Ordinal));
 
@@ -318,6 +318,7 @@ public sealed class AcademicContextModelConfigurationTests
         var sqlServices = new ServiceCollection();
         sqlServices.AddSingleton(TimeProvider.System);
         sqlServices.AddStudentRegistrationSqlServer(Configuration(ModelConnectionString));
+        sqlServices.AddStudentRegistrationRegistrationModule();
         sqlServices.AddScoped<IAuditEventWriter, AuditTransactionWriter>();
 
         var descriptors = AcademicStorePorts
@@ -1179,6 +1180,7 @@ public sealed class AcademicContextModelConfigurationTests
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
         services.AddStudentRegistrationSqlServer(Configuration(connectionString));
+        services.AddStudentRegistrationRegistrationModule();
         if (failAudit)
         {
             services.AddScoped<IAuditEventWriter, ThrowingAuditWriter>();

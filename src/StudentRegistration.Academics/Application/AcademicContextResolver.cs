@@ -96,7 +96,7 @@ public sealed class AcademicContextUnavailableException : Exception
     public AcademicContextResult? PartialContext => null;
 }
 
-public sealed class AcademicContextResolver
+public sealed class AcademicContextResolver : ICurrentAcademicTermProvider
 {
     private readonly IAcademicContextReader _reader;
     private readonly TimeProvider _timeProvider;
@@ -116,6 +116,16 @@ public sealed class AcademicContextResolver
         AcademicStudentScope? studentScope = null,
         CancellationToken cancellationToken = default) =>
         ResolveCoreAsync(studentScope, cancellationToken);
+
+    public async Task<Guid?> ResolveCurrentTermIdAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var context = await ResolveCoreAsync(studentScope: null, cancellationToken);
+        var id = context.RegistrationTerm?.Id ?? context.TeachingTerm?.Id;
+        return Guid.TryParse(id, out var termId) && termId != Guid.Empty
+            ? termId
+            : null;
+    }
 
     public async Task<PublicContextDto> ResolvePublicAsync(
         CancellationToken cancellationToken = default)

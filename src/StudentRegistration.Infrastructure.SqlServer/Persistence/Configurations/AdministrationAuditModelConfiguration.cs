@@ -101,11 +101,11 @@ public sealed class AdministrationAuditModelConfiguration :
             .IsRequired();
 
         builder.HasIndex(job => new
-            {
-                job.OwnerId,
-                job.ScopeHash,
-                job.ClientRequestId
-            })
+        {
+            job.OwnerId,
+            job.ScopeHash,
+            job.ClientRequestId
+        })
             .IsUnique();
         builder.HasIndex(job => job.ArtifactId)
             .IsUnique()

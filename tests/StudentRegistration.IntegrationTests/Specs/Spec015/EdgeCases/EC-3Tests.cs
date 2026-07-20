@@ -2,6 +2,7 @@ using StudentRegistration.Contracts.Registration;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.IntegrationTests.Specs.Spec015.EdgeCases;
+
 public sealed class EC_3Tests
 {
     [Theory]

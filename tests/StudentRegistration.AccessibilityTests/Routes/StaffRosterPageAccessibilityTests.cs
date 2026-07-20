@@ -12,7 +12,8 @@ public sealed class StaffRosterPageAccessibilityFrozenContractTests
     {
         var page = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StaffRosterPage.razor");
         RepositoryFiles.ContainsAll(page, "role=\"region\"", "tabindex=\"0\"",
-            "<caption>", "scope=\"col\"", "Pagination", "aria-label=\"Roster compact view\"");
+            "<caption>", "scope=\"col\"", "Pagination",
+            "aria-label=\"@(LocalizedUiText.Get(\"Roster compact view\"))\"");
     }
 }
 

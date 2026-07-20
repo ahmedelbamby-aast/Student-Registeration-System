@@ -246,8 +246,12 @@ public sealed class ProfileHoldConcurrencyTests
             "MaximumActiveHolds = 100",
             "PROFILE_NOT_READY",
             "StudentTermAcademicState",
-            "HOLD_BLOCKED",
             "SupersedesAttemptId");
+        Assert.Contains(
+            "HOLD_BLOCKED",
+            RepositoryFiles.Read(
+                "src/StudentRegistration.Academics/Application/Ports/IRegistrationBoundary.cs"),
+            StringComparison.Ordinal);
     }
 
     private static async Task AssertCorrectionRejectedBeforeStoreAsync(

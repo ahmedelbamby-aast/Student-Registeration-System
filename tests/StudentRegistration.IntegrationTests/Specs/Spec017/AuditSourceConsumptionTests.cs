@@ -42,9 +42,9 @@ public sealed class AuditSourceConsumptionTests
     {
         var source = ReadStaffAdministrationSources();
 
-        Assert.DoesNotContain("class AuditEvent", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("class SecurityEvent", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("class AdminSecurityGuard", source, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"\bclass\s+AuditEvent\b", source);
+        Assert.DoesNotMatch(@"\bclass\s+SecurityEvent\b", source);
+        Assert.DoesNotMatch(@"\bclass\s+AdminSecurityGuard\b", source);
         Assert.DoesNotContain("DbSet<AuditEvent>", source, StringComparison.Ordinal);
         Assert.DoesNotContain("DbSet<SecurityEvent>", source, StringComparison.Ordinal);
         Assert.DoesNotContain("DbSet<AdminSecurityGuard>", source, StringComparison.Ordinal);

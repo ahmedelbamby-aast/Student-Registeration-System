@@ -10,6 +10,12 @@ public interface IAcademicContextReader
         CancellationToken cancellationToken = default);
 }
 
+public interface ICurrentAcademicTermProvider
+{
+    Task<Guid?> ResolveCurrentTermIdAsync(
+        CancellationToken cancellationToken = default);
+}
+
 public interface IAcademicStudentScopeReader
 {
     Task<AcademicStudentScope?> FindByApplicationUserIdAsync(

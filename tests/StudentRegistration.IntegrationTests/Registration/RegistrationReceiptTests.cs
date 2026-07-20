@@ -90,7 +90,10 @@ public sealed class RegistrationReceiptTests
                     }
                 }
             },
-            totalCredits = 3m, policySetId = Guid.NewGuid(), policyVersion = "POLICY-1", submittedAtUtc = submitted
+            totalCredits = 3m,
+            policySetId = Guid.NewGuid(),
+            policyVersion = "POLICY-1",
+            submittedAtUtc = submitted
         };
         return new(
             Guid.NewGuid(), Guid.NewGuid(), termId, "accepted", "REGISTERED", "REG-ABC123",

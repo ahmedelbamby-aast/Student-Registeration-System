@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using StudentRegistration.Academics.Application;
+using StudentRegistration.Academics.Application.Ports;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Staff;
 using StudentRegistration.Scheduling.Application.Ports;
-using StudentRegistration.Scheduling.Domain;
 using StudentRegistration.StaffAdministration.Application;
 using StudentRegistration.StaffAdministration.Application.Ports;
 
@@ -102,7 +101,7 @@ public static class Spec016Endpoints
 
     private static async Task<IResult> Availability(
         HttpContext context,
-        AcademicContextResolver academicContext,
+        ICurrentAcademicTermProvider academicContext,
         IStaffIdentityResolver staffIdentity,
         StaffAvailabilityFacade facade,
         CancellationToken cancellationToken)
@@ -138,7 +137,7 @@ public static class Spec016Endpoints
     private static async Task<IResult> ReplaceAvailability(
         [FromBody] ReplaceAvailabilityRequest request,
         HttpContext context,
-        AcademicContextResolver academicContext,
+        ICurrentAcademicTermProvider academicContext,
         IStaffIdentityResolver staffIdentity,
         StaffAvailabilityFacade facade,
         CancellationToken cancellationToken)
@@ -266,16 +265,12 @@ public static class Spec016Endpoints
             range.DayOfWeek,
             range.StartLocal,
             range.EndLocal,
-            range.Kind is AvailabilityKind.Available ? "available" : "unavailable")).ToArray());
+            range.IsAvailable ? "available" : "unavailable")).ToArray());
 
     private static async Task<Guid?> ResolveTermId(
-        AcademicContextResolver resolver,
+        ICurrentAcademicTermProvider resolver,
         CancellationToken cancellationToken)
-    {
-        var context = await resolver.ResolveAsync(cancellationToken: cancellationToken);
-        var id = context.RegistrationTerm?.Id ?? context.TeachingTerm?.Id;
-        return Guid.TryParse(id, out var termId) && termId != Guid.Empty ? termId : null;
-    }
+        => await resolver.ResolveCurrentTermIdAsync(cancellationToken);
 
     private static bool TryCommand(
         ReplaceAvailabilityRequest request,
@@ -311,22 +306,25 @@ public static class Spec016Endpoints
         var ranges = new List<StaffAvailabilityRangeInput>(request.Ranges.Count);
         foreach (var range in request.Ranges)
         {
-            var kind = range.Kind switch
-            {
-                "available" => AvailabilityKind.Available,
-                "unavailable" => AvailabilityKind.Unavailable,
-                _ => (AvailabilityKind?)null
-            };
-            if (range.Id == Guid.Empty || kind is null || range.EndLocal <= range.StartLocal)
+            if (range.Id == Guid.Empty || range.EndLocal <= range.StartLocal)
             {
                 return false;
             }
-            ranges.Add(new(
-                range.Id,
-                range.DayOfWeek,
-                range.StartLocal,
-                range.EndLocal,
-                kind.Value));
+
+            var input = range.Kind switch
+            {
+                "available" => StaffAvailabilityRangeInput.Available(
+                    range.Id, range.DayOfWeek, range.StartLocal, range.EndLocal),
+                "unavailable" => StaffAvailabilityRangeInput.Unavailable(
+                    range.Id, range.DayOfWeek, range.StartLocal, range.EndLocal),
+                _ => null
+            };
+            if (input is null)
+            {
+                return false;
+            }
+
+            ranges.Add(input);
         }
 
         command = new ReplaceOwnStaffAvailability(

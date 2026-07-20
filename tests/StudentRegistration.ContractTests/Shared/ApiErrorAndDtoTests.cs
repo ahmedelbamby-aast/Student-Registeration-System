@@ -6,6 +6,8 @@ using StudentRegistration.Api.Composition;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Academics;
 using StudentRegistration.Contracts.Identity;
+using StudentRegistration.Contracts.Registration;
+using StudentRegistration.Contracts.Scheduling;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.ContractTests.Shared;
@@ -68,7 +70,11 @@ public sealed class ApiErrorAndDtoTests
             (typeof(ChangePasswordRequest), nameof(ChangePasswordRequest.NewPassword)),
             (typeof(CatalogueValidationResult), nameof(CatalogueValidationResult.PreviewToken)),
             (typeof(PublishVersionRequest), nameof(PublishVersionRequest.PreviewToken)),
-            (typeof(PolicyPublishRequest), nameof(PolicyPublishRequest.PreviewToken))
+            (typeof(PolicyPublishRequest), nameof(PolicyPublishRequest.PreviewToken)),
+            (typeof(OfferingValidationResult), nameof(OfferingValidationResult.PreviewToken)),
+            (typeof(PublishOfferingRequest), nameof(PublishOfferingRequest.PreviewToken)),
+            (typeof(ScheduleOptionDto), nameof(ScheduleOptionDto.OptionToken)),
+            (typeof(ApplyScheduleOptionRequest), nameof(ApplyScheduleOptionRequest.OptionToken))
         };
         var actualSecretInputs = publicProperties
             .Where(item =>

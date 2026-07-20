@@ -1,9 +1,11 @@
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.AcceptanceTests.Specs.Spec015;
+
 public sealed class AC_6Tests
 {
-    [Fact] public void Quality_gate_has_named_follow_on_evidence_tasks()
+    [Fact]
+    public void Quality_gate_has_named_follow_on_evidence_tasks()
     {
         var tasks = RepositoryFiles.Read("specs/015-student-registration-records/tasks.md");
         Assert.Contains("T055 [NFR-1]", tasks);

@@ -28,14 +28,32 @@ public sealed record StaffAvailabilityRangeInput(
     DayOfWeek DayOfWeek,
     TimeOnly StartLocal,
     TimeOnly EndLocal,
-    AvailabilityKind Kind);
+    AvailabilityKind Kind)
+{
+    public static StaffAvailabilityRangeInput Available(
+        Guid id,
+        DayOfWeek dayOfWeek,
+        TimeOnly startLocal,
+        TimeOnly endLocal) =>
+        new(id, dayOfWeek, startLocal, endLocal, AvailabilityKind.Available);
+
+    public static StaffAvailabilityRangeInput Unavailable(
+        Guid id,
+        DayOfWeek dayOfWeek,
+        TimeOnly startLocal,
+        TimeOnly endLocal) =>
+        new(id, dayOfWeek, startLocal, endLocal, AvailabilityKind.Unavailable);
+}
 
 public sealed record StaffAvailabilityRangeSnapshot(
     Guid Id,
     DayOfWeek DayOfWeek,
     TimeOnly StartLocal,
     TimeOnly EndLocal,
-    AvailabilityKind Kind);
+    AvailabilityKind Kind)
+{
+    public bool IsAvailable => Kind is AvailabilityKind.Available;
+}
 
 public sealed record StaffTermAvailabilitySnapshot(
     Guid Id,

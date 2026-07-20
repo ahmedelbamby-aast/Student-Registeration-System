@@ -1,4 +1,5 @@
 using StudentRegistration.VisualTests.Infrastructure;
 namespace StudentRegistration.VisualTests.Routes;
+
 public sealed class RegistrationResultPageVisualTestsContract { [Fact] public void Stu_06_visual_contract_is_frozen() => Spec003RouteVisualAssertions.AssertFrozenContract("STU-06", "T176", "RegistrationResultPage"); }
-[Collection(VisualRegressionCollection.CollectionName)] public sealed class RegistrationResultPageVisualTests(VisualRegressionFixture fixture) { [Theory] [MemberData(nameof(Spec003RouteVisualAssertions.BrowserWidths), MemberType=typeof(Spec003RouteVisualAssertions))] public Task Stu_06_matches_approved_baseline(string browser,int width) => Spec003RouteVisualAssertions.AssertApprovedBaselineAsync(fixture,"STU-06","/student/registration/result/00000000-0000-0000-0000-000000003006",browser,width); }
+[Collection(VisualRegressionCollection.CollectionName)] public sealed class RegistrationResultPageVisualTests(VisualRegressionFixture fixture) { [Theory][MemberData(nameof(Spec003RouteVisualAssertions.BrowserWidths), MemberType = typeof(Spec003RouteVisualAssertions))] public Task Stu_06_matches_approved_baseline(string browser, int width) => Spec003RouteVisualAssertions.AssertApprovedBaselineAsync(fixture, "STU-06", "/student/registration/result/00000000-0000-0000-0000-000000003006", browser, width); }

@@ -17,11 +17,11 @@ public sealed class RequestedAdminRouteBaselineTests(VisualRegressionFixture fix
         var widths = new[] { 375, 768, 1280, 1920 };
         var data = new TheoryData<string, string, string, int>();
         foreach (var route in routes)
-        foreach (var browser in browsers)
-        foreach (var width in widths)
-        {
-            data.Add(route.Id, route.Path, browser, width);
-        }
+            foreach (var browser in browsers)
+                foreach (var width in widths)
+                {
+                    data.Add(route.Id, route.Path, browser, width);
+                }
         return data;
     }
 
