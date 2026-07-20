@@ -127,7 +127,8 @@ public sealed record GroupSummary
         int enrolledCount,
         IReadOnlyList<GroupNonSelectableReason> nonSelectableReasons,
         IReadOnlyList<GroupMeetingSummary> meetings,
-        string rowVersion)
+        string rowVersion,
+        int heldSeatCount = 0)
     {
         if (groupId == Guid.Empty)
         {
@@ -146,7 +147,8 @@ public sealed record GroupSummary
                 nameof(state));
         }
 
-        if (capacity < 0 || enrolledCount < 0 || enrolledCount > capacity)
+        if (capacity < 0 || enrolledCount < 0 || heldSeatCount < 0 ||
+            enrolledCount + heldSeatCount > capacity)
         {
             throw new ArgumentException(
                 "Group capacity and enrollment values are inconsistent.");
@@ -158,7 +160,8 @@ public sealed record GroupSummary
         Selectable = selectable;
         Capacity = capacity;
         EnrolledCount = enrolledCount;
-        SeatsRemaining = capacity - enrolledCount;
+        HeldSeatCount = heldSeatCount;
+        SeatsRemaining = capacity - enrolledCount - heldSeatCount;
         NonSelectableReasons = EligibilityDomainGuard.Copy(
             nonSelectableReasons,
             nameof(nonSelectableReasons));
@@ -180,6 +183,8 @@ public sealed record GroupSummary
 
     public int EnrolledCount { get; }
 
+    public int HeldSeatCount { get; }
+
     public int SeatsRemaining { get; }
 
     public IReadOnlyList<GroupNonSelectableReason> NonSelectableReasons { get; }
@@ -196,6 +201,7 @@ public sealed record GroupSummary
         Selectable == other.Selectable &&
         Capacity == other.Capacity &&
         EnrolledCount == other.EnrolledCount &&
+        HeldSeatCount == other.HeldSeatCount &&
         SeatsRemaining == other.SeatsRemaining &&
         NonSelectableReasons.SequenceEqual(other.NonSelectableReasons) &&
         Meetings.SequenceEqual(other.Meetings) &&
@@ -210,6 +216,7 @@ public sealed record GroupSummary
         hash.Add(Selectable);
         hash.Add(Capacity);
         hash.Add(EnrolledCount);
+        hash.Add(HeldSeatCount);
         hash.Add(SeatsRemaining);
         foreach (var reason in NonSelectableReasons)
         {

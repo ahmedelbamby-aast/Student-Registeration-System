@@ -20,6 +20,7 @@ public sealed class StudentTermAcademicStateModelTests
             id,
             studentId,
             termId,
+            5,
             3.25m,
             72m,
             "Active",
@@ -31,6 +32,7 @@ public sealed class StudentTermAcademicStateModelTests
         Assert.Equal(id, state.Id);
         Assert.Equal(studentId, state.StudentId);
         Assert.Equal(termId, state.TermId);
+        Assert.Equal(5, state.ProgramTermOrdinal);
         Assert.Equal(3.25m, state.GpaAtStart);
         Assert.Equal(72m, state.EarnedCreditsAtStart);
         Assert.Equal("Active", state.StandingAtStart);
@@ -45,6 +47,7 @@ public sealed class StudentTermAcademicStateModelTests
                 "id",
                 "studentId",
                 "termId",
+                "programTermOrdinal",
                 "gpaAtStart",
                 "earnedCreditsAtStart",
                 "standingAtStart",
@@ -62,6 +65,16 @@ public sealed class StudentTermAcademicStateModelTests
         Assert.Throws<ArgumentException>(() => CreateState(id: Guid.Empty));
         Assert.Throws<ArgumentException>(() => CreateState(studentId: Guid.Empty));
         Assert.Throws<ArgumentException>(() => CreateState(termId: Guid.Empty));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Student_term_state_requires_a_positive_program_term_ordinal(
+        int programTermOrdinal)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => CreateState(programTermOrdinal: programTermOrdinal));
     }
 
     [Theory]
@@ -125,6 +138,7 @@ public sealed class StudentTermAcademicStateModelTests
         Guid? id = null,
         Guid? studentId = null,
         Guid? termId = null,
+        int programTermOrdinal = 5,
         decimal gpaAtStart = 3.25m,
         decimal earnedCreditsAtStart = 72m,
         string standingAtStart = "Active",
@@ -136,6 +150,7 @@ public sealed class StudentTermAcademicStateModelTests
             id ?? Guid.NewGuid(),
             studentId ?? Guid.NewGuid(),
             termId ?? Guid.NewGuid(),
+            programTermOrdinal,
             gpaAtStart,
             earnedCreditsAtStart,
             standingAtStart,

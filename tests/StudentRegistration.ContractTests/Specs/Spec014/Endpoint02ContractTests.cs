@@ -13,7 +13,7 @@ public sealed class Endpoint02ContractTests
             "authenticated `Student`",
             "`Registration.SubmitOwn` permission",
             "Authorization occurs before result, owner, term, submission, or version disclosure",
-            "200 final",
+            "200 durable pending or final result",
             "bounded non-durable 202",
             "404 `REQUEST_NOT_FOUND`");
     }

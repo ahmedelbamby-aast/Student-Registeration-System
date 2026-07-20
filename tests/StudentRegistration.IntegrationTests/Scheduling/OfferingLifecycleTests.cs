@@ -95,7 +95,7 @@ public sealed class OfferingLifecycleTests
                 Reason: "replace complete schedule"));
 
         Assert.Equal(OfferingOutcome.Updated, result.Outcome);
-        Assert.Equal([2], result.GroupRowVersion);
+        Assert.Equal([2], result.Group!.RowVersion);
         Assert.Single(store.Updates);
     }
 
@@ -190,6 +190,12 @@ public sealed class OfferingLifecycleTests
             CancellationToken cancellationToken) =>
             Task.FromResult<OfferingSnapshot?>(Snapshot.Id == offeringId ? Snapshot : null);
 
+        public Task<OfferingGroupSnapshot?> LoadGroupAsync(
+            Guid groupId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<OfferingGroupSnapshot?>(
+                Snapshot.Groups.SingleOrDefault(group => group.Id == groupId));
+
         public Task<OfferingSnapshot> CreateAsync(
             CreateOfferingStoreCommand command,
             CancellationToken cancellationToken)
@@ -211,12 +217,27 @@ public sealed class OfferingLifecycleTests
             return Task.FromResult(Snapshot);
         }
 
-        public Task<byte[]> UpdateGroupAsync(
+        public Task<OfferingGroupSnapshot> UpdateGroupAsync(
             UpdateGroupStoreCommand command,
             CancellationToken cancellationToken)
         {
             Updates.Add(command);
-            return Task.FromResult<byte[]>([2]);
+            var updated = new OfferingGroupSnapshot(
+                command.GroupId,
+                command.GroupCode,
+                command.Capacity,
+                Snapshot.Groups.Single(group => group.Id == command.GroupId).EnrolledCount,
+                command.RegistrationPaused,
+                "draft",
+                [2],
+                []);
+            Snapshot = Snapshot with
+            {
+                Groups = Snapshot.Groups
+                    .Select(group => group.Id == command.GroupId ? updated : group)
+                    .ToArray(),
+            };
+            return Task.FromResult(updated);
         }
 
         public Task<AdminOfferingPage> ListAsync(

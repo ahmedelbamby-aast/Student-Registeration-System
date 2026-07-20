@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using StudentRegistration.Registration.Domain;
 
 namespace StudentRegistration.Registration.Application;
 
@@ -30,7 +31,8 @@ public sealed record RegistrationCommand(
     Guid ClientRequestId,
     RegistrationIdempotencyScope IdempotencyScope,
     string ExpectedRegistrationContextVersion,
-    DateTime ReceivedAtUtc);
+    DateTime ReceivedAtUtc,
+    RegistrationSubmissionOrigin Origin = RegistrationSubmissionOrigin.StudentSelfService);
 
 public enum RegistrationCommandCreationOutcome
 {

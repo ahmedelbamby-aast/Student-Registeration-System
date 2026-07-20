@@ -152,12 +152,22 @@ public sealed class NFR_1EvidenceTests
                 offeringId == Offering.Id ? Offering : null);
         }
 
+        public Task<OfferingGroupSnapshot?> LoadGroupAsync(
+            Guid groupId,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref _readCount);
+            return Task.FromResult<OfferingGroupSnapshot?>(
+                Offering.Groups.SingleOrDefault(group => group.Id == groupId));
+        }
+
         public Task<OfferingSnapshot> CreateAsync(
             CreateOfferingStoreCommand command,
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
-        public Task<byte[]> UpdateGroupAsync(
+        public Task<OfferingGroupSnapshot> UpdateGroupAsync(
             UpdateGroupStoreCommand command,
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();

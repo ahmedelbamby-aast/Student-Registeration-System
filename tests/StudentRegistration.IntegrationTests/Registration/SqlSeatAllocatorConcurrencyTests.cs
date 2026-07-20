@@ -26,6 +26,9 @@ public sealed class SqlSeatAllocatorConcurrencyTests(
         Assert.Contains("ReduceCapacityAsync", methods);
         Assert.Contains("AllocateWithSavepointAsync", methods);
         Assert.Contains("AllocateAllOrRejectAsync", methods);
+        Assert.Contains("HoldAllOrRejectAsync", methods);
+        Assert.Contains("ConvertHoldsToEnrollmentsAsync", methods);
+        Assert.Contains("ReleaseHoldsAsync", methods);
         Assert.DoesNotContain("DeallocateAsync", methods);
     }
 
@@ -40,7 +43,7 @@ public sealed class SqlSeatAllocatorConcurrencyTests(
         Assert.NotNull(group);
         Assert.NotNull(enrollment);
         Assert.Contains(group!.GetCheckConstraints(), constraint =>
-            constraint.Sql!.Contains("[EnrolledCount] <= [Capacity]", StringComparison.Ordinal));
+            constraint.Sql!.Contains("[EnrolledCount] + [HeldSeatCount] <= [Capacity]", StringComparison.Ordinal));
         Assert.Contains(enrollment!.GetIndexes(), index =>
             index.IsUnique &&
             index.Properties.Select(property => property.Name)
@@ -48,6 +51,82 @@ public sealed class SqlSeatAllocatorConcurrencyTests(
         Assert.Contains(enrollment.GetForeignKeys(), foreignKey =>
             foreignKey.Properties.Select(property => property.Name)
                 .SequenceEqual([nameof(Enrollment.OfferingId), nameof(Enrollment.GroupId)]));
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Concurrent_hold_and_enrollment_compete_for_one_occupied_seat()
+    {
+        var seed = await database.SeedAsync(groupCapacities: [1]);
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var ready = 0;
+
+        async Task<SeatAllocationBatchResult> HoldAsync()
+        {
+            await using var context = database.CreateContext();
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            var allocator = new SqlSeatAllocator(context);
+            if (Interlocked.Increment(ref ready) == 2) gate.TrySetResult();
+            await gate.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var result = await allocator.HoldAllOrRejectAsync(seed.GroupIds);
+            await transaction.CommitAsync();
+            return result;
+        }
+
+        async Task<SeatAllocationBatchResult> EnrollAsync()
+        {
+            await using var context = database.CreateContext();
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            var allocator = new SqlSeatAllocator(context);
+            if (Interlocked.Increment(ref ready) == 2) gate.TrySetResult();
+            await gate.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            var result = await allocator.AllocateAllOrRejectAsync(seed.GroupIds);
+            await transaction.CommitAsync();
+            return result;
+        }
+
+        var results = await Task.WhenAll(HoldAsync(), EnrollAsync());
+
+        Assert.Single(results, result => result.IsAccepted);
+        Assert.Single(results, result => !result.IsAccepted && result.ReasonCode == "GROUP_FULL");
+        Assert.Equal(1, await database.ScalarAsync<int>(
+            "SELECT [EnrolledCount] + [HeldSeatCount] FROM [scheduling].[SectionGroups] WHERE [Id] = @id",
+            new SqlParameter("@id", seed.GroupIds[0])));
+    }
+
+    [Fact]
+    [Trait("Dependency", "Docker")]
+    public async Task Hold_batch_rolls_back_all_lines_and_conversion_preserves_occupied_count()
+    {
+        var rejectedSeed = await database.SeedAsync(groupCapacities: [1, 0]);
+        await using (var context = database.CreateContext())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
+        {
+            var result = await new SqlSeatAllocator(context)
+                .HoldAllOrRejectAsync(rejectedSeed.GroupIds);
+            Assert.False(result.IsAccepted);
+            await transaction.CommitAsync();
+        }
+        Assert.Equal(0, await database.ScalarAsync<int>(
+            "SELECT SUM([HeldSeatCount]) FROM [scheduling].[SectionGroups] WHERE [OfferingId] = @id",
+            new SqlParameter("@id", rejectedSeed.OfferingId)));
+
+        var acceptedSeed = await database.SeedAsync(groupCapacities: [1]);
+        await using (var context = database.CreateContext())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
+        {
+            var allocator = new SqlSeatAllocator(context);
+            Assert.True((await allocator.HoldAllOrRejectAsync(acceptedSeed.GroupIds)).IsAccepted);
+            await allocator.ConvertHoldsToEnrollmentsAsync(acceptedSeed.GroupIds);
+            await transaction.CommitAsync();
+        }
+
+        Assert.Equal(1, await database.ScalarAsync<int>(
+            "SELECT [EnrolledCount] FROM [scheduling].[SectionGroups] WHERE [Id] = @id",
+            new SqlParameter("@id", acceptedSeed.GroupIds[0])));
+        Assert.Equal(0, await database.ScalarAsync<int>(
+            "SELECT [HeldSeatCount] FROM [scheduling].[SectionGroups] WHERE [Id] = @id",
+            new SqlParameter("@id", acceptedSeed.GroupIds[0])));
     }
 
     [Fact]

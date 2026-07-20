@@ -30,6 +30,7 @@ public sealed record CurriculumCourseAdminDto(
     int Level,
     int? TermSequence,
     bool Required,
+    string? CohortScope,
     CatalogueFieldProvenanceDto Provenance);
 
 public sealed record CatalogueDraftDto(
@@ -58,6 +59,11 @@ public sealed record CatalogueDraftMutationRequest(
     string Reason,
     string Source,
     IReadOnlyList<CatalogueDraftOperation> Operations);
+
+public sealed record CreateCatalogueDraftRequest(
+    Guid BasedOnVersionId,
+    string Reason,
+    Guid ClientRequestId);
 
 public sealed record CatalogueVersionSummaryDto(
     Guid Id,
@@ -116,6 +122,29 @@ public sealed record PublishVersionRequest(
     string ExpectedDraftRowVersion,
     string PreviewToken,
     Guid ClientRequestId);
+
+public sealed record RoadmapSubjectDto(
+    Guid CourseId,
+    string Code,
+    string Title,
+    decimal Credits,
+    bool Required,
+    string? CohortScope,
+    string Status,
+    bool AutomaticRegistration,
+    IReadOnlyList<string> Prerequisites,
+    IReadOnlyList<string> MissingPrerequisites);
+
+public sealed record RoadmapTermDto(
+    int RecommendedTerm,
+    int Level,
+    IReadOnlyList<RoadmapSubjectDto> Subjects);
+
+public sealed record StudentRoadmapDto(
+    string ProgramCode,
+    string Cohort,
+    string CatalogueVersion,
+    IReadOnlyList<RoadmapTermDto> Terms);
 
 public sealed record PolicyRuleAdminDto(
     Guid? Id,

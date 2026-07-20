@@ -8,6 +8,7 @@ using StudentRegistration.IdentityAccess.Endpoints;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StudentRegistration.StaffAdministration.Application;
 using StudentRegistration.Registration.Endpoints;
+using StudentRegistration.Scheduling.Application;
 using StudentRegistration.Scheduling.Endpoints;
 using StudentRegistration.StaffAdministration.Endpoints;
 
@@ -35,6 +36,7 @@ public static class Program
         if (builder.Environment.IsDevelopment())
         {
             builder.Services.AddScoped<DemoStudentProfileSeedContributor>();
+            builder.Services.AddScoped<DevelopmentManualTestDataSeeder>();
             builder.Services.AddScoped<DemoDatabaseInitializer>();
         }
 
@@ -97,6 +99,8 @@ public static class ModuleRegistration
         services.TryAddScoped<AdminMetricsQuery>();
         services.TryAddScoped<AuditEventQueries>();
         services.TryAddScoped<AuditExportService>();
+        services.TryAddScoped<OfferingService>();
+        services.TryAddScoped<PolicyAdministrationService>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, AdminExportWorker>());
 

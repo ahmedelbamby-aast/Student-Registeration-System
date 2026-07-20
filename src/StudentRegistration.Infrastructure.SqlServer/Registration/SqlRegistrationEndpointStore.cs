@@ -113,7 +113,11 @@ public sealed class SqlRegistrationEndpointStore(
             payloadHash,
             RegistrationSubmissionStore.MaximumObservationWindow,
             cancellationToken);
-        var visibleResult = ToVisibleResult(visible, command.TermId, command.ClientRequestId);
+        var visibleResult = await ToVisibleResultAsync(
+            visible,
+            command.TermId,
+            command.ClientRequestId,
+            cancellationToken);
         if (visibleResult is not null)
         {
             return visibleResult;
@@ -183,7 +187,11 @@ public sealed class SqlRegistrationEndpointStore(
             _currentSnapshot.CatalogueScopeCode,
             _currentSnapshot.PolicyScopeCode,
             selectedGroupIds,
-            boundaryGroupIds);
+            boundaryGroupIds,
+            command.Origin,
+            command.Origin is RegistrationSubmissionOrigin.FirstTermAutomatic
+                ? RegistrationValidationPurpose.AutomaticAllocation
+                : RegistrationValidationPurpose.HoldCreation);
 
         RegistrationEndpointResult? transactionResult = null;
         _pendingRejectionCode = null;
@@ -197,14 +205,23 @@ public sealed class SqlRegistrationEndpointStore(
                 try
                 {
                     claim = await submissionStore.ClaimInsideTransactionAsync(
-                        scope, payloadHash, command.ReceivedAtUtc, token);
+                        scope,
+                        payloadHash,
+                        command.ReceivedAtUtc,
+                        token,
+                        command.Origin,
+                        _currentSnapshot!.Groups.Sum(group => group.Credits));
                 }
                 catch (RegistrationClaimContendedException)
                 {
                     _claimContended = true;
                     throw;
                 }
-                var existing = ToVisibleResult(claim, command.TermId, command.ClientRequestId);
+                var existing = await ToVisibleResultAsync(
+                    claim,
+                    command.TermId,
+                    command.ClientRequestId,
+                    token);
                 if (existing is not null)
                 {
                     transactionResult = existing;
@@ -219,6 +236,57 @@ public sealed class SqlRegistrationEndpointStore(
                     transactionResult = Conflict(
                         _pendingRejectionCode,
                         _pendingCurrentVersion);
+                    return;
+                }
+
+                if (command.Origin is RegistrationSubmissionOrigin.StudentSelfService)
+                {
+                    var held = await seatAllocator.HoldAllOrRejectAsync(
+                        transactionPlan.GroupIds,
+                        token);
+                    if (!held.IsAccepted)
+                    {
+                        var reason = held.ReasonCode ?? "GROUP_FULL";
+                        await FinalizeRejectedAsync(submission, reason, command, token);
+                        transactionResult = Conflict(reason);
+                        return;
+                    }
+
+                    foreach (var group in _currentSnapshot!.Groups)
+                    {
+                        var line = new RegistrationSubmissionLine(
+                            Guid.NewGuid(),
+                            submission.Id,
+                            group.OfferingId,
+                            group.GroupId,
+                            group.CourseCode,
+                            group.SubjectTitle,
+                            group.Credits);
+                        submission.AddLine(line);
+                        dbContext.Add(new RegistrationSeatHold(
+                            Guid.NewGuid(),
+                            line.Id,
+                            command.StudentId,
+                            command.TermId,
+                            group.OfferingId,
+                            group.GroupId,
+                            command.ReceivedAtUtc));
+                    }
+
+                    var pendingAt = timeProvider.GetUtcNow().UtcDateTime;
+                    AddAudit(
+                        submission,
+                        command,
+                        "RegistrationSubmissionPendingApproval",
+                        "PENDING_APPROVAL",
+                        pendingAt);
+                    await submissionStore.FinalizePendingApprovalAsync(
+                        submission,
+                        pendingAt,
+                        token);
+                    transactionResult = new(
+                        RegistrationEndpointOutcome.Created,
+                        await ToStoredResultAsync(submission, token));
                     return;
                 }
 
@@ -297,7 +365,11 @@ public sealed class SqlRegistrationEndpointStore(
                 scope,
                 payloadHash,
                 cancellationToken);
-            return ToVisibleResult(observed, command.TermId, command.ClientRequestId) ??
+            return await ToVisibleResultAsync(
+                    observed,
+                    command.TermId,
+                    command.ClientRequestId,
+                    cancellationToken) ??
                 Processing(command.TermId, command.ClientRequestId);
         }
 
@@ -352,7 +424,7 @@ public sealed class SqlRegistrationEndpointStore(
         return observation.Submission is not null
             ? new(
                 RegistrationEndpointOutcome.Replayed,
-                ToStoredFinal(observation.Submission))
+                await ToStoredResultAsync(observation.Submission, cancellationToken))
             : observation.IsInProgress
                 ? Processing(termId, clientRequestId)
                 : new(
@@ -603,12 +675,24 @@ public sealed class SqlRegistrationEndpointStore(
             return;
         }
 
-        var maximumCredits = await dbContext.Set<StudentTermAcademicState>()
+        var academicState = await dbContext.Set<StudentTermAcademicState>()
             .Where(state =>
                 state.StudentId == validation.StudentId &&
                 state.TermId == validation.TermId)
-            .Select(state => state.GpaAtStart < 2m ? 12m : 18m)
+            .Select(state => new { state.GpaAtStart, state.ProgramTermOrdinal })
             .SingleAsync(cancellationToken);
+        if (validation.Origin is RegistrationSubmissionOrigin.StudentSelfService &&
+            academicState.ProgramTermOrdinal == 1)
+        {
+            Reject("FIRST_TERM_AUTOMATIC_REGISTRATION", snapshot.AcademicContextVersion);
+            return;
+        }
+
+        var maximumCredits = academicState.GpaAtStart < 2m
+            ? 12m
+            : academicState.GpaAtStart >= 3m
+                ? 21m
+                : 18m;
         if (plan.TotalCredits < 9m ||
             plan.TotalCredits + existing.Sum(item => item.Credits) > maximumCredits)
         {
@@ -780,14 +864,15 @@ public sealed class SqlRegistrationEndpointStore(
                 group => group.GroupVersion),
             resultCode);
 
-    private static RegistrationEndpointResult? ToVisibleResult(
+    private async Task<RegistrationEndpointResult?> ToVisibleResultAsync(
         SubmissionClaimResult claim,
         Guid termId,
-        Guid clientRequestId) => claim.Status switch
+        Guid clientRequestId,
+        CancellationToken cancellationToken) => claim.Status switch
         {
             SubmissionClaimStatus.Replayed when claim.Submission is not null =>
                 new(RegistrationEndpointOutcome.Replayed,
-                    ToStoredFinal(claim.Submission)),
+                    await ToStoredResultAsync(claim.Submission, cancellationToken)),
             SubmissionClaimStatus.InProgress => Processing(termId, clientRequestId),
             SubmissionClaimStatus.PayloadMismatch => Conflict("IDEMPOTENCY_KEY_REUSED"),
             _ => null,
@@ -811,20 +896,94 @@ public sealed class SqlRegistrationEndpointStore(
             ErrorCode: code,
             CurrentVersion: currentVersion);
 
-    private static RegistrationFinalResult ToStoredFinal(
-        RegistrationSubmission submission)
+    private async Task<RegistrationFinalResult> ToStoredResultAsync(
+        RegistrationSubmission submission,
+        CancellationToken cancellationToken)
     {
         var receipt = string.IsNullOrWhiteSpace(submission.ReceiptSnapshotJson)
             ? null
             : JsonSerializer.Deserialize<RegistrationReceiptSnapshotDto>(
                 submission.ReceiptSnapshotJson);
-        var decision = JsonSerializer.Deserialize<DecisionSnapshot>(
-            submission.DecisionSnapshotJson!);
-        return ToFinal(
-            submission,
+        var decision = string.IsNullOrWhiteSpace(submission.DecisionSnapshotJson)
+            ? null
+            : JsonSerializer.Deserialize<DecisionSnapshot>(submission.DecisionSnapshotJson);
+        var lines = submission.Lines.Count > 0
+            ? submission.Lines
+            : await dbContext.Set<RegistrationSubmissionLine>()
+                .AsNoTracking()
+                .Where(line => line.SubmissionId == submission.Id)
+                .OrderBy(line => line.CourseCode)
+                .ThenBy(line => line.Id)
+                .ToArrayAsync(cancellationToken);
+        var groupIds = lines.Select(line => line.GroupId).Distinct().ToArray();
+        var capacities = await dbContext.Set<SectionGroup>()
+            .AsNoTracking()
+            .Where(group => groupIds.Contains(group.Id))
+            .Select(group => new
+            {
+                group.Id,
+                group.Capacity,
+                group.EnrolledCount,
+                group.HeldSeatCount
+            })
+            .ToDictionaryAsync(group => group.Id, cancellationToken);
+        var decisions = await dbContext.Set<RegistrationApprovalDecision>()
+            .AsNoTracking()
+            .Where(item => lines.Select(line => line.Id).Contains(item.SubmissionLineId))
+            .ToDictionaryAsync(item => item.SubmissionLineId, cancellationToken);
+        var lineDtos = lines.Select(line =>
+        {
+            capacities.TryGetValue(line.GroupId, out var capacity);
+            decisions.TryGetValue(line.Id, out var lineDecision);
+            var total = capacity?.Capacity ?? 0;
+            var enrolled = capacity?.EnrolledCount ?? 0;
+            var held = capacity?.HeldSeatCount ?? 0;
+            return new RegistrationSubmissionLineDto(
+                line.Id,
+                line.OfferingId,
+                line.GroupId,
+                line.CourseCode,
+                line.SubjectTitle,
+                line.Credits,
+                LineState(line.State),
+                new(total, enrolled, held, Math.Max(0, total - enrolled - held)),
+                line.Version.Length == 0 ? string.Empty : Convert.ToBase64String(line.Version),
+                lineDecision is null
+                    ? null
+                    : new(
+                        lineDecision.Decision is RegistrationApprovalDecisionValue.Approved
+                            ? "approved"
+                            : "rejected",
+                        ActorRole(lineDecision.ActorRole),
+                        lineDecision.Reason,
+                        lineDecision.DecidedAtUtc));
+        }).ToArray();
+
+        var current = lines.Count == 0
+            ? null
+            : await planContextReader.ReadAsync(
+                submission.StudentId,
+                submission.TermId,
+                groupIds,
+                timeProvider.GetUtcNow().UtcDateTime,
+                cancellationToken);
+        return new RegistrationFinalResult(
+            submission.Id,
+            SubmissionState(submission.ProcessingState),
+            submission.ResultCode ?? "REGISTRATION_IN_PROGRESS",
+            receipt?.Groups ?? [],
+            submission.ReceivedAtUtc,
+            submission.CompletedAtUtc,
+            receipt?.PolicySetId ?? current?.PolicySetId ?? Guid.Empty,
+            receipt?.PolicyVersion ?? decision?.PolicyVersion ?? current?.PolicyVersion ?? string.Empty,
+            decision?.PlanVersion ?? string.Empty,
+            submission.Reference,
             receipt,
-            decision!,
-            receipt?.Groups ?? []);
+            submission.Origin is RegistrationSubmissionOrigin.FirstTermAutomatic
+                ? "firstTermAutomatic"
+                : "studentSelfService",
+            submission.RequestedCredits,
+            lineDtos);
     }
 
     private static RegistrationFinalResult ToFinal(
@@ -844,7 +1003,38 @@ public sealed class SqlRegistrationEndpointStore(
             receipt?.PolicyVersion ?? decision.PolicyVersion,
             decision.PlanVersion,
             submission.Reference,
-            receipt);
+            receipt,
+            submission.Origin is RegistrationSubmissionOrigin.FirstTermAutomatic
+                ? "firstTermAutomatic"
+                : "studentSelfService",
+            submission.RequestedCredits,
+            []);
+
+    private static string SubmissionState(RegistrationSubmissionState state) => state switch
+    {
+        RegistrationSubmissionState.PendingApproval => "pendingApproval",
+        RegistrationSubmissionState.Accepted => "accepted",
+        RegistrationSubmissionState.Rejected => "rejected",
+        RegistrationSubmissionState.Expired => "expired",
+        _ => "processing"
+    };
+
+    private static string LineState(RegistrationSubmissionLineState state) => state switch
+    {
+        RegistrationSubmissionLineState.PendingApproval => "pendingApproval",
+        RegistrationSubmissionLineState.Approved => "approved",
+        RegistrationSubmissionLineState.Rejected => "rejected",
+        RegistrationSubmissionLineState.Expired => "expired",
+        _ => "pendingApproval"
+    };
+
+    private static string ActorRole(RegistrationApprovalActorRole role) => role switch
+    {
+        RegistrationApprovalActorRole.Admin => "Admin",
+        RegistrationApprovalActorRole.Lecturer => "Lecturer",
+        RegistrationApprovalActorRole.TeachingAssistant => "TeachingAssistant",
+        _ => "Admin"
+    };
 
     private static RegistrationGroupSnapshotDto ToGroup(
         RegistrationPlanGroupSnapshot group) => new(

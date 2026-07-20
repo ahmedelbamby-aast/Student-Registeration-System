@@ -24,6 +24,8 @@ public sealed class SectionGroupModelTests
         Assert.Equal("LEC-A", group.GroupCode);
         Assert.Equal(30, group.Capacity);
         Assert.Equal(12, group.EnrolledCount);
+        Assert.Equal(0, group.HeldSeatCount);
+        Assert.Equal(18, group.AvailableSeatCount);
         Assert.Equal(SectionGroupState.Published, group.State);
         Assert.False(group.RegistrationPaused);
         Assert.True(group.IsSelectable);
@@ -31,6 +33,26 @@ public sealed class SectionGroupModelTests
         AssertPrivateSetter(nameof(SectionGroup.OfferingId));
         AssertPrivateSetter(nameof(SectionGroup.GroupCode));
         AssertPrivateSetter(nameof(SectionGroup.Version));
+    }
+
+    [Fact]
+    public void Held_seats_occupy_capacity_and_convert_without_changing_occupied_count()
+    {
+        var group = Create(capacity: 2, enrolledCount: 0, heldSeatCount: 1);
+
+        group.HoldSeat();
+        Assert.Equal(2, group.HeldSeatCount);
+        Assert.Equal(0, group.AvailableSeatCount);
+        Assert.False(group.IsSelectable);
+
+        group.ConsumeHeldSeat();
+        Assert.Equal(1, group.EnrolledCount);
+        Assert.Equal(1, group.HeldSeatCount);
+        Assert.Equal(2, group.OccupiedSeatCount);
+
+        group.ReleaseHeldSeat();
+        Assert.Equal(0, group.HeldSeatCount);
+        Assert.Equal(1, group.AvailableSeatCount);
     }
 
     [Fact]
@@ -51,7 +73,9 @@ public sealed class SectionGroupModelTests
         Assert.Throws<ArgumentException>(() => Create(groupCode: " "));
         Assert.Throws<ArgumentOutOfRangeException>(() => Create(capacity: -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => Create(enrolledCount: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Create(heldSeatCount: -1));
         Assert.Throws<ArgumentException>(() => Create(capacity: 10, enrolledCount: 11));
+        Assert.Throws<ArgumentException>(() => Create(capacity: 10, enrolledCount: 8, heldSeatCount: 3));
         Assert.Throws<ArgumentOutOfRangeException>(
             () => Create(state: (SectionGroupState)999));
     }
@@ -62,6 +86,7 @@ public sealed class SectionGroupModelTests
         string groupCode = "LEC-A",
         int capacity = 30,
         int enrolledCount = 0,
+        int heldSeatCount = 0,
         SectionGroupState state = SectionGroupState.Published,
         bool registrationPaused = false) =>
         new(
@@ -71,7 +96,8 @@ public sealed class SectionGroupModelTests
             capacity,
             enrolledCount,
             state,
-            registrationPaused);
+            registrationPaused,
+            heldSeatCount);
 
     private static void AssertPrivateSetter(string propertyName)
     {

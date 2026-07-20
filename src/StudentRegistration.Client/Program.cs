@@ -21,6 +21,7 @@ builder.Services.AddScoped<IdentityApiClient>();
 builder.Services.AddScoped<OperationsApiClient>();
 builder.Services.AddScoped<AdminOperationsApiClient>();
 builder.Services.AddScoped<RegistrationApiClient>();
+builder.Services.AddScoped<RegistrationApprovalApiClient>();
 builder.Services.AddScoped<SchedulingApiClient>();
 builder.Services.AddScoped<StaffApiClient>();
 builder.Services.AddSingleton<IUiTextProvider, ResourceUiTextProvider>();

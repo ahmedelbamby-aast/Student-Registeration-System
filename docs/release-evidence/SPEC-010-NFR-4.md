@@ -37,6 +37,6 @@ dotnet test tests/StudentRegistration.QualityTests/StudentRegistration.QualityTe
 - 0 failed
 - Maximum accepted page size: 100
 
-Quality test normalized-LF SHA-256: `5F69EF352B7256EE666FE26A816BF8722F5635349A4307556B6B0E75A4D11BB7`
+Quality test normalized-LF SHA-256: `8A209AFB050DD21105E09FF79638D7C67BED807477F4E259724FEB708EE45735`
 
 **Result: PASS.**

@@ -50,6 +50,8 @@ public sealed class Spec011ScenarioBuilder
 
     public int EnrolledCount { get; set; } = 12;
 
+    public int HeldSeatCount { get; set; }
+
     public bool RegistrationPaused { get; set; }
 
     public string GroupState { get; set; } = "published";
@@ -224,7 +226,10 @@ public sealed class Spec011ScenarioBuilder
                     "Labs",
                     RoomAvailable,
                     tutorialStaff)
-            ]);
+            ])
+        {
+            HeldSeatCount = HeldSeatCount,
+        };
     }
 
     public CurrentPlanSnapshot CurrentPlanSnapshot()

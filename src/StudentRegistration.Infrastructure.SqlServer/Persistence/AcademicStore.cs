@@ -29,6 +29,9 @@ public sealed class AcademicStore :
     private const int MaximumWindowsPerTerm = 20;
     private const int MaximumActiveHolds = 100;
     private const int MaximumContextTerms = 20;
+    private const string LegacySeedProfileVersion = "synthetic-fixture/1.0";
+    private const string CurrentSeedProfileVersion = "synthetic-fixture/2.0";
+    private const string SyntheticSeedSource = "Synthetic";
 
     private readonly StudentRegistrationDbContext _dbContext;
     private readonly IAuditEventWriter _auditWriter;
@@ -738,6 +741,24 @@ public sealed class AcademicStore :
                         cancellationToken);
                 if (existing is not null)
                 {
+                    if (!string.Equals(
+                            existing.DataVersion,
+                            command.SeedProfileVersion,
+                            StringComparison.Ordinal))
+                    {
+                        await UpgradeDevelopmentSeedIfSupportedAsync(
+                                existing,
+                                command,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                        existing = await _dbContext.Set<Student>()
+                            .AsNoTracking()
+                            .SingleAsync(
+                                student => student.ApplicationUserId
+                                    == command.Student.ApplicationUserId,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                     await EnsureSeedMatchesAsync(existing, command, cancellationToken);
                     if (transaction is not null)
                     {
@@ -1281,6 +1302,127 @@ public sealed class AcademicStore :
         }
     }
 
+    private async Task UpgradeDevelopmentSeedIfSupportedAsync(
+        Student existing,
+        DemoStudentProfileSeedCommand command,
+        CancellationToken cancellationToken)
+    {
+        var isSupportedVersionStep = string.Equals(
+                existing.DataVersion,
+                LegacySeedProfileVersion,
+                StringComparison.Ordinal)
+            && string.Equals(
+                command.SeedProfileVersion,
+                CurrentSeedProfileVersion,
+                StringComparison.Ordinal);
+        var state = await _dbContext.Set<StudentTermAcademicState>()
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                item => item.StudentId == existing.Id
+                    && item.TermId == command.StudentTermAcademicState.TermId,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var attempts = await _dbContext.Set<TranscriptAttempt>()
+            .AsNoTracking()
+            .Where(item => item.StudentId == existing.Id)
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var holds = await _dbContext.Set<StudentHold>()
+            .AsNoTracking()
+            .Where(item => item.StudentId == existing.Id)
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var legacyReference = $"SeedProfileVersion={LegacySeedProfileVersion};";
+        var ownsCompleteLegacyGraph = isSupportedVersionStep
+            && existing.Id == command.Student.Id
+            && string.Equals(existing.Source, SyntheticSeedSource, StringComparison.Ordinal)
+            && existing.SourceReference.StartsWith(legacyReference, StringComparison.Ordinal)
+            && state is not null
+            && state.Id == command.StudentTermAcademicState.Id
+            && string.Equals(state.Source, SyntheticSeedSource, StringComparison.Ordinal)
+            && state.SourceReference.StartsWith(legacyReference, StringComparison.Ordinal)
+            && attempts.Length == 2
+            && attempts.All(item =>
+                string.Equals(item.Source, SyntheticSeedSource, StringComparison.Ordinal)
+                && item.SourceReference.StartsWith(legacyReference, StringComparison.Ordinal))
+            && holds.Length == 2
+            && holds.All(item =>
+                string.Equals(item.Source, SyntheticSeedSource, StringComparison.Ordinal)
+                && item.SourceReference.StartsWith(legacyReference, StringComparison.Ordinal));
+        if (!ownsCompleteLegacyGraph)
+        {
+            throw new InvalidOperationException(
+                "ACADEMIC_SEED_UPGRADE_UNSAFE: Existing academic data is not the complete v1 synthetic seed graph. Preserve it and rerun the launcher with -ResetDatabase only if deleting local demo data is intended.");
+        }
+
+        await _dbContext.Set<TranscriptAttempt>()
+            .Where(item => item.StudentId == existing.Id)
+            .ExecuteDeleteAsync(cancellationToken)
+            .ConfigureAwait(false);
+        await _dbContext.Set<StudentHold>()
+            .Where(item => item.StudentId == existing.Id)
+            .ExecuteDeleteAsync(cancellationToken)
+            .ConfigureAwait(false);
+        _dbContext.ChangeTracker.Clear();
+
+        var trackedStudent = await _dbContext.Set<Student>()
+            .SingleAsync(item => item.Id == existing.Id, cancellationToken)
+            .ConfigureAwait(false);
+        var trackedState = await _dbContext.Set<StudentTermAcademicState>()
+            .SingleAsync(item => item.Id == state!.Id, cancellationToken)
+            .ConfigureAwait(false);
+        CopyStudentSeedValues(trackedStudent, command.Student);
+        CopyStudentTermSeedValues(trackedState, command.StudentTermAcademicState);
+        _dbContext.AddRange(command.TranscriptAttempts.OrderBy(item => item.Id));
+        _dbContext.AddRange(command.Holds.OrderBy(item => item.Id));
+        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _dbContext.ChangeTracker.Clear();
+    }
+
+    private void CopyStudentSeedValues(Student target, Student source)
+    {
+        SetCurrentValue(target, nameof(Student.ProgramCode), source.ProgramCode);
+        SetCurrentValue(target, nameof(Student.Cohort), source.Cohort);
+        SetCurrentValue(target, nameof(Student.CurrentGpa), source.CurrentGpa);
+        SetCurrentValue(target, nameof(Student.EarnedCredits), source.EarnedCredits);
+        SetCurrentValue(target, nameof(Student.Standing), source.Standing);
+        SetCurrentValue(target, nameof(Student.IsActive), source.IsActive);
+        SetCurrentValue(target, nameof(Student.Source), source.Source);
+        SetCurrentValue(target, nameof(Student.SourceReference), source.SourceReference);
+        SetCurrentValue(target, nameof(Student.DataVersion), source.DataVersion);
+        SetCurrentValue(target, nameof(Student.DataAsOfUtc), source.DataAsOfUtc);
+        SetCurrentValue(target, nameof(Student.ImportedAtUtc), source.ImportedAtUtc);
+    }
+
+    private void CopyStudentTermSeedValues(
+        StudentTermAcademicState target,
+        StudentTermAcademicState source)
+    {
+        SetCurrentValue(
+            target,
+            nameof(StudentTermAcademicState.ProgramTermOrdinal),
+            source.ProgramTermOrdinal);
+        SetCurrentValue(target, nameof(StudentTermAcademicState.GpaAtStart), source.GpaAtStart);
+        SetCurrentValue(
+            target,
+            nameof(StudentTermAcademicState.EarnedCreditsAtStart),
+            source.EarnedCreditsAtStart);
+        SetCurrentValue(
+            target,
+            nameof(StudentTermAcademicState.StandingAtStart),
+            source.StandingAtStart);
+        SetCurrentValue(target, nameof(StudentTermAcademicState.Source), source.Source);
+        SetCurrentValue(
+            target,
+            nameof(StudentTermAcademicState.SourceReference),
+            source.SourceReference);
+        SetCurrentValue(target, nameof(StudentTermAcademicState.DataVersion), source.DataVersion);
+        SetCurrentValue(
+            target,
+            nameof(StudentTermAcademicState.DataAsOfUtc),
+            source.DataAsOfUtc);
+    }
+
     private static void ValidateSeedCommand(DemoStudentProfileSeedCommand command)
     {
         if (string.IsNullOrWhiteSpace(command.SeedProfileVersion) ||
@@ -1325,6 +1467,7 @@ public sealed class AcademicStore :
         left.Id == right.Id &&
         left.StudentId == right.StudentId &&
         left.TermId == right.TermId &&
+        left.ProgramTermOrdinal == right.ProgramTermOrdinal &&
         left.GpaAtStart == right.GpaAtStart &&
         left.EarnedCreditsAtStart == right.EarnedCreditsAtStart &&
         left.StandingAtStart == right.StandingAtStart &&

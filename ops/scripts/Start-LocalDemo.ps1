@@ -241,6 +241,7 @@ try {
     Write-Host 'Applying database migrations...'
     Invoke-Checked dotnet @(
         'ef', 'database', 'update',
+        '--no-build',
         '--project', $sqlProject,
         '--configuration', 'Release',
         '--connection', $connectionString)

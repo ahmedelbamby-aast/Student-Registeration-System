@@ -39,14 +39,25 @@ Useful variants:
 ```
 
 `-ResetDatabase` explicitly deletes only the local Docker Development volume
-before recreating it. The default preserves data. The seed creates 25 students
-and four staff accounts and writes newly issued credentials under:
+before recreating it. The default preserves data. Use it once if the retained
+volume predates the complete manual-test seed. The idempotent seed creates 25
+students and three staff accounts, a published 19-course three-credit roadmap,
+the 12/18/21-credit policy boundaries, and 19 published staffed offerings with
+rooms and meeting times. Newly issued credentials are written under:
 
 ```text
 src/StudentRegistration.Api/.local/credentials/imports/import-<id>.json
 ```
 
+The current profile version is `synthetic-fixture/2.0`. The initializer safely
+upgrades an intact v1 synthetic profile in place while preserving stable
+student and term identities. It replaces only verified seed-owned transcript
+and hold rows. If local academic fixture rows were manually changed, the seed
+returns `ACADEMIC_SEED_UPGRADE_UNSAFE`; preserve that data, or rerun with
+`-ResetDatabase` only when a destructive local reset is acceptable.
+
 Open [https://localhost:7078](https://localhost:7078). The root page is the
+role gateway for the hosted web application.
 
 Useful routes:
 
@@ -104,25 +115,28 @@ endpoints on 20 July 2026.
 
 | Test role | Login page | Username / University ID | Password |
 |---|---|---|---|
-| Student | `/student/login` | `AI2600001` | `DemoLogin@2026!!` |
+| Student (after first-use activation) | `/student/login` | `AI2600001` | `DemoLogin@2026!!` |
 | Administrator | `/staff/login` | `ADM-0001` | `Demo@2026-ADM-0001` |
 | Lecturer (teacher) | `/staff/login` | `LEC-0001` | `Demo@2026-LEC-0001` |
 | Teaching Assistant | `/staff/login` | `TA-0001` | `Demo@2026-TA-0001` |
 
-The student account was activated through the supported first-use flow. Its
+After `-ResetDatabase`, activate the student through the supported first-use flow before using the login row above. Its
 initial activation password is `Demo@2026-AI2600001`; its current login
 password is `DemoLogin@2026!!`. Staff sign in directly with their role/staff
 ID and matching ID-based password.
 
 ### Student
 
-1. Open `https://localhost:7078/student/login`.
-2. Enter a seeded University ID, such as `AI2600001`.
-3. Enter `DemoLogin@2026!!`.
+1. On a fresh/reset database, open `https://localhost:7078/student/activate`, use `AI2600001` with `Demo@2026-AI2600001`, and choose `DemoLogin@2026!!`.
+2. Open `https://localhost:7078/student/login`.
+3. Enter `AI2600001` and `DemoLogin@2026!!`.
 4. Select **Sign in**. A successful login opens `/student`.
 
 The default seed creates 25 students: `AI2600001` through `AI2600025`.
 Changing `DemoDatabase__StudentCount` changes the upper number, up to 25,000.
+`AI2600001` is the first-program-term persona. `AI2600002` and later provide
+multiple term-2+ academic states. Normal personas have no active blocking
+hold; `AI2600007` is the intentionally blocked persona.
 
 ### Administrator
 
@@ -181,3 +195,4 @@ when it is no longer needed.
 | `MSB3027` or `MSB3021` says `StudentRegistration.Api.dll` is locked | Stop the already-running web app with `Ctrl+C`. The launcher also reports the PID when port 7078 is occupied. |
 | Login returns invalid credentials on a fresh database | Run the launcher without `-PrepareOnly`, then use the verified credentials below. |
 | No credential JSON exists | The initializer did not provision new accounts, or the artifact expired after seven days. |
+| `ACADEMIC_SEED_UPGRADE_UNSAFE` | The retained v1 synthetic academic rows were modified and are not safe to overwrite. Preserve them, or run `Start-LocalDemo.ps1 -ResetDatabase` if deleting local demo data is intended. |

@@ -75,7 +75,11 @@ public sealed record RegistrationPlanGroupDto(
     int Capacity,
     int EnrolledCount,
     string RowVersion,
-    IReadOnlyList<RegistrationPlanMeetingDto> Meetings);
+    IReadOnlyList<RegistrationPlanMeetingDto> Meetings,
+    int HeldSeatCount = 0)
+{
+    public int AvailableSeatCount => Capacity - EnrolledCount - HeldSeatCount;
+}
 
 public sealed record RegistrationPlanDto(
     Guid Id,

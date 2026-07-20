@@ -239,15 +239,18 @@ public sealed class SqlOfferingStore(StudentRegistrationDbContext dbContext)
             from offering in dbContext.Set<CourseOffering>().AsNoTracking()
             join course in dbContext.Set<Course>().AsNoTracking()
                 on offering.CourseId equals course.Id
-            select new OfferingListRow(
+            select new
+            {
                 offering.Id,
                 offering.TermId,
                 offering.CourseId,
-                course.Code,
-                course.Title,
+                CourseCode = course.Code,
+                CourseTitle = course.Title,
                 offering.State,
                 offering.Version,
-                dbContext.Set<SectionGroup>().Count(g => g.OfferingId == offering.Id));
+                GroupCount = dbContext.Set<SectionGroup>()
+                    .Count(item => item.OfferingId == offering.Id)
+            };
 
         if (query.TermId is { } termId)
         {
@@ -285,7 +288,7 @@ public sealed class SqlOfferingStore(StudentRegistrationDbContext dbContext)
             CourseId = row.CourseId,
             CourseCode = row.CourseCode,
             CourseTitle = row.CourseTitle,
-            RowVersion = row.RowVersion.ToArray(),
+            RowVersion = row.Version.ToArray(),
             GroupCount = row.GroupCount,
         }).ToArray();
         return new(items, query.Page, query.PageSize, total, query.Sort ?? "courseCode,id");
@@ -365,6 +368,7 @@ public sealed class SqlOfferingStore(StudentRegistrationDbContext dbContext)
                         RoomId = meeting.RoomId,
                     }).ToArray())
             {
+                OfferingId = group.OfferingId,
                 HeldSeatCount = heldSeatCount,
             };
         }).ToArray();
@@ -432,13 +436,4 @@ public sealed class SqlOfferingStore(StudentRegistrationDbContext dbContext)
 
     private static string Token(TeachingRole value) => value.ToString();
 
-    private sealed record OfferingListRow(
-        Guid Id,
-        Guid TermId,
-        Guid CourseId,
-        string CourseCode,
-        string CourseTitle,
-        CourseOfferingState State,
-        byte[] RowVersion,
-        int GroupCount);
 }

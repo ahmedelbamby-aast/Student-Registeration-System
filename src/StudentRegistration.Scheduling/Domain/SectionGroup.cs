@@ -24,18 +24,20 @@ public sealed class SectionGroup
         int capacity,
         int enrolledCount,
         SectionGroupState state,
-        bool registrationPaused)
+        bool registrationPaused,
+        int heldSeatCount = 0)
     {
         SchedulingDomainValue.Identifier(id, nameof(id));
         SchedulingDomainValue.Identifier(offeringId, nameof(offeringId));
         SchedulingDomainValue.Defined(state, nameof(state));
-        ValidateCapacity(capacity, enrolledCount);
+        ValidateCapacity(capacity, enrolledCount, heldSeatCount);
 
         Id = id;
         OfferingId = offeringId;
         GroupCode = SchedulingDomainValue.Code(groupCode, nameof(groupCode));
         Capacity = capacity;
         EnrolledCount = enrolledCount;
+        HeldSeatCount = heldSeatCount;
         State = state;
         RegistrationPaused = registrationPaused;
     }
@@ -50,6 +52,12 @@ public sealed class SectionGroup
 
     public int EnrolledCount { get; private set; }
 
+    public int HeldSeatCount { get; private set; }
+
+    public int OccupiedSeatCount => EnrolledCount + HeldSeatCount;
+
+    public int AvailableSeatCount => Capacity - OccupiedSeatCount;
+
     public SectionGroupState State { get; private set; }
 
     public bool RegistrationPaused { get; private set; }
@@ -63,7 +71,7 @@ public sealed class SectionGroup
     public bool IsSelectable =>
         State is SectionGroupState.Published
         && !RegistrationPaused
-        && EnrolledCount < Capacity;
+        && OccupiedSeatCount < Capacity;
 
     public void ReplaceSchedule(
         IReadOnlyList<MeetingSlot> meetings,
@@ -115,7 +123,7 @@ public sealed class SectionGroup
 
     public void ChangeCapacity(int capacity)
     {
-        ValidateCapacity(capacity, EnrolledCount);
+        ValidateCapacity(capacity, EnrolledCount, HeldSeatCount);
         Capacity = capacity;
     }
 
@@ -130,6 +138,29 @@ public sealed class SectionGroup
         }
 
         EnrolledCount++;
+    }
+
+    public void HoldSeat()
+    {
+        if (!IsSelectable)
+        {
+            throw new InvalidOperationException("The group is not selectable.");
+        }
+
+        HeldSeatCount++;
+    }
+
+    public void ConsumeHeldSeat()
+    {
+        EnsureHeldSeatExists();
+        HeldSeatCount--;
+        EnrolledCount++;
+    }
+
+    public void ReleaseHeldSeat()
+    {
+        EnsureHeldSeatExists();
+        HeldSeatCount--;
     }
 
     public void SetRegistrationPaused(bool paused) => RegistrationPaused = paused;
@@ -164,7 +195,18 @@ public sealed class SectionGroup
         State = SectionGroupState.Cancelled;
     }
 
-    private static void ValidateCapacity(int capacity, int enrolledCount)
+    private void EnsureHeldSeatExists()
+    {
+        if (HeldSeatCount <= 0)
+        {
+            throw new InvalidOperationException("The group has no held seat.");
+        }
+    }
+
+    private static void ValidateCapacity(
+        int capacity,
+        int enrolledCount,
+        int heldSeatCount)
     {
         if (capacity < 0)
         {
@@ -176,10 +218,15 @@ public sealed class SectionGroup
             throw new ArgumentOutOfRangeException(nameof(enrolledCount));
         }
 
-        if (enrolledCount > capacity)
+        if (heldSeatCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(heldSeatCount));
+        }
+
+        if (enrolledCount + heldSeatCount > capacity)
         {
             throw new ArgumentException(
-                "Enrolled count cannot exceed capacity.",
+                "Enrolled and held seats cannot exceed capacity.",
                 nameof(enrolledCount));
         }
     }

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop;
 using StudentRegistration.Client.Features.Academics;
 using StudentRegistration.Contracts;
@@ -24,7 +25,8 @@ public sealed class SchedulingApiClient
         new(JsonSerializerDefaults.Web)
         {
             RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true
+            RespectRequiredConstructorParameters = true,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         };
 
     private readonly HttpClient _httpClient;

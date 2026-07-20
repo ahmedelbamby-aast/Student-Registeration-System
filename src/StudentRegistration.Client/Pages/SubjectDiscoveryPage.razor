@@ -295,8 +295,11 @@ else
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
         new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
         new(LocalizedUiText.Get("Available subjects"), "/student/subjects", IsActive: true),
-        new(LocalizedUiText.Get("Current plan"), "/student/schedule")
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule"),
+        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
+        new(LocalizedUiText.Get("Account"), "/student/account")
     ];
 
     private FrontendAppContextView? _shellContext;

@@ -88,6 +88,8 @@ public sealed record OfferingGroupSnapshot(
     byte[] RowVersion,
     IReadOnlyList<OfferingMeetingSnapshot> Meetings)
 {
+    public Guid OfferingId { get; init; }
+
     public int HeldSeatCount { get; init; }
 }
 
@@ -200,6 +202,10 @@ public sealed class OfferingService(IOfferingStore store)
         catch (OfferingStoreException exception)
         {
             return StoreFailure(exception);
+        }
+        catch (ArgumentException)
+        {
+            return new(OfferingOutcome.ValidationError, ErrorCode: "VALIDATION_ERROR");
         }
     }
 

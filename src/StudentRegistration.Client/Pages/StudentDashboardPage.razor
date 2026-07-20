@@ -245,14 +245,11 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                     <section class="srs-dashboard-card srs-dashboard-timetable"
                              role="region"
                              aria-labelledby="current-timetable-heading"
-                             data-testid="current-timetable-unavailable"
-                             data-contributor-state="unavailable">
+                             data-testid="current-timetable-summary"
+                             data-contributor-state="available">
                         <h2 id="current-timetable-heading">@LocalizedUiText.Get("Current timetable")</h2>
-                        <p>@LocalizedUiText.Get("Current timetable is unavailable until SPEC-015 is delivered.")</p>
-                        <p>
-                            @LocalizedUiText.Get("Pending owner endpoint:")
-                            <code>/api/student/registrations/current/timetable</code>
-                        </p>
+                        <p>@LocalizedUiText.Get("Review your registered subjects, meeting times, rooms, and teaching staff in the authoritative registration record.")</p>
+                        <a href="/student/registrations#current-registration">@LocalizedUiText.Get("Open current timetable")</a>
                     </section>
 
                     <nav class="srs-dashboard-related-links" aria-label="@(LocalizedUiText.Get("Student account and registration links"))">
@@ -336,7 +333,12 @@ else
 
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
-        new(LocalizedUiText.Get("Student dashboard"), "/student", IsActive: true)
+        new(LocalizedUiText.Get("Student dashboard"), "/student", IsActive: true),
+        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
+        new(LocalizedUiText.Get("Available subjects"), "/student/subjects"),
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule"),
+        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
+        new(LocalizedUiText.Get("Account"), "/student/account")
     ];
 
     private AppContextDto? _appContext;

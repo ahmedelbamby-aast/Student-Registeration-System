@@ -46,6 +46,63 @@ public sealed class RegistrationSubmissionModelTests
     }
 
     [Fact]
+    public void Self_service_submission_can_become_durably_pending_then_accept_only_after_every_line_approves()
+    {
+        var submission = Create(origin: RegistrationSubmissionOrigin.StudentSelfService, requestedCredits: 6m);
+        var first = CreateLine(submission, "CS201");
+        var second = CreateLine(submission, "CS202");
+        submission.AddLine(first);
+        submission.AddLine(second);
+
+        submission.BeginPendingApproval(new DateTime(2026, 7, 17, 8, 31, 0, DateTimeKind.Utc));
+
+        Assert.Equal(RegistrationSubmissionState.PendingApproval, submission.ProcessingState);
+        Assert.Equal("PENDING_APPROVAL", submission.ResultCode);
+        Assert.Equal(2, submission.Lines.Count);
+        Assert.Throws<InvalidOperationException>(() => submission.CompleteAccepted(
+            "ACCEPTED", "REG-1", "{}", "{}",
+            new DateTime(2026, 7, 17, 8, 32, 0, DateTimeKind.Utc)));
+
+        first.Approve();
+        second.Approve();
+        submission.CompleteAccepted(
+            "ACCEPTED", "REG-1", "{}", "{}",
+            new DateTime(2026, 7, 17, 8, 32, 0, DateTimeKind.Utc));
+
+        Assert.Equal(RegistrationSubmissionState.Accepted, submission.ProcessingState);
+    }
+
+    [Fact]
+    public void Pending_submission_rejects_or_expires_as_one_terminal_plan()
+    {
+        var rejected = Create(origin: RegistrationSubmissionOrigin.StudentSelfService, requestedCredits: 3m);
+        var rejectedLine = CreateLine(rejected, "CS201");
+        rejected.AddLine(rejectedLine);
+        rejected.BeginPendingApproval(rejected.ReceivedAtUtc.AddMinutes(1));
+        rejectedLine.Reject();
+        rejected.CompleteRejected("LINE_REJECTED", "{}", rejected.ReceivedAtUtc.AddMinutes(2));
+
+        Assert.Equal(RegistrationSubmissionState.Rejected, rejected.ProcessingState);
+        Assert.True(rejected.IsFinal);
+        Assert.All(rejected.Lines, line =>
+            Assert.NotEqual(RegistrationSubmissionLineState.PendingApproval, line.State));
+
+        var expired = Create(origin: RegistrationSubmissionOrigin.StudentSelfService, requestedCredits: 3m);
+        var expiredLine = CreateLine(expired, "CS202");
+        expired.AddLine(expiredLine);
+        expired.BeginPendingApproval(expired.ReceivedAtUtc.AddMinutes(1));
+        expiredLine.Expire();
+        expired.CompleteExpired("REGISTRATION_WINDOW_CLOSED", "{}", expired.ReceivedAtUtc.AddMinutes(2));
+
+        Assert.Equal(RegistrationSubmissionState.Expired, expired.ProcessingState);
+        Assert.True(expired.IsFinal);
+        Assert.All(expired.Lines, line =>
+            Assert.NotEqual(RegistrationSubmissionLineState.PendingApproval, line.State));
+        Assert.Throws<InvalidOperationException>(() => expired.CompleteRejected(
+            "CHANGED", "{}", expired.ReceivedAtUtc.AddMinutes(3)));
+    }
+
+    [Fact]
     public void Accepted_result_requires_and_preserves_one_reference_receipt_and_decision()
     {
         var submission = Create();
@@ -129,14 +186,29 @@ public sealed class RegistrationSubmissionModelTests
         Guid? termId = null,
         Guid? clientRequestId = null,
         string payloadHash = "sha256:canonical-payload",
-        DateTime? receivedAtUtc = null) =>
+        DateTime? receivedAtUtc = null,
+        RegistrationSubmissionOrigin origin = RegistrationSubmissionOrigin.StudentSelfService,
+        decimal requestedCredits = 0m) =>
         new(
             id ?? Guid.NewGuid(),
             studentId ?? Guid.NewGuid(),
             termId ?? Guid.NewGuid(),
             clientRequestId ?? Guid.NewGuid(),
             payloadHash,
-            receivedAtUtc ?? new DateTime(2026, 7, 17, 8, 30, 0, DateTimeKind.Utc));
+            receivedAtUtc ?? new DateTime(2026, 7, 17, 8, 30, 0, DateTimeKind.Utc),
+            origin,
+            requestedCredits);
+
+    private static RegistrationSubmissionLine CreateLine(
+        RegistrationSubmission submission,
+        string code) => new(
+            Guid.NewGuid(),
+            submission.Id,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            code,
+            $"{code} title",
+            3m);
 
     private static void AssertPrivateSetter(string propertyName)
     {

@@ -45,7 +45,8 @@ public sealed record GroupSummaryDto(
     int SeatsRemaining,
     IReadOnlyList<GroupNonSelectableReasonDto> NonSelectableReasons,
     IReadOnlyList<GroupMeetingDto> Meetings,
-    string RowVersion);
+    string RowVersion,
+    int HeldSeatCount = 0);
 
 public sealed record OfferingEligibilityDto(
     Guid OfferingId,

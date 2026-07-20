@@ -202,6 +202,48 @@
                         <div><dt>@LocalizedUiText.Get("Courses")</dt><dd>@(_draft?.Courses.Count ?? 0)</dd></div>
                     </dl>
 
+                    <form class="srs-catalogue__subpanel"
+                          data-testid="catalogue-subject-editor"
+                          @onsubmit="SaveSubjectAsync"
+                          @onsubmit:preventDefault>
+                        <h3>@LocalizedUiText.Get("Add or update a roadmap subject")</h3>
+                        <p>@LocalizedUiText.Get("Every subject is exactly 3 credits. First-term subjects cannot have prerequisites.")</p>
+                        <div class="srs-catalogue__field-grid">
+                            <label class="srs-catalogue__field">
+                                @LocalizedUiText.Get("Subject code")
+                                <input required maxlength="50" @bind="_subjectCode" />
+                            </label>
+                            <label class="srs-catalogue__field srs-catalogue__field--wide">
+                                @LocalizedUiText.Get("Subject title")
+                                <input required maxlength="300" @bind="_subjectTitle" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                @LocalizedUiText.Get("Recommended term")
+                                <input type="number" min="1" max="12" required @bind="_recommendedTerm" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                @LocalizedUiText.Get("Level")
+                                <input type="number" min="1" max="8" required @bind="_subjectLevel" />
+                            </label>
+                            <label class="srs-catalogue__field srs-catalogue__field--wide">
+                                @LocalizedUiText.Get("Prerequisites")
+                                <input placeholder="CS101, MA101" @bind="_subjectPrerequisites" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                @LocalizedUiText.Get("Cohort")
+                                <input placeholder="2026" @bind="_subjectCohort" />
+                            </label>
+                            <label class="srs-catalogue__field">
+                                <input type="checkbox" @bind="_subjectRequired" />
+                                @LocalizedUiText.Get("Required subject")
+                            </label>
+                        </div>
+                        <p><strong>@LocalizedUiText.Get("Exactly 3 credits")</strong></p>
+                        <button type="submit" disabled="@(_draft is null || _isSavingSubject)">
+                            @(_isSavingSubject ? LocalizedUiText.Get("Saving subject…") : LocalizedUiText.Get("Save subject and roadmap"))
+                        </button>
+                    </form>
+
                     <div class="srs-catalogue__course-list" aria-label="@(LocalizedUiText.Get("Curated courses"))">
                         @foreach (var course in _draft?.Courses ?? [])
                         {
@@ -445,11 +487,6 @@
     private const string StaleState = "stale";
     private const string OfflineState = "offline";
 
-    private static readonly Guid DemoDraftId =
-        Guid.Parse("00000000-0000-0000-0000-000000000901");
-    private static readonly Guid DemoImportId =
-        Guid.Parse("00000000-0000-0000-0000-000000000902");
-
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem>
         AdministrationNavigation =
         [
@@ -484,6 +521,14 @@
     private string _importSyntheticFields = LocalizedUiText.Get("Credits, IsActive");
     private string _simulationFixture = "ACTIVE-96-CREDITS";
     private string _simulationCourses = "DS413";
+    private string _subjectCode = string.Empty;
+    private string _subjectTitle = string.Empty;
+    private string _subjectPrerequisites = string.Empty;
+    private string _subjectCohort = "2026";
+    private int _recommendedTerm = 1;
+    private int _subjectLevel = 1;
+    private bool _subjectRequired = true;
+    private bool _isSavingSubject;
     private bool _isImporting;
     private bool _isValidating;
     private bool _isSavingPolicy;
@@ -532,22 +577,16 @@
         {
             var programsTask = CatalogueApi.ListProgramsAsync();
             var versionsTask = CatalogueApi.ListVersionsAsync();
-            var draftTask = CatalogueApi.GetDraftAsync(DemoDraftId);
             var policiesTask = CatalogueApi.ListPoliciesAsync();
-            var importTask = CatalogueApi.GetImportAsync(DemoImportId);
             await Task.WhenAll(
                 programsTask,
                 versionsTask,
-                draftTask,
-                policiesTask,
-                importTask);
+                policiesTask);
 
             var programs = await programsTask;
             var versions = await versionsTask;
-            var draft = await draftTask;
             var policies = await policiesTask;
-            var import = await importTask;
-            var failure = FirstFailure(programs, versions, draft, policies, import);
+            var failure = FirstFailure(programs, versions, policies);
             if (failure is not null)
             {
                 ApplyFailure(failure.Value.StatusCode, failure.Value.Error);
@@ -556,9 +595,25 @@
 
             _versions.Clear();
             _versions.AddRange(versions.Value!.Items);
-            _draft = draft.Value;
-            _currentImport = import.Value;
             _policy = policies.Value!.Items.FirstOrDefault();
+            var baseVersion = _versions.FirstOrDefault(item =>
+                string.Equals(item.State, "published", StringComparison.OrdinalIgnoreCase))
+                ?? _versions.FirstOrDefault();
+            if (baseVersion is not null)
+            {
+                var draft = await CatalogueApi.CreateDraftAsync(new(
+                    baseVersion.Id,
+                    LocalizedUiText.Get("Open the editable manual-testing catalogue draft"),
+                    Guid.NewGuid()));
+                if (!draft.IsSuccess || draft.Value is null)
+                {
+                    ApplyFailure(draft.StatusCode, draft.Error);
+                    return;
+                }
+
+                _draft = draft.Value;
+            }
+            _currentImport = null;
             ApplyPolicyEditor();
             _state = _versions.Count == 0 && programs.Value!.Items.Count == 0
                 ? EmptyState
@@ -570,6 +625,95 @@
             _reasonCode = "OFFLINE";
             _safeMessage = LocalizedUiText.Get("The browser cannot reach catalogue administration. No action was queued.");
         }
+    }
+
+    private async Task SaveSubjectAsync()
+    {
+        if (_draft is null || string.IsNullOrWhiteSpace(_subjectCode) ||
+            string.IsNullOrWhiteSpace(_subjectTitle) || _recommendedTerm < 1 ||
+            _subjectLevel < 1)
+        {
+            SetValidation("VALIDATION_ERROR", [new(
+                "catalogue-subject-editor",
+                LocalizedUiText.Get("Subject code, title, level, and recommended term are required."))]);
+            return;
+        }
+
+        var prerequisites = SplitValues(_subjectPrerequisites);
+        if (_recommendedTerm == 1 && prerequisites.Count > 0)
+        {
+            SetValidation("FIRST_TERM_PREREQUISITE_FORBIDDEN", [new(
+                "catalogue-subject-editor",
+                LocalizedUiText.Get("First-term subjects cannot have prerequisites."))]);
+            return;
+        }
+        if (!DateOnly.TryParse(_importAccessedOn, out var sourceAccessedOn))
+        {
+            SetValidation("SOURCE_DATE_INVALID", [new(
+                "catalogue-subject-editor",
+                LocalizedUiText.Get("Enter the authoritative source access date before saving the subject."))]);
+            return;
+        }
+
+        _isSavingSubject = true;
+        ResetFeedback();
+        var code = _subjectCode.Trim().ToUpperInvariant();
+        var provenance = new CatalogueFieldProvenanceDto(
+            "local-development-manual-subject",
+            sourceAccessedOn,
+            "synthetic-demo",
+            ["Credits", "Active", "Level", "RecommendedTerm", "Required", "Cohort"]);
+        var existing = _draft.Courses.FirstOrDefault(item =>
+            string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase));
+        var result = await CatalogueApi.UpdateDraftAsync(
+            _draft.Id,
+            new(
+                _draft.RowVersion,
+                LocalizedUiText.Get("Add or update a three-credit roadmap subject"),
+                "manual-admin-editor",
+                [
+                    new(
+                        "upsert-course",
+                        Course: new(
+                            existing?.Id ?? Guid.NewGuid(),
+                            code,
+                            _subjectTitle.Trim(),
+                            3m,
+                            true,
+                            provenance,
+                            existing?.RowVersion ?? string.Empty)),
+                    new(
+                        "upsert-curriculum-course",
+                        CurriculumCourse: new(
+                            _draft.Scope,
+                            code,
+                            _subjectLevel,
+                            _recommendedTerm,
+                            _subjectRequired,
+                            string.IsNullOrWhiteSpace(_subjectCohort)
+                                ? null
+                                : _subjectCohort.Trim(),
+                            provenance)),
+                    new(
+                        "set-prerequisites",
+                        CourseCode: code,
+                        RequiredCourseCodes: prerequisites,
+                        Provenance: provenance),
+                ]));
+        _isSavingSubject = false;
+        if (!result.IsSuccess || result.Value is null)
+        {
+            ApplyFailure(result.StatusCode, result.Error);
+            return;
+        }
+
+        _draft = result.Value;
+        _previewToken = null;
+        _successAnnouncement = LocalizedUiText.Get("Subject and roadmap saved. Validate before publishing.");
+        _state = SuccessState;
+        _subjectCode = string.Empty;
+        _subjectTitle = string.Empty;
+        _subjectPrerequisites = string.Empty;
     }
 
     private async Task CreateImportAsync()
@@ -692,10 +836,18 @@
         _isValidating = true;
         ResetFeedback();
         var import = _currentImport;
+        if (import is null)
+        {
+            SetValidation("IMPORT_REQUIRED", [new(
+                "catalogue-import-source",
+                LocalizedUiText.Get("Create import evidence before validating the catalogue."))]);
+            _isValidating = false;
+            return;
+        }
         var result = await CatalogueApi.ValidateImportAsync(
-            import?.Id ?? DemoImportId,
+            import.Id,
             new(
-                import?.RowVersion ?? "import-rv-1",
+                import.RowVersion,
                 _draft.RowVersion));
         _isValidating = false;
         if (result.IsSuccess && result.Value is not null)
@@ -754,8 +906,16 @@
 
         _isPublishing = true;
         ResetFeedback();
+        if (_currentImport is null)
+        {
+            _isPublishing = false;
+            SetValidation("IMPORT_REQUIRED", [new(
+                "catalogue-import-source",
+                LocalizedUiText.Get("Create and validate import evidence before publishing."))]);
+            return;
+        }
         var result = await CatalogueApi.PublishImportAsync(
-            _currentImport?.Id ?? DemoImportId,
+            _currentImport.Id,
             new(_draft.RowVersion, _previewToken, Guid.NewGuid()));
         _isPublishing = false;
         _showPublishConfirmation = false;
@@ -828,15 +988,11 @@
     private static (HttpStatusCode StatusCode, ApiError? Error)? FirstFailure(
         AcademicApiResult<Page<ProgramAdminDto>> programs,
         AcademicApiResult<Page<CatalogueVersionSummaryDto>> versions,
-        AcademicApiResult<CatalogueDraftDto> draft,
-        AcademicApiResult<Page<PolicySetAdminDto>> policies,
-        AcademicApiResult<ImportBatchDto> import)
+        AcademicApiResult<Page<PolicySetAdminDto>> policies)
     {
         if (!programs.IsSuccess) return (programs.StatusCode, programs.Error);
         if (!versions.IsSuccess) return (versions.StatusCode, versions.Error);
-        if (!draft.IsSuccess) return (draft.StatusCode, draft.Error);
         if (!policies.IsSuccess) return (policies.StatusCode, policies.Error);
-        if (!import.IsSuccess) return (import.StatusCode, import.Error);
         return null;
     }
 

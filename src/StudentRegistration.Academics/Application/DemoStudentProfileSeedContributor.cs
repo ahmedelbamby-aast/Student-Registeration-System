@@ -9,6 +9,8 @@ namespace StudentRegistration.Academics.Application;
 public sealed class DemoStudentProfileSeedContributor
 {
     private const string SyntheticSource = "Synthetic";
+    private const string CurrentSeedProfileVersion = "synthetic-fixture/2.0";
+    private const string StableSeedIdentityVersion = "synthetic-fixture/1.0";
     private const string UniversityIdSeedPrefix = "AI26";
     private static readonly DateTime SeedEpochUtc =
         new(2026, 7, 14, 0, 0, 0, DateTimeKind.Utc);
@@ -86,19 +88,37 @@ public sealed class DemoStudentProfileSeedContributor
                 nameof(applicationUserId));
         }
 
-        var identity = $"{normalizedVersion}:{fixtureOrdinal}";
+        var identity = $"{StableSeedIdentityVersion}:{fixtureOrdinal}";
         var dataAsOfUtc = SeedEpochUtc.AddMinutes(fixtureOrdinal);
         var importedAtUtc = dataAsOfUtc.AddHours(1);
         var sourceReference =
             $"SeedProfileVersion={normalizedVersion};FixtureOrdinal={fixtureOrdinal}";
         var studentId = StableGuid($"student:{identity}");
+        var usesCurrentPersonas = string.Equals(
+            normalizedVersion,
+            CurrentSeedProfileVersion,
+            StringComparison.Ordinal);
+        var isFirstProgramTerm = usesCurrentPersonas && fixtureOrdinal == 1;
+        var programTermOrdinal = isFirstProgramTerm
+            ? 1
+            : usesCurrentPersonas
+                ? 2 + (fixtureOrdinal - 2) % 7
+                : 3;
+        var currentGpa = isFirstProgramTerm
+            ? 0m
+            : 2.50m + (fixtureOrdinal % 15) / 10m;
+        var earnedCredits = isFirstProgramTerm
+            ? 0m
+            : usesCurrentPersonas
+                ? 12m
+                : 30m + fixtureOrdinal % 90;
         var student = new Student(
             studentId,
             applicationUserId,
             "AI",
             "2026",
-            2.50m + (fixtureOrdinal % 15) / 10m,
-            30m + fixtureOrdinal % 90,
+            currentGpa,
+            earnedCredits,
             "Active",
             true,
             SyntheticSource,
@@ -109,28 +129,32 @@ public sealed class DemoStudentProfileSeedContributor
         var transcriptAttempts = new[]
         {
             new TranscriptAttempt(
-                StableGuid($"attempt:{identity}:CC214"),
+                StableGuid($"attempt:{identity}:{(usesCurrentPersonas ? "BA101" : "CC214")}"),
                 studentId,
                 termId,
                 supersedesAttemptId: null,
-                "CC214",
+                usesCurrentPersonas ? "BA101" : "CC214",
                 3m,
-                "B+",
-                TranscriptAttemptStatus.Passed,
+                isFirstProgramTerm ? null : "B+",
+                isFirstProgramTerm
+                    ? TranscriptAttemptStatus.InProgress
+                    : TranscriptAttemptStatus.Passed,
                 SyntheticSource,
-                $"{sourceReference};CourseCode=CC214",
+                $"{sourceReference};CourseCode={(usesCurrentPersonas ? "BA101" : "CC214")}",
                 importedAtUtc),
             new TranscriptAttempt(
-                StableGuid($"attempt:{identity}:AI201"),
+                StableGuid($"attempt:{identity}:{(usesCurrentPersonas ? "GN112" : "AI201")}"),
                 studentId,
                 termId,
                 supersedesAttemptId: null,
-                "AI201",
+                usesCurrentPersonas ? "GN112" : "AI201",
                 3m,
-                "A",
-                TranscriptAttemptStatus.Passed,
+                isFirstProgramTerm ? null : "A",
+                isFirstProgramTerm
+                    ? TranscriptAttemptStatus.InProgress
+                    : TranscriptAttemptStatus.Passed,
                 SyntheticSource,
-                $"{sourceReference};CourseCode=AI201",
+                $"{sourceReference};CourseCode={(usesCurrentPersonas ? "GN112" : "AI201")}",
                 importedAtUtc)
         };
         var holds = new[]
@@ -140,10 +164,16 @@ public sealed class DemoStudentProfileSeedContributor
                 studentId,
                 termId,
                 "REGISTRATION-HOLD",
-                "Resolve this synthetic demo hold before registration.",
+                usesCurrentPersonas && fixtureOrdinal == 7
+                    ? "Deterministic held persona for registration-block testing."
+                    : usesCurrentPersonas
+                        ? "Historical resolved registration hold."
+                        : "Resolve this synthetic demo hold before registration.",
                 true,
-                dataAsOfUtc.AddDays(-1),
-                effectiveToUtc: null,
+                dataAsOfUtc.AddDays(usesCurrentPersonas ? -2 : -1),
+                effectiveToUtc: !usesCurrentPersonas || fixtureOrdinal == 7
+                    ? null
+                    : dataAsOfUtc.AddDays(-1),
                 SyntheticSource,
                 $"{sourceReference};Hold=blocking",
                 importedAtUtc),
@@ -164,6 +194,7 @@ public sealed class DemoStudentProfileSeedContributor
             StableGuid($"student-term:{identity}:{termId:D}"),
             studentId,
             termId,
+            programTermOrdinal,
             student.CurrentGpa,
             student.EarnedCredits,
             student.Standing,

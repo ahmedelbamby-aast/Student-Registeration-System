@@ -25,7 +25,10 @@ public sealed record RegistrationPlanGroupSnapshot(
     int EnrolledCount,
     string OfferingVersion,
     string GroupVersion,
-    IReadOnlyList<RegistrationPlanMeetingSnapshot> Meetings);
+    IReadOnlyList<RegistrationPlanMeetingSnapshot> Meetings)
+{
+    public int HeldSeatCount { get; init; }
+}
 
 public sealed record RegistrationPlanContextSnapshot(
     string AcademicContextVersion,
@@ -35,7 +38,8 @@ public sealed record RegistrationPlanContextSnapshot(
     string CatalogueVersion,
     IReadOnlyList<RegistrationPlanGroupSnapshot> Groups,
     string CatalogueScopeCode = "",
-    string PolicyScopeCode = "");
+    string PolicyScopeCode = "",
+    decimal GpaAtStart = 2.5m);
 
 public interface IRegistrationPlanContextReader
 {

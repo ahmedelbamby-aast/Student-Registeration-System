@@ -8,7 +8,10 @@ public sealed class AC_3Tests
     [Theory]
     [InlineData(2.00, 95, 9, true, false)]
     [InlineData(2.00, 96, 18, true, true)]
-    [InlineData(3.00, 120, 19, false, false)]
+    [InlineData(2.99, 120, 19, false, false)]
+    [InlineData(3.00, 120, 19, false, true)]
+    [InlineData(3.00, 120, 21, false, true)]
+    [InlineData(3.00, 120, 22, false, false)]
     [InlineData(1.99, 120, 12, false, true)]
     [InlineData(1.99, 120, 13, false, false)]
     public void Policy_simulation_proves_project_and_load_boundaries(
@@ -29,7 +32,7 @@ public sealed class AC_3Tests
                 false,
                 requestedCredits,
                 requestProject ? ["DS413"] : ["BA101", "BA113", "GN111"],
-                ["BA101", "GN111", "GN112"],
+                ["BA101", "GN111", "GN112", "DS322", "IN311"],
                 true,
                 false));
 

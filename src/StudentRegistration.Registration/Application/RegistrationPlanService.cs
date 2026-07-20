@@ -54,7 +54,12 @@ public sealed record RegistrationPlanSelectedGroup(
     int EnrolledCount,
     string OfferingVersion,
     string GroupVersion,
-    IReadOnlyList<RegistrationPlanMeetingSnapshot> Meetings);
+    IReadOnlyList<RegistrationPlanMeetingSnapshot> Meetings)
+{
+    public int HeldSeatCount { get; init; }
+
+    public int AvailableSeatCount => Capacity - EnrolledCount - HeldSeatCount;
+}
 
 public sealed record RegistrationPlanView(
     Guid Id,
@@ -84,7 +89,11 @@ public sealed class RegistrationPlanService(
 {
     public const string InitialEmptyVersion = "initial-empty/1";
     public const decimal DefaultTargetCredits = 18m;
-    public const decimal MaximumAllowedCredits = 18m;
+    public const decimal ProbationMaximumCredits = 12m;
+    public const decimal NormalMaximumCredits = 18m;
+    public const decimal OverloadMaximumCredits = 21m;
+    public const decimal OverloadMinimumGpa = 3m;
+    public const decimal MaximumAllowedCredits = NormalMaximumCredits;
 
     public async Task<RegistrationPlanOperationResult> GetAsync(
         Guid applicationUserId,
@@ -298,14 +307,21 @@ public sealed class RegistrationPlanService(
         }
 
         var totalCredits = selected.Sum(group => group.Credits);
-        var loadBlocked = totalCredits > MaximumAllowedCredits;
+        var maximumAllowedCredits = context.GpaAtStart < 2m
+            ? ProbationMaximumCredits
+            : context.GpaAtStart >= OverloadMinimumGpa
+                ? OverloadMaximumCredits
+                : NormalMaximumCredits;
+        var loadBlocked = totalCredits > maximumAllowedCredits;
         var loadReason = new RegistrationPlanLoadReason(
             loadBlocked ? "LOAD_ABOVE_MAXIMUM" : "LOAD_WITHIN_MAXIMUM",
             loadBlocked,
             loadBlocked
-                ? "The selected load exceeds the approved 18-credit maximum."
-                : "The selected load is within the approved 18-credit maximum.",
-            MaximumAllowedCredits.ToString(CultureInfo.InvariantCulture),
+                ? $"The selected load exceeds the approved {maximumAllowedCredits}-credit maximum."
+                : totalCredits > NormalMaximumCredits
+                    ? "The selected overload is within the 21-credit maximum for CGPA 3.00 or above and remains subject to approval."
+                    : $"The selected load is within the approved {maximumAllowedCredits}-credit maximum.",
+            maximumAllowedCredits.ToString(CultureInfo.InvariantCulture),
             totalCredits.ToString(CultureInfo.InvariantCulture),
             context.PolicySetId,
             context.PolicyVersion,
@@ -336,7 +352,7 @@ public sealed class RegistrationPlanService(
             selected.Select(ToView).ToArray(),
             totalCredits,
             DefaultTargetCredits,
-            MaximumAllowedCredits,
+            maximumAllowedCredits,
             [loadReason],
             conflicts,
             issues,
@@ -403,7 +419,9 @@ public sealed class RegistrationPlanService(
             AddIssue(
                 issues,
                 group,
-                group.EnrolledCount >= group.Capacity ? "GROUP_FULL" : null);
+                group.EnrolledCount + group.HeldSeatCount >= group.Capacity
+                    ? "GROUP_FULL"
+                    : null);
         }
 
         return issues;
@@ -469,7 +487,7 @@ public sealed class RegistrationPlanService(
 
     private static RegistrationPlanSelectedGroup ToView(
         RegistrationPlanGroupSnapshot group) =>
-        new(
+        new RegistrationPlanSelectedGroup(
             group.OfferingId,
             group.GroupId,
             group.GroupCode,
@@ -480,7 +498,10 @@ public sealed class RegistrationPlanService(
             group.EnrolledCount,
             group.OfferingVersion,
             group.GroupVersion,
-            group.Meetings);
+            group.Meetings)
+        {
+            HeldSeatCount = group.HeldSeatCount,
+        };
 
     private sealed record PreparedPlan(
         RegistrationPlanView View,

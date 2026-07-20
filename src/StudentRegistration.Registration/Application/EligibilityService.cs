@@ -37,6 +37,8 @@ public sealed class EligibilityService(
     public const string SupportReferencePath = "/support/registrar";
     private const decimal DefaultTargetCredits = 18m;
     private const decimal NormalMaximumCredits = 18m;
+    private const decimal OverloadMaximumCredits = 21m;
+    private const decimal OverloadMinimumGpa = 3m;
     private const decimal ProbationMaximumCredits = 12m;
     private static readonly DateOnly UnavailableSourceDate = new(2026, 7, 13);
     private static readonly DateTime UnavailableEffectiveFromUtc =
@@ -231,7 +233,9 @@ public sealed class EligibilityService(
             : course?.Credits ?? 0m);
         var maximum = academic.Gpa < 2m
             ? ProbationMaximumCredits
-            : NormalMaximumCredits;
+            : academic.Gpa >= OverloadMinimumGpa
+                ? OverloadMaximumCredits
+                : NormalMaximumCredits;
         var otherPlanMeetings = plan.Selections
             .Where(selection => selection.OfferingId != offering.OfferingId)
             .SelectMany(selection => selection.Meetings)
@@ -418,14 +422,19 @@ public sealed class EligibilityService(
                 academic.EarnedCredits.ToString(CultureInfo.InvariantCulture));
         }
 
+        var applicableMaximum = academic.Gpa >= OverloadMinimumGpa
+            ? OverloadMaximumCredits
+            : NormalMaximumCredits;
         var normalAllowed = academic.Gpa < 2m
-            || projectedCredits <= NormalMaximumCredits;
+            || projectedCredits <= applicableMaximum;
         Add(reasons, policy, "CreditLoad", normalAllowed,
             "LOAD_ALLOWED",
             "LOAD_ABOVE_NORMAL_MAXIMUM",
-            "The projected load is within the normal maximum.",
-            "The projected load exceeds the normal maximum.",
-            NormalMaximumCredits.ToString(CultureInfo.InvariantCulture),
+            projectedCredits > NormalMaximumCredits
+                ? "The projected overload is within the 21-credit maximum for CGPA 3.00 or above and remains subject to approval."
+                : "The projected load is within the normal maximum.",
+            "The projected load exceeds the maximum allowed for the current CGPA.",
+            applicableMaximum.ToString(CultureInfo.InvariantCulture),
             projectedCredits.ToString(CultureInfo.InvariantCulture));
 
         var probationAllowed = academic.Gpa >= 2m

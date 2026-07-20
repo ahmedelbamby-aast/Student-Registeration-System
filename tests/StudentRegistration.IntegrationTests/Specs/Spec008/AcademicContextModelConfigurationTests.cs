@@ -212,6 +212,7 @@ public sealed class AcademicContextModelConfigurationTests
         AssertCheckConstraintContains(context, hold, "EffectiveToUtc", "EffectiveFromUtc", ">");
         AssertCheckConstraintContains(context, state, "GpaAtStart", "0", "4");
         AssertCheckConstraintContains(context, state, "EarnedCreditsAtStart", ">=", "0");
+        AssertCheckConstraintContains(context, state, "ProgramTermOrdinal", ">", "0");
     }
 
     [Fact]
@@ -277,6 +278,7 @@ public sealed class AcademicContextModelConfigurationTests
         AssertRequired(state, nameof(StudentTermAcademicState.TermId));
         AssertRequired(state, nameof(StudentTermAcademicState.GpaAtStart));
         AssertRequired(state, nameof(StudentTermAcademicState.EarnedCreditsAtStart));
+        AssertRequired(state, nameof(StudentTermAcademicState.ProgramTermOrdinal));
         AssertRequired(state, nameof(StudentTermAcademicState.DataAsOfUtc));
 
         Assert.DoesNotContain(
@@ -1047,6 +1049,7 @@ public sealed class AcademicContextModelConfigurationTests
             StableGuid($"term-state:{applicationUserId:D}:{termId:D}"),
             studentId,
             termId,
+            3,
             currentGpa,
             45m,
             "active",

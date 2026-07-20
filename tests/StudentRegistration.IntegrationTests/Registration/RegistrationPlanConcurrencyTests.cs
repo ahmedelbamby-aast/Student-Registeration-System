@@ -52,7 +52,7 @@ public sealed class RegistrationPlanConcurrencyTests
     }
 
     [Fact]
-    public async Task Duplicate_offering_and_above_18_load_are_rejected_without_mutation()
+    public async Task Duplicate_offering_and_load_above_the_gpa_limit_are_rejected_without_mutation()
     {
         var duplicateStore = new FakePlanStore();
         var duplicateService = Service(
@@ -112,6 +112,74 @@ public sealed class RegistrationPlanConcurrencyTests
         Assert.Equal(0, overloadStore.ReplaceCalls);
     }
 
+    [Theory]
+    [InlineData(2.99, false)]
+    [InlineData(3.00, true)]
+    public async Task Twenty_one_credit_overload_requires_cgpa_at_least_three(
+        decimal gpa,
+        bool expectedAllowed)
+    {
+        var groups = Enumerable.Range(0, 7)
+            .Select(index => Candidate(
+                130 + index,
+                140 + index,
+                $"O{index}",
+                3m,
+                8 + index,
+                0,
+                8 + index,
+                30))
+            .ToArray();
+        var context = new FakePlanContextReader(groups) { GpaAtStart = gpa };
+        var store = new FakePlanStore();
+
+        var result = await Service(store, context).ReplaceAsync(
+            ApplicationUserId,
+            TermId,
+            new(
+                RegistrationPlanService.InitialEmptyVersion,
+                groups.Select(group => group.GroupId).ToArray()));
+
+        Assert.Equal(21m, result.Plan!.TotalCredits);
+        Assert.Equal(expectedAllowed ? 21m : 18m, result.Plan.MaximumAllowedCredits);
+        Assert.Equal(
+            expectedAllowed
+                ? RegistrationPlanOperationOutcome.Updated
+                : RegistrationPlanOperationOutcome.InvalidSelection,
+            result.Outcome);
+        Assert.Equal(expectedAllowed ? 1 : 0, store.ReplaceCalls);
+    }
+
+    [Fact]
+    public async Task More_than_twenty_one_credits_is_rejected_even_with_qualifying_cgpa()
+    {
+        var groups = Enumerable.Range(0, 8)
+            .Select(index => Candidate(
+                230 + index,
+                240 + index,
+                $"M{index}",
+                3m,
+                8 + index,
+                0,
+                8 + index,
+                30))
+            .ToArray();
+        var context = new FakePlanContextReader(groups) { GpaAtStart = 3m };
+        var store = new FakePlanStore();
+
+        var result = await Service(store, context).ReplaceAsync(
+            ApplicationUserId,
+            TermId,
+            new(
+                RegistrationPlanService.InitialEmptyVersion,
+                groups.Select(group => group.GroupId).ToArray()));
+
+        Assert.Equal(RegistrationPlanOperationOutcome.InvalidSelection, result.Outcome);
+        Assert.Equal("LOAD_ABOVE_MAXIMUM", result.ErrorCode);
+        Assert.Equal(21m, result.Plan!.MaximumAllowedCredits);
+        Assert.Equal(0, store.ReplaceCalls);
+    }
+
     [Fact]
     public async Task Two_editors_get_one_winner_and_stale_current_plan_without_lost_update()
     {
@@ -154,7 +222,8 @@ public sealed class RegistrationPlanConcurrencyTests
                 10,
                 0,
                 capacity: 30,
-                enrolled: 30));
+                enrolled: 29,
+                held: 1));
         var service = Service(store, context);
 
         var saved = await service.ReplaceAsync(
@@ -453,10 +522,11 @@ public sealed class RegistrationPlanConcurrencyTests
         int endMinute,
         int capacity = 30,
         int enrolled = 10,
+        int held = 0,
         string state = "published",
         bool registrationPaused = false,
         string? groupVersion = null) =>
-        new(
+        new RegistrationPlanGroupSnapshot(
             Id(offering),
             Id(group),
             $"G{group}",
@@ -477,7 +547,10 @@ public sealed class RegistrationPlanConcurrencyTests
                 "Main campus",
                 "Dr. Ada",
                 [],
-                "Africa/Cairo")]);
+                "Africa/Cairo")])
+        {
+            HeldSeatCount = held,
+        };
 
     private static Guid Id(int value) =>
         Guid.Parse($"01200000-0000-0000-0000-{value:000000000000}");
@@ -508,6 +581,8 @@ public sealed class RegistrationPlanConcurrencyTests
 
         public static Guid PolicySetId { get; } = Id(500);
 
+        public decimal GpaAtStart { get; set; } = 2.5m;
+
         public int SeatMutationCalls { get; private set; }
 
         public Task<RegistrationPlanContextSnapshot?> ReadAsync(
@@ -524,7 +599,8 @@ public sealed class RegistrationPlanConcurrencyTests
                         "DEMO-POC-2026.1",
                         "DEMO-APPROVAL-2026.1",
                         "catalogue/1",
-                        _groups.Where(group => groupIds.Contains(group.GroupId)).ToArray())
+                        _groups.Where(group => groupIds.Contains(group.GroupId)).ToArray(),
+                        GpaAtStart: GpaAtStart)
                     : null);
 
         public void SetGroups(params RegistrationPlanGroupSnapshot[] groups) =>

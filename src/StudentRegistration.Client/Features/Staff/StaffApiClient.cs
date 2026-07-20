@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Staff;
@@ -21,7 +22,8 @@ public sealed class StaffApiClient
         new(JsonSerializerDefaults.Web)
         {
             RespectNullableAnnotations = true,
-            RespectRequiredConstructorParameters = true
+            RespectRequiredConstructorParameters = true,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         };
 
     private readonly HttpClient _httpClient;

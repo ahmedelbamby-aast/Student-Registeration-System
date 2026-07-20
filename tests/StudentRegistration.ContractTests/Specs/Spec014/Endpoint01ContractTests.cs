@@ -25,7 +25,7 @@ public sealed class Endpoint01ContractTests
         Spec014ContractAssertions.ContainsAll(
             final,
             "submissionId: string",
-            "status: \"accepted\" | \"rejected\"",
+            "status: \"pendingApproval\" | \"accepted\" | \"rejected\" | \"expired\"",
             "resultCode: string",
             "registeredGroups: RegistrationGroupSnapshotDto[]",
             "receivedAtUtc: string",
@@ -34,7 +34,10 @@ public sealed class Endpoint01ContractTests
             "policyVersion: string",
             "planRowVersion: string",
             "reference?: string",
-            "receiptSnapshot?: RegistrationReceiptSnapshotDto");
+            "receiptSnapshot?: RegistrationReceiptSnapshotDto",
+            "origin: \"studentSelfService\" | \"firstTermAutomatic\"",
+            "requestedCredits: number",
+            "lines: RegistrationSubmissionLineDto[]");
 
         var processing = Spec014ContractAssertions.Interface(
             "RegistrationInProgressResponse");
@@ -84,8 +87,8 @@ public sealed class Endpoint01ContractTests
             "`400 ANTIFORGERY_INVALID`",
             "Student identity comes only from authentication",
             "The body does not contain studentId or termId",
-            "- 201: newly committed final result",
-            "- 200: same-scope, same-payload final replay",
+            "- 201: newly committed durable `pendingApproval` self-service result or newly committed accepted first-term automatic result",
+            "- 200: same-scope, same-payload durable lifecycle replay",
             "- 202: first same-scope claim is still uncommitted after at most 500 ms",
             "- 400: malformed input",
             "- 401/403: authentication/authorization",

@@ -249,7 +249,8 @@ public static class Spec012Endpoints
                 meeting.Location,
                 meeting.LecturerName,
                 meeting.TeachingAssistantNames,
-                meeting.Timezone)).ToArray());
+                meeting.Timezone)).ToArray(),
+            group.HeldSeatCount);
 
     private static ScheduleConflictDto ToDto(ScheduleConflict conflict) =>
         new(

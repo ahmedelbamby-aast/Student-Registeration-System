@@ -275,7 +275,8 @@ public static class Spec011Endpoints
                         new GroupMeetingStaffDto(
                             staff.Role,
                             staff.Name)).ToArray())).ToArray(),
-            group.RowVersion);
+            group.RowVersion,
+            group.HeldSeatCount);
 
     private static bool HasOnlySingleKnownQueryValues(IQueryCollection query) =>
         query.All(pair =>

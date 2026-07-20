@@ -10,6 +10,7 @@ public sealed class StudentTermAcademicState
         Guid id,
         Guid studentId,
         Guid termId,
+        int programTermOrdinal,
         decimal gpaAtStart,
         decimal earnedCreditsAtStart,
         string standingAtStart,
@@ -35,6 +36,13 @@ public sealed class StudentTermAcademicState
             throw new ArgumentException("An academic term is required.", nameof(termId));
         }
 
+        if (programTermOrdinal <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(programTermOrdinal),
+                "The program-term ordinal must be positive.");
+        }
+
         if (gpaAtStart is < 0m or > 4m)
         {
             throw new ArgumentOutOfRangeException(
@@ -54,6 +62,7 @@ public sealed class StudentTermAcademicState
         Id = id;
         StudentId = studentId;
         TermId = termId;
+        ProgramTermOrdinal = programTermOrdinal;
         GpaAtStart = gpaAtStart;
         EarnedCreditsAtStart = earnedCreditsAtStart;
         StandingAtStart = Required(standingAtStart, nameof(standingAtStart));
@@ -68,6 +77,8 @@ public sealed class StudentTermAcademicState
     public Guid StudentId { get; private set; }
 
     public Guid TermId { get; private set; }
+
+    public int ProgramTermOrdinal { get; private set; }
 
     public decimal GpaAtStart { get; private set; }
 

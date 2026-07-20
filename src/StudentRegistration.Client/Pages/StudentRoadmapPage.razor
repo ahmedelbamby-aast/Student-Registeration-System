@@ -1,0 +1,219 @@
+@page "/student/roadmap"
+@using System.Net
+@using StudentRegistration.Client.Components.Display
+@using StudentRegistration.Client.Components.Feedback
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Client.UX
+@using StudentRegistration.Contracts.Academics
+@inject AcademicApiClient AcademicApi
+@inject CatalogueApiClient CatalogueApi
+
+<PageTitle>Academic roadmap | Student Registration</PageTitle>
+
+@if (_shellContext is null)
+{
+    <main id="main-content" class="srs-roadmap" data-route-id="STU-09" aria-busy="true">
+        <h1>Academic roadmap</h1>
+        <p role="status">Loading your roadmap…</p>
+    </main>
+}
+else
+{
+    <AppShell Context="@_shellContext"
+              MainContentId="main-content"
+              SkipLinkLabel="Skip to main content"
+              BrandLogoSource="/brand/aastmt-logo.png"
+              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
+              ServerDateTimeLabel="Server date and time"
+              TeachingTermLabel="Teaching term"
+              RegistrationTermLabel="Registration term"
+              RegistrationWindowLabel="Registration window"
+              NoTeachingTermLabel="No current teaching term"
+              NoRegistrationTermLabel="No current registration term"
+              NoRegistrationWindowLabel="No registration window"
+              AuthorizedRolesLabel="Authorized roles"
+              ActiveRoleLabel="Active role"
+              SessionLabel="Session"
+              ServiceLabel="Service"
+              SupportLinkLabel="Open support"
+              LoadingLabel="Loading academic roadmap">
+        <Navigation>
+            <RoleNavigation AccessibleName="Student navigation" Items="@StudentNavigation" />
+        </Navigation>
+        <ChildContent>
+            <div class="srs-roadmap" data-route-id="STU-09" data-state="@StateName">
+                <PageHeader HeadingId="roadmap-heading"
+                            Eyebrow="Programme planning"
+                            Heading="Academic roadmap"
+                            Description="See every subject in its recommended term, prerequisite path, and current registration status." />
+
+                @if (_loading)
+                {
+                    <RouteStatePanel HeadingId="roadmap-loading"
+                                     Status="@LoadingStatus"
+                                     State="RouteUiState.Loading"
+                                     Announcement="RouteStatePanel.AnnouncementMode.Polite" />
+                }
+                else if (_status is not null)
+                {
+                    <RouteStatePanel HeadingId="roadmap-status"
+                                     Status="@_status"
+                                     State="@_routeState"
+                                     Announcement="RouteStatePanel.AnnouncementMode.Assertive"
+                                     ReferenceLabel="Reference" />
+                }
+                else if (_roadmap is not null)
+                {
+                    <SurfaceCard HeadingId="roadmap-summary"
+                                 Heading="@($"{_roadmap.ProgramCode} roadmap")"
+                                 Description="@($"Cohort {_roadmap.Cohort} · catalogue {_roadmap.CatalogueVersion}")">
+                        <ChildContent>
+                            <p><strong>Automatic registration:</strong> Required first-term subjects are registered automatically. Self-service registration starts in term 2.</p>
+                            <ul class="srs-roadmap__legend" aria-label="Roadmap status legend">
+                                <li><span data-roadmap-status="completed">Completed</span></li>
+                                <li><span data-roadmap-status="registered">Registered</span></li>
+                                <li><span data-roadmap-status="in-progress">In progress</span></li>
+                                <li><span data-roadmap-status="available">Available</span></li>
+                                <li><span data-roadmap-status="locked">Locked</span></li>
+                            </ul>
+                        </ChildContent>
+                    </SurfaceCard>
+
+                    <div class="srs-roadmap__terms">
+                        @foreach (var term in _roadmap.Terms)
+                        {
+                            <SurfaceCard HeadingId="@($"roadmap-term-{term.RecommendedTerm}")"
+                                         Heading="@($"Term {term.RecommendedTerm}")"
+                                         Description="@($"Level {term.Level}")">
+                                <ChildContent>
+                                    <div class="srs-roadmap__subjects">
+                                        @foreach (var subject in term.Subjects)
+                                        {
+                                            <article class="srs-roadmap__subject" data-status="@subject.Status">
+                                                <header>
+                                                    <div>
+                                                        <p class="srs-roadmap__code">@subject.Code</p>
+                                                        <h3>@subject.Title</h3>
+                                                    </div>
+                                                    <span class="srs-roadmap__status">@StatusLabel(subject.Status)</span>
+                                                </header>
+                                                <p>@subject.Credits credits · @(subject.Required ? "Required" : "Elective")</p>
+                                                @if (subject.AutomaticRegistration)
+                                                {
+                                                    <p class="srs-roadmap__automatic">Automatic registration</p>
+                                                }
+                                                <dl>
+                                                    <div>
+                                                        <dt>Prerequisites</dt>
+                                                        <dd>@ListOrNone(subject.Prerequisites)</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt>Missing prerequisites</dt>
+                                                        <dd>@ListOrNone(subject.MissingPrerequisites)</dd>
+                                                    </div>
+                                                </dl>
+                                            </article>
+                                        }
+                                    </div>
+                                </ChildContent>
+                            </SurfaceCard>
+                        }
+                    </div>
+                }
+            </div>
+        </ChildContent>
+    </AppShell>
+}
+
+@code {
+    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
+    [
+        new("Dashboard", "/student"),
+        new("Roadmap", "/student/roadmap", IsActive: true),
+        new("Available subjects", "/student/subjects"),
+        new("Current plan", "/student/schedule"),
+        new("Registrations", "/student/registrations"),
+        new("Account", "/student/account"),
+    ];
+
+    private FrontendAppContextView? _shellContext;
+    private StudentRoadmapDto? _roadmap;
+    private UiStatus? _status;
+    private RouteUiState _routeState = RouteUiState.Loading;
+    private bool _loading = true;
+
+    private static UiStatus LoadingStatus => new(
+        "ROADMAP_LOADING",
+        "Loading academic roadmap",
+        "Reading the authoritative published roadmap and your transcript status.",
+        UiStatusSeverity.Information,
+        [],
+        null);
+
+    private string StateName => _loading ? "loading" : _status is null ? "success" : "error";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var context = await AcademicApi.GetAppContextAsync();
+            if (!context.IsSuccess || context.Value is null ||
+                !RegistrationPageSupport.IsStudentContext(context.Value))
+            {
+                SetError("FORBIDDEN", "Roadmap access denied", "Sign in with a Student account.", context.Error?.CorrelationId);
+                return;
+            }
+
+            _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
+            var result = await CatalogueApi.GetStudentRoadmapAsync();
+            if (!result.IsSuccess || result.Value is null)
+            {
+                SetError(
+                    result.Error?.Code ?? "ROADMAP_UNAVAILABLE",
+                    result.StatusCode is HttpStatusCode.NotFound ? "Roadmap not available" : "Roadmap service unavailable",
+                    result.Error?.Message ?? "The published programme roadmap could not be loaded.",
+                    result.Error?.CorrelationId);
+                return;
+            }
+
+            _roadmap = result.Value;
+            _routeState = RouteUiState.Success;
+        }
+        catch (HttpRequestException)
+        {
+            SetError("OFFLINE", "Roadmap is offline", "The browser cannot reach the roadmap service.", null);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SetError(string code, string heading, string message, string? reference)
+    {
+        _routeState = code == "FORBIDDEN" ? RouteUiState.Unauthorized : RouteUiState.ServiceError;
+        _status = new(
+            code,
+            heading,
+            message,
+            UiStatusSeverity.Error,
+            [new("student-home", "Return to dashboard", "/student")],
+            reference);
+    }
+
+    private static string StatusLabel(string status) => status switch
+    {
+        "registered" => "Registered",
+        "in-progress" => "In progress",
+        "completed" => "Completed",
+        "available" => "Available",
+        _ => "Locked",
+    };
+
+    private static string ListOrNone(IReadOnlyList<string> values) =>
+        values.Count == 0 ? "None" : string.Join(", ", values);
+}

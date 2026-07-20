@@ -10,7 +10,7 @@ claim load, latency, throughput, or multi-replica evidence.
 The executable suite is
 `tests/StudentRegistration.QualityTests/Specs/Spec008/NFR-1EvidenceTests.cs`.
 Its normalized-LF SHA-256 is
-`476B61091F6B9CDF34EE4A55BD53A3618C9595CE26B21C81C3ED9B584CC6FA63`.
+`7DAD4C4B05767EBC28124746B44CFAEA31DF0E49B023584228FA4CCCC87192C9`.
 
 ## Executed command
 

@@ -14,6 +14,7 @@ public sealed class CatalogueApiClient
     private const string DraftsPath = "/api/admin/catalogue/drafts";
     private const string ImportsPath = "/api/admin/catalogue/imports";
     private const string PoliciesPath = "/api/admin/policies";
+    private const string StudentRoadmapPath = "/api/students/me/roadmap";
     private const string AntiforgeryHeader = "X-XSRF-TOKEN";
     private const string AntiforgeryInterop =
         "StudentRegistration.antiforgery.getRequestToken";
@@ -62,6 +63,15 @@ public sealed class CatalogueApiClient
         CancellationToken cancellationToken = default) =>
         GetAsync<CatalogueDraftDto>(
             $"{DraftsPath}/{RequiredId(draftId, nameof(draftId)):D}",
+            cancellationToken);
+
+    public Task<AcademicApiResult<CatalogueDraftDto>> CreateDraftAsync(
+        CreateCatalogueDraftRequest request,
+        CancellationToken cancellationToken = default) =>
+        SendMutationAsync<CreateCatalogueDraftRequest, CatalogueDraftDto>(
+            HttpMethod.Post,
+            DraftsPath,
+            request,
             cancellationToken);
 
     public Task<AcademicApiResult<CatalogueDraftDto>> UpdateDraftAsync(
@@ -167,6 +177,10 @@ public sealed class CatalogueApiClient
             $"{PoliciesPath}/{RequiredId(policySetId, nameof(policySetId)):D}/publish",
             request,
             cancellationToken);
+
+    public Task<AcademicApiResult<StudentRoadmapDto>> GetStudentRoadmapAsync(
+        CancellationToken cancellationToken = default) =>
+        GetAsync<StudentRoadmapDto>(StudentRoadmapPath, cancellationToken);
 
     private async Task<AcademicApiResult<T>> GetAsync<T>(
         string path,

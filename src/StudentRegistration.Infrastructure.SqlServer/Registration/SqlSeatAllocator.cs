@@ -37,6 +37,7 @@ public sealed class SqlSeatAllocator
     public const string CapacityConflictMetricName = "registration.capacity_conflicts";
 
     private const string AllocationSavepoint = "registration_allocation";
+    private const string HoldSavepoint = "registration_hold";
     private const string MeterName = "StudentRegistration.Operations";
     private static readonly Meter Meter = new(MeterName);
     private static readonly Histogram<double> LockWaitMetric =
@@ -72,7 +73,7 @@ public sealed class SqlSeatAllocator
                 WHERE [Id] = {groupId}
                   AND [State] = N'published'
                   AND [RegistrationPaused] = 0
-                  AND [EnrolledCount] < [Capacity]
+                  AND [EnrolledCount] + [HeldSeatCount] < [Capacity]
                 """,
                 cancellationToken);
         }
@@ -116,7 +117,7 @@ public sealed class SqlSeatAllocator
             UPDATE [scheduling].[SectionGroups] WITH (UPDLOCK, HOLDLOCK)
             SET [Capacity] = {newCapacity}
             WHERE [Id] = {groupId}
-              AND [EnrolledCount] <= {newCapacity}
+              AND [EnrolledCount] + [HeldSeatCount] <= {newCapacity}
             """,
             cancellationToken);
         return affected == 1;
@@ -161,6 +162,98 @@ public sealed class SqlSeatAllocator
         IReadOnlyCollection<Guid> groupIds,
         CancellationToken cancellationToken = default) =>
         AllocateWithSavepointAsync(groupIds, cancellationToken);
+
+    public async Task<SeatAllocationBatchResult> HoldAllOrRejectAsync(
+        IReadOnlyCollection<Guid> groupIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(groupIds);
+        RequireCallerTransaction();
+        var orderedGroupIds = ValidateAndOrder(groupIds);
+        cancellationToken.ThrowIfCancellationRequested();
+        var transaction = _dbContext.Database.CurrentTransaction!;
+        await transaction.CreateSavepointAsync(HoldSavepoint, cancellationToken);
+
+        var held = new List<Guid>(orderedGroupIds.Length);
+        foreach (var groupId in orderedGroupIds)
+        {
+            var affected = await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                UPDATE [scheduling].[SectionGroups] WITH (UPDLOCK, ROWLOCK)
+                SET [HeldSeatCount] = [HeldSeatCount] + 1
+                WHERE [Id] = {groupId}
+                  AND [State] = N'published'
+                  AND [RegistrationPaused] = 0
+                  AND [EnrolledCount] + [HeldSeatCount] < [Capacity]
+                """,
+                cancellationToken);
+            if (affected != 1)
+            {
+                await transaction.RollbackToSavepointAsync(
+                    HoldSavepoint,
+                    cancellationToken);
+                CapacityConflictMetric.Add(1, SafeTags("conflict", "GROUP_FULL"));
+                return new SeatAllocationBatchResult(
+                    false,
+                    "GROUP_FULL",
+                    Array.Empty<Guid>());
+            }
+
+            held.Add(groupId);
+        }
+
+        return new SeatAllocationBatchResult(true, null, held.AsReadOnly());
+    }
+
+    public async Task ConvertHoldsToEnrollmentsAsync(
+        IReadOnlyCollection<Guid> groupIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(groupIds);
+        RequireCallerTransaction();
+        foreach (var groupId in ValidateAndOrder(groupIds))
+        {
+            var affected = await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                UPDATE [scheduling].[SectionGroups] WITH (UPDLOCK, ROWLOCK)
+                SET [HeldSeatCount] = [HeldSeatCount] - 1,
+                    [EnrolledCount] = [EnrolledCount] + 1
+                WHERE [Id] = {groupId}
+                  AND [HeldSeatCount] > 0
+                  AND [EnrolledCount] + [HeldSeatCount] <= [Capacity]
+                """,
+                cancellationToken);
+            if (affected != 1)
+            {
+                throw new InvalidOperationException(
+                    "HELD_SEAT_CHANGED: Every selected group must retain its held seat until conversion.");
+            }
+        }
+    }
+
+    public async Task ReleaseHoldsAsync(
+        IReadOnlyCollection<Guid> groupIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(groupIds);
+        RequireCallerTransaction();
+        foreach (var groupId in ValidateAndOrder(groupIds))
+        {
+            var affected = await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                UPDATE [scheduling].[SectionGroups] WITH (UPDLOCK, ROWLOCK)
+                SET [HeldSeatCount] = [HeldSeatCount] - 1
+                WHERE [Id] = {groupId}
+                  AND [HeldSeatCount] > 0
+                """,
+                cancellationToken);
+            if (affected != 1)
+            {
+                throw new InvalidOperationException(
+                    "HELD_SEAT_CHANGED: Every active hold must be released exactly once.");
+            }
+        }
+    }
 
     public async Task RollbackAllocationAsync(
         CancellationToken cancellationToken = default)

@@ -107,13 +107,15 @@
                                          : StatusBadge.BadgeTone.Danger)" />
                     </header>
                     <p>@LocalizedUiText.Get("Lifecycle state:") <strong>@group.State</strong></p>
-                    <CapacityIndicator AccessibleName="@($"Group {group.GroupCode} capacity")"
-                                       OccupiedLabel="@(LocalizedUiText.Get("Occupied"))"
-                                       Occupied="@group.EnrolledCount"
-                                       TotalLabel="@(LocalizedUiText.Get("Capacity"))"
+                    <CapacityBreakdown AccessibleName="@($"Group {group.GroupCode} capacity")"
+                                       TotalLabel="@(LocalizedUiText.Get("Total"))"
                                        Total="@group.Capacity"
-                                       RemainingLabel="@(LocalizedUiText.Get("Remaining"))"
-                                       Remaining="@group.SeatsRemaining" />
+                                       EnrolledLabel="@(LocalizedUiText.Get("Enrolled"))"
+                                       Enrolled="@group.EnrolledCount"
+                                       HeldLabel="@(LocalizedUiText.Get("Held"))"
+                                       Held="@group.HeldSeatCount"
+                                       AvailableLabel="@(LocalizedUiText.Get("Available"))"
+                                       Available="@group.SeatsRemaining" />
 
                     @if (group.NonSelectableReasons.Count > 0)
                     {

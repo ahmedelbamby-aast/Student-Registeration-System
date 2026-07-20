@@ -27,7 +27,10 @@ public sealed record EligibilityGroupSnapshot(
     int Capacity,
     int EnrolledCount,
     byte[] RowVersion,
-    IReadOnlyList<EligibilityMeetingSnapshot> Meetings);
+    IReadOnlyList<EligibilityMeetingSnapshot> Meetings)
+{
+    public int HeldSeatCount { get; init; }
+}
 
 public sealed record EligibilityMeetingSnapshot(
     Guid MeetingId,

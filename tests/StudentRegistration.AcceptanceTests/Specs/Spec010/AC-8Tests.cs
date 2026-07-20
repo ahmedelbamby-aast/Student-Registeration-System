@@ -33,12 +33,12 @@ public sealed class AC_8Tests
             group.RegistrationPaused);
         var capacityStore = new CapacityStoreFake(
             capacityGroup,
-            updated.GroupRowVersion);
+            updated.Group!.RowVersion);
         var allocation = await new SectionGroupCapacityService(capacityStore)
             .AllocateSeatAsync(group.Id, [1]);
 
         Assert.Equal(OfferingOutcome.Updated, updated.Outcome);
-        Assert.Equal([2], updated.GroupRowVersion);
+        Assert.Equal([2], updated.Group!.RowVersion);
         Assert.Equal(GroupCapacityOutcome.StaleVersion, allocation);
     }
 

@@ -25,14 +25,31 @@ The normal seed creates:
 - One Administrator, one Lecturer, and one Teaching Assistant. Each enabled
   account has exactly one role.
 - One open demo academic term and registration window.
-- A synthetic academic profile for each student.
+- A published 19-course, exactly-three-credit Data Science catalogue with the
+  programme roadmap and prerequisite DAG.
+- The published demo policy: probation maximum 12 credits, normal maximum 18,
+  and a 19-21-credit overload only when CGPA is at least 3.00.
+- One published current-term offering and group for every seeded course, with
+  varied capacity, a lecture, a tutorial, two rooms, and separate Lecturer and
+  Teaching Assistant assignments.
+- A synthetic academic profile for each student. `AI2600001` is the
+  first-program-term persona; `AI2600002` and later include multiple term-2+
+  personas. Normal personas have no active blocking registration hold.
+  `AI2600007` is the one deterministic active-hold persona for blocked-state
+  testing.
 
-The normal seed does **not** create courses, offerings, section groups, staff
-assignments, registrations, or rosters. This means that honest empty states are
-expected on several pages. To test a complete subject-to-registration journey
-or a populated Lecturer/TA roster, first prepare disposable data through the
-Admin pages or use a dedicated test fixture. There is currently no supported
-one-command seed for that complete data set.
+The seed is idempotent: rerunning the initializer validates and reuses the
+published graph instead of duplicating it. Registrations and rosters still
+start empty until the automatic/self-service registration workflows create
+them.
+
+The current academic seed profile is `synthetic-fixture/2.0`. A retained local
+database containing the complete unmodified v1 synthetic profile is upgraded
+in place: stable student and term identities are preserved, program-term
+ordinals are reconciled, and only v1 seed-owned transcript/hold rows are
+replaced. If those academic rows were manually changed, the initializer stops
+with `ACADEMIC_SEED_UPGRADE_UNSAFE`; preserve the data, or use
+`-ResetDatabase` only when deleting the local demo is intended.
 
 ## Application addresses
 
@@ -50,7 +67,7 @@ one-command seed for that complete data set.
 
 | Person to test | Server role code | Login ID | Login page | Password or initial activation secret |
 |---|---|---|---|---|
-| Student 1, already activated in the current retained demo database | `Student` | `AI2600001` | `/student/login` | `DemoLogin@2026!!` |
+| Student 1, only when previously activated and the database was retained | `Student` | `AI2600001` | `/student/login` | `DemoLogin@2026!!` |
 | Fresh or unused student | `Student` | `AI2600001` through `AI2600025` | `/student/activate` first | `Demo@2026-<University ID>`, for example `Demo@2026-AI2600002` |
 | Administrator | `Admin` | `ADM-0001` | `/staff/login` | `Demo@2026-ADM-0001` |
 | Lecturer | `Lecturer` | `LEC-0001` | `/staff/login` | `Demo@2026-LEC-0001` |
@@ -220,9 +237,9 @@ Use an unused student such as `AI2600002`.
 | Route | What to do | What must be true |
 |---|---|---|
 | `/student` | Review the dashboard. | It shows server-controlled date/timezone, term/window, the signed-in student's academic summary, holds or blocking reasons, and the correct Start/Resume action. It must not use the browser clock as authority. |
-| `/student/subjects` | Search, filter, clear the search, and reset filters. | Result count changes are announced. Unavailable subjects give text reasons. With the stock seed, an honest empty state is allowed because no catalogue is seeded. |
-| `/student/subjects/{offeringId}` | Open a real result when disposable offering data exists. | Credits, capacity, Lecturer, TA, room, day, time, and eligibility reasons come from the server. A made-up ID gives safe not-found/denied behavior. |
-| `/student/schedule` | Add groups when fixture data exists. Compare calendar and list views. | Both views contain the same meetings. An overlap shows a red X **and** the word **Conflict**, including subject, group, day, start, and end. |
+| `/student/subjects` | Search, filter, clear the search, and reset filters. | The published seeded catalogue and offerings appear. Result count changes are announced and unavailable subjects give text reasons. |
+| `/student/subjects/{offeringId}` | Open a seeded offering result. | Credits, capacity, Lecturer, TA, room, day, time, and eligibility reasons come from the server. A made-up ID gives safe not-found/denied behavior. |
+| `/student/schedule` | Add seeded groups and compare calendar and list views. | Both views contain the same meetings. An overlap shows a red X **and** the word **Conflict**, including subject, group, day, start, and end. |
 | `/student/review` | Review a valid and an invalid plan. Open and cancel the submit confirmation, then submit once when valid. | Every blocking reason is visible. Submit stays disabled while blocked or pending. One atomic result appears; no partial success is claimed. |
 | `/student/registration/result/{id}` | Open the returned result ID. Also try a random or foreign ID. | Accepted/rejected outcome is clear and states that nothing was partially registered. Foreign/random records reveal no data. |
 | `/student/registrations` | Review current and historical registrations. | Calendar/list information agrees, paging is bounded, and an empty history is honest. |
@@ -262,8 +279,8 @@ account is an Admin.
 | `/admin/terms` | Find the seeded term. In disposable data, try invalid dates, overlapping windows, cancel Publish, then publish a valid item. | Invalid/overlapping values are blocked. Confirmation is accessible. Server row-version conflicts ask for refresh/review instead of silently overwriting. |
 | `/admin/users` | Search users, review paging, preview an import, and inspect role/status controls. | No plaintext passwords appear. Student roles cannot be granted through staff-role replacement. The final enabled Admin cannot be removed or disabled; expect `FINAL_ADMIN_REQUIRED`. |
 | `/admin/students` | Search by University ID/name and open one student. | Search is bounded and the detail shows only the requested synthetic student, academic term, and provenance. Stale changes produce `STALE_VERSION`. |
-| `/admin/catalogue` | Review empty/current catalogue; in disposable data validate rules before publishing. | Invalid rule types and prerequisite cycles are explained. Nothing invalid is published. |
-| `/admin/offerings` | Create/review groups only in disposable data. Try missing staff, room/time conflicts, bad capacity, then a valid publish. | Invalid groups remain unpublished. Capacity, staffing, room, and time rules are server-authoritative. |
+| `/admin/catalogue` | Review the published 19-course catalogue and roadmap; use disposable edits to validate rules before publishing. | Every course is three credits, later roadmap subjects have prerequisites, invalid rule types and cycles are explained, and nothing invalid is published. |
+| `/admin/offerings` | Review the seeded published groups. In disposable edits, try missing staff, room/time conflicts, bad capacity, then a valid change. | Every seeded group has complete Lecturer/TA/room/time data. Invalid groups remain unpublished and scheduling rules are server-authoritative. |
 | `/admin/resources` | Review rooms/staff resources and availability. | Staff availability is read-only for Admin. No correction or override action exists. |
 | `/admin/registrations` | Filter and inspect registration receipts/alerts. | The page is read-only. There is no drop, withdrawal, repair, or capacity override command. |
 | `/admin/audit` | Apply bounded filters, page results, inspect immutable detail, request an export in disposable data. | Audit detail is immutable. Export shows queued/ready/failed/expired/restricted honestly and never exposes a server file path. |
@@ -302,8 +319,8 @@ Expected active role: Lecturer
 
 | Route | What to do | What must be true |
 |---|---|---|
-| `/staff` | Review assignments. | Only server-authorized Lecturer assignments appear. With the stock seed, **No authorized assignments** is expected and is not a defect. |
-| `/staff/timetable` | Compare calendar and chronological list when assignment fixture data exists. | Subject, group, partner staff, room, day, start, and end match in both views. |
+| `/staff` | Review assignments. | Only the seeded server-authorized Lecturer lecture assignments appear. Tutorial assignments remain outside Lecturer scope. |
+| `/staff/timetable` | Compare the seeded calendar and chronological list. | Subject, group, partner staff, room, day, start, and end match in both views. |
 | `/staff/groups/{groupId}/roster` | Follow a real assigned group, then replace the ID with a random/unassigned GUID. | The real roster is bounded and shows only University ID, display name, and enrollment state. The unassigned group returns denied/not-found with no rows. |
 | `/staff/availability` | Add/edit a labelled range. Try start equal to or after end, try overlap, then save a valid complete set. | Invalid ranges show a summary and do not save. A valid save shows the server version/time. Stale edits return `STALE_VERSION`; a closed deadline returns `AVAILABILITY_DEADLINE_PASSED`. |
 

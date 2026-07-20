@@ -170,7 +170,7 @@ else if (_shellContext is not null)
                                             <h3>@group.CourseCode @group.SubjectTitle</h3>
                                             <p>@LocalizedUiText.Get("Group") <strong>@group.GroupCode</strong> · @Credits(group.Credits)</p>
                                             <p>
-                                                @LocalizedUiText.Get("Advisory capacity:") @group.EnrolledCount @LocalizedUiText.Get("of") @group.Capacity @LocalizedUiText.Get("enrolled.")
+                                                @LocalizedUiText.Get("Capacity:") @group.EnrolledCount @LocalizedUiText.Get("enrolled,") @group.HeldSeatCount @LocalizedUiText.Get("held,") @group.AvailableSeatCount @LocalizedUiText.Get("available of") @group.Capacity.
                                             </p>
                                             <a href="@SafeRoute($"/student/subjects/{group.OfferingId:D}")">
                                                 @LocalizedUiText.Get("Change") @group.CourseCode @LocalizedUiText.Get("group") @group.GroupCode
@@ -349,8 +349,11 @@ else
     private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
     [
         new(LocalizedUiText.Get("Dashboard"), "/student"),
+        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
         new(LocalizedUiText.Get("Available subjects"), "/student/subjects"),
-        new(LocalizedUiText.Get("Current plan"), "/student/schedule", IsActive: true)
+        new(LocalizedUiText.Get("Current plan"), "/student/schedule", IsActive: true),
+        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
+        new(LocalizedUiText.Get("Account"), "/student/account")
     ];
 
     private FrontendAppContextView? _shellContext;

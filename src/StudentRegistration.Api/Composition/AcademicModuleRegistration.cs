@@ -48,6 +48,7 @@ public static class AcademicModuleRegistration
             provider.GetRequiredService<AcademicContextResolver>());
         services.TryAddScoped<RegistrationWindowService>();
         services.TryAddScoped<StudentAcademicProfileService>();
+        services.TryAddScoped<CataloguePublicationService>();
         services.TryAddScoped<IRegistrationBoundary>(static provider =>
             provider.GetRequiredService<StudentAcademicProfileService>());
         services.TryAddScoped<AdminAcademicManagementService>();
@@ -70,9 +71,7 @@ internal sealed class StudentSelfAcademicProfileAuthorizationHandler
         OwnStudentResourceRequirement requirement)
     {
         if (context.Resource is HttpContext httpContext &&
-            httpContext.Request.Path.Equals(
-                "/api/students/me/academic-context",
-                StringComparison.OrdinalIgnoreCase) &&
+            IsAuthenticatedStudentSelfRoute(httpContext.Request.Path) &&
             Guid.TryParse(
                 context.User.FindFirstValue(ClaimTypes.NameIdentifier),
                 out var applicationUserId) &&
@@ -85,4 +84,12 @@ internal sealed class StudentSelfAcademicProfileAuthorizationHandler
 
         return Task.CompletedTask;
     }
+
+    private static bool IsAuthenticatedStudentSelfRoute(PathString path) =>
+        path.Equals(
+            "/api/students/me/academic-context",
+            StringComparison.OrdinalIgnoreCase)
+        || path.Equals(
+            "/api/students/me/roadmap",
+            StringComparison.OrdinalIgnoreCase);
 }

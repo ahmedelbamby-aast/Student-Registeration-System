@@ -136,12 +136,17 @@ public sealed class NFR_4EvidenceTests
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
+        public Task<OfferingGroupSnapshot?> LoadGroupAsync(
+            Guid groupId,
+            CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
         public Task<OfferingSnapshot> CreateAsync(
             CreateOfferingStoreCommand command,
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
-        public Task<byte[]> UpdateGroupAsync(
+        public Task<OfferingGroupSnapshot> UpdateGroupAsync(
             UpdateGroupStoreCommand command,
             CancellationToken cancellationToken) =>
             throw new NotSupportedException();

@@ -19,14 +19,16 @@ public sealed class EligibilityDecisionTests
         Assert.True(offering.Eligible);
         Assert.Equal(15m, offering.CurrentPlanCredits);
         Assert.Equal(18m, offering.ProjectedPlanCredits);
-        Assert.Equal(18m, offering.MaximumAllowedCredits);
+        Assert.Equal(21m, offering.MaximumAllowedCredits);
         Assert.Contains(offering.Reasons, reason => reason.Code == "LOAD_ALLOWED" && reason.Passed);
         Assert.Equal(2, Assert.Single(offering.Groups).Meetings.Count);
     }
 
     [Theory]
     [InlineData(15, 3, 3.0, true, "LOAD_ALLOWED")]
-    [InlineData(18, 3, 3.0, false, "LOAD_ABOVE_NORMAL_MAXIMUM")]
+    [InlineData(18, 3, 2.99, false, "LOAD_ABOVE_NORMAL_MAXIMUM")]
+    [InlineData(18, 3, 3.0, true, "LOAD_ALLOWED")]
+    [InlineData(21, 3, 3.0, false, "LOAD_ABOVE_NORMAL_MAXIMUM")]
     [InlineData(9, 3, 1.99, true, "PROBATION_LOAD_ALLOWED")]
     [InlineData(12, 3, 1.99, false, "PROBATION_LOAD_EXCEEDED")]
     public async Task Applicable_maximum_is_server_authoritative(
@@ -93,6 +95,7 @@ public sealed class EligibilityDecisionTests
             (new() { Gpa = 1.99m }, "MINIMUM_GPA_NOT_MET"),
             (new() { EarnedCredits = 95m }, "MINIMUM_EARNED_CREDITS_NOT_MET"),
             (new() { Capacity = 30, EnrolledCount = 30 }, "GROUP_FULL"),
+            (new() { Capacity = 30, EnrolledCount = 29, HeldSeatCount = 1 }, "GROUP_FULL"),
         };
 
         foreach (var scenario in scenarios)

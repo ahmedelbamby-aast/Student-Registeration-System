@@ -39,18 +39,45 @@ public sealed record RegistrationReceiptSnapshotDto(
     string PolicyVersion,
     DateTime SubmittedAtUtc);
 
+public sealed record RegistrationCapacitySummaryDto(
+    int Capacity,
+    int EnrolledCount,
+    int HeldSeatCount,
+    int AvailableSeatCount);
+
+public sealed record RegistrationApprovalDecisionDto(
+    string Decision,
+    string ActorRole,
+    string Reason,
+    DateTime DecidedAtUtc);
+
+public sealed record RegistrationSubmissionLineDto(
+    Guid LineId,
+    Guid OfferingId,
+    Guid GroupId,
+    string CourseCode,
+    string SubjectTitle,
+    decimal Credits,
+    string State,
+    RegistrationCapacitySummaryDto Capacity,
+    string RowVersion,
+    RegistrationApprovalDecisionDto? Decision = null);
+
 public sealed record RegistrationFinalResult(
     Guid SubmissionId,
     string Status,
     string ResultCode,
     IReadOnlyList<RegistrationGroupSnapshotDto> RegisteredGroups,
     DateTime ReceivedAtUtc,
-    DateTime CompletedAtUtc,
+    DateTime? CompletedAtUtc,
     Guid PolicySetId,
     string PolicyVersion,
     string PlanRowVersion,
     string? Reference,
-    RegistrationReceiptSnapshotDto? ReceiptSnapshot);
+    RegistrationReceiptSnapshotDto? ReceiptSnapshot,
+    string Origin = "studentSelfService",
+    decimal RequestedCredits = 0m,
+    IReadOnlyList<RegistrationSubmissionLineDto>? Lines = null);
 
 public sealed record RegistrationInProgressResponse(
     Guid ClientRequestId,

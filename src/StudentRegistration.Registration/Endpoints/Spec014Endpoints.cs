@@ -13,6 +13,8 @@ public static class Spec014Endpoints
 {
     private const string Student = "Student";
     private const string RegistrationSubmitOwn = "Registration.SubmitOwn";
+    private const string RegistrationApprovalDecideAll = "RegistrationApproval.DecideAll";
+    private const string RegistrationApprovalDecideAssigned = "RegistrationApproval.DecideAssigned";
 
     public static IEndpointRouteBuilder MapSpec014Endpoints(
         this IEndpointRouteBuilder endpoints)
@@ -44,8 +46,130 @@ public static class Spec014Endpoints
             .Produces<ApiError>(StatusCodes.Status404NotFound)
             .Produces<ApiError>(StatusCodes.Status503ServiceUnavailable);
 
+        MapApprovalEndpoints(endpoints, "/api/admin/registration-approvals",
+            RegistrationApprovalDecideAll);
+        MapApprovalEndpoints(endpoints, "/api/staff/registration-approvals",
+            RegistrationApprovalDecideAssigned);
+
         return endpoints;
     }
+
+    private static void MapApprovalEndpoints(
+        IEndpointRouteBuilder endpoints,
+        string prefix,
+        string policy)
+    {
+        endpoints.MapGet(prefix, ListRegistrationApprovals)
+            .RequireAuthorization(policy)
+            .Produces<RegistrationApprovalPageDto>(StatusCodes.Status200OK)
+            .Produces<ApiError>(StatusCodes.Status400BadRequest)
+            .Produces<ApiError>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiError>(StatusCodes.Status403Forbidden)
+            .Produces<ApiError>(StatusCodes.Status503ServiceUnavailable);
+        endpoints.MapGet(
+                prefix + "/{submissionId}/lines/{lineId}",
+                FindRegistrationApproval)
+            .RequireAuthorization(policy)
+            .Produces<RegistrationApprovalQueueRowDto>(StatusCodes.Status200OK)
+            .Produces<ApiError>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiError>(StatusCodes.Status403Forbidden)
+            .Produces<ApiError>(StatusCodes.Status404NotFound)
+            .Produces<ApiError>(StatusCodes.Status409Conflict);
+        endpoints.MapPost(
+                prefix + "/{submissionId}/lines/{lineId}/decision",
+                DecideRegistrationApproval)
+            .RequireAuthorization(policy)
+            .WithMetadata(new RequireAntiforgeryTokenAttribute(true))
+            .Produces<RegistrationFinalResult>(StatusCodes.Status200OK)
+            .Produces<ApiError>(StatusCodes.Status400BadRequest)
+            .Produces<ApiError>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiError>(StatusCodes.Status403Forbidden)
+            .Produces<ApiError>(StatusCodes.Status404NotFound)
+            .Produces<ApiError>(StatusCodes.Status409Conflict);
+    }
+
+    private static async Task<IResult> ListRegistrationApprovals(
+        [FromQuery] int page,
+        [FromQuery] int pageSize,
+        HttpContext context,
+        [FromServices] RegistrationApprovalService service,
+        CancellationToken cancellationToken)
+    {
+        var result = await service.ListAsync(
+            context.User,
+            page == 0 ? 1 : page,
+            pageSize == 0 ? 20 : pageSize,
+            cancellationToken);
+        return ToApprovalResult(context, result);
+    }
+
+    private static async Task<IResult> FindRegistrationApproval(
+        [FromRoute] Guid submissionId,
+        [FromRoute] Guid lineId,
+        HttpContext context,
+        [FromServices] RegistrationApprovalService service,
+        CancellationToken cancellationToken) =>
+        ToApprovalResult(
+            context,
+            await service.FindAsync(
+                context.User,
+                submissionId,
+                lineId,
+                cancellationToken));
+
+    private static async Task<IResult> DecideRegistrationApproval(
+        [FromRoute] Guid submissionId,
+        [FromRoute] Guid lineId,
+        [FromBody] DecideRegistrationLineRequest request,
+        HttpContext context,
+        [FromServices] RegistrationApprovalService service,
+        CancellationToken cancellationToken) =>
+        ToApprovalResult(
+            context,
+            await service.DecideAsync(
+                context.User,
+                submissionId,
+                lineId,
+                request,
+                cancellationToken));
+
+    private static IResult ToApprovalResult(
+        HttpContext context,
+        RegistrationApprovalResult result) => result.Outcome switch
+        {
+            RegistrationApprovalOutcome.Found when result.Page is not null =>
+                Results.Ok(result.Page),
+            RegistrationApprovalOutcome.Found when result.Row is not null =>
+                Results.Ok(result.Row),
+            RegistrationApprovalOutcome.Updated when result.Registration is not null =>
+                Results.Ok(result.Registration),
+            RegistrationApprovalOutcome.Invalid => Error(
+                context,
+                StatusCodes.Status400BadRequest,
+                result.ErrorCode ?? "VALIDATION_ERROR",
+                "The approval request is invalid."),
+            RegistrationApprovalOutcome.Unauthorized => Error(
+                context,
+                StatusCodes.Status403Forbidden,
+                "FORBIDDEN",
+                "The approval request is not authorized."),
+            RegistrationApprovalOutcome.NotFound => Error(
+                context,
+                StatusCodes.Status404NotFound,
+                "APPROVAL_NOT_FOUND",
+                "The approval request was not found."),
+            RegistrationApprovalOutcome.Conflict => Error(
+                context,
+                StatusCodes.Status409Conflict,
+                result.ErrorCode ?? "APPROVAL_CONFLICT",
+                "The approval decision could not be committed.",
+                result.CurrentVersion),
+            _ => Error(
+                context,
+                StatusCodes.Status503ServiceUnavailable,
+                "REGISTRATION_APPROVAL_UNAVAILABLE",
+                "Registration approvals are temporarily unavailable.")
+        };
 
     private static async Task<IResult> SubmitRegistration(
         [FromRoute] Guid termId,

@@ -36,6 +36,6 @@ dotnet test tests/StudentRegistration.QualityTests/StudentRegistration.QualityTe
 - Request sample: 300
 - Maximum p95: 300 ms
 
-Quality test normalized-LF SHA-256: `35CFE5F591EC29E0613B231E2F49FB2109946743AC7EE1BED3EBCED5C10DEF90`
+Quality test normalized-LF SHA-256: `1A9EF149A354B1661B7F40A3F18A64D0BEB1E100699C3F6D71752EDDCE940F08`
 
 **Result: PASS.**

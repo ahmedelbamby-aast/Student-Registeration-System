@@ -109,7 +109,8 @@ public sealed class SchedulingModelConfiguration :
             {
                 table.HasCheckConstraint(
                     "CK_SectionGroups_Capacity",
-                    "[Capacity] >= 0 AND [EnrolledCount] >= 0 AND [EnrolledCount] <= [Capacity]");
+                    "[Capacity] >= 0 AND [EnrolledCount] >= 0 AND [HeldSeatCount] >= 0 AND " +
+                    "[EnrolledCount] + [HeldSeatCount] <= [Capacity]");
                 table.HasCheckConstraint(
                     "CK_SectionGroups_State",
                     "[State] IN ('draft', 'published', 'closed', 'cancelled')");
@@ -121,12 +122,16 @@ public sealed class SchedulingModelConfiguration :
             .IsRequired();
         builder.Property(group => group.Capacity).IsRequired();
         builder.Property(group => group.EnrolledCount).IsRequired();
+        builder.Property(group => group.HeldSeatCount).HasDefaultValue(0).IsRequired();
         builder.Property(group => group.State)
             .HasConversion(GroupStateConverter)
             .HasMaxLength(20)
             .IsRequired();
         builder.Property(group => group.RegistrationPaused).IsRequired();
         ConfigureRowVersion(builder.Property(group => group.Version));
+        builder.Ignore(group => group.OccupiedSeatCount);
+        builder.Ignore(group => group.AvailableSeatCount);
+        builder.Ignore(group => group.IsSelectable);
 
         builder.HasAlternateKey(group => new { group.Id, group.OfferingId });
         builder.HasIndex(group => new { group.OfferingId, group.GroupCode })

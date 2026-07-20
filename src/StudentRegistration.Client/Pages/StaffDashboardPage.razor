@@ -53,7 +53,8 @@ else
     [
         new(LocalizedUiText.Get("Staff home"), "/staff", IsActive: true),
         new(LocalizedUiText.Get("Timetable"), "/staff/timetable"),
-        new(LocalizedUiText.Get("Availability"), "/staff/availability")
+        new(LocalizedUiText.Get("Availability"), "/staff/availability"),
+        new(LocalizedUiText.Get("Approvals"), "/staff/approvals")
     ];
 
     private FrontendAppContextView? _shellContext;
@@ -144,6 +145,7 @@ else
                 <h2 id="no-assignments-heading">@LocalizedUiText.Get("No authorized assignments")</h2>
                 <p>@LocalizedUiText.Get("No current lecture, tutorial, or laboratory assignment is available for this role context.")</p>
                 <a href="/staff/availability">@LocalizedUiText.Get("Open availability")</a>
+                <a href="/staff/approvals">@LocalizedUiText.Get("Review registration approvals")</a>
             </section>
         }
         else

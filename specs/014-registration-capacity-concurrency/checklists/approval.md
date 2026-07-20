@@ -52,3 +52,18 @@ resolve encountered issues using best practices, preserve the architecture,
 and keep the solution simple reaffirms Gate A approval for this reconciled
 non-production demo baseline. Gate B-D and production approval remain outside
 this authorization.
+
+## 2026-07-20 amendment approval
+
+**Amendment:** `registration-roadmap-line-approval/1.0`<br>
+**Human approval:** APPROVED for non-production demo implementation<br>
+**Approved by:** Ahmed Elbamby<br>
+**Approved on:** 2026-07-20
+
+The owner explicitly requested roadmap subjects with prerequisites and exactly
+three credits, automatic first-program-term registration, self-service from
+term two, per-subject Admin/Lecturer/Teaching Assistant approval, held seats
+until decision, capacity visibility for every supported role, the 18/21 credit
+and CGPA 3.00 overload boundary, and a unified frontend pattern. This approval
+authorizes T125-T144 implementation and evidence work. T145 remains the final
+amendment release gate and production authority remains excluded.

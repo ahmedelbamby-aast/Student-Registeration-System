@@ -14,7 +14,10 @@ public sealed record CatalogueCourseDefinition(
     IReadOnlyList<string> PrerequisiteCodes,
     decimal? MinimumGpa,
     decimal? MinimumEarnedCredits,
-    CatalogueFieldProvenance Provenance);
+    CatalogueFieldProvenance Provenance,
+    int? Level = null,
+    bool IsRequired = true,
+    string? CohortScope = null);
 
 public sealed record CatalogueDraftContent(
     string ScopeCode,
@@ -66,7 +69,7 @@ public sealed class CataloguePublicationService
                 Course("DS312", "Programming for Data Science", 5, ["GN121"]),
                 Course("DS322", "Statistics for Data Science", 6, ["BA203"]),
                 Course("DS324", "Computational Linguistics", 6, ["IN311"]),
-                Course("DS413", "Project I", 7, minimumGpa: 2.0m, minimumEarnedCredits: 96m),
+                Course("DS413", "Project I", 7, ["DS322", "IN311"], minimumGpa: 2.0m, minimumEarnedCredits: 96m),
                 Course("DS421", "Project II", 8, ["DS413"]),
             ]);
 
@@ -112,6 +115,26 @@ public sealed class CataloguePublicationService
                     "sequence",
                     "INVALID_SEQUENCE",
                     $"Course {course.Code} has an invalid sequence.",
+                    course.Code));
+            }
+
+            if (course.Sequence == 1 && course.PrerequisiteCodes.Count > 0)
+            {
+                errors.Add(Error(
+                    course.Row,
+                    "prerequisiteCodes",
+                    "FIRST_TERM_PREREQUISITE_INVALID",
+                    $"First-term course {course.Code} cannot have a prerequisite.",
+                    course.Code));
+            }
+
+            if (course.Sequence > 1 && course.PrerequisiteCodes.Count == 0)
+            {
+                errors.Add(Error(
+                    course.Row,
+                    "prerequisiteCodes",
+                    "LATER_TERM_PREREQUISITE_REQUIRED",
+                    $"Later-term course {course.Code} requires a prerequisite.",
                     course.Code));
             }
 
@@ -264,18 +287,18 @@ public sealed class CataloguePublicationService
                 course.Title,
                 course.Credits,
                 course.IsActive,
-                course.Provenance);
+                Clone(course.Provenance));
         }).ToArray();
         var curriculum = content.Courses.Select(course =>
             new CurriculumCourse(
                 version.Id,
                 program.Id,
                 courseIds[RequiredCode(course.Code, nameof(course.Code))],
-                Math.Max(1, (course.Sequence + 1) / 2),
+                course.Level ?? Math.Max(1, (course.Sequence + 1) / 2),
                 course.Sequence,
-                true,
-                cohortScope: null,
-                course.Provenance)).ToArray();
+                course.IsRequired,
+                course.CohortScope,
+                Clone(course.Provenance))).ToArray();
         var prerequisites = content.Courses
             .SelectMany(course =>
             {
@@ -286,7 +309,7 @@ public sealed class CataloguePublicationService
                         courseIds[code],
                         courseIds[RequiredCode(required, nameof(course.PrerequisiteCodes))],
                         minimumGrade: null,
-                        course.Provenance));
+                        Clone(course.Provenance)));
             })
             .ToArray();
 
@@ -316,6 +339,14 @@ public sealed class CataloguePublicationService
                 CatalogueSourceKind.OfficialSource,
                 ["Credits", "IsActive"]));
 
+    private static CatalogueFieldProvenance Clone(
+        CatalogueFieldProvenance provenance) =>
+        new(
+            provenance.SourceReference,
+            provenance.AccessedOn,
+            provenance.SourceKind,
+            provenance.SyntheticFields.ToArray());
+
     private static NormalizedCourse Normalize(
         CatalogueCourseDefinition course,
         int row)
@@ -334,6 +365,9 @@ public sealed class CataloguePublicationService
                 .ToArray(),
             course.MinimumGpa,
             course.MinimumEarnedCredits,
+            course.Level,
+            course.IsRequired,
+            string.IsNullOrWhiteSpace(course.CohortScope) ? null : course.CohortScope.Trim(),
             course.Provenance ?? throw new ArgumentNullException(nameof(course.Provenance)));
     }
 
@@ -408,6 +442,9 @@ public sealed class CataloguePublicationService
                     course.PrerequisiteCodes,
                     course.MinimumGpa,
                     course.MinimumEarnedCredits,
+                    course.Level,
+                    course.IsRequired,
+                    course.CohortScope,
                     provenance = new
                     {
                         course.Provenance.SourceReference,
@@ -444,5 +481,8 @@ public sealed class CataloguePublicationService
         IReadOnlyList<string> PrerequisiteCodes,
         decimal? MinimumGpa,
         decimal? MinimumEarnedCredits,
+        int? Level,
+        bool IsRequired,
+        string? CohortScope,
         CatalogueFieldProvenance Provenance);
 }

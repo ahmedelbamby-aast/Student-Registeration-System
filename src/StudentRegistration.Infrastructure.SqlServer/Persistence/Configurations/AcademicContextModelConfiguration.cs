@@ -236,12 +236,17 @@ public sealed class AcademicContextModelConfiguration :
                 table.HasCheckConstraint(
                     "CK_StudentTermAcademicStates_EarnedCreditsAtStart",
                     "[EarnedCreditsAtStart] >= 0");
+                table.HasCheckConstraint(
+                    "CK_StudentTermAcademicStates_ProgramTermOrdinal",
+                    "[ProgramTermOrdinal] > 0");
             });
         ConfigureGuidKey(builder);
 
         builder.Property(state => state.StudentId)
             .IsRequired();
         builder.Property(state => state.TermId)
+            .IsRequired();
+        builder.Property(state => state.ProgramTermOrdinal)
             .IsRequired();
         builder.Property(state => state.GpaAtStart)
             .HasPrecision(4, 2)

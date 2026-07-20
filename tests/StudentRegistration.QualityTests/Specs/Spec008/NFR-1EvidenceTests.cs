@@ -290,6 +290,7 @@ public sealed class NFR_1EvidenceTests
             Guid.Parse("00000000-0000-0000-0000-000000008043"),
             studentId,
             RegistrationTermId,
+            3,
             3.25m,
             45m,
             "active",

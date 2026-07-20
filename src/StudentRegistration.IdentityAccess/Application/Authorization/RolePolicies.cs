@@ -32,6 +32,8 @@ public static class RolePolicies
     public const string RegistrationSubmitOwn = "Registration.SubmitOwn";
     public const string RegistrationRecordsReadOwn = "RegistrationRecords.ReadOwn";
     public const string RegistrationRecordsRead = "RegistrationRecords.Read";
+    public const string RegistrationApprovalDecideAll = "RegistrationApproval.DecideAll";
+    public const string RegistrationApprovalDecideAssigned = "RegistrationApproval.DecideAssigned";
     public const string AdminOperationsMetricsRead = "AdminOperations.Metrics.Read";
     public const string AdminAuditRead = "AdminAudit.Read";
     public const string AdminAuditExport = "AdminAudit.Export";
@@ -149,6 +151,20 @@ public static class RolePolicies
                 .RequireRole(Admin)
                 .RequireClaim(PermissionClaimType, RegistrationRecordsRead));
 
+        options.AddPolicy(
+            RegistrationApprovalDecideAll,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Admin)
+                .RequireClaim(PermissionClaimType, RegistrationApprovalDecideAll));
+
+        options.AddPolicy(
+            RegistrationApprovalDecideAssigned,
+            policy => policy
+                .RequireAuthenticatedUser()
+                .RequireRole(Lecturer, TeachingAssistant)
+                .RequireClaim(PermissionClaimType, RegistrationApprovalDecideAssigned));
+
         AddAdminPermissionPolicy(options, AdminOperationsMetricsRead);
         AddAdminPermissionPolicy(options, AdminAuditRead);
         AddAdminPermissionPolicy(options, AdminAuditExport);
@@ -202,12 +218,13 @@ public static class RolePolicies
             CataloguePolicyManage,
             OfferingsManage,
             RegistrationRecordsRead,
+            RegistrationApprovalDecideAll,
             AdminOperationsMetricsRead,
             AdminAuditRead,
             AdminAuditExport,
             AdminAuditExportReadAll
         ],
-        Lecturer or TeachingAssistant => [ContextRead],
+        Lecturer or TeachingAssistant => [ContextRead, RegistrationApprovalDecideAssigned],
         _ => []
     };
 

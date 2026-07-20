@@ -22,8 +22,10 @@ public sealed class AC_7Tests
                     $"Synthetic course {index}",
                     3m,
                     true,
-                    (index % 8) + 1,
-                    [],
+                    ((index - 1) % 8) + 1,
+                    (index - 1) % 8 == 0
+                        ? []
+                        : [$"DEMO-{index - 1:00000}"],
                     null,
                     null,
                     provenance))

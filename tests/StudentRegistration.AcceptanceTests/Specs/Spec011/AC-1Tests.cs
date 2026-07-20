@@ -21,7 +21,7 @@ public sealed class AC_1Tests
         Assert.Equal(15m, offering.CurrentPlanCredits);
         Assert.Equal(18m, offering.ProjectedPlanCredits);
         Assert.Equal(18m, offering.DefaultTargetCredits);
-        Assert.Equal(18m, offering.MaximumAllowedCredits);
+        Assert.Equal(21m, offering.MaximumAllowedCredits);
         var group = Assert.Single(offering.Groups);
         Assert.True(group.Selectable);
         Assert.Contains(group.Meetings, meeting =>

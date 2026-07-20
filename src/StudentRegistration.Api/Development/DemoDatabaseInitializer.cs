@@ -18,7 +18,8 @@ namespace StudentRegistration.Api.Development;
 public sealed class DemoDatabaseInitializer
 {
     private const string DevelopmentDatabaseName = "StudentRegistration_Development";
-    private const string DefaultSeedProfileVersion = "synthetic-fixture/1.0";
+    private const string DefaultSeedProfileVersion = "synthetic-fixture/2.0";
+    private const string StableSeedIdentityVersion = "synthetic-fixture/1.0";
     private const int DefaultStudentCount = 25;
     private const string ConnectionStringName = "StudentRegistration";
     private const string DemoTermCode = "DEMO-2026-FALL";
@@ -29,6 +30,7 @@ public sealed class DemoDatabaseInitializer
     private readonly DemoStudentProfileSeedContributor _academicContributor;
     private readonly IProvisionedCredentialHandoff _credentialHandoff;
     private readonly TimeProvider _timeProvider;
+    private readonly DevelopmentManualTestDataSeeder? _manualTestDataSeeder;
 
     public DemoDatabaseInitializer(
         IWebHostEnvironment environment,
@@ -37,7 +39,8 @@ public sealed class DemoDatabaseInitializer
         DemoIdentitySeedContributor identityContributor,
         DemoStudentProfileSeedContributor academicContributor,
         IProvisionedCredentialHandoff credentialHandoff,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        DevelopmentManualTestDataSeeder? manualTestDataSeeder = null)
     {
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -49,6 +52,7 @@ public sealed class DemoDatabaseInitializer
         _credentialHandoff = credentialHandoff
             ?? throw new ArgumentNullException(nameof(credentialHandoff));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _manualTestDataSeeder = manualTestDataSeeder;
     }
 
     public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -93,6 +97,15 @@ public sealed class DemoDatabaseInitializer
                                     StableGuid(universityId),
                                     universityId,
                                     termId,
+                                    cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+
+                        if (_manualTestDataSeeder is not null)
+                        {
+                            await _manualTestDataSeeder.SeedAsync(
+                                    termId,
+                                    settings.SeedProfileVersion,
                                     cancellationToken)
                                 .ConfigureAwait(false);
                         }
@@ -208,11 +221,11 @@ public sealed class DemoDatabaseInitializer
         string seedProfileVersion,
         CancellationToken cancellationToken)
     {
-        var termId = StableGuid($"term:{seedProfileVersion}");
-        var windowId = StableGuid($"window:{seedProfileVersion}");
-        var creationRequestId = StableGuid($"term-request:{seedProfileVersion}");
+        var termId = StableGuid($"term:{StableSeedIdentityVersion}");
+        var windowId = StableGuid($"window:{StableSeedIdentityVersion}");
+        var creationRequestId = StableGuid($"term-request:{StableSeedIdentityVersion}");
         var payloadHash = Convert.ToHexString(SHA256.HashData(
-            Encoding.UTF8.GetBytes($"{seedProfileVersion}|{DemoTermCode}")));
+            Encoding.UTF8.GetBytes($"{StableSeedIdentityVersion}|{DemoTermCode}")));
         var term = await _dbContext.Set<AcademicTerm>()
             .SingleOrDefaultAsync(item => item.Id == termId, cancellationToken)
             .ConfigureAwait(false);

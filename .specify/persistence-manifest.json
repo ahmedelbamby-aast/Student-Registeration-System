@@ -1,5 +1,5 @@
 {
-  "version": "2.1.3",
+  "version": "2.1.5",
   "dbContext": {
     "owner": "004",
     "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/StudentRegistrationDbContext.cs",
@@ -50,7 +50,7 @@
     },
     "014": {
       "mode": "writable-transactional",
-      "entities": ["RegistrationSubmission", "Enrollment", "DecisionSnapshot"],
+      "entities": ["RegistrationSubmission", "RegistrationSubmissionLine", "RegistrationSeatHold", "RegistrationApprovalDecision", "FirstTermAutoEnrollmentBatch", "FirstTermAutoEnrollmentItem", "Enrollment", "DecisionSnapshot"],
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/RegistrationModelConfiguration.cs",
       "testPath": "tests/StudentRegistration.IntegrationTests/Persistence/RegistrationModelConfigurationTests.cs"
     },
@@ -139,6 +139,22 @@
       "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260717222551_Spec018RegistrationReadPerformance.cs",
       "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
       "prerequisiteSpecs": ["014", "018"]
+    },
+    {
+      "id": "S9Spec009CourseCreditsExactlyThree",
+      "kind": "incremental-constraint",
+      "owner": "009",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720182228_Spec009CourseCreditsExactlyThree.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["009"]
+    },
+    {
+      "id": "S10Spec014ApprovalSeatHoldsAndFirstTermAutomation",
+      "kind": "incremental-registration",
+      "owner": "014",
+      "path": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720185102_Spec014ApprovalSeatHoldsAndFirstTermAutomation.cs",
+      "snapshotPath": "src/StudentRegistration.Infrastructure.SqlServer/Migrations/StudentRegistrationDbContextModelSnapshot.cs",
+      "prerequisiteSpecs": ["008", "009", "010", "014"]
     }
   ]
 }

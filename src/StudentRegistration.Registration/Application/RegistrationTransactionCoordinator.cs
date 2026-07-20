@@ -1,4 +1,5 @@
 using StudentRegistration.Academics.Application.Ports;
+using StudentRegistration.Registration.Domain;
 
 namespace StudentRegistration.Registration.Application;
 
@@ -23,6 +24,13 @@ public enum RegistrationMutableInput
     CommitBoundaryVersions
 }
 
+public enum RegistrationValidationPurpose
+{
+    HoldCreation = 1,
+    AutomaticAllocation = 2,
+    HeldFinalization = 3,
+}
+
 public sealed record RegistrationTransactionPlan(
     Guid StudentId,
     Guid TermId,
@@ -34,7 +42,9 @@ public sealed record RegistrationTransactionPlan(
     string CatalogueScopeCode,
     string PolicyScopeCode,
     IReadOnlyList<Guid> GroupIds,
-    IReadOnlyList<Guid>? BoundaryGroupIds = null);
+    IReadOnlyList<Guid>? BoundaryGroupIds = null,
+    RegistrationSubmissionOrigin Origin = RegistrationSubmissionOrigin.StudentSelfService,
+    RegistrationValidationPurpose Purpose = RegistrationValidationPurpose.HoldCreation);
 
 public sealed record RegistrationFinalValidation(
     Guid StudentId,
@@ -47,7 +57,9 @@ public sealed record RegistrationFinalValidation(
     string PolicyScopeCode,
     IReadOnlyList<Guid> GroupIds,
     IReadOnlyList<RegistrationMutableInput> MutableInputs,
-    string ExpectedStudentTermStateRowVersion = "");
+    string ExpectedStudentTermStateRowVersion = "",
+    RegistrationSubmissionOrigin Origin = RegistrationSubmissionOrigin.StudentSelfService,
+    RegistrationValidationPurpose Purpose = RegistrationValidationPurpose.HoldCreation);
 
 /// <summary>
 /// The SQL-local registration operations that run inside the canonical
@@ -207,7 +219,9 @@ public sealed class RegistrationTransactionCoordinator
                 policyScope,
                 selectedGroupIds,
                 RequiredMutableInputs,
-                plan.ExpectedStudentTermStateRowVersion),
+                plan.ExpectedStudentTermStateRowVersion,
+                plan.Origin,
+                plan.Purpose),
             cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();

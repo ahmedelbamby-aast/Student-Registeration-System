@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StudentRegistration.Infrastructure.SqlServer.Admin;
+using StudentRegistration.Infrastructure.SqlServer.Academics;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 using StudentRegistration.Infrastructure.SqlServer.Registration;
 using StudentRegistration.Infrastructure.SqlServer.Scheduling;
 using StudentRegistration.Infrastructure.SqlServer.StaffWorkspace;
 using StudentRegistration.Registration.Application;
+using StudentRegistration.Academics.Application.Ports;
 using StudentRegistration.Scheduling.Application.Ports;
 using StudentRegistration.StaffAdministration.Application;
 using StudentRegistration.StaffAdministration.Application.Ports;
@@ -42,9 +44,18 @@ public static class SqlServerPersistenceRegistration
         services.AddStudentRegistrationDiscoverySqlServer();
         services.AddStudentRegistrationPlansSqlServer();
         services.AddScheduleRecommendationsSqlServer();
+        services.TryAddScoped<SqlCatalogueAdministrationStore>();
+        services.TryAddScoped<ICatalogueAdministrationStore>(services =>
+            services.GetRequiredService<SqlCatalogueAdministrationStore>());
+        services.TryAddScoped<SqlOfferingStore>();
+        services.TryAddScoped<IOfferingStore>(services =>
+            services.GetRequiredService<SqlOfferingStore>());
         services.TryAddScoped<RegistrationSubmissionStore>();
         services.TryAddScoped<SqlSeatAllocator>();
         services.TryAddScoped<SqlRegistrationEndpointStore>();
+        services.TryAddScoped<SqlRegistrationApprovalStore>();
+        services.TryAddScoped<IRegistrationApprovalStore>(services =>
+            services.GetRequiredService<SqlRegistrationApprovalStore>());
         services.TryAddScoped<SqlRegistrationRecordReader>();
         services.TryAddScoped<IRegistrationEndpointStore>(services =>
             services.GetRequiredService<SqlRegistrationEndpointStore>());

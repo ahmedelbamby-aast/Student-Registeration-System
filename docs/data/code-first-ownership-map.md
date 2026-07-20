@@ -90,6 +90,8 @@ tests pass; one shared snapshot is advanced in dependency order.
 | Incremental | `S6Registration` | SPEC-014 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs` |
 | Incremental | `S7StaffAdminOperations` | SPEC-017 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs` |
 | Incremental performance | `S8Spec018RegistrationReadPerformance` | SPEC-018 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260717222551_Spec018RegistrationReadPerformance.cs` |
+| Incremental constraint | `S9Spec009CourseCreditsExactlyThree` | SPEC-009 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720182228_Spec009CourseCreditsExactlyThree.cs` |
+| Incremental registration | `S10Spec014ApprovalSeatHoldsAndFirstTermAutomation` | SPEC-014 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720185102_Spec014ApprovalSeatHoldsAndFirstTermAutomation.cs` |
 
 ## Environment and production boundary
 

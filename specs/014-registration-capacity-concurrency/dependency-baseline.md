@@ -61,3 +61,29 @@ contracts are sufficient for SPEC-014 after the recorded consistency
 reconciliations. Upstream approval does not inherit SPEC-014 runtime,
 concurrency, load, accessibility, traceability, or release evidence; every
 SPEC-014 task still requires its own named evidence before it may be checked.
+
+## 2026-07-20 registration-roadmap-line-approval/1.0 amendment
+
+**Owner approval:** Ahmed Elbamby, recorded through the explicit repository
+implementation request and clarifications on 2026-07-20.<br>
+**Cross-spec result:** PASS for implementation start; release remains blocked
+until T125-T145 are complete.
+
+- SPEC-001/016/017 define global Admin and current-assignment Lecturer/TA
+  decision authority; authorization occurs before record disclosure.
+- SPEC-002 preserves probation, permits normal load through 18 credits,
+  permits 19-21 only at CGPA >=3.00, and rejects more than 21.
+- SPEC-003 records the Student roadmap plus Admin/staff approval routes and one
+  shared role-neutral design system.
+- SPEC-005/006 retain ERD/API/security/operations ownership; T142 requires the
+  final generated artifacts before release.
+- SPEC-008 adds a positive authoritative program-term ordinal without creating
+  a second academic-state owner.
+- SPEC-009 owns exact-three-credit courses, prerequisite DAG publication, and
+  CurriculumCourse roadmaps; SPEC-010 owns enrolled and held group counts.
+- SPEC-011-013 remain advisory and cannot authorize enrollment or approval.
+- SPEC-014 owns submissions, lines, holds, decisions, automatic batches, and
+  atomic conversion/release. SPEC-015-017 expose bounded role projections.
+- SPEC-018 remains the quality/security/load/operations evidence owner.
+- Migration ownership stays append-only through the shared DbContext manifest;
+  no production migration or deployment authority is granted.

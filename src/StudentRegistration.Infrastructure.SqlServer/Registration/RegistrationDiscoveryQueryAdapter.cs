@@ -296,7 +296,8 @@ public sealed class RegistrationDiscoveryQueryAdapter(
                 from program in dbContext.Set<AcademicProgram>().AsNoTracking()
                 join version in dbContext.Set<CatalogueVersion>().AsNoTracking()
                     on program.CatalogueVersionId equals version.Id
-                where program.Code == student.ProgramCode &&
+                where (program.Code == student.ProgramCode ||
+                    program.Code.StartsWith(student.ProgramCode + "-")) &&
                     program.IsActive &&
                     version.State == CatalogueVersionState.Published &&
                     version.EffectiveFromUtc <= evaluatedAtUtc
@@ -620,7 +621,10 @@ public sealed class RegistrationDiscoveryQueryAdapter(
                                                 staff[item.StaffId].DisplayName))
                                         .ToArray());
                             })
-                            .ToArray()))
+                            .ToArray())
+                    {
+                        HeldSeatCount = group.HeldSeatCount,
+                    })
                     .ToArray()))
             .ToArray();
     }

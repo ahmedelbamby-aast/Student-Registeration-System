@@ -23,7 +23,7 @@ public sealed class GroupSummaryProjection
             "Registration is paused for this group.");
         AddReason(
             reasons,
-            source.EnrolledCount >= source.Capacity,
+            source.EnrolledCount + source.HeldSeatCount >= source.Capacity,
             "GROUP_FULL",
             "No seats currently remain in this group.");
         AddReason(
@@ -73,7 +73,8 @@ public sealed class GroupSummaryProjection
             source.EnrolledCount,
             reasons,
             meetings,
-            Convert.ToBase64String(source.RowVersion));
+            Convert.ToBase64String(source.RowVersion),
+            source.HeldSeatCount);
     }
 
     private static void AddLifecycleReason(

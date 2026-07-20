@@ -138,7 +138,9 @@ public sealed class RegistrationSubmissionStore
         RegistrationRequestScope scope,
         string payloadHash,
         DateTime receivedAtUtc,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        RegistrationSubmissionOrigin origin = RegistrationSubmissionOrigin.StudentSelfService,
+        decimal requestedCredits = 0m)
     {
         ArgumentNullException.ThrowIfNull(scope);
         var normalizedHash = Required(payloadHash, nameof(payloadHash));
@@ -165,7 +167,9 @@ public sealed class RegistrationSubmissionStore
                 scope.TermId,
                 scope.ClientRequestId,
                 normalizedHash,
-                receivedAtUtc);
+                receivedAtUtc,
+                origin,
+                requestedCredits);
             _dbContext.Set<RegistrationSubmission>().Add(submission);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return new SubmissionClaimResult(
@@ -340,7 +344,8 @@ public sealed class RegistrationSubmissionStore
                         candidate.TermId == scope.TermId &&
                         candidate.ClientRequestId == scope.ClientRequestId,
                     cancellationToken);
-            return submission?.IsFinal == true
+            return submission is not null &&
+                submission.ProcessingState is not RegistrationSubmissionState.Processing
                 ? new RegistrationFinalObservation(false, submission)
                 : new RegistrationFinalObservation(
                     submission is not null,
@@ -374,7 +379,8 @@ public sealed class RegistrationSubmissionStore
         ArgumentNullException.ThrowIfNull(scope);
         var normalizedHash = Required(payloadHash, nameof(payloadHash));
         var submission = await FindScopedAsync(scope, tracking: false, cancellationToken);
-        if (submission is null || !submission.IsFinal)
+        if (submission is null ||
+            submission.ProcessingState is RegistrationSubmissionState.Processing)
         {
             return new SubmissionClaimResult(
                 SubmissionClaimStatus.NotFound,
@@ -391,7 +397,10 @@ public sealed class RegistrationSubmissionStore
     {
         ArgumentNullException.ThrowIfNull(scope);
         var submission = await FindScopedAsync(scope, tracking: false, cancellationToken);
-        return submission?.IsFinal == true ? submission : null;
+        return submission is not null &&
+            submission.ProcessingState is not RegistrationSubmissionState.Processing
+            ? submission
+            : null;
     }
 
     public async Task FinalizeAcceptedAsync(
@@ -432,6 +441,17 @@ public sealed class RegistrationSubmissionStore
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task FinalizePendingApprovalAsync(
+        RegistrationSubmission submission,
+        DateTime updatedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(submission);
+        RequireCallerTransaction();
+        submission.BeginPendingApproval(updatedAtUtc);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public static string ComputeCanonicalPayloadHash(string canonicalPayload)
     {
         var normalized = Required(canonicalPayload, nameof(canonicalPayload));
@@ -445,7 +465,7 @@ public sealed class RegistrationSubmissionStore
         CancellationToken cancellationToken)
     {
         IQueryable<RegistrationSubmission> query = tracking
-            ? _dbContext.Set<RegistrationSubmission>()
+            ? _dbContext.Set<RegistrationSubmission>().Include(submission => submission.Lines)
             : _dbContext.Set<RegistrationSubmission>()
                 .FromSqlInterpolated(
                     $"""
@@ -455,6 +475,7 @@ public sealed class RegistrationSubmissionStore
                       AND [TermId] = {scope.TermId}
                       AND [ClientRequestId] = {scope.ClientRequestId}
                     """)
+                .Include(submission => submission.Lines)
                 .AsNoTracking();
 
         return tracking
@@ -482,7 +503,7 @@ public sealed class RegistrationSubmissionStore
                 "IDEMPOTENCY_KEY_REUSED");
         }
 
-        if (!submission.IsFinal)
+        if (submission.ProcessingState is RegistrationSubmissionState.Processing)
         {
             return new SubmissionClaimResult(
                 SubmissionClaimStatus.InProgress,

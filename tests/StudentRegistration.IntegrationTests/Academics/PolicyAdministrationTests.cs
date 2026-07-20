@@ -22,6 +22,8 @@ public sealed class PolicyAdministrationTests
                 "NORMAL_MAX_CREDITS",
                 "NORMAL_MIN_CREDITS",
                 "NORMAL_RECOMMENDED_CREDITS",
+                "OVERLOAD_MAX_CREDITS",
+                "OVERLOAD_MIN_GPA",
                 "PREREQUISITES_REQUIRED",
                 "PROBATION_MAX_CREDITS",
                 "REGISTRATION_WINDOW_OPEN",
@@ -42,7 +44,10 @@ public sealed class PolicyAdministrationTests
 
     [Theory]
     [InlineData(3.00, 18, true, "NORMAL_MAX_CREDITS")]
-    [InlineData(3.00, 19, false, "NORMAL_MAX_CREDITS")]
+    [InlineData(2.99, 19, false, "OVERLOAD_MIN_GPA")]
+    [InlineData(3.00, 19, true, "OVERLOAD_MIN_GPA")]
+    [InlineData(3.00, 21, true, "OVERLOAD_MAX_CREDITS")]
+    [InlineData(3.00, 22, false, "OVERLOAD_MAX_CREDITS")]
     [InlineData(1.99, 12, true, "PROBATION_MAX_CREDITS")]
     [InlineData(1.99, 13, false, "PROBATION_MAX_CREDITS")]
     public void Simulation_enforces_normal_and_probation_credit_boundaries(
@@ -148,7 +153,7 @@ public sealed class PolicyAdministrationTests
             HasBlockingHold: false,
             RequestedCredits: requestedCredits,
             RequestedCourseCodes: requestedCourses ?? ["BA101", "BA113", "GN111"],
-            CompletedCourseCodes: ["BA101", "GN111", "GN112", "DS413"],
+            CompletedCourseCodes: ["BA101", "GN111", "GN112", "DS322", "IN311", "DS413"],
             AllGroupsHaveCapacity: true,
             HasTimetableConflict: false);
 }

@@ -54,21 +54,54 @@ public sealed class RegistrationPlanSqlServerAdapter(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(
-            IsolationLevel.Serializable,
-            cancellationToken);
-        try
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<RegistrationPlanStoreResult>(async () =>
         {
-            var plan = await PlanQuery(command.StudentId, command.TermId)
-                .AsTracking()
-                .SingleOrDefaultAsync(cancellationToken);
-            var currentVersion = plan is null || plan.Version.Length == 0
-                ? RegistrationPlanService.InitialEmptyVersion
-                : Convert.ToBase64String(plan.Version);
-            if (!string.Equals(
-                command.ExpectedRowVersion,
-                currentVersion,
-                StringComparison.Ordinal))
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            try
+            {
+                var plan = await PlanQuery(command.StudentId, command.TermId)
+                    .AsTracking()
+                    .SingleOrDefaultAsync(cancellationToken);
+                var currentVersion = plan is null || plan.Version.Length == 0
+                    ? RegistrationPlanService.InitialEmptyVersion
+                    : Convert.ToBase64String(plan.Version);
+                if (!string.Equals(
+                    command.ExpectedRowVersion,
+                    currentVersion,
+                    StringComparison.Ordinal))
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    dbContext.ChangeTracker.Clear();
+                    return new(
+                        RegistrationPlanStoreOutcome.StaleVersion,
+                        await ReadAsync(command.StudentId, command.TermId, cancellationToken));
+                }
+
+                plan ??= new RegistrationPlan(
+                    Guid.NewGuid(),
+                    command.StudentId,
+                    command.TermId,
+                    0m,
+                    RegistrationPlanState.Draft);
+                if (dbContext.Entry(plan).State is EntityState.Detached)
+                {
+                    dbContext.Add(plan);
+                }
+
+                plan.ReplaceSelections(
+                    command.Selections,
+                    command.TotalCredits,
+                    command.State,
+                    command.Conflicts,
+                    command.Validation);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return new(RegistrationPlanStoreOutcome.Updated, plan);
+            }
+            catch (DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 dbContext.ChangeTracker.Clear();
@@ -76,48 +109,19 @@ public sealed class RegistrationPlanSqlServerAdapter(
                     RegistrationPlanStoreOutcome.StaleVersion,
                     await ReadAsync(command.StudentId, command.TermId, cancellationToken));
             }
-
-            plan ??= new RegistrationPlan(
-                Guid.NewGuid(),
-                command.StudentId,
-                command.TermId,
-                0m,
-                RegistrationPlanState.Draft);
-            if (dbContext.Entry(plan).State is EntityState.Detached)
+            catch (DbUpdateException)
             {
-                dbContext.Add(plan);
+                await transaction.RollbackAsync(cancellationToken);
+                dbContext.ChangeTracker.Clear();
+                var current = await ReadAsync(
+                    command.StudentId,
+                    command.TermId,
+                    cancellationToken);
+                return current is null
+                    ? new(RegistrationPlanStoreOutcome.StorageUnavailable)
+                    : new(RegistrationPlanStoreOutcome.StaleVersion, current);
             }
-
-            plan.ReplaceSelections(
-                command.Selections,
-                command.TotalCredits,
-                command.State,
-                command.Conflicts,
-                command.Validation);
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
-            return new(RegistrationPlanStoreOutcome.Updated, plan);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            dbContext.ChangeTracker.Clear();
-            return new(
-                RegistrationPlanStoreOutcome.StaleVersion,
-                await ReadAsync(command.StudentId, command.TermId, cancellationToken));
-        }
-        catch (DbUpdateException)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            dbContext.ChangeTracker.Clear();
-            var current = await ReadAsync(
-                command.StudentId,
-                command.TermId,
-                cancellationToken);
-            return current is null
-                ? new(RegistrationPlanStoreOutcome.StorageUnavailable)
-                : new(RegistrationPlanStoreOutcome.StaleVersion, current);
-        }
+        });
     }
 
     public async Task<RegistrationPlanContextSnapshot?> ReadAsync(
@@ -140,12 +144,6 @@ public sealed class RegistrationPlanSqlServerAdapter(
             .Distinct()
             .Take(100)
             .ToArray();
-        await using var transaction = dbContext.Database.CurrentTransaction is null
-            ? await dbContext.Database.BeginTransactionAsync(
-                IsolationLevel.RepeatableRead,
-                cancellationToken)
-            : null;
-
         var academic = await (
                 from student in dbContext.Set<Student>().AsNoTracking()
                 join state in dbContext.Set<StudentTermAcademicState>().AsNoTracking()
@@ -158,15 +156,12 @@ public sealed class RegistrationPlanSqlServerAdapter(
                 {
                     student.ProgramCode,
                     state.Version,
+                    state.GpaAtStart,
                     term.TimeZoneId
                 })
             .SingleOrDefaultAsync(cancellationToken);
         if (academic is null)
         {
-            if (transaction is not null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-            }
             return null;
         }
 
@@ -192,10 +187,6 @@ public sealed class RegistrationPlanSqlServerAdapter(
             .FirstOrDefaultAsync(cancellationToken);
         if (policy is null)
         {
-            if (transaction is not null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-            }
             return null;
         }
 
@@ -203,7 +194,8 @@ public sealed class RegistrationPlanSqlServerAdapter(
                 from program in dbContext.Set<CatalogueProgram>().AsNoTracking()
                 join version in dbContext.Set<CatalogueVersion>().AsNoTracking()
                     on program.CatalogueVersionId equals version.Id
-                where program.Code == academic.ProgramCode &&
+                where (program.Code == academic.ProgramCode ||
+                    program.Code.StartsWith(academic.ProgramCode + "-")) &&
                     program.IsActive &&
                     version.State == CatalogueVersionState.Published &&
                     version.EffectiveFromUtc <= evaluatedAtUtc
@@ -216,10 +208,6 @@ public sealed class RegistrationPlanSqlServerAdapter(
             .FirstOrDefaultAsync(cancellationToken);
         if (catalogueVersion is null)
         {
-            if (transaction is not null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-            }
             return null;
         }
 
@@ -248,6 +236,7 @@ public sealed class RegistrationPlanSqlServerAdapter(
                     sectionGroup.RegistrationPaused,
                     sectionGroup.Capacity,
                     sectionGroup.EnrolledCount,
+                    sectionGroup.HeldSeatCount,
                     OfferingVersion = offering.Version,
                     GroupVersion = sectionGroup.Version,
                     MeetingId = meeting == null ? (Guid?)null : meeting.Id,
@@ -293,11 +282,6 @@ public sealed class RegistrationPlanSqlServerAdapter(
                     staff.DisplayName
                 })
             .ToArrayAsync(cancellationToken);
-        if (transaction is not null)
-        {
-            await transaction.CommitAsync(cancellationToken);
-        }
-
         var groups = rows
             .GroupBy(row => row.GroupId)
             .Select(groupRows =>
@@ -351,7 +335,10 @@ public sealed class RegistrationPlanSqlServerAdapter(
                                     .ToArray(),
                                 academic.TimeZoneId);
                         })
-                        .ToArray());
+                        .ToArray())
+                {
+                    HeldSeatCount = first.HeldSeatCount,
+                };
             })
             .ToArray();
         return new(
@@ -362,7 +349,8 @@ public sealed class RegistrationPlanSqlServerAdapter(
             catalogueVersion.VersionCode,
             groups,
             catalogueVersion.ScopeCode,
-            policy.ScopeCode);
+            policy.ScopeCode,
+            academic.GpaAtStart);
     }
 
     private IQueryable<RegistrationPlan> PlanQuery(Guid studentId, Guid termId) =>

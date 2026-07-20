@@ -37,6 +37,8 @@ does not assert that a migration or bundle exists.
 | 4 | `S6Registration` | incremental | SPEC-015 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713060000_Registration.cs` | SPEC-014, SPEC-015 |
 | 5 | `S7StaffAdminOperations` | incremental | SPEC-017 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260713070000_StaffAdminOperations.cs` | SPEC-017 |
 | 6 | `S8Spec018RegistrationReadPerformance` | incremental-performance | SPEC-018 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260717222551_Spec018RegistrationReadPerformance.cs` | SPEC-014, SPEC-018 |
+| 7 | `S9Spec009CourseCreditsExactlyThree` | incremental-constraint | SPEC-009 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720182228_Spec009CourseCreditsExactlyThree.cs` | SPEC-009 |
+| 8 | `S10Spec014ApprovalSeatHoldsAndFirstTermAutomation` | incremental-registration | SPEC-014 | `src/StudentRegistration.Infrastructure.SqlServer/Migrations/20260720185102_Spec014ApprovalSeatHoldsAndFirstTermAutomation.cs` | SPEC-008, SPEC-009, SPEC-010, SPEC-014 |
 
 All slices share the future
 `StudentRegistrationDbContextModelSnapshot.cs` in this directory and must be
