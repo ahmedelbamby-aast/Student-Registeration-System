@@ -3,6 +3,10 @@
 **Branch**: 007-identity-account-lifecycle | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13. DEC-13 remains a future production decision.
 
+**2026-07-20 owner amendment:** the demo provisions and accepts exactly one
+role per enabled account; the former combined Lecturer/TeachingAssistant
+fixture is retired and excluded from role testing.
+
 ## Summary
 
 Deliver Identity and Account Lifecycle inside the modular monolith while keeping server-side academic and authorization decisions authoritative.

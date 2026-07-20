@@ -29,6 +29,9 @@ public sealed class AuditAdministrationPageContractTests
             page,
             "@page \"/admin/audit\"",
             "data-route-id=\"ADM-09\"",
+            "OperationsApi.SearchAuditAsync",
+            "OperationsApi.CreateExportAsync",
+            "OperationsApi.GetExportStatusAsync",
             "Scoped audit search",
             "Request export",
             "Download ready export");

@@ -135,6 +135,7 @@ internal sealed class SafeApiExceptionHandler(
         }
 
         logger.LogError(
+            exception,
             "Unhandled request failure of type {ExceptionType}. Correlation ID: {CorrelationId}",
             exception.GetType().Name,
             correlationId);

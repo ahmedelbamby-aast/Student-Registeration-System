@@ -6,12 +6,18 @@
 **Owner**: Security Lead
 **Normative detail**: [requirements.md](requirements.md)
 
+**Owner-approved demo amendment (2026-07-20):** Ahmed ELbamby froze the
+combined Lecturer/Teaching Assistant account path. Every enabled demo account
+has exactly one of Student, Admin, Lecturer, or TeachingAssistant. Legacy
+multi-role session shapes remain compatibility-only and are not provisioned,
+accepted for staff login, or included in manual testing.
+
 ## Context
 
 Students require University-ID login and controlled first-time activation.
 Admin, Lecturer, and TA need one staff login without a pre-authentication or
-self-asserted role selector. A multi-role user may choose only among roles the
-server returns after authentication. Blazor client state is not a security
+self-asserted role selector. Each enabled staff account has exactly one staff
+role derived by the server after authentication. Blazor client state is not a security
 boundary, so identity and authorization are enforced by ASP.NET Core.
 
 For this non-production demo, explicit Development and Testing database

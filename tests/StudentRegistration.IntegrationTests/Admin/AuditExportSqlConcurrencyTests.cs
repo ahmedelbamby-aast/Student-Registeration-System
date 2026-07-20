@@ -284,7 +284,9 @@ public sealed class AuditExportSqlConcurrencyTests
 
     private static StudentRegistrationDbContext CreateContext(string connectionString) =>
         new(new DbContextOptionsBuilder<StudentRegistrationDbContext>()
-            .UseSqlServer(connectionString)
+            .UseSqlServer(
+                connectionString,
+                sqlServer => sqlServer.EnableRetryOnFailure())
             .Options);
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider

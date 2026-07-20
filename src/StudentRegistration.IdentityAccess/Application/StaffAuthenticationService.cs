@@ -89,7 +89,7 @@ public sealed class StaffAuthenticationService
             locked ||
             staff is null ||
             !staff.IsActive ||
-            effectiveRoles.Length == 0 ||
+            effectiveRoles.Length != 1 ||
             sharedBlocked)
         {
             await _store.RecordAuthenticationFailureAsync(
@@ -118,15 +118,12 @@ public sealed class StaffAuthenticationService
                 cancellationToken);
         }
 
-        // More than one effective role leaves ActiveRole null; AuthenticationResult
-        // then exposes RoleSelectionRequired for the post-authentication choice.
-        var activeRole = effectiveRoles.Length == 1 ? effectiveRoles[0] : null;
         return AuthenticationResult.Success(
             user.Id,
             staff.DisplayName,
             verifiedSecurityStamp!,
             effectiveRoles,
-            activeRole,
+            effectiveRoles[0],
             utcNow.Add(SessionLifetime));
     }
 }

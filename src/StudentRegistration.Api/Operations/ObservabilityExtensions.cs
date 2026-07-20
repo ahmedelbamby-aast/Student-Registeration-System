@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using StudentRegistration.Contracts.Operations;
 
 namespace StudentRegistration.Api.Operations;
@@ -392,6 +393,10 @@ public static class ObservabilityExtensions
 
         services.TryAddSingleton<OperationalHealthRegistry>();
         services.TryAddSingleton<OperationalTelemetry>();
+        services.TryAddSingleton<IOperationalDependencyProbe,
+            SqlServerOperationalDependencyProbe>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, OperationalHealthMonitor>());
         return services;
     }
 

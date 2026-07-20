@@ -1,10 +1,14 @@
 @page "/admin/audit"
+@using System.Net
+@using StudentRegistration.Contracts.Admin
+@inject AdminOperationsApiClient OperationsApi
+@inject NavigationManager Navigation
 
 <PageTitle>@LocalizedUiText.Get("Audit administration | Student Registration")</PageTitle>
 
 <div class="srs-audit-admin"
      data-route-id="ADM-09"
-     data-state="loading"
+     data-state="@_state"
      data-supported-states="loading empty success validation-error service-error unauthorized session-expired stale offline queued ready failed expired restricted">
     <a class="srs-audit-admin__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
@@ -24,33 +28,52 @@
         <section class="srs-audit-admin__intro" aria-labelledby="audit-administration-heading">
             <p class="srs-audit-admin__eyebrow">@LocalizedUiText.Get("Immutable administrative evidence")</p>
             <h1 id="audit-administration-heading">@LocalizedUiText.Get("Scoped audit search")</h1>
-            <p>
-                @LocalizedUiText.Get("Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle.")
-            </p>
+            <p>@LocalizedUiText.Get("Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle.")</p>
         </section>
 
-        <section class="srs-audit-admin__state"
-                 role="status"
-                 aria-live="polite"
-                 aria-busy="true">
-            <h2>@LocalizedUiText.Get("Loading audit events")</h2>
-            <p>@LocalizedUiText.Get("No scoped event or export result has been accepted by the server.")</p>
-        </section>
+        @if (_busy)
+        {
+            <section class="srs-audit-admin__state" role="status" aria-live="polite" aria-busy="true">
+                <h2>@LocalizedUiText.Get("Loading audit events")</h2>
+                <p>@LocalizedUiText.Get("No scoped event or export result has been accepted by the server.")</p>
+            </section>
+        }
+        else if (_errorCode is not null)
+        {
+            <section class="srs-audit-admin__state" role="alert" aria-live="assertive">
+                <h2>@ErrorHeading()</h2>
+                <p><strong>@_errorCode</strong></p>
+                <p>@_errorMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_correlationId))
+                {
+                    <p>@LocalizedUiText.Get("Reference:") @_correlationId</p>
+                }
+                <button type="button" @onclick="SearchAsync">@LocalizedUiText.Get("Retry")</button>
+            </section>
+        }
+        else if (_events.Count == 0)
+        {
+            <section class="srs-audit-admin__state" role="status" aria-live="polite">
+                <h2>@LocalizedUiText.Get("No audit events found")</h2>
+                <p>@LocalizedUiText.Get("No audit events match the current authorized filters.")</p>
+            </section>
+        }
 
         <section class="srs-audit-admin__filters" aria-labelledby="audit-filter-heading">
             <h2 id="audit-filter-heading">@LocalizedUiText.Get("Scope and search filters")</h2>
-            <form role="search" aria-label="@(LocalizedUiText.Get("Scoped audit filters"))">
+            <form role="search" aria-label="@(LocalizedUiText.Get("Scoped audit filters"))"
+                  @onsubmit="SearchAsync" @onsubmit:preventDefault>
                 <label>
                     @LocalizedUiText.Get("Actor")
-                    <input type="search" name="actorId" maxlength="100" />
+                    <input type="search" name="actorId" maxlength="100" @bind="_actorIdText" @bind:event="oninput" />
                 </label>
                 <label>
                     @LocalizedUiText.Get("Action")
-                    <input type="search" name="action" maxlength="100" />
+                    <input type="search" name="action" maxlength="100" @bind="_action" @bind:event="oninput" />
                 </label>
                 <label>
                     @LocalizedUiText.Get("Source")
-                    <select name="sourceStream">
+                    <select name="sourceStream" @bind="_sourceStream">
                         <option value="">@LocalizedUiText.Get("All authorized sources")</option>
                         <option value="audit">@LocalizedUiText.Get("Audit")</option>
                         <option value="identity-security">@LocalizedUiText.Get("Identity security")</option>
@@ -58,22 +81,20 @@
                 </label>
                 <label>
                     @LocalizedUiText.Get("Page size")
-                    <input type="number" name="pageSize" min="1" max="100" value="20" />
+                    <input type="number" name="pageSize" min="1" max="100" @bind="_pageSize" />
                 </label>
-                <button type="button" disabled>@LocalizedUiText.Get("Search audit")</button>
-                <button type="reset">@LocalizedUiText.Get("Clear filters")</button>
+                <button type="submit" disabled="@_busy">@LocalizedUiText.Get("Search audit")</button>
+                <button type="button" disabled="@_busy" @onclick="ClearFiltersAsync">@LocalizedUiText.Get("Clear filters")</button>
             </form>
         </section>
 
         <div class="srs-audit-admin__workspace">
             <section aria-labelledby="audit-results-heading">
                 <h2 id="audit-results-heading">@LocalizedUiText.Get("Paged immutable events")</h2>
-                <div class="srs-audit-admin__table-region"
-                     role="region"
-                     aria-label="@(LocalizedUiText.Get("Scoped audit results"))"
-                     tabindex="0">
+                <div class="srs-audit-admin__table-region" role="region"
+                     aria-label="@(LocalizedUiText.Get("Scoped audit results"))" tabindex="0">
                     <table data-testid="audit-event-table">
-                        <caption>@LocalizedUiText.Get("No server-authorized audit rows are loaded.")</caption>
+                        <caption>@AuditCaption()</caption>
                         <thead>
                             <tr>
                                 <th scope="col">@LocalizedUiText.Get("Occurred")</th>
@@ -85,65 +106,351 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="6">@LocalizedUiText.Get("No audit events match the current authorized filters.")</td>
-                            </tr>
+                            @if (_events.Count == 0)
+                            {
+                                <tr><td colspan="6">@LocalizedUiText.Get("No audit events match the current authorized filters.")</td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var auditEvent in _events)
+                                {
+                                    <tr @key="auditEvent.Id">
+                                        <td><time datetime="@auditEvent.OccurredAtUtc.ToUniversalTime().ToString("O")">@FormatDate(auditEvent.OccurredAtUtc)</time></td>
+                                        <td>@auditEvent.ActorDisplay</td>
+                                        <td>@auditEvent.Action</td>
+                                        <td>@auditEvent.EntityType @auditEvent.EntityId</td>
+                                        <td><code>@auditEvent.CorrelationId</code></td>
+                                        <td><button type="button" @onclick="() => SelectEvent(auditEvent)">@LocalizedUiText.Get("Open event detail")</button></td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </div>
 
-                <div class="srs-audit-admin__semantic-alternative"
-                     data-testid="audit-event-card-list"
+                <div class="srs-audit-admin__semantic-alternative" data-testid="audit-event-card-list"
                      aria-label="@(LocalizedUiText.Get("Audit results semantic alternative"))">
                     <h3>@LocalizedUiText.Get("Audit event summaries")</h3>
-                    <p>@LocalizedUiText.Get("No audit events match the current authorized filters.")</p>
+                    @if (_events.Count == 0)
+                    {
+                        <p>@LocalizedUiText.Get("No audit events match the current authorized filters.")</p>
+                    }
+                    else
+                    {
+                        <ol>
+                            @foreach (var auditEvent in _events)
+                            {
+                                <li>@FormatDate(auditEvent.OccurredAtUtc) · @auditEvent.ActorDisplay · @auditEvent.Action · @auditEvent.EntityType</li>
+                            }
+                        </ol>
+                    }
                 </div>
 
                 <nav class="srs-audit-admin__pagination" aria-label="@(LocalizedUiText.Get("Audit result pages"))">
-                    <button type="button" disabled>@LocalizedUiText.Get("Previous page")</button>
-                    <span>@LocalizedUiText.Get("Page 1 of 1")</span>
-                    <button type="button" disabled>@LocalizedUiText.Get("Next page")</button>
+                    <button type="button" disabled="@(_busy || _page <= 1)" @onclick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</button>
+                    <span>@LocalizedUiText.Format("Page {0} of {1}", _page, TotalPages)</span>
+                    <button type="button" disabled="@(_busy || _page >= TotalPages)" @onclick="NextPageAsync">@LocalizedUiText.Get("Next page")</button>
                 </nav>
             </section>
 
             <aside class="srs-audit-admin__detail" aria-labelledby="immutable-event-detail-heading">
                 <h2 id="immutable-event-detail-heading">@LocalizedUiText.Get("Immutable event detail")</h2>
-                <p>@LocalizedUiText.Get("Select an authorized event to view its redacted before and after summaries.")</p>
-                <dl>
-                    <div><dt>@LocalizedUiText.Get("Actor")</dt><dd>@LocalizedUiText.Get("Not selected")</dd></div>
-                    <div><dt>@LocalizedUiText.Get("Reason")</dt><dd>@LocalizedUiText.Get("Not selected")</dd></div>
-                    <div><dt>@LocalizedUiText.Get("Correlation")</dt><dd>@LocalizedUiText.Get("Not selected")</dd></div>
-                    <div><dt>@LocalizedUiText.Get("Source")</dt><dd>@LocalizedUiText.Get("Not selected")</dd></div>
-                </dl>
-                <button type="button" disabled>@LocalizedUiText.Get("Open event detail")</button>
+                @if (_selectedEvent is null)
+                {
+                    <p>@LocalizedUiText.Get("Select an authorized event to view its redacted before and after summaries.")</p>
+                }
+                else
+                {
+                    <dl>
+                        <div><dt>@LocalizedUiText.Get("Actor")</dt><dd>@_selectedEvent.ActorDisplay</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Reason")</dt><dd>@_selectedEvent.Reason</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Correlation")</dt><dd><code>@_selectedEvent.CorrelationId</code></dd></div>
+                        <div><dt>@LocalizedUiText.Get("Source")</dt><dd>@_selectedEvent.SourceStream</dd></div>
+                    </dl>
+                    <h3>@LocalizedUiText.Get("Before")</h3>
+                    @ChangeSummary(_selectedEvent.BeforeSummary)
+                    <h3>@LocalizedUiText.Get("After")</h3>
+                    @ChangeSummary(_selectedEvent.AfterSummary)
+                }
             </aside>
         </div>
 
         <section class="srs-audit-admin__export" aria-labelledby="export-lifecycle-heading">
             <div>
                 <h2 id="export-lifecycle-heading">@LocalizedUiText.Get("Scoped export lifecycle")</h2>
-                <p>
-                    @LocalizedUiText.Get("Export status may be queued, ready, failed, or expired. Restricted jobs reveal no event or job detail.")
-                </p>
+                <p>@LocalizedUiText.Get("Export status may be queued, ready, failed, or expired. Restricted jobs reveal no event or job detail.")</p>
             </div>
+            @if (_exportErrorCode is not null)
+            {
+                <div role="alert">
+                    <strong>@_exportErrorCode</strong>
+                    <p>@_exportMessage</p>
+                    @if (!string.IsNullOrWhiteSpace(_exportCorrelationId))
+                    {
+                        <p>@LocalizedUiText.Get("Reference:") @_exportCorrelationId</p>
+                    }
+                </div>
+            }
             <dl>
-                <div><dt>@LocalizedUiText.Get("Job")</dt><dd>@LocalizedUiText.Get("Not requested")</dd></div>
-                <div><dt>@LocalizedUiText.Get("Status")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
-                <div><dt>@LocalizedUiText.Get("Expiry")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Job")</dt><dd>@(_exportJob?.JobId.ToString("D") ?? LocalizedUiText.Get("Not requested"))</dd></div>
+                <div><dt>@LocalizedUiText.Get("Status")</dt><dd>@ExportStateLabel()</dd></div>
+                <div><dt>@LocalizedUiText.Get("Expiry")</dt><dd>@(_exportJob?.ExpiresAtUtc is { } expiry ? FormatDate(expiry) : LocalizedUiText.Get("Not loaded"))</dd></div>
             </dl>
             <div class="srs-audit-admin__actions">
-                <button type="button" disabled>@LocalizedUiText.Get("Request export")</button>
-                <button type="button" disabled>@LocalizedUiText.Get("Refresh export status")</button>
-                <button type="button" disabled>@LocalizedUiText.Get("Download ready export")</button>
-                <button type="button" disabled>@LocalizedUiText.Get("Request a new export")</button>
+                <button type="button" disabled="@(_exportBusy || _busy || _exportJob is not null)" @onclick="RequestExportAsync">@LocalizedUiText.Get("Request export")</button>
+                <button type="button" disabled="@(_exportBusy || _exportJob is null || IsTerminalExport)" @onclick="RefreshExportAsync">@LocalizedUiText.Get("Refresh export status")</button>
+                <button type="button" disabled="@(_exportBusy || !CanDownload)" @onclick="DownloadExport">@LocalizedUiText.Get("Download ready export")</button>
+                <button type="button" disabled="@(_exportBusy || !IsTerminalExport)" @onclick="RequestExportAsync">@LocalizedUiText.Get("Request a new export")</button>
             </div>
-            <p class="srs-audit-admin__authorization-note">
-                @LocalizedUiText.Get("Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions.")
-            </p>
+            <p class="srs-audit-admin__authorization-note">@LocalizedUiText.Get("Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions.")</p>
         </section>
     </main>
 
-    <footer>
-        <a href="/status/support">@LocalizedUiText.Get("Open safe support")</a>
-    </footer>
+    <footer><a href="/status/support">@LocalizedUiText.Get("Open safe support")</a></footer>
 </div>
+
+@code {
+    private IReadOnlyList<AdminAuditEventDto> _events = [];
+    private AdminAuditEventDto? _selectedEvent;
+    private AdminExportJobDto? _exportJob;
+    private string _state = "loading";
+    private string _actorIdText = string.Empty;
+    private string _action = string.Empty;
+    private string _sourceStream = string.Empty;
+    private int _page = 1;
+    private int _pageSize = 20;
+    private int _totalCount;
+    private bool _busy;
+    private bool _exportBusy;
+    private string? _errorCode;
+    private string? _errorMessage;
+    private string? _correlationId;
+    private string? _exportErrorCode;
+    private string? _exportMessage;
+    private string? _exportCorrelationId;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(_totalCount / (double)Math.Max(1, _pageSize)));
+    private bool IsTerminalExport => _exportJob?.State is "complete" or "failed" or "expired";
+    private bool CanDownload => _exportJob is { State: "complete", DownloadUrl: not null };
+
+    protected override Task OnInitializedAsync() => SearchAsync();
+
+    private async Task SearchAsync()
+    {
+        _page = Math.Max(1, _page);
+        _pageSize = Math.Clamp(_pageSize, 1, 100);
+        if (!TryActorId(out var actorId))
+        {
+            SetError("AUDIT_FILTER_INVALID", LocalizedUiText.Get("Actor must be a valid identifier."), null, "validation-error");
+            return;
+        }
+
+        _busy = true;
+        ClearError();
+        try
+        {
+            var result = await OperationsApi.SearchAuditAsync(
+                _page,
+                _pageSize,
+                actorId: actorId,
+                action: _action,
+                sourceStream: _sourceStream);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                _events = result.Value.Items;
+                _page = result.Value.Page;
+                _pageSize = result.Value.PageSize;
+                _totalCount = result.Value.TotalCount;
+                _selectedEvent = _events.FirstOrDefault(item => item.Id == _selectedEvent?.Id);
+                _state = _events.Count == 0 ? "empty" : "success";
+                return;
+            }
+
+            ApplyFailure(result.Error, result.StatusCode);
+        }
+        catch (HttpRequestException)
+        {
+            SetError("OFFLINE", LocalizedUiText.Get("Audit events could not be loaded while the service is unreachable."), null, "offline");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        _actorIdText = string.Empty;
+        _action = string.Empty;
+        _sourceStream = string.Empty;
+        _page = 1;
+        await SearchAsync();
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (_page > 1) { _page--; await SearchAsync(); }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (_page < TotalPages) { _page++; await SearchAsync(); }
+    }
+
+    private void SelectEvent(AdminAuditEventDto auditEvent) => _selectedEvent = auditEvent;
+
+    private async Task RequestExportAsync()
+    {
+        if (!TryActorId(out var actorId))
+        {
+            _exportErrorCode = "EXPORT_REQUEST_INVALID";
+            _exportMessage = LocalizedUiText.Get("Actor must be a valid identifier.");
+            return;
+        }
+
+        _exportBusy = true;
+        ClearExportError();
+        try
+        {
+            var result = await OperationsApi.CreateExportAsync(
+                new CreateAdminExportRequest(
+                    Guid.NewGuid(),
+                    "audit",
+                    new AdminAuditExportFilterDto(
+                        ActorId: actorId,
+                        Action: EmptyToNull(_action),
+                        SourceStream: EmptyToNull(_sourceStream))));
+            if (result.IsSuccess && result.Value is not null)
+            {
+                _exportJob = result.Value;
+                return;
+            }
+
+            ApplyExportFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            _exportErrorCode = "OFFLINE";
+            _exportMessage = LocalizedUiText.Get("The export request could not reach the service.");
+        }
+        finally
+        {
+            _exportBusy = false;
+        }
+    }
+
+    private async Task RefreshExportAsync()
+    {
+        if (_exportJob is null) { return; }
+        _exportBusy = true;
+        ClearExportError();
+        try
+        {
+            var result = await OperationsApi.GetExportStatusAsync(_exportJob.JobId);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                _exportJob = result.Value;
+                return;
+            }
+            ApplyExportFailure(result.Error);
+        }
+        catch (HttpRequestException)
+        {
+            _exportErrorCode = "OFFLINE";
+            _exportMessage = LocalizedUiText.Get("The export status could not reach the service.");
+        }
+        finally
+        {
+            _exportBusy = false;
+        }
+    }
+
+    private void DownloadExport()
+    {
+        if (CanDownload) { Navigation.NavigateTo(_exportJob!.DownloadUrl!, forceLoad: true); }
+    }
+
+    private bool TryActorId(out Guid? actorId)
+    {
+        actorId = null;
+        if (string.IsNullOrWhiteSpace(_actorIdText)) { return true; }
+        if (!Guid.TryParse(_actorIdText.Trim(), out var parsed)) { return false; }
+        actorId = parsed;
+        return true;
+    }
+
+    private void ApplyFailure(ApiError? error, HttpStatusCode statusCode)
+    {
+        var state = statusCode switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            _ => error?.Code is "AUDIT_FILTER_INVALID" or "PAGE_SIZE_INVALID" ? "validation-error" : "service-error"
+        };
+        SetError(error?.Code ?? "AUDIT_UNAVAILABLE", error?.Message ?? LocalizedUiText.Get("Audit events could not be loaded safely."), error?.CorrelationId, state);
+    }
+
+    private void ApplyExportFailure(ApiError? error)
+    {
+        if (error?.Code == "EXPORT_EXPIRED" && _exportJob is not null)
+        {
+            _exportJob = _exportJob with { State = "expired" };
+        }
+        _exportErrorCode = error?.Code ?? "EXPORT_UNAVAILABLE";
+        _exportMessage = error?.Message ?? LocalizedUiText.Get("The export operation could not be completed safely.");
+        _exportCorrelationId = error?.CorrelationId;
+    }
+
+    private void SetError(string code, string message, string? correlationId, string state)
+    {
+        _errorCode = code;
+        _errorMessage = message;
+        _correlationId = correlationId;
+        _state = state;
+        _events = [];
+        _totalCount = 0;
+    }
+
+    private void ClearError() { _errorCode = null; _errorMessage = null; _correlationId = null; }
+    private void ClearExportError() { _exportErrorCode = null; _exportMessage = null; _exportCorrelationId = null; }
+    private string ErrorHeading() => _state switch
+    {
+        "unauthorized" => LocalizedUiText.Get("Access denied"),
+        "session-expired" => LocalizedUiText.Get("Session expired"),
+        "validation-error" => LocalizedUiText.Get("Review audit filters"),
+        "offline" => LocalizedUiText.Get("Audit search is offline"),
+        _ => LocalizedUiText.Get("Audit search is unavailable")
+    };
+    private string AuditCaption() => _events.Count == 0
+        ? LocalizedUiText.Get("No server-authorized audit rows are loaded.")
+        : LocalizedUiText.Format("{0} scoped audit events on this page.", _events.Count);
+    private string ExportStateLabel() => _exportJob?.State switch
+    {
+        "pending" => LocalizedUiText.Get("Queued"),
+        "running" => LocalizedUiText.Get("Running"),
+        "complete" => LocalizedUiText.Get("Ready"),
+        "failed" => LocalizedUiText.Get("Failed"),
+        "expired" => LocalizedUiText.Get("Expired"),
+        _ => LocalizedUiText.Get("Not loaded")
+    };
+    private static string? EmptyToNull(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'");
+
+    private RenderFragment ChangeSummary(AdminRedactedChangeSummaryDto summary) => builder =>
+    {
+        var sequence = 0;
+        builder.OpenElement(sequence++, "dl");
+        foreach (var field in summary.Fields)
+        {
+            builder.OpenElement(sequence++, "div");
+            builder.OpenElement(sequence++, "dt");
+            builder.AddContent(sequence++, field.Name);
+            builder.CloseElement();
+            builder.OpenElement(sequence++, "dd");
+            builder.AddContent(sequence++, field.DisplayValue);
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+    };
+}

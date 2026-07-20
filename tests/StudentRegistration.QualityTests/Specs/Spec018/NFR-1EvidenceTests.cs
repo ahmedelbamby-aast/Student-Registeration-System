@@ -95,8 +95,14 @@ public sealed class Nfr1EvidenceTests
             "Testing",
             studentCount: 1);
 
-        Assert.Equal(5, credentials.Count);
+        Assert.Equal(4, credentials.Count);
         Assert.Equal(credentials.Count, store.Identities.Count);
+        Assert.DoesNotContain(
+            store.Identities,
+            identity => string.Equals(identity.UserName, "DUAL-0001", StringComparison.Ordinal));
+        Assert.All(
+            store.Identities.Where(identity => identity.StaffNumber is not null),
+            identity => Assert.Single(identity.Roles));
         foreach (var credential in credentials)
         {
             var identity = Assert.Single(
@@ -140,10 +146,14 @@ public sealed class Nfr1EvidenceTests
 
         public Task<IReadOnlySet<Guid>> ReconcileAsync(
             IReadOnlyList<DemoSeedIdentity> identities,
+            IReadOnlySet<Guid> retiredUserIds,
+            DateTime retiredAtUtc,
             string clientRequestId,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            Assert.Single(retiredUserIds);
+            Assert.Equal(DateTimeKind.Utc, retiredAtUtc.Kind);
             Identities = identities.ToArray();
             return Task.FromResult<IReadOnlySet<Guid>>(
                 identities.Select(identity => identity.UserId).ToHashSet());

@@ -27,24 +27,38 @@ public sealed class IdentitySeedStore : IIdentitySeedStore
 
     public Task<IReadOnlySet<Guid>> ReconcileAsync(
         IReadOnlyList<DemoSeedIdentity> identities,
+        IReadOnlySet<Guid> retiredUserIds,
+        DateTime retiredAtUtc,
         string clientRequestId,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(identities);
+        ArgumentNullException.ThrowIfNull(retiredUserIds);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientRequestId);
-        if (clientRequestId.Length > 100)
+        if (clientRequestId.Length > 100
+            || retiredAtUtc.Kind != DateTimeKind.Utc
+            || retiredUserIds.Contains(Guid.Empty)
+            || identities.Any(identity => retiredUserIds.Contains(identity.UserId)))
         {
-            throw new ArgumentOutOfRangeException(nameof(clientRequestId));
+            throw new ArgumentException(
+                "The synthetic identity reconciliation request is invalid.");
         }
 
         ValidateInput(identities);
         return ExecuteAtomicallyAsync(
-            () => ReconcileCoreAsync(identities, clientRequestId, cancellationToken),
+            () => ReconcileCoreAsync(
+                identities,
+                retiredUserIds,
+                retiredAtUtc,
+                clientRequestId,
+                cancellationToken),
             cancellationToken);
     }
 
     private async Task<IReadOnlySet<Guid>> ReconcileCoreAsync(
         IReadOnlyList<DemoSeedIdentity> identities,
+        IReadOnlySet<Guid> retiredUserIds,
+        DateTime retiredAtUtc,
         string clientRequestId,
         CancellationToken cancellationToken)
     {
@@ -58,6 +72,12 @@ public sealed class IdentitySeedStore : IIdentitySeedStore
         await ValidateExistingRowsAsync(
                 identities.Where(identity => existingIds.Contains(identity.UserId)).ToArray(),
                 existingById,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var retiredStateChanged = await RetireExistingUsersAsync(
+                retiredUserIds,
+                retiredAtUtc,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -108,7 +128,7 @@ public sealed class IdentitySeedStore : IIdentitySeedStore
             insertedIds.Add(identity.UserId);
         }
 
-        if (insertedIds.Count > 0)
+        if (insertedIds.Count > 0 || retiredStateChanged)
         {
             await _dbContext.SaveChangesAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -116,6 +136,50 @@ public sealed class IdentitySeedStore : IIdentitySeedStore
         }
 
         return insertedIds;
+    }
+
+    private async Task<bool> RetireExistingUsersAsync(
+        IReadOnlySet<Guid> retiredUserIds,
+        DateTime retiredAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (retiredUserIds.Count == 0)
+        {
+            return false;
+        }
+
+        var users = new List<ApplicationUser>();
+        var roles = new List<RoleAssignment>();
+        foreach (var batch in retiredUserIds.Chunk(QueryBatchSize))
+        {
+            users.AddRange(await _dbContext.Set<ApplicationUser>()
+                .Where(user => batch.Contains(user.Id))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false));
+            roles.AddRange(await _dbContext.Set<RoleAssignment>()
+                .Where(role => batch.Contains(role.ApplicationUserId)
+                    && role.EffectiveFromUtc < retiredAtUtc
+                    && (role.EffectiveToUtc == null || retiredAtUtc < role.EffectiveToUtc))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false));
+        }
+
+        var changed = false;
+        foreach (var user in users.Where(user => user.IsEnabled))
+        {
+            user.SetEnabled(
+                false,
+                Convert.ToHexString(RandomNumberGenerator.GetBytes(32)));
+            changed = true;
+        }
+
+        foreach (var role in roles)
+        {
+            role.EndAt(retiredAtUtc);
+            changed = true;
+        }
+
+        return changed;
     }
 
     private async Task ValidateExistingRowsAsync(

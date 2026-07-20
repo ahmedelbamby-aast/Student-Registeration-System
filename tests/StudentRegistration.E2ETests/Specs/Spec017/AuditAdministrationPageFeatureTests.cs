@@ -36,16 +36,38 @@ public sealed class AuditAdministrationPageBrowserTests(Spec008BrowserFixture fi
     {
         await using var context = await fixture.OpenContextAsync();
         var page = await context.NewPageAsync();
+        await page.RouteAsync("**/api/**", route =>
+            new Uri(route.Request.Url).AbsolutePath == "/api/admin/audit"
+                ? route.FulfillAsync(new()
+                {
+                    Status = 200,
+                    ContentType = "application/json",
+                    Body = "{\"items\":[],\"page\":1,\"pageSize\":20,\"totalCount\":0}"
+                })
+                : route.AbortAsync());
         await page.GotoAsync("/admin/audit", new()
         {
             WaitUntil = WaitUntilState.DOMContentLoaded
         });
 
-        await page.Locator("[data-route-id='ADM-09'][data-state='loading']").WaitForAsync();
+        await page.Locator("[data-route-id='ADM-09'][data-state='empty']").WaitForAsync();
         Assert.True(await page.GetByRole(
             AriaRole.Heading,
             new() { Name = "Scoped audit search", Exact = true }).IsVisibleAsync());
         Assert.Equal("100", await page.Locator("input[name='pageSize']").GetAttributeAsync("max"));
+        Assert.True(await page.GetByRole(
+            AriaRole.Button,
+            new() { Name = "Search audit", Exact = true }).IsEnabledAsync());
+        await page.GetByRole(AriaRole.Searchbox, new() { Name = "Action", Exact = true })
+            .FillAsync("registration.submitted");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Search audit", Exact = true })
+            .ClickAsync();
+        await page.Locator("[data-route-id='ADM-09'][data-state='empty']").WaitForAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = "Clear filters", Exact = true })
+            .ClickAsync();
+        Assert.Equal(string.Empty, await page.GetByRole(
+            AriaRole.Searchbox,
+            new() { Name = "Action", Exact = true }).InputValueAsync());
         Assert.True(await page.GetByRole(
             AriaRole.Button,
             new() { Name = "Download ready export", Exact = true }).IsDisabledAsync());

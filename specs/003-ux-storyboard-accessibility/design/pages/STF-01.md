@@ -124,16 +124,15 @@ downstream contributor versions remain `not-pinned`.
       "fixture": "STF-01-success-v1",
       "fixtureVersion": "frontend-fixture/1.0",
       "expectedContent": [
-        "Server-authorized Staff context status: one active Lecturer or TA context, or role-selection-required choices before assignments load",
-        "Multiple Staff claims appear only as authorized switch choices, render no assignments until selection, and are never unioned",
+        "Server-authorized Staff context status: exactly one active Lecturer or TA context",
+        "Combined Lecturer/TA accounts are rejected and assignments are never unioned",
         "Only assigned lecture, tutorial, or laboratory actions and warnings",
         "Success only when serverAccepted is true",
-        "Minimum journeys: Lecturer; TA; dual role; no assignment; stale assignment"
+        "Minimum journeys: Lecturer; TA; no assignment; stale assignment"
       ],
       "expectedFocusTarget": "Page heading unless a user action set focus",
       "liveRegion": "polite",
       "nextActions": [
-        "Select one authorized context",
         "Continue with an authorized route action"
       ],
       "testIds": [
@@ -320,7 +319,6 @@ normative; a forbidden item fails the planned route test.
 |---|---|---|---|---|---|---|
 | `STF-01-lecturer-v1` (Lecturer) | success | Lecturer context and only assigned lecture groups, colleagues, deadlines, and actions | TA-only or unassigned groups | Open timetable or assigned roster | `STF-01-COMP-STATE-SUCCESS` | `STF-01-E2E-PRIMARY` |
 | `STF-01-ta-v1` (TA) | success | TA context and only assigned tutorial/laboratory groups, colleagues, deadlines, and actions | Lecturer-only or unassigned groups | Open timetable or assigned roster | `STF-01-COMP-STATE-SUCCESS` | `STF-01-E2E-PRIMARY` |
-| `STF-01-dual-role-v1` (dual role) | success | role-selection-required status in an authorized session, server-returned Lecturer and TA choices, and no assignments until one context is selected | error announcement before a submitted action, combined assignments, privilege union, or client-created role | Select one authorized context | `STF-01-COMP-STATE-SUCCESS` | `STF-01-E2E-PRIMARY` |
 | `STF-01-no-assignment-v1` (no assignment) | empty | no assignment heading and availability/dashboard-safe actions | unrelated groups or Students | Open availability | `STF-01-COMP-STATE-EMPTY` | `STF-01-E2E-PRIMARY` |
 | `STF-01-stale-assignment-v1` (stale assignment) | stale | assignment-changed reason and refresh action without stale actions | opening the removed assignment | Refresh assignments | `STF-01-COMP-STATE-STALE` | `STF-01-E2E-FAILURE` |
 

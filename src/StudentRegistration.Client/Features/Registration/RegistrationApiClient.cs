@@ -169,6 +169,33 @@ public sealed class RegistrationApiClient
             "/api/student/registrations/current/timetable",
             cancellationToken);
 
+    public Task<RegistrationApiResult<Page<RegistrationHistoryRowDto>>>
+        GetAdminRegistrationHistoryAsync(
+            Guid studentId,
+            Guid termId,
+            int page = 1,
+            int pageSize = 20,
+            CancellationToken cancellationToken = default) =>
+        GetAsync<Page<RegistrationHistoryRowDto>>(
+            Query(
+                $"/api/admin/students/{RequiredId(studentId, nameof(studentId)):D}" +
+                $"/terms/{RequiredId(termId, nameof(termId)):D}/registrations",
+                ("page", page.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                ("pageSize", pageSize.ToString(System.Globalization.CultureInfo.InvariantCulture))),
+            cancellationToken);
+
+    public Task<RegistrationApiResult<RegistrationDetailDto>>
+        GetAdminRegistrationDetailAsync(
+            Guid studentId,
+            Guid termId,
+            Guid submissionId,
+            CancellationToken cancellationToken = default) =>
+        GetAsync<RegistrationDetailDto>(
+            $"/api/admin/students/{RequiredId(studentId, nameof(studentId)):D}" +
+            $"/terms/{RequiredId(termId, nameof(termId)):D}/registrations/" +
+            $"{RequiredId(submissionId, nameof(submissionId)):D}",
+            cancellationToken);
+
     private async Task<RegistrationCommandApiResult> SendRegistrationAsync<TRequest>(
         HttpMethod method,
         string path,

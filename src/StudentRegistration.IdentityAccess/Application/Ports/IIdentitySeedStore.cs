@@ -4,6 +4,8 @@ public interface IIdentitySeedStore
 {
     Task<IReadOnlySet<Guid>> ReconcileAsync(
         IReadOnlyList<DemoSeedIdentity> identities,
+        IReadOnlySet<Guid> retiredUserIds,
+        DateTime retiredAtUtc,
         string clientRequestId,
         CancellationToken cancellationToken);
 }

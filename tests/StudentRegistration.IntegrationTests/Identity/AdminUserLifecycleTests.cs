@@ -144,7 +144,7 @@ public sealed class AdminUserLifecycleTests
             ActorId,
             staffUserId,
             new UserRolesRequest(
-                ["TeachingAssistant", "Lecturer", "TeachingAssistant"],
+                ["TeachingAssistant", "TeachingAssistant"],
                 version,
                 "Updated teaching duties"),
             "trace-role");
@@ -153,12 +153,35 @@ public sealed class AdminUserLifecycleTests
         Assert.Equal(AdminUserLifecycleOutcome.Succeeded, roles.Outcome);
         Assert.True(enabled.Value!.Enabled);
         Assert.Equal(Convert.ToBase64String([2]), enabled.Value.RowVersion);
-        Assert.Equal(["Lecturer", "TeachingAssistant"], roles.Value!.Roles);
+        Assert.Equal(["TeachingAssistant"], roles.Value!.Roles);
         Assert.Equal(Convert.ToBase64String([2]), roles.Value.RowVersion);
         Assert.NotEqual("initial", store.User(disabledUserId).SecurityStamp);
         Assert.NotEqual("initial", store.User(staffUserId).SecurityStamp);
         Assert.Equal(2, store.SecurityEventCount);
         Assert.Equal(2, store.AuditEventCount);
+    }
+
+    [Fact]
+    public async Task Multiple_staff_roles_are_rejected_before_persistence()
+    {
+        var staffUserId = Guid.Parse("16000000-0000-0000-0000-000000000004");
+        var store = new GovernedStoreDouble(
+            User(staffUserId, "Teaching Staff", true, ["Lecturer"]));
+        var service = new AdminUserLifecycleService(store, TimeProvider.System);
+
+        var result = await service.ReplaceRolesAsync(
+            ActorId,
+            staffUserId,
+            new UserRolesRequest(
+                ["Lecturer", "TeachingAssistant"],
+                Convert.ToBase64String([1]),
+                "Invalid combined role"),
+            "trace-multiple-role");
+
+        Assert.Equal(AdminUserLifecycleOutcome.ValidationFailed, result.Outcome);
+        Assert.Equal(["Lecturer"], store.User(staffUserId).Roles);
+        Assert.Equal(0, store.SecurityEventCount);
+        Assert.Equal(0, store.AuditEventCount);
     }
 
     [Theory]

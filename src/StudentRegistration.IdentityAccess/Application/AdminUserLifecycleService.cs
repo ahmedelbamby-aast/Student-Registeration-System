@@ -491,6 +491,12 @@ public sealed class AdminUserLifecycleService
             normalized.Add(value);
         }
 
+        if (normalized.Count > 1)
+        {
+            roles = [];
+            return false;
+        }
+
         roles = normalized.Order(StringComparer.Ordinal).ToArray();
         return true;
     }

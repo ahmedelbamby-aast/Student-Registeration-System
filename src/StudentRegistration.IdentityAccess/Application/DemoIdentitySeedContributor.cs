@@ -7,7 +7,8 @@ namespace StudentRegistration.IdentityAccess.Application;
 
 public sealed class DemoIdentitySeedContributor
 {
-    private const string ClientRequestId = "spec007-demo-seed-v1";
+    private const string ClientRequestId = "spec007-demo-seed-v2";
+    private const string RetiredDualUserName = "DUAL-0001";
     private const string UniversityIdSeedPrefix = "AI26";
     private readonly IIdentitySeedStore _store;
     private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
@@ -41,8 +42,8 @@ public sealed class DemoIdentitySeedContributor
         }
 
         var provisionedAtUtc = _timeProvider.GetUtcNow().UtcDateTime;
-        var identities = new List<DemoSeedIdentity>(studentCount + 4);
-        var credentials = new List<GeneratedDemoCredential>(studentCount + 4);
+        var identities = new List<DemoSeedIdentity>(studentCount + 3);
+        var credentials = new List<GeneratedDemoCredential>(studentCount + 3);
 
         for (var index = 1; index <= studentCount; index++)
         {
@@ -61,11 +62,14 @@ public sealed class DemoIdentitySeedContributor
         AddIdentity("ADM-0001", null, "Demo Administrator", "ADM-0001", ["Admin"], provisionedAtUtc, identities, credentials);
         AddIdentity("LEC-0001", null, "Demo Lecturer", "LEC-0001", ["Lecturer"], provisionedAtUtc, identities, credentials);
         AddIdentity("TA-0001", null, "Demo Teaching Assistant", "TA-0001", ["TeachingAssistant"], provisionedAtUtc, identities, credentials);
-        AddIdentity("DUAL-0001", null, "Demo Lecturer and TA", "DUAL-0001", ["Lecturer", "TeachingAssistant"], provisionedAtUtc, identities, credentials);
 
-        // The store performs an idempotent reconciliation by stable synthetic keys.
+        // The store performs an idempotent reconciliation by stable synthetic keys
+        // and disables the retired dual-role demo identity if it exists from an
+        // earlier local database.
         var provisionedUserIds = await _store.ReconcileAsync(
             identities,
+            new HashSet<Guid> { StableGuid(IdentityTextNormalizer.NormalizeUserName(RetiredDualUserName)) },
+            provisionedAtUtc,
             ClientRequestId,
             cancellationToken);
         return credentials

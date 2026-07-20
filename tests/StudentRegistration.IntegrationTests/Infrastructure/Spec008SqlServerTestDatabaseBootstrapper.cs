@@ -392,7 +392,7 @@ public sealed class Spec008SqlServerTestDatabaseBootstrapper
             .ConfigureAwait(false);
         if (!termReady
             || !windowReady
-            || users.Length != _studentCount + 4
+            || users.Length != _studentCount + 3
             || students.Length != _studentCount
             || states.Length != _studentCount
             || attempts.Length != _studentCount * 2

@@ -142,33 +142,39 @@ public sealed class SqlAdminExportStore : IAdminExportStore
         DateTime claimedAtUtc,
         CancellationToken cancellationToken = default)
     {
-        await using var transaction = await _dbContext.Database
-            .BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)
-            .ConfigureAwait(false);
-        var candidate = await _dbContext.ExportJobs
-            .FromSqlInterpolated($$"""
-                SELECT TOP(1) *
-                FROM [administration].[ExportJobs] WITH (UPDLOCK, READPAST, ROWLOCK)
-                WHERE [AttemptCount] < 3
-                  AND
-                  (
-                      [State] = N'pending'
-                      OR ([State] = N'running' AND [LeaseExpiresAtUtc] <= {{claimedAtUtc}})
-                  )
-                ORDER BY [CreatedAtUtc], [JobId]
-                """)
-            .SingleOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-        if (candidate is null || !candidate.TryClaim(leaseOwnerId, claimedAtUtc))
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<ExportJob?>(async () =>
         {
-            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-            return null;
-        }
+            _dbContext.ChangeTracker.Clear();
+            await using var transaction = await _dbContext.Database
+                .BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken)
+                .ConfigureAwait(false);
+            var candidate = await _dbContext.ExportJobs
+                .FromSqlInterpolated($$"""
+                    SELECT TOP(1) *
+                    FROM [administration].[ExportJobs] WITH (UPDLOCK, READPAST, ROWLOCK)
+                    WHERE [AttemptCount] < 3
+                      AND
+                      (
+                          [State] = N'pending'
+                          OR ([State] = N'running' AND [LeaseExpiresAtUtc] <= {{claimedAtUtc}})
+                      )
+                    ORDER BY [CreatedAtUtc], [JobId]
+                    """)
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (candidate is null || !candidate.TryClaim(leaseOwnerId, claimedAtUtc))
+            {
+                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                _dbContext.ChangeTracker.Clear();
+                return null;
+            }
 
-        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        _dbContext.ChangeTracker.Clear();
-        return candidate;
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            _dbContext.ChangeTracker.Clear();
+            return candidate;
+        }).ConfigureAwait(false);
     }
 
     public async Task<bool> RenewLeaseAsync(
@@ -264,33 +270,39 @@ public sealed class SqlAdminExportStore : IAdminExportStore
         DateTime observedAtUtc,
         CancellationToken cancellationToken = default)
     {
-        await using var transaction = await _dbContext.Database
-            .BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken)
-            .ConfigureAwait(false);
-        var authorized = await _dbContext.ExportJobs
-            .FromSqlInterpolated($$"""
-                SELECT *
-                FROM [administration].[ExportJobs] WITH (UPDLOCK, HOLDLOCK)
-                WHERE [JobId] = {{jobId}}
-                  AND [ScopeHash] = {{scopeHash}}
-                  AND ([OwnerId] = {{actorUserId}} OR {{canReadAll}} = CAST(1 AS bit))
-                  AND [State] = N'complete'
-                  AND [ExpiresAtUtc] > {{observedAtUtc}}
-                """)
-            .AsNoTracking()
-            .AnyAsync(cancellationToken)
-            .ConfigureAwait(false);
-        if (!authorized)
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<bool>(async () =>
         {
-            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-            return false;
-        }
+            _dbContext.ChangeTracker.Clear();
+            await using var transaction = await _dbContext.Database
+                .BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken)
+                .ConfigureAwait(false);
+            var authorized = await _dbContext.ExportJobs
+                .FromSqlInterpolated($$"""
+                    SELECT *
+                    FROM [administration].[ExportJobs] WITH (UPDLOCK, HOLDLOCK)
+                    WHERE [JobId] = {{jobId}}
+                      AND [ScopeHash] = {{scopeHash}}
+                      AND ([OwnerId] = {{actorUserId}} OR {{canReadAll}} = CAST(1 AS bit))
+                      AND [State] = N'complete'
+                      AND [ExpiresAtUtc] > {{observedAtUtc}}
+                    """)
+                .AsNoTracking()
+                .AnyAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (!authorized)
+            {
+                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                _dbContext.ChangeTracker.Clear();
+                return false;
+            }
 
-        await _auditWriter.AppendAsync(downloadAudit, cancellationToken).ConfigureAwait(false);
-        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        _dbContext.ChangeTracker.Clear();
-        return true;
+            await _auditWriter.AppendAsync(downloadAudit, cancellationToken).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            _dbContext.ChangeTracker.Clear();
+            return true;
+        }).ConfigureAwait(false);
     }
 
     public async Task<bool> ExpireAsync(

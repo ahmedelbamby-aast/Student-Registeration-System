@@ -1,10 +1,19 @@
 @page "/admin/registrations"
+@using System.Net
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Registration
+@using StudentRegistration.Contracts.Academics
+@using StudentRegistration.Contracts.Admin
+@using StudentRegistration.Contracts.Registration
+@inject AcademicApiClient AcademicApi
+@inject AdminOperationsApiClient OperationsApi
+@inject RegistrationApiClient RegistrationApi
 
 <PageTitle>@LocalizedUiText.Get("Registration monitoring | Student Registration")</PageTitle>
 
 <div class="srs-registration-monitor"
      data-route-id="ADM-08"
-     data-state="loading"
+     data-state="@_state"
      data-supported-states="loading empty success stale degraded unauthorized session-expired offline">
     <a class="srs-registration-monitor__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
 
@@ -24,67 +33,90 @@
         <section class="srs-registration-monitor__intro" aria-labelledby="registration-monitor-heading">
             <p class="srs-registration-monitor__eyebrow">@LocalizedUiText.Get("Operations and reconciliation")</p>
             <h1 id="registration-monitor-heading">@LocalizedUiText.Get("Read-only registration monitoring")</h1>
-            <p>
-                @LocalizedUiText.Get("Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state.")
-            </p>
+            <p>@LocalizedUiText.Get("Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state.")</p>
         </section>
 
-        <section class="srs-registration-monitor__state"
-                 role="status"
-                 aria-live="polite"
-                 aria-busy="true">
-            <h2>@LocalizedUiText.Get("Loading registration observations")</h2>
-            <p>
-                @LocalizedUiText.Get("Metrics and registration records have not been loaded. No live, successful, or repaired state is inferred in the browser.")
-            </p>
-        </section>
+        @if (_busy)
+        {
+            <section class="srs-registration-monitor__state" role="status" aria-live="polite" aria-busy="true">
+                <h2>@LocalizedUiText.Get("Loading registration observations")</h2>
+                <p>@LocalizedUiText.Get("No live, successful, or repaired state is inferred in the browser.")</p>
+            </section>
+        }
+        else if (_errorCode is not null)
+        {
+            <section class="srs-registration-monitor__state" role="alert" aria-live="assertive">
+                <h2>@FailureHeading()</h2>
+                <p><strong>@_errorCode</strong></p>
+                <p>@_errorMessage</p>
+                @if (!string.IsNullOrWhiteSpace(_correlationId))
+                {
+                    <p>@LocalizedUiText.Get("Reference:") @_correlationId</p>
+                }
+                <button type="button" @onclick="RefreshMonitoringAsync">@LocalizedUiText.Get("Retry")</button>
+            </section>
+        }
+        else if (_searched && _records.Count == 0)
+        {
+            <section class="srs-registration-monitor__state" role="status" aria-live="polite">
+                <h2>@LocalizedUiText.Get("No matching registrations")</h2>
+                <p>@LocalizedUiText.Get("No server-authorized registrations match the current Student and term filters.")</p>
+            </section>
+        }
 
         <section class="srs-registration-monitor__metrics" aria-labelledby="registration-metrics-heading">
             <div>
                 <h2 id="registration-metrics-heading">@LocalizedUiText.Get("Operations metrics")</h2>
                 <p>
                     @LocalizedUiText.Get("Observation time:")
-                    <time data-testid="registration-monitor-observed-at">@LocalizedUiText.Get("Awaiting server observation")</time>
+                    <time data-testid="registration-monitor-observed-at" datetime="@_metrics?.ObservedAtUtc.ToString("O")">@ObservedAtLabel()</time>
                 </p>
+                @if (_metrics is not null)
+                {
+                    <p><strong>@LocalizedUiText.Get("Availability:")</strong> @_metrics.AvailabilityState</p>
+                }
             </div>
             <dl>
-                <div><dt>@LocalizedUiText.Get("Submissions")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
-                <div><dt>@LocalizedUiText.Get("Fill")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
-                <div><dt>@LocalizedUiText.Get("Failures")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
-                <div><dt>@LocalizedUiText.Get("Collisions")</dt><dd>@LocalizedUiText.Get("Not loaded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Submissions")</dt><dd>@MetricValue("http.request.throughput", "registration.submissions.succeeded")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Fill")</dt><dd>@MetricValue("registration.group.fill_rate")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Failures")</dt><dd>@MetricValue("http.request.unexpected_errors")</dd></div>
+                <div><dt>@LocalizedUiText.Get("Collisions")</dt><dd>@MetricValue("registration.capacity_conflicts", "registration.counter_mismatches")</dd></div>
             </dl>
-            <button type="button" disabled>@LocalizedUiText.Get("Refresh monitoring data")</button>
+            <button type="button" disabled="@_busy" @onclick="RefreshMonitoringAsync">@LocalizedUiText.Get("Refresh monitoring data")</button>
         </section>
 
         <section class="srs-registration-monitor__filters" aria-labelledby="registration-filter-heading">
             <h2 id="registration-filter-heading">@LocalizedUiText.Get("Registration filters")</h2>
-            <form aria-label="@(LocalizedUiText.Get("Registration monitoring filters"))">
+            <form aria-label="@(LocalizedUiText.Get("Registration monitoring filters"))"
+                  @onsubmit="FilterRegistrationsAsync" @onsubmit:preventDefault>
                 <label>
-                    @LocalizedUiText.Get("Student or submission")
-                    <input type="search" name="query" maxlength="100" />
+                    @LocalizedUiText.Get("Student ID, University ID, or name")
+                    <input type="search" name="query" maxlength="100" @bind="_studentQuery" @bind:event="oninput" />
+                </label>
+                <label>
+                    @LocalizedUiText.Get("Term ID")
+                    <input type="text" name="termId" maxlength="36" @bind="_termIdText" @bind:event="oninput" />
                 </label>
                 <label>
                     @LocalizedUiText.Get("Result")
-                    <select name="result">
+                    <select name="result" @bind="_resultFilter">
                         <option value="">@LocalizedUiText.Get("All results")</option>
                         <option value="accepted">@LocalizedUiText.Get("Accepted")</option>
                         <option value="rejected">@LocalizedUiText.Get("Rejected")</option>
                     </select>
                 </label>
-                <button type="button" disabled>@LocalizedUiText.Get("Filter registrations")</button>
-                <button type="reset">@LocalizedUiText.Get("Clear registration filters")</button>
+                <button type="submit" disabled="@_busy">@LocalizedUiText.Get("Filter registrations")</button>
+                <button type="button" disabled="@_busy" @onclick="ClearFiltersAsync">@LocalizedUiText.Get("Clear registration filters")</button>
             </form>
         </section>
 
         <div class="srs-registration-monitor__workspace">
             <section aria-labelledby="registration-results-heading">
                 <h2 id="registration-results-heading">@LocalizedUiText.Get("Submission and fill results")</h2>
-                <div class="srs-registration-monitor__table-region"
-                     role="region"
-                     aria-label="@(LocalizedUiText.Get("Registration monitoring results"))"
-                     tabindex="0">
+                <div class="srs-registration-monitor__table-region" role="region"
+                     aria-label="@(LocalizedUiText.Get("Registration monitoring results"))" tabindex="0">
                     <table data-testid="registration-monitor-table">
-                        <caption>@LocalizedUiText.Get("No server-authorized registration rows are loaded.")</caption>
+                        <caption>@RecordsCaption()</caption>
                         <thead>
                             <tr>
                                 <th scope="col">@LocalizedUiText.Get("Submitted")</th>
@@ -95,53 +127,356 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="5">@LocalizedUiText.Get("No matching registrations are loaded.")</td>
-                            </tr>
+                            @if (VisibleRecords.Count == 0)
+                            {
+                                <tr><td colspan="5">@LocalizedUiText.Get("No matching registrations are loaded.")</td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var record in VisibleRecords)
+                                {
+                                    <tr @key="record.SubmissionId">
+                                        <td><time datetime="@record.SubmittedAtUtc.ToUniversalTime().ToString("O")">@FormatDate(record.SubmittedAtUtc)</time></td>
+                                        <td>@(_matchedStudent?.UniversityId ?? _studentQuery)</td>
+                                        <td>@(record.Reference ?? LocalizedUiText.Get("Not issued"))</td>
+                                        <td>@record.Status</td>
+                                        <td><button type="button" disabled="@_busy" @onclick="() => OpenDetailAsync(record.SubmissionId)">@LocalizedUiText.Get("Open submission detail")</button></td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </div>
 
-                <div class="srs-registration-monitor__semantic-alternative"
-                     data-testid="registration-monitor-card-list"
+                <div class="srs-registration-monitor__semantic-alternative" data-testid="registration-monitor-card-list"
                      aria-label="@(LocalizedUiText.Get("Registration results semantic alternative"))">
                     <h3>@LocalizedUiText.Get("Registration result summaries")</h3>
-                    <p>@LocalizedUiText.Get("No matching registrations are loaded.")</p>
+                    @if (VisibleRecords.Count == 0)
+                    {
+                        <p>@LocalizedUiText.Get("No matching registrations are loaded.")</p>
+                    }
+                    else
+                    {
+                        <ol>
+                            @foreach (var record in VisibleRecords)
+                            {
+                                <li>@FormatDate(record.SubmittedAtUtc) · @record.Status · @(record.Reference ?? LocalizedUiText.Get("Not issued"))</li>
+                            }
+                        </ol>
+                    }
                 </div>
 
                 <nav class="srs-registration-monitor__pagination" aria-label="@(LocalizedUiText.Get("Registration result pages"))">
-                    <button type="button" disabled>@LocalizedUiText.Get("Previous page")</button>
-                    <span>@LocalizedUiText.Get("Page 1 of 1")</span>
-                    <button type="button" disabled>@LocalizedUiText.Get("Next page")</button>
+                    <button type="button" disabled="@(_busy || _page <= 1 || _matchedStudent is null)" @onclick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</button>
+                    <span>@LocalizedUiText.Format("Page {0} of {1}", _page, TotalPages)</span>
+                    <button type="button" disabled="@(_busy || _page >= TotalPages || _matchedStudent is null)" @onclick="NextPageAsync">@LocalizedUiText.Get("Next page")</button>
                 </nav>
             </section>
 
             <aside class="srs-registration-monitor__detail" aria-labelledby="receipt-detail-heading">
                 <h2 id="receipt-detail-heading">@LocalizedUiText.Get("Selected receipt detail")</h2>
-                <p>@LocalizedUiText.Get("Open a server-authorized submission to inspect its immutable receipt summary.")</p>
-                <button type="button" disabled>@LocalizedUiText.Get("Open submission detail")</button>
-                <button type="button" disabled>@LocalizedUiText.Get("Open Student profile")</button>
+                @if (_detail is null)
+                {
+                    <p>@LocalizedUiText.Get("Open a server-authorized submission to inspect its immutable receipt summary.")</p>
+                }
+                else if (_detail.Receipt is not null)
+                {
+                    <dl>
+                        <div><dt>@LocalizedUiText.Get("Receipt")</dt><dd>@_detail.Receipt.Reference</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Result")</dt><dd>@_detail.Receipt.ResultCode</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Credits")</dt><dd>@_detail.Receipt.TotalCredits</dd></div>
+                        <div><dt>@LocalizedUiText.Get("Groups")</dt><dd>@_detail.Receipt.Groups.Count</dd></div>
+                    </dl>
+                }
+                else if (_detail.Rejection is not null)
+                {
+                    <p><strong>@_detail.Rejection.ResultCode</strong></p>
+                    <p>@_detail.Rejection.SafeMessage</p>
+                    <p>@LocalizedUiText.Get("No partial registration:") @(_detail.Rejection.NoPartialRegistration ? LocalizedUiText.Get("Yes") : LocalizedUiText.Get("No"))</p>
+                }
+                @if (_matchedStudent is not null)
+                {
+                    <a href="@StudentProfilePath()">@LocalizedUiText.Get("Open Student profile")</a>
+                }
             </aside>
         </div>
 
         <section class="srs-registration-monitor__alerts" aria-labelledby="reconciliation-alert-heading">
             <h2 id="reconciliation-alert-heading">@LocalizedUiText.Get("Reconciliation alerts")</h2>
-            <p>@LocalizedUiText.Get("No collision, paused-group, repaired, stale, or degraded observation is loaded.")</p>
-            <p>
-                @LocalizedUiText.Get("A server alert keeps its detected timestamp, affected group, state, and") <code>@LocalizedUiText.Get("supportReferencePath")</code> @LocalizedUiText.Get("together.")
-            </p>
-            <a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a>
+            @if (_metrics?.ReconciliationAlerts is not { Count: > 0 })
+            {
+                <p>@LocalizedUiText.Get("No collision, paused-group, repaired, stale, or degraded observation is loaded.")</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var alert in _metrics.ReconciliationAlerts)
+                    {
+                        <li>
+                            <strong>@alert.Metric</strong>: @alert.ObservedValue / @alert.Threshold
+                            <time datetime="@alert.ObservedAtUtc.ToUniversalTime().ToString("O")">@FormatDate(alert.ObservedAtUtc)</time>
+                            <a href="@SafeSupportPath(alert.SupportReferencePath)">@LocalizedUiText.Get("Open safe support reference")</a>
+                        </li>
+                    }
+                </ul>
+            }
+            <p>@LocalizedUiText.Get("Each server alert keeps its timestamp and supportReferencePath together.")</p>
         </section>
 
         <section class="srs-registration-monitor__notice" role="note">
             <h2>@LocalizedUiText.Get("Observation only")</h2>
-            <p>
-                @LocalizedUiText.Get("No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners.")
-            </p>
+            <p>@LocalizedUiText.Get("No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners.")</p>
         </section>
     </main>
 
-    <footer>
-        <a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a>
-    </footer>
+    <footer><a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a></footer>
 </div>
+
+@code {
+    private AdminOperationsMetricsDto? _metrics;
+    private IReadOnlyList<RegistrationHistoryRowDto> _records = [];
+    private RegistrationDetailDto? _detail;
+    private AdminStudentLocatorDto? _matchedStudent;
+    private string _state = "loading";
+    private string _studentQuery = string.Empty;
+    private string _termIdText = string.Empty;
+    private string _resultFilter = string.Empty;
+    private Guid? _registrationWindowId;
+    private int _page = 1;
+    private const int PageSize = 20;
+    private int _totalCount;
+    private bool _busy;
+    private bool _searched;
+    private string? _errorCode;
+    private string? _errorMessage;
+    private string? _correlationId;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(_totalCount / (double)PageSize));
+    private IReadOnlyList<RegistrationHistoryRowDto> VisibleRecords => string.IsNullOrWhiteSpace(_resultFilter)
+        ? _records
+        : _records.Where(record => string.Equals(record.Status, _resultFilter, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+    protected override Task OnInitializedAsync() => RefreshMonitoringAsync();
+
+    private async Task RefreshMonitoringAsync()
+    {
+        _busy = true;
+        ClearError();
+        try
+        {
+            var contextResult = await AcademicApi.GetAppContextAsync();
+            if (!contextResult.IsSuccess || contextResult.Value is null)
+            {
+                ApplyFailure(contextResult.Error, contextResult.StatusCode);
+                return;
+            }
+
+            if (!string.Equals(contextResult.Value.ActiveRole, "Admin", StringComparison.Ordinal))
+            {
+                SetError("FORBIDDEN", LocalizedUiText.Get("An active Admin context is required."), null, "unauthorized");
+                return;
+            }
+
+            if (contextResult.Value.RegistrationTerm is null
+                || contextResult.Value.RegistrationWindow is null
+                || !Guid.TryParse(contextResult.Value.RegistrationTerm.Id, out var termId)
+                || !Guid.TryParse(contextResult.Value.RegistrationWindow.Id, out var windowId))
+            {
+                SetError("REGISTRATION_WINDOW_NOT_FOUND", LocalizedUiText.Get("No current registration window is available for monitoring."), null, "degraded");
+                return;
+            }
+
+            _termIdText = termId.ToString("D");
+            _registrationWindowId = windowId;
+            var metricsResult = await OperationsApi.GetMetricsAsync(termId, windowId);
+            if (!metricsResult.IsSuccess || metricsResult.Value is null)
+            {
+                ApplyFailure(metricsResult.Error, metricsResult.StatusCode);
+                return;
+            }
+
+            _metrics = metricsResult.Value;
+            _state = _metrics.AvailabilityState.Trim().ToLowerInvariant() switch
+            {
+                "live" => "success",
+                "stale" => "stale",
+                _ => "degraded"
+            };
+        }
+        catch (HttpRequestException)
+        {
+            SetError("OFFLINE", LocalizedUiText.Get("Registration monitoring could not reach the service."), null, "offline");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task FilterRegistrationsAsync()
+    {
+        _searched = true;
+        _page = 1;
+        await LoadRegistrationsAsync(resolveStudent: true);
+    }
+
+    private async Task LoadRegistrationsAsync(bool resolveStudent)
+    {
+        if (!Guid.TryParse(_termIdText, out var termId) || string.IsNullOrWhiteSpace(_studentQuery))
+        {
+            SetError("REGISTRATION_FILTER_INVALID", LocalizedUiText.Get("Enter a Student identifier and a valid term identifier."), null, "empty");
+            return;
+        }
+
+        _busy = true;
+        ClearError();
+        try
+        {
+            if (resolveStudent)
+            {
+                _matchedStudent = await ResolveStudentAsync(termId);
+                if (_matchedStudent is null)
+                {
+                    _records = [];
+                    _totalCount = 0;
+                    _state = "empty";
+                    return;
+                }
+            }
+
+            if (_matchedStudent is null || !Guid.TryParse(_matchedStudent.StudentId, out var studentId))
+            {
+                SetError("STUDENT_NOT_FOUND", LocalizedUiText.Get("No single authorized Student matched the filter."), null, "empty");
+                return;
+            }
+
+            var result = await RegistrationApi.GetAdminRegistrationHistoryAsync(studentId, termId, _page, PageSize);
+            if (result.IsSuccess && result.Value is not null)
+            {
+                _records = result.Value.Items;
+                _page = result.Value.PageNumber;
+                _totalCount = result.Value.TotalCount;
+                _detail = null;
+                _state = _records.Count == 0 ? "empty" : "success";
+                return;
+            }
+            ApplyFailure(result.Error, result.StatusCode);
+        }
+        catch (HttpRequestException)
+        {
+            SetError("OFFLINE", LocalizedUiText.Get("Registration records could not reach the service."), null, "offline");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<AdminStudentLocatorDto?> ResolveStudentAsync(Guid termId)
+    {
+        if (Guid.TryParse(_studentQuery.Trim(), out var directStudentId))
+        {
+            return new AdminStudentLocatorDto(
+                directStudentId.ToString("D"),
+                _studentQuery.Trim(),
+                LocalizedUiText.Get("Not supplied"),
+                LocalizedUiText.Get("Not supplied"),
+                LocalizedUiText.Get("Not supplied"),
+                LocalizedUiText.Get("Direct identifier"));
+        }
+
+        var search = await AcademicApi.SearchAdminStudentsAsync(termId.ToString("D"), _studentQuery.Trim(), pageSize: 20);
+        if (!search.IsSuccess || search.Value is null)
+        {
+            ApplyFailure(search.Error, search.StatusCode);
+            return null;
+        }
+
+        var exact = search.Value.Items.Where(student =>
+            string.Equals(student.UniversityId, _studentQuery.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (exact.Length == 1) { return exact[0]; }
+        return search.Value.TotalCount == 1 ? search.Value.Items.Single() : null;
+    }
+
+    private async Task OpenDetailAsync(Guid submissionId)
+    {
+        if (_matchedStudent is null
+            || !Guid.TryParse(_matchedStudent.StudentId, out var studentId)
+            || !Guid.TryParse(_termIdText, out var termId)) { return; }
+        _busy = true;
+        ClearError();
+        try
+        {
+            var result = await RegistrationApi.GetAdminRegistrationDetailAsync(studentId, termId, submissionId);
+            if (result.IsSuccess && result.Value is not null) { _detail = result.Value; return; }
+            ApplyFailure(result.Error, result.StatusCode);
+        }
+        catch (HttpRequestException)
+        {
+            SetError("OFFLINE", LocalizedUiText.Get("Registration detail could not reach the service."), null, "offline");
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task PreviousPageAsync() { if (_page > 1) { _page--; await LoadRegistrationsAsync(false); } }
+    private async Task NextPageAsync() { if (_page < TotalPages) { _page++; await LoadRegistrationsAsync(false); } }
+    private Task ClearFiltersAsync()
+    {
+        _studentQuery = string.Empty;
+        _resultFilter = string.Empty;
+        _records = [];
+        _detail = null;
+        _matchedStudent = null;
+        _page = 1;
+        _totalCount = 0;
+        _searched = false;
+        ClearError();
+        _state = _metrics?.AvailabilityState.Trim().ToLowerInvariant() switch { "live" => "success", "stale" => "stale", _ => "degraded" };
+        return Task.CompletedTask;
+    }
+
+    private void ApplyFailure(ApiError? error, HttpStatusCode statusCode)
+    {
+        var state = statusCode switch
+        {
+            HttpStatusCode.Unauthorized => "session-expired",
+            HttpStatusCode.Forbidden => "unauthorized",
+            HttpStatusCode.NotFound => "empty",
+            _ => "degraded"
+        };
+        SetError(error?.Code ?? "REGISTRATION_MONITOR_UNAVAILABLE", error?.Message ?? LocalizedUiText.Get("Registration monitoring could not be loaded safely."), error?.CorrelationId, state);
+    }
+
+    private void SetError(string code, string message, string? correlationId, string state)
+    {
+        _errorCode = code; _errorMessage = message; _correlationId = correlationId; _state = state;
+    }
+    private void ClearError() { _errorCode = null; _errorMessage = null; _correlationId = null; }
+    private string FailureHeading() => _state switch
+    {
+        "unauthorized" => LocalizedUiText.Get("Access denied"),
+        "session-expired" => LocalizedUiText.Get("Session expired"),
+        "offline" => LocalizedUiText.Get("Registration monitoring is offline"),
+        "empty" => LocalizedUiText.Get("No matching registrations"),
+        _ => LocalizedUiText.Get("Registration monitoring is degraded")
+    };
+    private string ObservedAtLabel() => _metrics is null ? LocalizedUiText.Get("Awaiting server observation") : FormatDate(_metrics.ObservedAtUtc);
+    private string MetricValue(params string[] names)
+    {
+        var metric = _metrics?.Metrics.FirstOrDefault(item => names.Contains(item.Name, StringComparer.Ordinal));
+        return metric is null ? LocalizedUiText.Get("Not reported") : metric.Value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
+    }
+    private string RecordsCaption() => _records.Count == 0
+        ? LocalizedUiText.Get("No server-authorized registration rows are loaded.")
+        : LocalizedUiText.Format("{0} server-authorized registration rows on this page.", _records.Count);
+    private string StudentProfilePath() => _matchedStudent is null
+        ? "/admin/students"
+        : $"/admin/students?termId={Uri.EscapeDataString(_termIdText)}&query={Uri.EscapeDataString(_matchedStudent.UniversityId)}";
+    private static string SafeSupportPath(string? supportReferencePath) =>
+        !string.IsNullOrWhiteSpace(supportReferencePath)
+        && supportReferencePath.StartsWith("/admin/audit", StringComparison.Ordinal)
+        && !supportReferencePath.StartsWith("//", StringComparison.Ordinal)
+            ? supportReferencePath
+            : "/status/support";
+    private static string FormatDate(DateTime value) => value.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'");
+}

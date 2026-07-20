@@ -11,7 +11,7 @@ public sealed class StaffDashboardPageFeatureTests
     {
         var design = RepositoryFiles.Read("specs/003-ux-storyboard-accessibility/design/pages/STF-01.md");
         RepositoryFiles.ContainsAll(design,
-            "STF-01-lecturer-v1", "STF-01-ta-v1", "STF-01-dual-role-v1",
+            "STF-01-lecturer-v1", "STF-01-ta-v1",
             "STF-01-no-assignment-v1", "STF-01-stale-assignment-v1");
         Assert.True(RepositoryFiles.Exists("src/StudentRegistration.Client/Pages/StaffDashboardPage.razor"));
     }

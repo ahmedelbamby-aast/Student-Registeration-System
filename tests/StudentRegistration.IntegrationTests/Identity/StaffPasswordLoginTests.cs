@@ -5,7 +5,7 @@ namespace StudentRegistration.IntegrationTests.Identity;
 public sealed class StaffPasswordLoginTests
 {
     [Fact]
-    public async Task Staff_login_derives_multi_role_context_only_after_password_verification()
+    public async Task Staff_login_rejects_accounts_with_more_than_one_staff_role()
     {
         var fixture = new IdentityServiceTestFixture();
         fixture.AddStaff(
@@ -19,10 +19,7 @@ public sealed class StaffPasswordLoginTests
             "correct horse battery staple");
         var failure = await service.AuthenticateAsync("teacher.one", "incorrect");
 
-        Assert.True(success.Succeeded);
-        Assert.True(success.RoleSelectionRequired);
-        Assert.Null(success.ActiveRole);
-        Assert.Equal(["Lecturer", "TeachingAssistant"], success.AuthorizedRoles);
+        Assert.False(success.Succeeded);
         Assert.False(failure.Succeeded);
     }
 
@@ -40,7 +37,7 @@ public sealed class StaffPasswordLoginTests
             "IsEnabled",
             "LockoutEndUtc",
             "GetEffectiveRolesAsync",
-            "RoleSelectionRequired",
+            "effectiveRoles.Length != 1",
             "AuthenticationFailed");
         Assert.DoesNotContain("request.Role", source, StringComparison.Ordinal);
         Assert.DoesNotContain("SecondFactor", source, StringComparison.Ordinal);

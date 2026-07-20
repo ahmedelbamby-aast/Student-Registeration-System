@@ -50,6 +50,20 @@ The design deliberately keeps the first release small:
 - [Specification index](specs/README.md)
 - [Requirement traceability](docs/TRACEABILITY.md)
 
+## Run the local demo
+
+With .NET SDK `10.0.301`, Docker Desktop, and PowerShell 7 installed, one
+command builds the solution, starts SQL Server, applies migrations, seeds the
+synthetic Development database, and hosts the API plus Blazor client:
+
+```powershell
+.\ops\scripts\Start-LocalDemo.ps1 -TrustHttpsCertificate
+```
+
+See the [manual role testing guide](docs/MANUAL_ROLE_TESTING.md) for every
+login and route. Press `Ctrl+C` to stop the web app, then run
+`.\ops\scripts\Stop-LocalDemo.ps1` to stop SQL while preserving its volume.
+
 ## Delivery baseline
 
 - 18 specifications

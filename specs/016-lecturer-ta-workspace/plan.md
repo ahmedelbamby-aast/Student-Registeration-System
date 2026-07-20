@@ -3,6 +3,9 @@
 **Branch**: 016-lecturer-ta-workspace | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
 
+**2026-07-20 owner amendment:** Lecturer and TeachingAssistant are separate,
+single-role account contexts; the combined-role demo fixture is frozen.
+
 ## Summary
 
 Deliver shared Lecturer/TA pages and assignment-scoped queries in

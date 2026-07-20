@@ -11,6 +11,8 @@ public sealed class RegistrationAdministrationPageContractTests
             "specs/003-ux-storyboard-accessibility/design/pages/ADM-08.md");
         var page = RepositoryFiles.Read(
             "src/StudentRegistration.Client/Pages/RegistrationAdministrationPage.razor");
+        var client = RepositoryFiles.Read(
+            "src/StudentRegistration.Client/Features/Registration/RegistrationApiClient.cs");
 
         RepositoryFiles.ContainsAll(
             design,
@@ -23,6 +25,11 @@ public sealed class RegistrationAdministrationPageContractTests
             "data-route-id=\"ADM-08\"",
             "Read-only registration monitoring",
             "No repair or correction actions are available");
+        RepositoryFiles.ContainsAll(
+            client,
+            "GetAdminRegistrationHistoryAsync",
+            "GetAdminRegistrationDetailAsync",
+            "/api/admin/students/{RequiredId(studentId, nameof(studentId)):D}");
         Assert.DoesNotContain("MapPost", page, StringComparison.Ordinal);
         Assert.DoesNotContain("RepairAsync", page, StringComparison.Ordinal);
     }

@@ -1,6 +1,10 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using StudentRegistration.Client;
+using StudentRegistration.Client.Features.Academics;
+using StudentRegistration.Client.Features.Operations;
+using StudentRegistration.Client.Features.Registration;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.Client.UnitTests.Pages;
@@ -11,6 +15,13 @@ public sealed class RegistrationAdministrationPageComponentTests
     public void Adm_08_renders_the_honest_loading_shell_without_mutation_controls()
     {
         using var context = new BunitContext();
+        var httpClient = new HttpClient(new PendingHandler())
+        {
+            BaseAddress = new Uri("https://localhost")
+        };
+        context.Services.AddSingleton(new AcademicApiClient(httpClient));
+        context.Services.AddSingleton(new AdminOperationsApiClient(httpClient));
+        context.Services.AddSingleton(new RegistrationApiClient(httpClient));
         var pageType = typeof(App).Assembly.GetType(
             "StudentRegistration.Client.Pages.RegistrationAdministrationPage");
         Assert.NotNull(pageType);
@@ -48,5 +59,16 @@ public sealed class RegistrationAdministrationPageComponentTests
         Assert.DoesNotContain("Drop registration", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Withdraw", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Resume group", page, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class PendingHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("Unreachable.");
+        }
     }
 }

@@ -8,6 +8,10 @@
 **Target:** Sprint 7<br>
 **Dependencies:** SPEC-003, SPEC-007, SPEC-010, SPEC-015, SPEC-018<br>
 
+**Owner-approved demo amendment (2026-07-20):** Lecturer and Teaching
+Assistant remain separate account roles. The combined-role fixture is frozen;
+each enabled staff account has exactly one server-derived staff role.
+
 ## Context
 
 Lecturers and TAs share staff components but have different assignment scopes.
@@ -131,8 +135,8 @@ alternative.
 
 ## Edge Cases
 
-- EC-1: Staff has both Lecturer and TA assignments -> display authorized
-  contexts without duplicate group entries.
+- EC-1: Duplicate assignment rows for the same active staff role -> display
+  each authorized group once.
 - EC-2: Assignment removed while page open -> stale refresh denies roster.
 - EC-3: Concurrent availability edit -> stale version gets 409.
 - EC-4: No assignments -> clear empty state, no broad search access.

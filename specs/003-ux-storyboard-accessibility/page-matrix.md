@@ -28,7 +28,7 @@ families; executable tests are not created in this phase.
 | ADM-07 | /admin/resources | SPEC-010/017 | Room/availability/impact-alert table and grid alternative | imported, empty, unavailable, overlap, stale, keyboard text entry |
 | ADM-08 | /admin/registrations | SPEC-014/015/017 | Read-only submission/fill/reconciliation monitor | live, no results, stale, degraded, collision, paused-group support reference, no repair/correction action |
 | ADM-09 | /admin/audit | SPEC-017 | Scoped search, immutable-event detail, export job | empty, pagination, queued, ready, failed, expired, restricted |
-| STF-01 | /staff | SPEC-007/008/016 | Staff shell, active role context and switch, assignments, warnings | Lecturer, TA, dual role, no assignment, stale assignment |
+| STF-01 | /staff | SPEC-007/008/016 | Staff shell, server-derived active role, assignments, warnings | Lecturer, TA, no assignment, stale assignment |
 | STF-02 | /staff/timetable | SPEC-016 | Calendar/list switcher and assignment details | current, history, no assignments, stale, equivalent views |
 | STF-03 | /staff/groups/{groupId}/roster | SPEC-016 | Scoped roster table and paging | assigned, unassigned 403, empty, paged, assignment removed |
 | STF-04 | /staff/availability | SPEC-016 | Text-range editor and timetable alternative | draft, saved, overlap, deadline, published warning, stale edit |

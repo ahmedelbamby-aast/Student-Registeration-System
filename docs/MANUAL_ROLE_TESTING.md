@@ -22,8 +22,8 @@ given to a test participant.
 The normal seed creates:
 
 - 25 synthetic students: `AI2600001` through `AI2600025`.
-- One Administrator, one Lecturer, one Teaching Assistant, and one dual-role
-  Lecturer/Teaching Assistant.
+- One Administrator, one Lecturer, and one Teaching Assistant. Each enabled
+  account has exactly one role.
 - One open demo academic term and registration window.
 - A synthetic academic profile for each student.
 
@@ -55,7 +55,6 @@ one-command seed for that complete data set.
 | Administrator | `Admin` | `ADM-0001` | `/staff/login` | `Demo@2026-ADM-0001` |
 | Lecturer | `Lecturer` | `LEC-0001` | `/staff/login` | `Demo@2026-LEC-0001` |
 | Teaching Assistant | `TeachingAssistant` | `TA-0001` | `/staff/login` | `Demo@2026-TA-0001` |
-| Lecturer and Teaching Assistant | `Lecturer`, `TeachingAssistant` | `DUAL-0001` | `/staff/login` | `Demo@2026-DUAL-0001` |
 
 The student activation value is called a PIN/password in the specifications.
 It is not a separate numeric OTP and it is not MFA. On a fresh database,
@@ -76,121 +75,51 @@ Initial activation secret: Demo@2026-AI2600002
 Suggested local-only new password: DemoLogin@2026!!
 ```
 
-## Start the system from a clean terminal
+## Start the complete local demo
 
-Run every command in this section from the repository root.
-
-### 1. Check the tools
-
-```powershell
-Set-Location 'C:\Users\Ahmed\Documents\Student Registeration System'
-dotnet --version
-docker --version
-dotnet dev-certs https --trust
-```
-
-The repository pins .NET SDK `10.0.301`.
-
-### 2. Start SQL Server
-
-Choose a local-only SQL password. The value below is a demo example.
+Install the pinned .NET SDK `10.0.301`, Docker Desktop with Linux containers,
+and PowerShell 7. Then run this one command from the repository root:
 
 ```powershell
-$env:SRS_SQL_SA_PASSWORD = 'LocalDemo-Only-Change-Me-2026!'
-$env:SRS_SQL_PORT = '1433'
-
-docker compose -f .\infra\docker\compose.development.yml up -d
-docker compose -f .\infra\docker\compose.development.yml ps
+.\ops\scripts\Start-LocalDemo.ps1 -TrustHttpsCertificate
 ```
 
-Wait until SQL Server reports `healthy`:
+The launcher performs all required work in dependency order:
+
+1. Checks .NET, Docker, Compose, and HTTPS certificate trust.
+2. Creates random local SQL and certificate passwords when they do not exist.
+3. Saves those values outside Git in .NET User Secrets.
+4. Creates or reuses the Git-ignored Data Protection PFX.
+5. Starts SQL Server and waits for Docker health.
+6. Restores and builds the solution, applies migrations, and idempotently seeds
+   the synthetic Development database.
+7. Starts the API and hosted Blazor WebAssembly client at
+   `https://localhost:7078`.
+
+Keep this terminal open. Press `Ctrl+C` to stop the web application. SQL data
+is preserved so the next startup is faster. On later runs, skip the build when
+source has not changed:
 
 ```powershell
-docker compose -f .\infra\docker\compose.development.yml ps --format json
+.\ops\scripts\Start-LocalDemo.ps1 -SkipBuild
 ```
 
-If it does not become healthy, inspect its log:
+To prepare and verify SQL/migrations/seed without starting the long-running
+web process:
 
 ```powershell
-docker compose -f .\infra\docker\compose.development.yml logs sqlserver
+.\ops\scripts\Start-LocalDemo.ps1 -PrepareOnly
 ```
 
-### 3. Create the local Data Protection certificate
+If an older local volume was initialized with another SQL password, or a fully
+fresh demo is required, explicitly delete and recreate only the local demo
+database:
 
 ```powershell
-$certificatePasswordText = 'Local-Pfx-Only-Change-Me-2026!'
-$certificatePassword = ConvertTo-SecureString $certificatePasswordText -AsPlainText -Force
-$certificate = New-SelfSignedCertificate `
-    -Subject 'CN=StudentRegistration Local Data Protection' `
-    -CertStoreLocation 'Cert:\CurrentUser\My' `
-    -KeyAlgorithm RSA `
-    -KeyLength 3072 `
-    -KeyExportPolicy Exportable `
-    -NotAfter (Get-Date).AddYears(2)
-
-$certificatePath = Join-Path (Get-Location) '.local\secrets\data-protection.pfx'
-New-Item (Split-Path $certificatePath) -ItemType Directory -Force | Out-Null
-Export-PfxCertificate `
-    -Cert $certificate `
-    -FilePath $certificatePath `
-    -Password $certificatePassword `
-    -Force | Out-Null
+.\ops\scripts\Start-LocalDemo.ps1 -ResetDatabase
 ```
 
-### 4. Set the Development configuration
-
-Keep using the same PowerShell window. These values disappear when the window
-is closed.
-
-```powershell
-$env:ASPNETCORE_ENVIRONMENT = 'Development'
-$env:ConnectionStrings__StudentRegistration = "Server=localhost,$env:SRS_SQL_PORT;Database=StudentRegistration_Development;User ID=sa;Password=$env:SRS_SQL_SA_PASSWORD;Encrypt=True;TrustServerCertificate=True"
-$env:DataProtection__ApplicationName = 'AASTMT.StudentRegistration'
-$env:DataProtection__Repository = 'SqlServer'
-$env:DataProtection__Encryption = 'ExternalCertificate'
-$env:DataProtection__CertificatePath = $certificatePath
-$env:DataProtection__CertificatePassword = $certificatePasswordText
-$env:DemoDatabase__StudentCount = '25'
-```
-
-### 5. Restore, migrate, and seed
-
-```powershell
-dotnet tool restore
-dotnet restore .\StudentRegistration.slnx
-
-if ([string]::IsNullOrWhiteSpace($env:ConnectionStrings__StudentRegistration)) {
-    throw 'ConnectionStrings__StudentRegistration is not set.'
-}
-
-dotnet ef database update `
-    --project .\src\StudentRegistration.Infrastructure.SqlServer\StudentRegistration.Infrastructure.SqlServer.csproj `
-    --connection "$env:ConnectionStrings__StudentRegistration"
-
-dotnet run `
-    --project .\src\StudentRegistration.Api\StudentRegistration.Api.csproj `
-    --configuration Release `
-    --no-launch-profile `
-    -- --initialize-demo-database
-```
-
-The seed command exits when it is finished. It is idempotent: running it again
-does not rotate existing passwords.
-
-### 6. Start the API and web client
-
-The API hosts the Blazor client, so only one process is needed.
-
-```powershell
-dotnet run `
-    --project .\src\StudentRegistration.Api\StudentRegistration.Api.csproj `
-    --urls 'https://localhost:7078'
-```
-
-Keep this terminal open. Open a second PowerShell window for health checks and
-test commands.
-
-### 7. Confirm that the server is responding
+### Confirm that the server is responding
 
 ```powershell
 Invoke-RestMethod `
@@ -199,6 +128,10 @@ Invoke-RestMethod `
 ```
 
 Then open `https://localhost:7078/` in the browser.
+
+The local POC has no external telemetry exporter, so the safe health summary
+normally says `degraded` while returning HTTP 200. SQL failure returns
+`unhealthy` with HTTP 503.
 
 ## Show the real generated credential sheet
 
@@ -417,31 +350,6 @@ STALE_VERSION
 AVAILABILITY_DEADLINE_PASSED
 ```
 
-## Dual Lecturer/Teaching Assistant manual test
-
-Sign out, then sign in at `/staff/login` with:
-
-```text
-Username: DUAL-0001
-Password: Demo@2026-DUAL-0001
-```
-
-Before login there must be no role chooser. After successful authentication,
-the server may offer exactly these two choices:
-
-```text
-Lecturer
-Teaching Assistant
-```
-
-1. Select Lecturer and verify only Lecturer-scoped information.
-2. Change to Teaching Assistant through the supported role-context action.
-3. Verify only TA-scoped information.
-4. Confirm the two contexts are not silently combined and do not duplicate
-   assignments.
-5. Try changing the route or browser payload to `Admin`. It must be rejected
-   with `ROLE_NOT_AVAILABLE` or safe forbidden behavior.
-
 ## Public, recovery, and safe-error checks
 
 ### Public gateway
@@ -571,16 +479,16 @@ recorded.
 
 ## Stop or fully reset the demo
 
-Stop the container but keep the database:
+Stop SQL Server but keep the database (first stop the web app with `Ctrl+C`):
 
 ```powershell
-docker compose -f .\infra\docker\compose.development.yml down
+.\ops\scripts\Stop-LocalDemo.ps1
 ```
 
 Delete the local Development database and start fresh:
 
 ```powershell
-docker compose -f .\infra\docker\compose.development.yml down --volumes
+.\ops\scripts\Stop-LocalDemo.ps1 -ResetDatabase
 ```
 
 The second command permanently deletes the local demo database. After it, run

@@ -231,10 +231,14 @@ public sealed class Spec008NonProductionBootstrapTests
     {
         public async Task<IReadOnlySet<Guid>> ReconcileAsync(
             IReadOnlyList<DemoSeedIdentity> identities,
+            IReadOnlySet<Guid> retiredUserIds,
+            DateTime retiredAtUtc,
             string clientRequestId,
             CancellationToken cancellationToken)
         {
             Assert.NotEmpty(identities);
+            Assert.Single(retiredUserIds);
+            Assert.Equal(DateTimeKind.Utc, retiredAtUtc.Kind);
             Assert.False(string.IsNullOrWhiteSpace(clientRequestId));
             Assert.Empty(await context.Database.GetPendingMigrationsAsync(cancellationToken));
             events.Record("migration");

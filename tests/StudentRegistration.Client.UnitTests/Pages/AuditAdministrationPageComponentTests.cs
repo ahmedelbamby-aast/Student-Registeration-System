@@ -1,6 +1,8 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using StudentRegistration.Client;
+using StudentRegistration.Client.Features.Operations;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.Client.UnitTests.Pages;
@@ -11,6 +13,8 @@ public sealed class AuditAdministrationPageComponentTests
     public void Adm_09_renders_bounded_filters_and_keeps_export_actions_disabled_until_server_binding()
     {
         using var context = new BunitContext();
+        context.Services.AddSingleton(new AdminOperationsApiClient(new HttpClient(
+            new PendingHandler()) { BaseAddress = new Uri("https://localhost") }));
         var pageType = typeof(App).Assembly.GetType(
             "StudentRegistration.Client.Pages.AuditAdministrationPage");
         Assert.NotNull(pageType);
@@ -38,7 +42,8 @@ public sealed class AuditAdministrationPageComponentTests
             "data-testid=\"audit-event-table\"",
             "data-testid=\"audit-event-card-list\"",
             "Immutable event detail",
-            "Page 1 of 1",
+            "TotalPages",
+            "SearchAsync",
             "queued",
             "ready",
             "failed",
@@ -46,5 +51,16 @@ public sealed class AuditAdministrationPageComponentTests
             "restricted");
         Assert.DoesNotContain("Edit event", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Delete event", page, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class PendingHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("Unreachable.");
+        }
     }
 }

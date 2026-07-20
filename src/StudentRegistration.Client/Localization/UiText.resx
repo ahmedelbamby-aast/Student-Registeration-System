@@ -4175,4 +4175,112 @@
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="{0} scoped audit events on this page." xml:space="preserve">
+    <value>{0} scoped audit events on this page.</value>
+  </data>
+  <data name="{0} server-authorized registration rows on this page." xml:space="preserve">
+    <value>{0} server-authorized registration rows on this page.</value>
+  </data>
+  <data name="Actor must be a valid identifier." xml:space="preserve">
+    <value>Actor must be a valid identifier.</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>After</value>
+  </data>
+  <data name="Audit events could not be loaded safely." xml:space="preserve">
+    <value>Audit events could not be loaded safely.</value>
+  </data>
+  <data name="Audit events could not be loaded while the service is unreachable." xml:space="preserve">
+    <value>Audit events could not be loaded while the service is unreachable.</value>
+  </data>
+  <data name="Audit search is offline" xml:space="preserve">
+    <value>Audit search is offline</value>
+  </data>
+  <data name="Audit search is unavailable" xml:space="preserve">
+    <value>Audit search is unavailable</value>
+  </data>
+  <data name="Availability:" xml:space="preserve">
+    <value>Availability:</value>
+  </data>
+  <data name="Before" xml:space="preserve">
+    <value>Before</value>
+  </data>
+  <data name="Direct identifier" xml:space="preserve">
+    <value>Direct identifier</value>
+  </data>
+  <data name="Each server alert keeps its timestamp and supportReferencePath together." xml:space="preserve">
+    <value>Each server alert keeps its timestamp and supportReferencePath together.</value>
+  </data>
+  <data name="Enter a Student identifier and a valid term identifier." xml:space="preserve">
+    <value>Enter a Student identifier and a valid term identifier.</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="No audit events found" xml:space="preserve">
+    <value>No audit events found</value>
+  </data>
+  <data name="No current registration window is available for monitoring." xml:space="preserve">
+    <value>No current registration window is available for monitoring.</value>
+  </data>
+  <data name="No live, successful, or repaired state is inferred in the browser." xml:space="preserve">
+    <value>No live, successful, or repaired state is inferred in the browser.</value>
+  </data>
+  <data name="No matching registrations" xml:space="preserve">
+    <value>No matching registrations</value>
+  </data>
+  <data name="No partial registration:" xml:space="preserve">
+    <value>No partial registration:</value>
+  </data>
+  <data name="No server-authorized registrations match the current Student and term filters." xml:space="preserve">
+    <value>No server-authorized registrations match the current Student and term filters.</value>
+  </data>
+  <data name="No single authorized Student matched the filter." xml:space="preserve">
+    <value>No single authorized Student matched the filter.</value>
+  </data>
+  <data name="Not reported" xml:space="preserve">
+    <value>Not reported</value>
+  </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Queued</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Registration detail could not reach the service." xml:space="preserve">
+    <value>Registration detail could not reach the service.</value>
+  </data>
+  <data name="Registration monitoring could not be loaded safely." xml:space="preserve">
+    <value>Registration monitoring could not be loaded safely.</value>
+  </data>
+  <data name="Registration monitoring could not reach the service." xml:space="preserve">
+    <value>Registration monitoring could not reach the service.</value>
+  </data>
+  <data name="Registration monitoring is degraded" xml:space="preserve">
+    <value>Registration monitoring is degraded</value>
+  </data>
+  <data name="Registration monitoring is offline" xml:space="preserve">
+    <value>Registration monitoring is offline</value>
+  </data>
+  <data name="Registration records could not reach the service." xml:space="preserve">
+    <value>Registration records could not reach the service.</value>
+  </data>
+  <data name="Review audit filters" xml:space="preserve">
+    <value>Review audit filters</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Student ID, University ID, or name" xml:space="preserve">
+    <value>Student ID, University ID, or name</value>
+  </data>
+  <data name="The export operation could not be completed safely." xml:space="preserve">
+    <value>The export operation could not be completed safely.</value>
+  </data>
+  <data name="The export request could not reach the service." xml:space="preserve">
+    <value>The export request could not reach the service.</value>
+  </data>
+  <data name="The export status could not reach the service." xml:space="preserve">
+    <value>The export status could not reach the service.</value>
+  </data>
 </root>

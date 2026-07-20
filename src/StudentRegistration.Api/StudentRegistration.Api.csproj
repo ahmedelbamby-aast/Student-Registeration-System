@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>student-registration-local-demo-3df84652b7144a7e92ff92330377ff86</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

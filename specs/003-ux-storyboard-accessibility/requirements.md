@@ -13,6 +13,10 @@ route-design batch on 2026-07-13, including trigger-aware empty states and
 complete SYS-01 health-status mapping. The records are immutable design pins;
 they remain `design-only` and do not authorize route implementation.
 
+**Owner-approved role-scope amendment (2026-07-20):** demo journeys cover
+Student, Admin, Lecturer, and TeachingAssistant accounts with exactly one role
+per enabled account. The combined Lecturer/TA fixture is frozen.
+
 ## Context
 
 Registration occurs under time pressure and must communicate eligibility,
@@ -186,7 +190,7 @@ Then preview, validation, confirmation, pagination, conflict recovery, audit,
 and server-authority behaviors match the owning feature contracts.
 
 ### AC-8: Lecturer and TA page functionality (FR-1, FR-8, FR-12, FR-14)
-Given Lecturer-only, TA-only, dual-role, unassigned, stale-assignment, and
+Given Lecturer-only, TA-only, unassigned, stale-assignment, and
 availability-deadline fixtures exist<br>
 When STF-01 through STF-04 functional tests execute<br>
 Then shared components display only server-authorized assignments and actions<br>

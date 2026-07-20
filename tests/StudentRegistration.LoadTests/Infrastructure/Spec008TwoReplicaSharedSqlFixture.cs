@@ -70,13 +70,6 @@ public sealed class Spec008TwoReplicaSharedSqlFixture : IAsyncDisposable
             "TA.DEMO",
             "TA-0001",
             "Demo Teaching Assistant",
-            RolePolicies.TeachingAssistant),
-        StaffFixture.Create(
-            "DUAL-0001",
-            "DUAL.DEMO",
-            "DUAL-0001",
-            "Demo Lecturer and TA",
-            RolePolicies.Lecturer,
             RolePolicies.TeachingAssistant)
     ];
     private readonly MsSqlContainer _container;
