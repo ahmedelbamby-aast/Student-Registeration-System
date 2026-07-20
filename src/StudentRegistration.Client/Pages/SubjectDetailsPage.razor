@@ -28,29 +28,14 @@
 }
 else if (_shellContext is not null)
 {
-    <AppShell Context="@_shellContext"
-              MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
-              BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
-              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
-              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
-              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
-              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
-              SessionLabel="@(LocalizedUiText.Get("Session"))"
-              ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
-              LoadingLabel="@(LocalizedUiText.Get("Loading subject details"))">
-        <Navigation>
-            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
-                            Items="@StudentNavigation" />
-        </Navigation>
-        <ChildContent>
+    <AuthenticatedPage Context="@_shellContext"
+                       Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-03"
+                       Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Subject details"))"
+                       Eyebrow="@(LocalizedUiText.Get("Student registration"))"
+                       Description="@(LocalizedUiText.Get("Review eligibility, groups, teaching assignments, meetings, and current capacity."))"
+                       LoadingLabel="@(LocalizedUiText.Get("Loading subject details"))">
             <div class="srs-subject-details"
                  data-route-id="STU-03"
                  data-state="@_state"
@@ -139,8 +124,7 @@ else if (_shellContext is not null)
                                              ShowSelectionActions="true" />
                 }
             </div>
-        </ChildContent>
-    </AppShell>
+    </AuthenticatedPage>
 }
 else
 {
@@ -173,16 +157,6 @@ else
     private const string SessionExpiredState = "session-expired";
     private const string StaleState = "stale";
     private const string OfflineState = "offline";
-
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [
-        new(LocalizedUiText.Get("Dashboard"), "/student"),
-        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
-        new(LocalizedUiText.Get("Available subjects"), "/student/subjects", IsActive: true),
-        new(LocalizedUiText.Get("Current plan"), "/student/schedule"),
-        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
-        new(LocalizedUiText.Get("Account"), "/student/account")
-    ];
 
     [Parameter]
     public Guid OfferingId { get; set; }

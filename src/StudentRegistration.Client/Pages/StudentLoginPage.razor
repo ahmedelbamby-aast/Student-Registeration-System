@@ -42,11 +42,12 @@
                    ErrorMessage="@ErrorFor("student-password")"
                    @bind-Value="_password" />
 
-        <button class="srs-identity-command"
-                type="submit"
-                disabled="@IsSubmitting">
+        <AppButton Type="submit"
+                   IsLoading="@IsSubmitting"
+                   Disabled="@IsSubmitting"
+                   LoadingAnnouncement="@(LocalizedUiText.Get("Signing in once."))">
             @(IsSubmitting ? LocalizedUiText.Get("Signing in…") : LocalizedUiText.Get("Sign in"))
-        </button>
+        </AppButton>
     </form>
 </IdentityPageShell>
 

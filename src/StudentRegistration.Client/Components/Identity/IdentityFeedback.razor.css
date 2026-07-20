@@ -1,6 +1,6 @@
 .srs-identity-feedback {
     margin-block: 1rem;
-    padding: 1rem;
+    padding: var(--srs-spacing-primitive-4);
     border-inline-start: 0.25rem solid var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-surface-muted);
 }

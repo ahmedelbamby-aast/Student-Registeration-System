@@ -103,4 +103,40 @@ public sealed class VisualBaselineManifestTests
             }
         }
     }
+
+    [Fact]
+    public void Registry_requires_two_complete_cross_browser_states_for_all_30_routes()
+    {
+        using var routes = JsonDocument.Parse(RepositoryFiles.Read(".specify/route-manifest.json"));
+        using var baselines = JsonDocument.Parse(RepositoryFiles.Read(ManifestPath));
+        var routeIds = routes.RootElement.GetProperty("routes").EnumerateArray()
+            .Select(route => route.GetProperty("id").GetString()!)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        var entries = baselines.RootElement.GetProperty("baselines").EnumerateArray().ToArray();
+
+        Assert.Equal(30, routeIds.Length);
+        Assert.Equal(routeIds, entries.Select(entry => entry.GetProperty("routeId").GetString()!)
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray());
+
+        var governedTargetCount = 0;
+        foreach (var routeId in routeIds)
+        {
+            var routeEntries = entries.Where(entry =>
+                entry.GetProperty("routeId").GetString() == routeId).ToArray();
+            Assert.Equal(2, routeEntries.Select(entry => entry.GetProperty("state").GetString())
+                .Distinct(StringComparer.Ordinal).Count());
+            Assert.Equal(32, routeEntries.Sum(entry => entry.GetProperty("targetCount").GetInt32()));
+            governedTargetCount += routeEntries.Sum(entry => entry.GetProperty("targetCount").GetInt32());
+
+            foreach (var entry in routeEntries)
+            {
+                var targetManifest = entry.GetProperty("targetManifest").GetString()!;
+                Assert.True(RepositoryFiles.Exists(
+                    $"tests/StudentRegistration.VisualTests/Baselines/{targetManifest}"));
+            }
+        }
+
+        Assert.Equal(960, governedTargetCount);
+    }
 }

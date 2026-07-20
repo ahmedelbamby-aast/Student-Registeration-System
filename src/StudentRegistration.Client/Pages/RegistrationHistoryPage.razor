@@ -18,35 +18,29 @@
 @if (_loading)
 {
     <div data-route-id="STU-07" data-state="loading" data-contract-state="STU-07-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Registration history")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading registration records.")</p></main>
     </div>
 }
 else if (_shellContext is not null)
 {
-    <AppShell Context="@_shellContext" MainContentId="main-content" SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
-              BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading registration history"))">
-        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))" Items="@StudentNavigation" /></Navigation>
-        <ChildContent>@HistoryContent</ChildContent>
-    </AppShell>
+    <AuthenticatedPage Context="@_shellContext"
+                       Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-07"
+                       Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Registrations"))"
+                       Eyebrow="@(LocalizedUiText.Get("Student registration"))"
+                       Description="@(LocalizedUiText.Get("Server-authored current and archived records."))"
+                       LoadingLabel="@(LocalizedUiText.Get("Loading registration history"))">
+        @HistoryContent
+    </AuthenticatedPage>
 }
 else
 {
-    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@HistoryContent</main>
+    <main id="main-content" tabindex="-1">@HistoryContent</main>
 }
 
 @code {
     private const int PageSize = 20;
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [new(LocalizedUiText.Get("Dashboard"), "/student"), new(LocalizedUiText.Get("Current plan"), "/student/schedule"), new(LocalizedUiText.Get("Registrations"), "/student/registrations", IsActive: true)];
-
     private FrontendAppContextView? _shellContext;
     private Page<RegistrationHistoryRowDto>? _history;
     private RegistrationTimetableDto? _timetable;

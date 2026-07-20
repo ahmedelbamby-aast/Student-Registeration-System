@@ -55,3 +55,14 @@ promotes only those named slices to `implementation-ready`; immutable Page
 Design Record version 1.0 files remain the historical design pins. Contract
 hash drift fails the readiness gate. This approval does not authorize
 production release, official AASTMT go-live, or a Safari support claim.
+
+## 2026-07-20 unified frontend amendment
+
+**Status:** APPROVED FOR NON-PRODUCTION DEMO IMPLEMENTATION<br>
+**Approved by:** Ahmed ELbamby<br>
+**Recorded:** 2026-07-21
+
+Ahmed approved exactly 30 routes, token set 2.0, authenticated-shell 2.0,
+responsive sidebar/drawer, comfortable Student density, compact Admin/Staff
+density, and the STU-09, ADM-10, and STF-05 design records. Pending source,
+test, baseline, human-UAT, and release tasks are not completed by this approval.

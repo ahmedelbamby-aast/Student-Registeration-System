@@ -7,6 +7,14 @@
         <p class="srs-form-field__description" id="@DescriptionId">@Description</p>
     }
 
+    @if (ControlContent is not null)
+    {
+        <div class="srs-form-field__control"
+             aria-invalid="@(HasError ? "true" : null)"
+             aria-describedby="@DescribedBy">@ControlContent</div>
+    }
+    else
+    {
     <input @attributes="AdditionalAttributes"
            class="srs-form-field__input"
            id="@InputId"
@@ -21,7 +29,9 @@
            aria-describedby="@DescribedBy"
            @oninput="HandleInputAsync" />
 
-    @if (CanRevealSecret)
+    }
+
+    @if (ControlContent is null && CanRevealSecret)
     {
         <button class="srs-form-field__reveal"
                 type="button"
@@ -61,6 +71,9 @@
 
     [Parameter]
     public string Type { get; set; } = "text";
+
+    [Parameter]
+    public RenderFragment? ControlContent { get; set; }
 
     [Parameter]
     public bool AllowSecretReveal { get; set; }

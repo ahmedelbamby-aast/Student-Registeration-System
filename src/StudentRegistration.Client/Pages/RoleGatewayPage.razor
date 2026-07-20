@@ -7,25 +7,17 @@
 
 <PageTitle>@LocalizedUiText.Get("Role gateway | Student Registration")</PageTitle>
 
-<div class="srs-public-gateway" data-route-id="AUTH-01" data-state="@StateToken">
-    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-public-gateway__header" role="banner">
-        <a class="srs-public-gateway__brand" href="/" aria-label="@(LocalizedUiText.Get("Student Registration home"))">
-            <img src="/brand/aastmt-logo.png"
-                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            <span>
-                <strong>@LocalizedUiText.Get("AASTMT")</strong>
-                <small>@LocalizedUiText.Get("Student Registration")</small>
-            </span>
-        </a>
+<PublicPageShell MainContentId="main-content"
+                 SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
+                 BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))">
+    <HeaderContent>
         <span class="srs-public-gateway__demo-label">@LocalizedUiText.Get("Academic services demo")</span>
-    </header>
-
-    <main id="main-content"
-          class="srs-public-gateway__main"
-          data-testid="role-gateway-page"
-          tabindex="-1">
+    </HeaderContent>
+    <ChildContent>
+      <div class="srs-public-gateway"
+           data-route-id="AUTH-01"
+           data-state="@StateToken"
+           data-testid="role-gateway-page">
         <section class="srs-public-gateway__intro" aria-labelledby="role-gateway-heading">
             <p class="srs-public-gateway__eyebrow">@LocalizedUiText.Get("Online academic services")</p>
             <h1 id="role-gateway-heading" tabindex="-1">@LocalizedUiText.Get("Role gateway")</h1>
@@ -162,13 +154,13 @@
                 @RecoveryActions()
             </section>
         }
-    </main>
-
-    <footer class="srs-public-gateway__footer" role="contentinfo">
+      </div>
+    </ChildContent>
+    <FooterContent>
         <p>@LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport")</p>
         <a href="/status/support">@LocalizedUiText.Get("System status and support")</a>
-    </footer>
-</div>
+    </FooterContent>
+</PublicPageShell>
 
 @code {
     private const string ServiceUnavailable = "SERVICE_UNAVAILABLE";

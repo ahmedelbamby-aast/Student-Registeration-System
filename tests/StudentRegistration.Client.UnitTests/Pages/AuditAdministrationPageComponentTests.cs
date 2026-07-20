@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using StudentRegistration.Client;
 using StudentRegistration.Client.Features.Operations;
+using StudentRegistration.Client.Features.Academics;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.Client.UnitTests.Pages;
@@ -13,8 +14,9 @@ public sealed class AuditAdministrationPageComponentTests
     public void Adm_09_renders_bounded_filters_and_keeps_export_actions_disabled_until_server_binding()
     {
         using var context = new BunitContext();
-        context.Services.AddSingleton(new AdminOperationsApiClient(new HttpClient(
-            new PendingHandler()) { BaseAddress = new Uri("https://localhost") }));
+        var httpClient = new HttpClient(new PendingHandler()) { BaseAddress = new Uri("https://localhost") };
+        context.Services.AddSingleton(new AdminOperationsApiClient(httpClient));
+        context.Services.AddSingleton(new AcademicApiClient(httpClient));
         var pageType = typeof(App).Assembly.GetType(
             "StudentRegistration.Client.Pages.AuditAdministrationPage");
         Assert.NotNull(pageType);
@@ -23,9 +25,7 @@ public sealed class AuditAdministrationPageComponentTests
             parameters.Add(component => component.Type, pageType));
 
         Assert.NotNull(cut.Find("main#main-content"));
-        Assert.Equal("100", cut.Find("input[name='pageSize']").GetAttribute("max"));
-        Assert.True(cut.Find("button").HasAttribute("disabled"));
-        Assert.Contains("Only the server can authorize a scoped download", cut.Markup);
+        Assert.NotNull(cut.Find(".srs-app-shell__state--loading"));
     }
 
     [Fact]

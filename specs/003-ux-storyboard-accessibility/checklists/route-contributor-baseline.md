@@ -29,6 +29,7 @@ change an implementation owner.
 | STU-06 | SPEC-015 | SPEC-003, SPEC-014, SPEC-015 | design-only | `not-pinned` | SPEC-014 idempotent result plus SPEC-015 receipt contracts |
 | STU-07 | SPEC-015 | SPEC-003, SPEC-015 | design-only | `not-pinned` | SPEC-015 history/timetable contract |
 | STU-08 | SPEC-007 | SPEC-003, SPEC-007 | design-only | `not-pinned` | SPEC-007 session/account contract |
+| STU-09 | SPEC-008 | SPEC-003, SPEC-008, SPEC-009, SPEC-011, SPEC-014 | design-only | `not-pinned` | SPEC-008 roadmap with curriculum, catalogue, eligibility, and approval projections |
 | ADM-01 | SPEC-017 | SPEC-003, SPEC-007, SPEC-008, SPEC-010, SPEC-017 | design-only | `not-pinned` | SPEC-007 session, SPEC-008 context, SPEC-010 schedule-alert, and SPEC-017 operational-metrics contracts |
 | ADM-02 | SPEC-008 | SPEC-003, SPEC-008, SPEC-017 | design-only | `not-pinned` | SPEC-008 term plus SPEC-017 administration contracts |
 | ADM-03 | SPEC-007 | SPEC-003, SPEC-007, SPEC-017 | design-only | `not-pinned` | SPEC-007 identity plus SPEC-017 administration contracts |
@@ -38,10 +39,12 @@ change an implementation owner.
 | ADM-07 | SPEC-010 | SPEC-003, SPEC-010, SPEC-017 | design-only | `not-pinned` | SPEC-010 resources plus SPEC-017 administration contracts |
 | ADM-08 | SPEC-017 | SPEC-003, SPEC-014, SPEC-015, SPEC-017 | design-only | `not-pinned` | SPEC-014 result, SPEC-015 Admin registration-record, and SPEC-017 operations contracts |
 | ADM-09 | SPEC-017 | SPEC-003, SPEC-017 | design-only | `not-pinned` | SPEC-017 audit/export contracts |
+| ADM-10 | SPEC-017 | SPEC-003, SPEC-014, SPEC-017 | design-only | `not-pinned` | SPEC-014 approval decisions plus SPEC-017 administration contracts |
 | STF-01 | SPEC-016 | SPEC-003, SPEC-007, SPEC-008, SPEC-016 | design-only | `not-pinned` | SPEC-007 session context, SPEC-008 academic context, and SPEC-016 staff assignment/dashboard contracts |
 | STF-02 | SPEC-016 | SPEC-003, SPEC-016 | design-only | `not-pinned` | SPEC-016 timetable contract |
 | STF-03 | SPEC-016 | SPEC-003, SPEC-016 | design-only | `not-pinned` | SPEC-016 scoped roster contract |
 | STF-04 | SPEC-016 | SPEC-003, SPEC-016 | design-only | `not-pinned` | SPEC-016 availability contract |
+| STF-05 | SPEC-016 | SPEC-003, SPEC-014, SPEC-016 | design-only | `not-pinned` | SPEC-014 approval decisions plus SPEC-016 assignment-scoped authorization |
 | SYS-01 | SPEC-003 | SPEC-003, SPEC-006, SPEC-007, SPEC-008, SPEC-018 | design-only | `not-pinned` | SPEC-006 error, SPEC-007 session, SPEC-008 public-context, and SPEC-018 health contracts |
 
 ## Promotion rule

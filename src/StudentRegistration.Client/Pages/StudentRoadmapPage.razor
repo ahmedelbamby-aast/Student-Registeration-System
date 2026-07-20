@@ -23,34 +23,16 @@
 }
 else
 {
-    <AppShell Context="@_shellContext"
-              MainContentId="main-content"
-              SkipLinkLabel="Skip to main content"
-              BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="Arab Academy for Science, Technology and Maritime Transport"
-              ServerDateTimeLabel="Server date and time"
-              TeachingTermLabel="Teaching term"
-              RegistrationTermLabel="Registration term"
-              RegistrationWindowLabel="Registration window"
-              NoTeachingTermLabel="No current teaching term"
-              NoRegistrationTermLabel="No current registration term"
-              NoRegistrationWindowLabel="No registration window"
-              AuthorizedRolesLabel="Authorized roles"
-              ActiveRoleLabel="Active role"
-              SessionLabel="Session"
-              ServiceLabel="Service"
-              SupportLinkLabel="Open support"
-              LoadingLabel="Loading academic roadmap">
-        <Navigation>
-            <RoleNavigation AccessibleName="Student navigation" Items="@StudentNavigation" />
-        </Navigation>
-        <ChildContent>
+    <AuthenticatedPage Context="@_shellContext"
+                       Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-09"
+                       Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Academic roadmap"))"
+                       HeadingId="roadmap-heading"
+                       Eyebrow="@(LocalizedUiText.Get("Programme planning"))"
+                       Description="@(LocalizedUiText.Get("See every subject in its recommended term, prerequisite path, and current registration status."))"
+                       LoadingLabel="@(LocalizedUiText.Get("Loading academic roadmap"))">
             <div class="srs-roadmap" data-route-id="STU-09" data-state="@StateName">
-                <PageHeader HeadingId="roadmap-heading"
-                            Eyebrow="Programme planning"
-                            Heading="Academic roadmap"
-                            Description="See every subject in its recommended term, prerequisite path, and current registration status." />
-
                 @if (_loading)
                 {
                     <RouteStatePanel HeadingId="roadmap-loading"
@@ -125,21 +107,10 @@ else
                     </div>
                 }
             </div>
-        </ChildContent>
-    </AppShell>
+    </AuthenticatedPage>
 }
 
 @code {
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [
-        new("Dashboard", "/student"),
-        new("Roadmap", "/student/roadmap", IsActive: true),
-        new("Available subjects", "/student/subjects"),
-        new("Current plan", "/student/schedule"),
-        new("Registrations", "/student/registrations"),
-        new("Account", "/student/account"),
-    ];
-
     private FrontendAppContextView? _shellContext;
     private StudentRoadmapDto? _roadmap;
     private UiStatus? _status;

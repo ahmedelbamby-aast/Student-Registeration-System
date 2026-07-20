@@ -4,17 +4,16 @@
 
 <PageTitle>@LocalizedUiText.Get("Student account")</PageTitle>
 
-<div class="srs-account-page">
-    <a class="srs-skip-link" href="#student-account-main">@LocalizedUiText.Get("Skip to main content")</a>
-    <header class="srs-account-page__header">
-        <img src="brand/aastmt-logo.png"
-             alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-        <a href="/student">@LocalizedUiText.Get("Student dashboard")</a>
-    </header>
-
+<AuthenticatedPage Context="null"
+                   IsLoading="@_isLoading"
+                   Workspace="WorkspaceKind.Student"
+                   CurrentRouteId="STU-08"
+                   Density="UiDensity.Comfortable"
+                   Heading="@(LocalizedUiText.Get("Student account"))"
+                   Eyebrow="@(LocalizedUiText.Get("Account security"))"
+                   Description="@(LocalizedUiText.Get("Review your institutional identity, password, and active sessions."))">
+  <div class="srs-account-page" data-route-id="STU-08">
     <main id="student-account-main" tabindex="-1">
-        <h1>@LocalizedUiText.Get("Student account")</h1>
-
         <IdentityFeedback IsBusy="@(_isLoading || _isChangingPassword || _isRevoking || _isLoggingOut)"
                           BusyMessage="@(LocalizedUiText.Get("Updating your account securely."))"
                           IsError="@_feedbackIsError"
@@ -77,9 +76,9 @@
                                ErrorMessage="@ErrorFor("account-confirm-password")"
                                @bind-Value="_confirmPassword" />
 
-                    <button class="srs-identity-command" type="submit" disabled="@IsBusy">
+                    <AppButton Type="submit" Disabled="@IsBusy" IsLoading="@_isChangingPassword" LoadingAnnouncement="@(LocalizedUiText.Get("Changing password"))">
                         @(_isChangingPassword ? LocalizedUiText.Get("Changing…") : LocalizedUiText.Get("Change password"))
-                    </button>
+                    </AppButton>
                 </form>
             </section>
 
@@ -87,20 +86,21 @@
                 <h2 id="session-actions-heading">@LocalizedUiText.Get("Session actions")</h2>
                 <p>@LocalizedUiText.Get("Revoking all sessions signs this browser and every other earlier session out.")</p>
                 <div class="srs-account-sessions__actions">
-                    <button id="revoke-all-sessions"
-                            type="button"
-                            disabled="@IsBusy"
-                            @onclick="OpenRevokeConfirmation">
+                    <AppButton id="revoke-all-sessions"
+                               Variant="AppButtonVariant.Danger"
+                               Disabled="@IsBusy"
+                               OnClick="@(_ => OpenRevokeConfirmation())">
                         @LocalizedUiText.Get("Revoke all sessions")
-                    </button>
-                    <button type="button" disabled="@IsBusy" @onclick="LogoutAsync">
+                    </AppButton>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@IsBusy" OnClick="@(_ => LogoutAsync())">
                         @LocalizedUiText.Get("Sign out")
-                    </button>
+                    </AppButton>
                 </div>
             </section>
         }
     </main>
-</div>
+  </div>
+</AuthenticatedPage>
 
 <ConfirmationDialog IsOpen="@_showRevokeConfirmation"
                     DialogId="revoke-all-dialog"

@@ -1,0 +1,190 @@
+@using StudentRegistration.Client.Components.Display
+@using StudentRegistration.Client.Components.Registration
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Registration
+@inject AcademicApiClient AcademicApi
+@inject RegistrationApprovalApiClient ApprovalApi
+
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_contextLoading"
+                   Status="@ShellStatus"
+                   Workspace="@Workspace"
+                   CurrentRouteId="@RouteId"
+                   Density="UiDensity.Compact"
+                   Eyebrow="@(LocalizedUiText.Get("Seat-hold decisions"))"
+                   Heading="@(LocalizedUiText.Get("Registration approvals"))"
+                   Description="@(LocalizedUiText.Get("Review each requested subject. A plan is registered only after every subject is approved; one rejection releases all held seats."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading the authorized approval queue"))">
+    <div class="srs-approvals" data-route-id="@RouteId" data-state="@StateName" data-contract-state="@ContractState">
+        @if (_queueLoading)
+        {
+            <RouteStatePanel HeadingId="approval-loading"
+                             State="RouteUiState.Loading"
+                             Announcement="RouteStatePanel.AnnouncementMode.Polite"
+                             Status="@LoadingStatus" />
+        }
+        else if (_error is not null)
+        {
+            <Alert Message="@(LocalizedUiText.Format("{0}: {1}", _error.Code, _error.Message))" ErrorMessage="@(LocalizedUiText.Format("{0}: {1}", _error.Code, _error.Message))" Urgency="Alert.AlertUrgency.Assertive" />
+            <AppButton Variant="AppButtonVariant.Secondary" OnClick="@(_ => LoadQueueAsync())">@LocalizedUiText.Get("Retry")</AppButton>
+        }
+        else if (_queue is null || _queue.Items.Count == 0)
+        {
+            <SurfaceCard HeadingId="approval-empty" Heading="@(LocalizedUiText.Get("No pending decisions"))"
+                         Description="@(LocalizedUiText.Get("There are no subject seat holds in your authorized scope."))">
+                <ChildContent><p>@LocalizedUiText.Get("Refresh later when students submit registration plans.")</p></ChildContent>
+                <Actions><AppButton Variant="AppButtonVariant.Secondary" OnClick="@(_ => LoadQueueAsync())">@LocalizedUiText.Get("Refresh queue")</AppButton></Actions>
+            </SurfaceCard>
+        }
+        else
+        {
+            <div class="srs-approvals__toolbar">
+                <p role="status"><strong>@_queue.TotalCount</strong> @LocalizedUiText.Get("pending subject decisions")</p>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_deciding" OnClick="@(_ => LoadQueueAsync())">@LocalizedUiText.Get("Refresh queue")</AppButton>
+            </div>
+            <div class="srs-approvals__grid">
+                @foreach (var row in _queue.Items)
+                {
+                    <EntityCard HeadingId="@($"approval-{row.Line.LineId:D}")"
+                                Heading="@($"{row.Line.CourseCode} — {row.Line.SubjectTitle}")">
+                        <HeaderContent>
+                            <ApprovalStatusBadge State="ApprovalStatusBadge.ApprovalState.PendingApproval" Text="@(LocalizedUiText.Get("Pending approval"))" />
+                        </HeaderContent>
+                        <ChildContent>
+                            <p class="srs-approvals__student">@row.StudentDisplayName · @row.StudentUniversityId</p>
+                            @if (row.Overload)
+                            {
+                                <p><StatusBadge Text="@(LocalizedUiText.Get("CGPA-qualified overload"))" Tone="StatusBadge.BadgeTone.Warning" /></p>
+                            }
+                            <dl class="srs-approvals__facts">
+                                <div><dt>@LocalizedUiText.Get("Subject credits")</dt><dd>@row.Line.Credits</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Requested total")</dt><dd>@row.RequestedCredits</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Current CGPA")</dt><dd>@row.CurrentCgpa.ToString("0.00")</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Submitted")</dt><dd>@row.SubmittedAtUtc.ToString("g") @LocalizedUiText.Get("UTC")</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Window closes")</dt><dd>@row.WindowClosesAtUtc.ToString("g") @LocalizedUiText.Get("UTC")</dd></div>
+                            </dl>
+                            <CapacityBreakdown AccessibleName="@($"Capacity for {row.Line.CourseCode}")"
+                                               TotalLabel="@(LocalizedUiText.Get("Total"))" Total="@row.Line.Capacity.Capacity"
+                                               EnrolledLabel="@(LocalizedUiText.Get("Enrolled"))" Enrolled="@row.Line.Capacity.EnrolledCount"
+                                               HeldLabel="@(LocalizedUiText.Get("Held"))" Held="@row.Line.Capacity.HeldSeatCount"
+                                               AvailableLabel="@(LocalizedUiText.Get("Available"))" Available="@row.Line.Capacity.AvailableSeatCount" />
+                            <label for="@($"reason-{row.Line.LineId:D}")">@LocalizedUiText.Get("Decision reason")</label>
+                            <textarea id="@($"reason-{row.Line.LineId:D}")"
+                                      data-testid="@($"approval-reason-{row.Line.LineId:D}")"
+                                      value="@Reason(row.Line.LineId)"
+                                      @oninput="eventArgs => SetReason(row.Line.LineId, eventArgs.Value?.ToString())"
+                                      maxlength="500" disabled="@_deciding"></textarea>
+                            @if (_lineErrorId == row.Line.LineId)
+                            {
+                                <p class="srs-approvals__line-error" role="alert">@_lineError</p>
+                            }
+                        </ChildContent>
+                        <Actions>
+                            <AppButton Disabled="@_deciding" IsLoading="@(_deciding && _lineErrorId != row.Line.LineId)"
+                                       OnClick="@(_ => ApproveAsync(row))">@LocalizedUiText.Get("Approve subject")</AppButton>
+                            <AppButton Variant="AppButtonVariant.Danger" Disabled="@_deciding"
+                                       OnClick="@(_ => RejectAsync(row))">@LocalizedUiText.Get("Reject plan")</AppButton>
+                        </Actions>
+                    </EntityCard>
+                }
+            </div>
+        }
+    </div>
+</AuthenticatedPage>
+
+@code {
+    [Parameter] public bool IsAdmin { get; set; }
+
+    private readonly Dictionary<Guid, string> _reasons = [];
+    private FrontendAppContextView? _shellContext;
+    private RegistrationApprovalPageDto? _queue;
+    private ApiError? _error;
+    private Guid? _lineErrorId;
+    private string? _lineError;
+    private bool _contextLoading = true;
+    private bool _queueLoading;
+    private bool _deciding;
+
+    private WorkspaceKind Workspace => IsAdmin ? WorkspaceKind.Admin : WorkspaceKind.Staff;
+    private string RouteId => IsAdmin ? "ADM-10" : "STF-05";
+    private string StateName => _contextLoading || _queueLoading ? "loading" : _error is not null ? "error" : _queue?.Items.Count > 0 ? "success" : "empty";
+    private string ContractState => $"{RouteId}-COMP-STATE-{StateName.ToUpperInvariant()}";
+    private UiStatus LoadingStatus => new("LOADING", LocalizedUiText.Get("Loading pending decisions"), LocalizedUiText.Get("Loading pending subject decisions…"), UiStatusSeverity.Information, [], null);
+    private UiStatus? ShellStatus => _shellContext is null && !_contextLoading
+        ? new(_error?.Code ?? "FORBIDDEN", LocalizedUiText.Get("Approval queue unavailable"),
+            _error?.Message ?? LocalizedUiText.Get("The active role cannot access this approval queue."), UiStatusSeverity.Error,
+            [new("authorized-home", LocalizedUiText.Get("Return to authorized home"), IsAdmin ? "/admin" : "/staff")], _error?.CorrelationId)
+        : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (!context.IsSuccess || context.Value is null || context.Value.SessionState is SessionState.RoleSelectionRequired || !HasExpectedRole(context.Value.ActiveRole))
+        {
+            _error = context.Error ?? new("FORBIDDEN", LocalizedUiText.Get("The active role cannot access this approval queue."), "client");
+            _contextLoading = false;
+            return;
+        }
+
+        _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
+        _contextLoading = false;
+        await LoadQueueAsync();
+    }
+
+    private async Task LoadQueueAsync()
+    {
+        _queueLoading = true;
+        _error = null;
+        try
+        {
+            var result = await ApprovalApi.ListAsync(IsAdmin);
+            if (result.IsSuccess && result.Value is not null) _queue = result.Value;
+            else
+            {
+                _queue = null;
+                _error = result.Error ?? new("APPROVAL_QUEUE_UNAVAILABLE", LocalizedUiText.Get("The approval queue could not be loaded."), "client");
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _error = new("OFFLINE", LocalizedUiText.Get("The browser cannot reach the approval service."), "client");
+        }
+        finally { _queueLoading = false; }
+    }
+
+    private async Task DecideAsync(RegistrationApprovalQueueRowDto row, string decision)
+    {
+        var reason = Reason(row.Line.LineId).Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            _lineErrorId = row.Line.LineId;
+            _lineError = LocalizedUiText.Get("Enter a reason before making this decision.");
+            return;
+        }
+
+        _deciding = true;
+        _lineErrorId = null;
+        _lineError = null;
+        try
+        {
+            var result = await ApprovalApi.DecideAsync(IsAdmin, row.SubmissionId, row.Line.LineId,
+                new(decision, reason, row.SubmissionVersion, row.Line.RowVersion, Guid.NewGuid()));
+            if (!result.IsSuccess)
+            {
+                _lineErrorId = row.Line.LineId;
+                _lineError = LocalizedUiText.Format("{0}: {1}", result.Error?.Code ?? "APPROVAL_FAILED", result.Error?.Message ?? LocalizedUiText.Get("Refresh and try again."));
+                return;
+            }
+
+            _reasons.Remove(row.Line.LineId);
+            await LoadQueueAsync();
+        }
+        finally { _deciding = false; }
+    }
+
+    private Task ApproveAsync(RegistrationApprovalQueueRowDto row) => DecideAsync(row, "approve");
+    private Task RejectAsync(RegistrationApprovalQueueRowDto row) => DecideAsync(row, "reject");
+    private bool HasExpectedRole(string? role) => IsAdmin ? role == "Admin" : role is "Lecturer" or "TeachingAssistant";
+    private string Reason(Guid lineId) => _reasons.GetValueOrDefault(lineId, string.Empty);
+    private void SetReason(Guid lineId, string? value) => _reasons[lineId] = value ?? string.Empty;
+}

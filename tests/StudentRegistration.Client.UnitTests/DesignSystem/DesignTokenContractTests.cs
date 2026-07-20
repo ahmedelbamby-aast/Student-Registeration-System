@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.Client.UnitTests.DesignSystem;
@@ -91,9 +92,9 @@ public sealed class DesignTokenContractTests
         var colors = root.GetProperty("tokens").GetProperty("color");
         var colorNames = colors.EnumerateObject().Select(token => token.Name).ToArray();
 
-        Assert.Equal("1.0", root.GetProperty("schemaVersion").GetString());
-        Assert.Equal("1.0.0", root.GetProperty("version").GetString());
-        Assert.Equal("neutral", root.GetProperty("scope").GetString());
+        Assert.Equal("2.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("2.0.0", root.GetProperty("version").GetString());
+        Assert.Equal("neutral-modern-academic", root.GetProperty("scope").GetString());
         Assert.False(root.GetProperty("brandValuesDerivedFromLogo").GetBoolean());
         Assert.Equal(
             "Ahmed ELbamby",
@@ -128,22 +129,36 @@ public sealed class DesignTokenContractTests
     }
 
     [Fact]
-    public void Css_projection_contains_every_json_token_and_accessibility_media_rules()
+    public void Css_projection_exactly_matches_every_json_token_and_has_no_undeclared_tokens()
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(TokenJsonPath));
         var css = RepositoryFiles.Read(TokenCssPath);
         var tokens = document.RootElement.GetProperty("tokens");
+        var expected = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var category in tokens.EnumerateObject())
         {
             foreach (var token in category.Value.EnumerateObject())
             {
-                Assert.Contains(
-                    $"--srs-{category.Name}-{token.Name}:",
-                    css,
-                    StringComparison.Ordinal);
+                expected.Add(
+                    $"--srs-{category.Name}-{token.Name}",
+                    TokenCssValue(token.Value));
             }
         }
+
+        var actual = Regex.Matches(
+                css,
+                @"(?m)^\s*(?<name>--srs-[A-Za-z0-9-]+)\s*:\s*(?<value>[^;]+);\s*$")
+            .Select(match => new
+            {
+                Name = match.Groups["name"].Value,
+                Value = match.Groups["value"].Value.Trim()
+            })
+            .ToArray();
+
+        Assert.Equal(actual.Length, actual.Select(item => item.Name).Distinct().Count());
+        Assert.Equal(expected.Keys.Order(), actual.Select(item => item.Name).Order());
+        Assert.All(actual, item => Assert.Equal(expected[item.Name], item.Value));
 
         RepositoryFiles.ContainsAll(
             css,
@@ -152,6 +167,34 @@ public sealed class DesignTokenContractTests
             "--srs-focus-outline-width",
             "--srs-sizing-interactive-minimum");
     }
+
+    [Fact]
+    public void Runtime_has_no_remote_font_import_and_never_filters_the_official_logo()
+    {
+        var webRoot = RepositoryFiles.PathTo("src/StudentRegistration.Client/wwwroot");
+        var componentRoot = RepositoryFiles.PathTo("src/StudentRegistration.Client/Components");
+        var styleFiles = Directory.EnumerateFiles(webRoot, "*.css", SearchOption.AllDirectories)
+            .Concat(Directory.EnumerateFiles(componentRoot, "*.css", SearchOption.AllDirectories));
+
+        foreach (var path in styleFiles)
+        {
+            var css = File.ReadAllText(path);
+            Assert.DoesNotMatch("(?i)@import\\s+(?:url\\()?['\\\"]?https?://", css);
+
+            foreach (Match rule in Regex.Matches(css, @"(?is)(?<selector>[^{}]*logo[^{}]*)\{(?<body>[^{}]*)\}"))
+            {
+                Assert.DoesNotMatch(@"(?i)(?:^|[;\s])-?(?:webkit-)?filter\s*:", rule.Groups["body"].Value);
+            }
+        }
+    }
+
+    private static string TokenCssValue(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => value.GetString()!,
+        JsonValueKind.Number => value.GetRawText(),
+        _ => throw new InvalidOperationException(
+            $"Design token values must be scalar strings or numbers, not {value.ValueKind}.")
+    };
 
     private static double ContrastRatio(string firstHex, string secondHex)
     {

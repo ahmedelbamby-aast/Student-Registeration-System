@@ -13,26 +13,15 @@
 
 @if (_isLoading)
 {
-    <div class="srs-student-dashboard-host"
-         data-route-id="STU-01"
-         data-state="loading"
-         data-contract-state="STU-01-COMP-STATE-LOADING"
-         data-contract-id="STU-01-CONTRACT-T148">
-        <a class="srs-dashboard-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <header class="srs-dashboard-standalone-header" role="banner">
-            <img src="/brand/aastmt-logo.png"
-                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            <div>
-                <strong>@LocalizedUiText.Get("AASTMT Student Registration")</strong>
-                <span>@LocalizedUiText.Get("Student academic services")</span>
-            </div>
-        </header>
-        <main id="main-content"
-              data-testid="student-dashboard-page"
-              tabindex="-1">
-            <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
-                @LocalizedUiText.Get("Student dashboard")
-            </h1>
+    <AuthenticatedPage Context="null" IsLoading="false" Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-01" Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Student dashboard"))"
+                       HeadingId="student-dashboard-heading"
+                       Eyebrow="@(LocalizedUiText.Get("Student academic services"))"
+                       Description="@(LocalizedUiText.Get("Review your current academic context, registration status, and next actions."))">
+        <div class="srs-student-dashboard-host" data-route-id="STU-01" data-state="loading"
+             data-contract-state="STU-01-COMP-STATE-LOADING" data-contract-id="STU-01-CONTRACT-T148"
+             data-testid="student-dashboard-page">
             <section data-testid="student-dashboard-loading"
                      role="status"
                      aria-live="polite"
@@ -42,39 +31,22 @@
                     @LocalizedUiText.Get("Checking the server date, academic term, registration window, profile, and holds.")
                 </p>
             </section>
-        </main>
-        <footer class="srs-dashboard-standalone-footer" role="contentinfo">
-            <span>@LocalizedUiText.Get("AASTMT academic services demo")</span>
-        </footer>
-    </div>
+        </div>
+    </AuthenticatedPage>
 }
 else if (UseAuthenticatedShell && _shellContext is not null)
 {
     <div class="srs-student-dashboard-host">
-        <AppShell Context="@_shellContext"
-                  IsLoading="false"
-                  MainContentId="main-content"
-                  SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
-                  BrandLogoSource="/brand/aastmt-logo.png"
-                  BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-                  ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
-                  TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-                  RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
-                  RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-                  NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
-                  NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-                  NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
-                  AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-                  ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
-                  SessionLabel="@(LocalizedUiText.Get("Session"))"
-                  ServiceLabel="@(LocalizedUiText.Get("Service"))"
-                  SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
-                  LoadingLabel="@(LocalizedUiText.Get("Loading Student dashboard"))">
-            <Navigation>
-                <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
-                                Items="@StudentNavigation" />
-            </Navigation>
-            <ChildContent>
+        <AuthenticatedPage Context="@_shellContext"
+                           IsLoading="false"
+                           Workspace="WorkspaceKind.Student"
+                           CurrentRouteId="STU-01"
+                           Density="UiDensity.Comfortable"
+                           Heading="@(LocalizedUiText.Get("Student dashboard"))"
+                           HeadingId="student-dashboard-heading"
+                           Eyebrow="@(LocalizedUiText.Get("Student academic services"))"
+                           Description="@(LocalizedUiText.Get("Review your current academic context, registration status, and next actions."))"
+                           LoadingLabel="@(LocalizedUiText.Get("Loading Student dashboard"))">
                 <div class="srs-student-dashboard"
                      data-testid="student-dashboard-page"
                      data-route-id="STU-01"
@@ -257,31 +229,20 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                         <a href="/student/account">@LocalizedUiText.Get("Account")</a>
                     </nav>
                 </div>
-            </ChildContent>
-        </AppShell>
+        </AuthenticatedPage>
     </div>
 }
 else
 {
-    <div class="srs-student-dashboard-host srs-student-dashboard-host--failure"
-         data-route-id="STU-01"
-         data-state="@StateToken"
-         data-contract-state="@ContractStateId">
-        <a class="srs-dashboard-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <header class="srs-dashboard-standalone-header" role="banner">
-            <img src="/brand/aastmt-logo.png"
-                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            <div>
-                <strong>@LocalizedUiText.Get("AASTMT Student Registration")</strong>
-                <span>@LocalizedUiText.Get("Student academic services")</span>
-            </div>
-        </header>
-        <main id="main-content"
-              data-testid="student-dashboard-page"
-              tabindex="-1">
-            <h1 id="student-dashboard-heading" tabindex="-1" @ref="_heading">
-                @LocalizedUiText.Get("Student dashboard")
-            </h1>
+    <AuthenticatedPage Context="null" Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-01" Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Student dashboard"))"
+                       HeadingId="student-dashboard-heading"
+                       Eyebrow="@(LocalizedUiText.Get("Student academic services"))"
+                       Description="@(LocalizedUiText.Get("Review your current academic context, registration status, and next actions."))">
+        <div class="srs-student-dashboard-host srs-student-dashboard-host--failure"
+             data-route-id="STU-01" data-state="@StateToken" data-contract-state="@ContractStateId"
+             data-testid="student-dashboard-page">
             @if (IsAssertiveState)
             {
                 <section class="srs-dashboard-failure"
@@ -300,11 +261,9 @@ else
                     @FailureContent
                 </section>
             }
-        </main>
-        <footer class="srs-dashboard-standalone-footer" role="contentinfo">
-            <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
-        </footer>
-    </div>
+            <AppLink Href="/status/support">@LocalizedUiText.Get("Open safe support path")</AppLink>
+        </div>
+    </AuthenticatedPage>
 }
 
 @code {
@@ -330,16 +289,6 @@ else
     private const string SessionExpiredStateId = "STU-01-COMP-STATE-SESSION-EXPIRED";
     private const string StaleStateId = "STU-01-COMP-STATE-STALE";
     private const string OfflineStateId = "STU-01-COMP-STATE-OFFLINE";
-
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [
-        new(LocalizedUiText.Get("Student dashboard"), "/student", IsActive: true),
-        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
-        new(LocalizedUiText.Get("Available subjects"), "/student/subjects"),
-        new(LocalizedUiText.Get("Current plan"), "/student/schedule"),
-        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
-        new(LocalizedUiText.Get("Account"), "/student/account")
-    ];
 
     private AppContextDto? _appContext;
     private StudentAcademicContextDto? _academicContext;

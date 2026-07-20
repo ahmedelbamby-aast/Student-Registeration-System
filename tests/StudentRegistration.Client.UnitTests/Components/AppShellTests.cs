@@ -39,7 +39,7 @@ public sealed class AppShellTests
         Assert.NotNull(cut.Find(".srs-app-shell__brand"));
         Assert.NotNull(cut.Find(".srs-app-shell__context-strip"));
         Assert.NotNull(cut.Find(".srs-app-shell__navigation"));
-        Assert.NotNull(cut.Find(".srs-app-shell__container"));
+        Assert.NotNull(cut.Find(".srs-app-shell__sidebar"));
         Assert.NotNull(cut.Find("main#main-content"));
         Assert.NotNull(cut.Find("footer[role='contentinfo']"));
         Assert.Equal("Academy logo", cut.Find("img").GetAttribute("alt"));
@@ -55,7 +55,8 @@ public sealed class AppShellTests
         Assert.Contains("Active", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Available", cut.Markup, StringComparison.Ordinal);
         Assert.Equal("open", cut.Find("[data-context='registration-window']").GetAttribute("data-window-state"));
-        Assert.Equal(2, cut.FindAll("[data-context='registration-window'] time").Count);
+        Assert.Equal(2, cut.FindAll(".srs-app-shell__context").Count);
+        Assert.Equal(4, cut.FindAll("[data-context='registration-window'] time").Count);
     }
 
     [Fact]

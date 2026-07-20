@@ -26,7 +26,8 @@ public sealed class RoleGatewayPageComponentTests
         var cut = context.Render<DynamicComponent>(parameters =>
             parameters.Add(component => component.Type, pageType));
 
-        Assert.NotNull(cut.Find("main[data-testid='role-gateway-page']"));
+        Assert.NotNull(cut.Find("main#main-content"));
+        Assert.NotNull(cut.Find("[data-testid='role-gateway-page']"));
         var heading = cut.Find("h1#role-gateway-heading");
         Assert.Equal("-1", heading.GetAttribute("tabindex"));
         var loading = cut.Find("[data-testid='public-context-loading']");

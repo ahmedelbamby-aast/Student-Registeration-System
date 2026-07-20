@@ -2,41 +2,29 @@
 @using System.Globalization
 @using System.Net
 @using System.Text.Json
-@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Components.Overlay
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Contracts.Academics
 @inject CatalogueApiClient CatalogueApi
+@inject AcademicApiClient AcademicApi
 
 <PageTitle>@LocalizedUiText.Get("Catalogue administration | Student Registration")</PageTitle>
 
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-05"
+                   HeadingId="catalogue-administration-heading"
+                   Heading="@(LocalizedUiText.Get("Catalogue and policy administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Governed academic master data"))"
+                   Description="@(LocalizedUiText.Get("Review the curated programme catalogue, validate prerequisite rules, and publish only after server confirmation."))">
 <div class="srs-catalogue"
      data-route-id="ADM-05"
      data-state="@_state"
      data-contract-state="@CurrentStateFixture">
-    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-catalogue__header" role="banner">
-        <a class="srs-catalogue__brand" href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
-            <img src="/brand/aastmt-logo.png"
-                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            <span><strong>@LocalizedUiText.Get("AASTMT")</strong><small>@LocalizedUiText.Get("Student Registration")</small></span>
-        </a>
-        <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
-                        Items="@AdministrationNavigation" />
-    </header>
-
-    <main id="main-content" tabindex="-1" data-testid="catalogue-administration-page">
-        <section class="srs-catalogue__intro"
-                 aria-labelledby="catalogue-administration-heading">
-            <p class="srs-catalogue__eyebrow">@LocalizedUiText.Get("Governed academic master data")</p>
-            <h1 id="catalogue-administration-heading" tabindex="-1">
-                @LocalizedUiText.Get("Catalogue and policy administration")
-            </h1>
-            <p>
-                @LocalizedUiText.Get("Review a curated programme subset, keep field provenance beside every value, validate prerequisite and typed-policy rules, simulate without saving, and publish only after server confirmation.")
-            </p>
-        </section>
+    <div data-testid="catalogue-administration-page">
 
         @if (_state is LoadingState)
         {
@@ -458,7 +446,7 @@
                 </section>
             }
         }
-    </main>
+    </div>
 
     @if (_showPublishConfirmation)
     {
@@ -479,6 +467,7 @@
         </div>
     }
 </div>
+</AuthenticatedPage>
 
 @code {
     private const string LoadingState = "loading";
@@ -491,17 +480,10 @@
     private const string StaleState = "stale";
     private const string OfflineState = "offline";
 
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem>
-        AdministrationNavigation =
-        [
-            new(LocalizedUiText.Get("Dashboard"), "/admin"),
-            new(LocalizedUiText.Get("Terms"), "/admin/terms"),
-            new(LocalizedUiText.Get("Catalogue"), "/admin/catalogue", IsActive: true),
-            new(LocalizedUiText.Get("Offerings"), "/admin/offerings")
-        ];
-
     private readonly List<CatalogueVersionSummaryDto> _versions = [];
     private readonly List<ValidationIssue> _validationIssues = [];
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
     private ElementReference _validationSummary;
     private ElementReference _stateHeading;
     private ElementReference _publishTrigger;
@@ -556,7 +538,16 @@
         _ => "ADM-05-COMP-STATE-SERVICE-ERROR"
     };
 
-    protected override Task OnInitializedAsync() => LoadAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
+        await LoadAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

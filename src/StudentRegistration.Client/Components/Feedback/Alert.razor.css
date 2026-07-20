@@ -1,7 +1,7 @@
 .srs-alert {
     align-items: flex-start;
     background: var(--srs-color-semantic-information-surface);
-    border: var(--srs-border-primitive-width-strong) solid rgba(3,105,161,0.3);
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-semantic-border-strong);
     border-inline-start-width: 0.3125rem;
     border-inline-start-color: var(--srs-color-semantic-information-text);
     border-radius: var(--srs-border-primitive-radius-medium);
@@ -14,21 +14,21 @@
 
 .srs-alert--error {
     background: var(--srs-color-semantic-danger-surface);
-    border-color: rgba(190,18,60,0.3);
+    border-color: var(--srs-color-semantic-border-strong);
     border-inline-start-color: var(--srs-color-semantic-danger-text);
     color: var(--srs-color-semantic-danger-text);
 }
 
 .srs-alert--warning {
     background: var(--srs-color-semantic-warning-surface);
-    border-color: rgba(180,83,9,0.3);
+    border-color: var(--srs-color-semantic-border-strong);
     border-inline-start-color: var(--srs-color-semantic-warning-text);
     color: var(--srs-color-semantic-warning-text);
 }
 
 .srs-alert--success {
     background: var(--srs-color-semantic-success-surface);
-    border-color: rgba(4,120,87,0.3);
+    border-color: var(--srs-color-semantic-border-strong);
     border-inline-start-color: var(--srs-color-semantic-success-text);
     color: var(--srs-color-semantic-success-text);
 }
@@ -47,24 +47,24 @@
 
 .srs-alert__dismiss {
     flex-shrink: 0;
-    background: rgba(0,0,0,0.06);
-    border: var(--srs-border-primitive-width) solid rgba(0,0,0,0.12);
+    background: var(--srs-color-semantic-surface-muted);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
     border-radius: var(--srs-border-primitive-radius-small);
     color: inherit;
     min-block-size: var(--srs-sizing-interactive-minimum);
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
     font: inherit;
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
     cursor: pointer;
     transition: background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-alert__dismiss:hover {
-    background: rgba(0,0,0,0.10);
+    background: var(--srs-color-semantic-surface-accent);
 }
 
 .srs-alert__dismiss:active {
-    background: rgba(0,0,0,0.14);
+    background: var(--srs-color-semantic-disabled-surface);
 }
 
 .srs-alert__dismiss:focus-visible {

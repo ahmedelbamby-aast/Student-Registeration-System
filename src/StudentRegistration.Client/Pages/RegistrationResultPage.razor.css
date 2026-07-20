@@ -1,10 +1,44 @@
-.srs-registration-result { inline-size: min(100% - 2rem, 90rem); margin-inline: auto; padding-block: var(--srs-spacing-primitive-6); }
-.srs-registration-result__intro { display: flex; align-items: start; justify-content: space-between; gap: var(--srs-spacing-primitive-4); }
-.srs-registration-result__outcome, .srs-registration-result__groups > li { padding: var(--srs-spacing-primitive-5); border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border); border-radius: var(--srs-border-primitive-radius-medium); background: var(--srs-color-component-panel-background); }
-.srs-registration-result__outcome--accepted { border-inline-start: .4rem solid var(--srs-color-semantic-success-text); }
-.srs-registration-result__outcome--rejected { border-inline-start: .4rem solid var(--srs-color-semantic-danger-text); }
-.srs-registration-result__groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--srs-spacing-primitive-4); padding: 0; list-style: none; }
-.srs-registration-result__schedule { display: grid; gap: var(--srs-spacing-primitive-5); }
-.srs-registration-result button, .srs-registration-result a { min-block-size: var(--srs-sizing-interactive-minimum); }
-@media (max-width: 45rem) { .srs-registration-result__intro { flex-direction: column; } .srs-registration-result__groups { grid-template-columns: 1fr; } }
-@media print { .srs-registration-result__intro a, .srs-registration-result button, .srs-app-shell__navigation { display: none; } }
+.srs-registration-result {
+    min-inline-size: 0;
+}
+
+.srs-registration-result__intro {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--srs-spacing-primitive-4);
+}
+
+.srs-registration-result__groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--srs-spacing-primitive-4);
+    padding: 0;
+    list-style: none;
+}
+
+.srs-registration-result__groups > li {
+    min-inline-size: 0;
+}
+
+.srs-registration-result__schedule {
+    display: grid;
+    gap: var(--srs-spacing-primitive-5);
+}
+
+@media (max-width: 47.99rem) {
+    .srs-registration-result__intro {
+        flex-direction: column;
+    }
+
+    .srs-registration-result__groups {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media print {
+    .srs-registration-result__intro a,
+    .srs-registration-result button {
+        display: none;
+    }
+}

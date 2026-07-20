@@ -1,13 +1,12 @@
 # Frontend Design and Traceability Index
 
-**Contract version:** `frontend-design-index/1.1`<br>
-**Amendment status:** Approved by Ahmed ELbamby on 2026-07-13
+**Contract version:** `frontend-design-index/2.0`<br>
+**Amendment status:** Approved by Ahmed ELbamby on 2026-07-20
 
-Version 1.1 records the endpoint-composite ownership and exact Page Design
-Record journey/task trace rules discovered while preparing the 27 route
-records. Ahmed ELbamby approved this amendment on 2026-07-13. The approved 1.0
-index remains immutable, and version 1.1 is a design-governance pin rather than
-an implementation authorization.
+Version 2.0 expands the governed inventory to exactly 30 routes and pins the
+unified authenticated visual system. It adds STU-09, ADM-10, and STF-05 and
+retains exactly one implementation owner per route. Earlier approved index
+versions remain immutable history.
 
 This directory is the governed design source for SPEC-003. It does not replace
 runtime feature specifications, source ownership, or browser evidence.
@@ -26,12 +25,14 @@ runtime feature specifications, source ownership, or browser evidence.
 
 ## Design contracts
 
-- `route-inventory.md`: exact 27 routes and single implementation owner.
+- `route-inventory.md`: exact 30 routes and single implementation owner.
 - `page-design-record-contract.md`: Page Design Record completeness and
   `design-only` versus implementation-ready gates.
 - `responsive-layout-contract.md`: six-width reflow and 400% zoom behavior.
 - `tokens/contract.md`: neutral primitive, semantic, and component token rules.
-- `components/catalogue.md`: the 20 reusable components and canonical writers.
+- `components/catalogue.md`: current and approved-planned reusable components.
+- `components/unified-authenticated-composition.md`: authenticated shell 2.0,
+  responsive navigation, adaptive density, and light-only decisions.
 - `states/reason-map.md`: server-authoritative reason and UI state mapping.
 - `pages/*.md`: one immutable, Ahmed-approved design record per route ID;
   approval remains design-only until every downstream contract is pinned.
@@ -55,7 +56,7 @@ browser/engine where relevant, result, actor, and date.
 
 ## Required component trace row
 
-Each of the exactly 20 component-manifest entries maps to SPEC-003 FR-4, its
+Each component-manifest entry maps to SPEC-003 FR-4, its
 single canonical Phase-5 source task, its preceding test task, and every route
 record that consumes it. Component names and paths are never duplicated in a
 second registry.

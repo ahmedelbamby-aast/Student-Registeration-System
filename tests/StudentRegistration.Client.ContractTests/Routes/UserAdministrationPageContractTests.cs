@@ -11,7 +11,7 @@ public sealed class UserAdministrationPageContractTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(
             "tests/StudentRegistration.Client.ContractTests/Fixtures/Spec007/ADM-03/route-contract.json"));
         var root = document.RootElement;
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("ADM-03", root.GetProperty("routeId").GetString());
         Assert.Equal("/admin/users", root.GetProperty("routeTemplate").GetString());
         Assert.Equal(6, root.GetProperty("apis").GetArrayLength());

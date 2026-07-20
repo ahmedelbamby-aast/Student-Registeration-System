@@ -10,7 +10,7 @@ public sealed partial class RouteTestCoverageTests
         "tests/StudentRegistration.E2ETests/Infrastructure/FrontendTestFixture.cs";
 
     [Fact]
-    public void Fixture_plans_all_27_routes_and_required_test_families()
+    public void Fixture_plans_all_30_routes_and_required_test_families()
     {
         using var manifest = JsonDocument.Parse(
             RepositoryFiles.Read(".specify/route-manifest.json"));
@@ -23,11 +23,11 @@ public sealed partial class RouteTestCoverageTests
             .Select(route => route.GetProperty("id").GetString()!)
             .ToArray();
 
-        Assert.Equal(27, plannedIds.Length);
+        Assert.Equal(30, plannedIds.Length);
         Assert.Equal(manifestIds.Order(), plannedIds.Order());
         RepositoryFiles.ContainsAll(
             source,
-            "frontend-fixture/1.0",
+            "frontend-fixture/2.0",
             "component",
             "contract",
             "e2e",
@@ -37,6 +37,15 @@ public sealed partial class RouteTestCoverageTests
             "keyboard",
             "approved visual baseline",
             "does not represent executed evidence");
+
+        RepositoryFiles.ContainsAll(
+            source,
+            "STU-09",
+            "ADM-10",
+            "STF-05",
+            "Africa/Cairo",
+            "malformed-response",
+            "overload-ineligible");
     }
 
     [GeneratedRegex("new\\(\\\"(?<id>(?:AUTH|STU|ADM|STF|SYS)-[0-9]{2})\\\"")]

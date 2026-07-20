@@ -33,3 +33,14 @@
 - [x] The 2026-07-14 nullable term/window projection is synchronized across
   the authenticated-shell contract, canonical model, AppShell, tests, and the
   existing SPEC-003 sole-writer tasks without promoting a route.
+
+## 2026-07-21 unified-design reconciliation
+
+- [x] Exactly 30 unique routes match route manifest 3.0, page/API manifest 2.0,
+  route inventory 2.0, Page Design Records, and fixture registry 2.0.
+- [x] STU-09, ADM-10, and STF-05 each retain one implementation owner.
+- [x] Component manifest 2.0 uses actual names and marks only the two future
+  shared compositions as approved-planned.
+- [x] Token 2.0, authenticated-shell 2.0, responsive navigation, adaptive
+  density, and light-only decisions are versioned and approved.
+- [x] Pending source and executable-evidence tasks remain unchecked.

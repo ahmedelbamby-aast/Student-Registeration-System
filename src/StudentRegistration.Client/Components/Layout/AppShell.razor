@@ -1,237 +1,174 @@
 @using System.Globalization
 @using StudentRegistration.Contracts
 @using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Client.Components.Navigation
 
-<div class="srs-app-shell">
+<div class="@ShellClass" @onkeydown="HandleShellKeyDown">
     <a class="srs-skip-link" href="#@MainContentId">@SkipLinkLabel</a>
 
     <header class="srs-app-shell__header" role="banner">
-        <div class="srs-app-shell__container srs-app-shell__brand">
+        <div class="srs-app-shell__brand">
             @if (!string.IsNullOrWhiteSpace(BrandLogoSource))
             {
-                <img class="srs-app-shell__logo"
-                     src="@BrandLogoSource"
-                     alt="@BrandLogoAccessibleName" />
+                <img class="srs-app-shell__logo" src="@BrandLogoSource" alt="@BrandLogoAccessibleName" />
             }
-
             @if (Context is not null && !IsLoading && Status is null)
             {
-                <p class="srs-app-shell__identity">@Context.DisplayName</p>
+                <div class="srs-app-shell__user">
+                    <strong>@Context.DisplayName</strong>
+                    <span>@Context.ActiveRole</span>
+                </div>
+                <button @ref="_menuButton"
+                        class="srs-app-shell__menu-button"
+                        type="button"
+                        aria-label="@MenuButtonLabel"
+                        aria-controls="workspace-navigation"
+                        aria-expanded="@_mobileNavigationOpen"
+                        @onclick="ToggleNavigationAsync">
+                    <span aria-hidden="true">☰</span>
+                    <span>@MenuButtonLabel</span>
+                </button>
             }
         </div>
-
-        @if (Context is not null && !IsLoading && Status is null)
-        {
-            <div class="srs-app-shell__context-strip">
-                <div class="srs-app-shell__container">
-                    <dl class="srs-app-shell__context" aria-live="polite">
-                        <div>
-                            <dt>@ServerDateTimeLabel</dt>
-                            <dd>
-                                <time data-context="server-time"
-                                      datetime="@Context.ServerDateTime.ToString("O")">
-                                    @Context.ServerDateTime.ToString("g", CultureInfo.CurrentCulture)
-                                </time>
-                                <span>@Context.TimeZone</span>
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>@TeachingTermLabel</dt>
-                            <dd data-context="teaching-term">
-                                @(Context.TeachingTerm ?? NoTeachingTermLabel)
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>@RegistrationTermLabel</dt>
-                            <dd data-context="registration-term">
-                                @(Context.RegistrationTerm ?? NoRegistrationTermLabel)
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>@RegistrationWindowLabel</dt>
-                            <dd data-context="registration-window"
-                                data-window-state="@WindowStateValue(Context.RegistrationWindowState)">
-                                <span data-context="registration-window-state">
-                                    @WindowStateValue(Context.RegistrationWindowState)
-                                </span>
-                                @if (Context.RegistrationWindow is { } window)
-                                {
-                                    <time datetime="@window.OpensAtUtc.ToString("O")">
-                                        @window.OpensAtUtc.ToString("g", CultureInfo.CurrentCulture)
-                                    </time>
-                                    <span aria-hidden="true">–</span>
-                                    <time datetime="@window.ClosesAtUtc.ToString("O")">
-                                        @window.ClosesAtUtc.ToString("g", CultureInfo.CurrentCulture)
-                                    </time>
-                                }
-                                else
-                                {
-                                    <span>@NoRegistrationWindowLabel</span>
-                                }
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>@AuthorizedRolesLabel</dt>
-                            <dd>@string.Join(", ", Context.AuthorizedRoles)</dd>
-                        </div>
-                        <div>
-                            <dt>@ActiveRoleLabel</dt>
-                            <dd>@Context.ActiveRole</dd>
-                        </div>
-                        <div>
-                            <dt>@SessionLabel</dt>
-                            <dd>
-                                <span>@Context.SessionState</span>
-                                <time datetime="@Context.SessionExpiresAt.ToString("O")">
-                                    @Context.SessionExpiresAt.ToString("g", CultureInfo.CurrentCulture)
-                                </time>
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>@ServiceLabel</dt>
-                            <dd>@Context.ServiceState</dd>
-                        </div>
-                    </dl>
-                </div>
-            </div>
-
-            @if (Navigation is not null)
-            {
-                <div class="srs-app-shell__navigation">
-                    <div class="srs-app-shell__container">@Navigation</div>
-                </div>
-            }
-        }
     </header>
 
-    <main id="@MainContentId" tabindex="-1">
-        <div class="srs-app-shell__container srs-app-shell__main">
-            @if (IsLoading)
-            {
-                <section class="srs-app-shell__state srs-app-shell__state--loading"
-                         data-state="loading"
-                         role="status"
-                         aria-busy="true">
-                    @LoadingLabel
-                </section>
-            }
-            else if (Status is not null)
-            {
-                <section class="srs-app-shell__state srs-app-shell__state--@StatusState"
-                         data-state="@StatusState"
-                         role="@(Status.Severity is UiStatusSeverity.Error ? "alert" : "status")">
-                    <h1>@Status.Heading</h1>
-                    <p>@Status.Message</p>
-                    @if (!string.IsNullOrWhiteSpace(Status.ReferenceId))
-                    {
-                        <p>@Status.ReferenceId</p>
-                    }
-                    @foreach (var action in Status.NextActions)
-                    {
-                        <a href="@action.Target">@action.Label</a>
-                    }
-                </section>
-            }
-            else if (Context is not null)
-            {
-                @ChildContent
-            }
-        </div>
+    @if (Context is not null && !IsLoading && Status is null)
+    {
+        @if (_mobileNavigationOpen)
+        {
+            <button class="srs-app-shell__scrim" type="button" aria-label="@CloseMenuLabel" @onclick="CloseNavigationAsync"></button>
+        }
+
+        <aside id="workspace-navigation"
+               class="srs-app-shell__sidebar"
+               aria-label="@WorkspaceNavigationLabel"
+               data-open="@_mobileNavigationOpen">
+            <nav class="srs-app-shell__navigation" aria-label="@WorkspaceNavigationLabel" @ref="_navigation">
+                @if (Navigation is not null)
+                {
+                    @Navigation
+                }
+                else
+                {
+                    <ul class="srs-app-shell__navigation-list">
+                        @foreach (var item in WorkspaceNavigationCatalog.For(Workspace))
+                        {
+                            <li>
+                                <AppLink Href="@item.Href"
+                                         Variant="AppLinkVariant.Navigation"
+                                         IsActive="@string.Equals(item.RouteId, CurrentRouteId, StringComparison.OrdinalIgnoreCase)">
+                                    @item.Label
+                                </AppLink>
+                            </li>
+                        }
+                    </ul>
+                }
+            </nav>
+            <a class="srs-app-shell__support" data-context="support" href="@Context.SupportReferencePath">@SupportLinkLabel</a>
+        </aside>
+
+        <section class="srs-app-shell__context-strip" aria-label="@ContextPanelLabel">
+            <details class="srs-app-shell__context-disclosure">
+                <summary>@ContextPanelLabel</summary>
+                <AppContextPanel Context="Context"
+                                 ServerDateTimeLabel="@ServerDateTimeLabel"
+                                 TeachingTermLabel="@TeachingTermLabel"
+                                 RegistrationTermLabel="@RegistrationTermLabel"
+                                 RegistrationWindowLabel="@RegistrationWindowLabel"
+                                 NoTeachingTermLabel="@NoTeachingTermLabel"
+                                 NoRegistrationTermLabel="@NoRegistrationTermLabel"
+                                 NoRegistrationWindowLabel="@NoRegistrationWindowLabel"
+                                 AuthorizedRolesLabel="@AuthorizedRolesLabel"
+                                 ActiveRoleLabel="@ActiveRoleLabel"
+                                 SessionLabel="@SessionLabel"
+                                 ServiceLabel="@ServiceLabel" />
+            </details>
+            <div class="srs-app-shell__context-desktop">
+                <AppContextPanel Context="Context"
+                                 ServerDateTimeLabel="@ServerDateTimeLabel"
+                                 TeachingTermLabel="@TeachingTermLabel"
+                                 RegistrationTermLabel="@RegistrationTermLabel"
+                                 RegistrationWindowLabel="@RegistrationWindowLabel"
+                                 NoTeachingTermLabel="@NoTeachingTermLabel"
+                                 NoRegistrationTermLabel="@NoRegistrationTermLabel"
+                                 NoRegistrationWindowLabel="@NoRegistrationWindowLabel"
+                                 AuthorizedRolesLabel="@AuthorizedRolesLabel"
+                                 ActiveRoleLabel="@ActiveRoleLabel"
+                                 SessionLabel="@SessionLabel"
+                                 ServiceLabel="@ServiceLabel" />
+            </div>
+        </section>
+    }
+
+    <main id="@MainContentId" tabindex="-1" class="srs-app-shell__main">
+        @if (IsLoading)
+        {
+            <section class="srs-app-shell__state srs-app-shell__state--loading" data-state="loading" role="status" aria-busy="true">@LoadingLabel</section>
+        }
+        else if (Status is not null)
+        {
+            <section class="srs-app-shell__state srs-app-shell__state--@StatusState" data-state="@StatusState" role="@(Status.Severity is UiStatusSeverity.Error ? "alert" : "status")">
+                <h1>@Status.Heading</h1>
+                <p>@Status.Message</p>
+                @if (!string.IsNullOrWhiteSpace(Status.ReferenceId)) { <p>@Status.ReferenceId</p> }
+                @foreach (var action in Status.NextActions) { <a href="@action.Target">@action.Label</a> }
+            </section>
+        }
+        else
+        {
+            @ChildContent
+        }
     </main>
 
     <footer class="srs-app-shell__footer" role="contentinfo">
-        <div class="srs-app-shell__container">
-            @if (Context is not null && !IsLoading && Status is null)
-            {
-                <a data-context="support" href="@Context.SupportReferencePath">
-                    @SupportLinkLabel
-                </a>
-            }
-        </div>
+        <span>@FooterLabel</span>
     </footer>
 </div>
 
 @code {
-    [Parameter]
-    public FrontendAppContextView? Context { get; set; }
+    private ElementReference _menuButton;
+    private ElementReference _navigation;
+    private bool _mobileNavigationOpen;
 
-    [Parameter]
-    public UiStatus? Status { get; set; }
+    [Parameter] public FrontendAppContextView? Context { get; set; }
+    [Parameter] public UiStatus? Status { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public WorkspaceKind Workspace { get; set; } = WorkspaceKind.Student;
+    [Parameter] public UiDensity Density { get; set; } = UiDensity.Comfortable;
+    [Parameter] public string CurrentRouteId { get; set; } = string.Empty;
+    [Parameter] public string MainContentId { get; set; } = "main-content";
+    [Parameter] public string SkipLinkLabel { get; set; } = string.Empty;
+    [Parameter] public string BrandLogoSource { get; set; } = string.Empty;
+    [Parameter] public string BrandLogoAccessibleName { get; set; } = string.Empty;
+    [Parameter] public string ServerDateTimeLabel { get; set; } = string.Empty;
+    [Parameter] public string TeachingTermLabel { get; set; } = string.Empty;
+    [Parameter] public string RegistrationTermLabel { get; set; } = string.Empty;
+    [Parameter] public string RegistrationWindowLabel { get; set; } = string.Empty;
+    [Parameter] public string NoTeachingTermLabel { get; set; } = string.Empty;
+    [Parameter] public string NoRegistrationTermLabel { get; set; } = string.Empty;
+    [Parameter] public string NoRegistrationWindowLabel { get; set; } = string.Empty;
+    [Parameter] public string AuthorizedRolesLabel { get; set; } = string.Empty;
+    [Parameter] public string ActiveRoleLabel { get; set; } = string.Empty;
+    [Parameter] public string SessionLabel { get; set; } = string.Empty;
+    [Parameter] public string ServiceLabel { get; set; } = string.Empty;
+    [Parameter] public string SupportLinkLabel { get; set; } = string.Empty;
+    [Parameter] public string LoadingLabel { get; set; } = string.Empty;
+    [Parameter] public string MenuButtonLabel { get; set; } = "Menu";
+    [Parameter] public string CloseMenuLabel { get; set; } = "Close menu";
+    [Parameter] public string WorkspaceNavigationLabel { get; set; } = "Workspace navigation";
+    [Parameter] public string ContextPanelLabel { get; set; } = "Academic and session context";
+    [Parameter] public string FooterLabel { get; set; } = "Student Registration System";
+    [Parameter] public RenderFragment? Navigation { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    [Parameter]
-    public bool IsLoading { get; set; }
+    private string ShellClass => $"srs-app-shell srs-app-shell--{Workspace.ToString().ToLowerInvariant()} srs-density-{Density.ToString().ToLowerInvariant()}";
+    private string StatusState => Status?.Severity switch { UiStatusSeverity.Error => "error", UiStatusSeverity.Warning => "warning", UiStatusSeverity.Success => "success", _ => "information" };
 
-    [Parameter]
-    public string MainContentId { get; set; } = "main-content";
-
-    [Parameter]
-    public string SkipLinkLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string BrandLogoSource { get; set; } = string.Empty;
-
-    [Parameter]
-    public string BrandLogoAccessibleName { get; set; } = string.Empty;
-
-    [Parameter]
-    public string ServerDateTimeLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string TeachingTermLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string RegistrationTermLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string RegistrationWindowLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string NoTeachingTermLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string NoRegistrationTermLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string NoRegistrationWindowLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string AuthorizedRolesLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string ActiveRoleLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string SessionLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string ServiceLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string SupportLinkLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public string LoadingLabel { get; set; } = string.Empty;
-
-    [Parameter]
-    public RenderFragment? Navigation { get; set; }
-
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
-
-    private string StatusState => Status?.Severity switch
+    private async Task ToggleNavigationAsync()
     {
-        UiStatusSeverity.Error => "error",
-        UiStatusSeverity.Warning => "warning",
-        UiStatusSeverity.Success => "success",
-        _ => "information"
-    };
-
-    private static string WindowStateValue(RegistrationWindowState state) => state switch
-    {
-        RegistrationWindowState.Open => "open",
-        RegistrationWindowState.Upcoming => "upcoming",
-        RegistrationWindowState.Closed => "closed",
-        RegistrationWindowState.None => "none",
-        _ => "none"
-    };
+        _mobileNavigationOpen = !_mobileNavigationOpen;
+        if (_mobileNavigationOpen) { await Task.Yield(); await _navigation.FocusAsync(); }
+    }
+    private async Task CloseNavigationAsync() { _mobileNavigationOpen = false; await _menuButton.FocusAsync(); }
+    private async Task HandleShellKeyDown(KeyboardEventArgs args) { if (_mobileNavigationOpen && args.Key == "Escape") await CloseNavigationAsync(); }
 }

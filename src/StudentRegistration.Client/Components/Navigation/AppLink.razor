@@ -21,6 +21,9 @@
     public string Href { get; set; } = string.Empty;
 
     [Parameter]
+    public AppLinkVariant Variant { get; set; } = AppLinkVariant.Inline;
+
+    [Parameter]
     public bool IsActive { get; set; }
 
     [Parameter]
@@ -53,7 +56,7 @@
     private bool IsUnavailable => IsDisabled || IsLoading;
 
     private string CssClass =>
-        $"srs-link{(IsActive ? " is-active" : string.Empty)}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+        $"srs-link srs-link--{Variant.ToString().ToLowerInvariant()}{(IsActive ? " is-active" : string.Empty)}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
 
     private async Task HandleClickAsync(MouseEventArgs args)
     {

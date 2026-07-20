@@ -37,10 +37,10 @@ public sealed class AC_4Tests
             "@page \"/staff/login\"",
             "StaffLoginRequest",
             "role-selection-required",
-            "_availableRoles",
-            "SelectRoleContextAsync");
+            "INVALID_ROLE_CONFIGURATION");
         Assert.DoesNotContain("<select", staffLogin, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("name=\"role\"", staffLogin, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SelectRoleContextAsync", staffLogin, StringComparison.Ordinal);
 
         var endpoints = RepositoryFiles.Read(
             "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs");
@@ -72,8 +72,8 @@ public sealed class AC_4Tests
             "context.Render<StudentActivationPage>()",
             "context.Render<StaffLoginPage>()",
             "context.Render<AccountRecoveryPage>()",
-            "Dual_role_staff_chooses_only_a_server_returned_context",
-            "Assert.DoesNotContain(options",
-            "Student");
+            "Multiple_role_staff_configuration_is_rejected_without_a_context_picker",
+            "INVALID_ROLE_CONFIGURATION",
+            "Assert.Empty(page.FindAll(\"[data-state=role-selection-required]\"))");
     }
 }

@@ -18,10 +18,12 @@ internal static class IdentityPageComponentAssertions
             $"data-testid=\"{formTestId}\"",
             "@onsubmit:preventDefault",
             busyGuard,
-            "disabled=",
             "AccessibleValidationSummary",
             "ApplyFailure",
             "SERVICE_UNAVAILABLE");
+        Assert.True(
+            source.Contains("disabled=", StringComparison.OrdinalIgnoreCase),
+            $"{pagePath} must expose a disabled/busy control state.");
         RepositoryFiles.ContainsAll(source, required);
         Assert.DoesNotContain("Task.Run", source, StringComparison.Ordinal);
         Assert.DoesNotContain("DateTime.Now", source, StringComparison.Ordinal);

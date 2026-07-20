@@ -3,7 +3,6 @@
 @using System.Net
 @using StudentRegistration.Client.Components.Data
 @using StudentRegistration.Client.Components.Layout
-@using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Staff
 @using StudentRegistration.Contracts
@@ -13,38 +12,21 @@
 
 <PageTitle>@LocalizedUiText.Get("Assigned group roster | Student Registration")</PageTitle>
 
-@if (_loading)
-{
-    <div data-route-id="STF-03" data-state="loading" data-contract-state="STF-03-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Assigned group roster")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading the authorized roster.")</p></main>
-    </div>
-}
-else if (_shellContext is not null)
-{
-    <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading assigned roster"))">
-        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" /></Navigation>
-        <ChildContent>@RosterContent</ChildContent>
-    </AppShell>
-}
-else
-{
-    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@RosterContent</main>
-}
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_loading"
+                   Status="@ShellStatus"
+                   Workspace="WorkspaceKind.Staff"
+                   CurrentRouteId="STF-03"
+                   Density="UiDensity.Compact"
+                   Eyebrow="@(LocalizedUiText.Get("Staff workspace"))"
+                   Heading="@(LocalizedUiText.Get("Assigned group roster"))"
+                   Description="@(LocalizedUiText.Get("View the minimum student information authorized for this assigned group."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading the authorized roster."))">
+    @RosterContent
+</AuthenticatedPage>
 
 @code {
     private const int PageSize = 20;
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
-    [new(LocalizedUiText.Get("Staff home"), "/staff"), new(LocalizedUiText.Get("Timetable"), "/staff/timetable"), new(LocalizedUiText.Get("Availability"), "/staff/availability")];
-
     [Parameter] public Guid GroupId { get; set; }
 
     private FrontendAppContextView? _shellContext;
@@ -56,6 +38,10 @@ else
     private bool _loading = true;
     private bool _requesting;
     private bool _hasLoadedRoster;
+    private UiStatus? ShellStatus => _shellContext is null && !_loading
+        ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
+            [new("staff-home", LocalizedUiText.Get("Return to Staff home"), "/staff")], _reference)
+        : null;
 
     private string ContractState => _state switch
     {
@@ -70,14 +56,12 @@ else
 
     private RenderFragment RosterContent => @<article data-route-id="STF-03"
         data-state="@_state" data-contract-state="@ContractState">
-        <header><p>@LocalizedUiText.Get("Staff workspace")</p><h1>@LocalizedUiText.Get("Assigned group roster")</h1></header>
-
         @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
         {
             <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
                 <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") @_reference</p> }
-                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="() => LoadRosterAsync(1)">@LocalizedUiText.Get("Retry")</button> }
+                @if (_state is "service-error" or "offline") { <AppButton Disabled="@_requesting" OnClick="@(_ => LoadRosterAsync(1))">@LocalizedUiText.Get("Retry")</AppButton> }
                 <a href="/staff">@LocalizedUiText.Get("Return to Staff home")</a>
             </section>
         }
@@ -102,24 +86,25 @@ else
             <section aria-labelledby="roster-heading">
                 <h2 id="roster-heading">@LocalizedUiText.Get("Authorized roster")</h2>
                 <p role="status">@_roster.TotalCount @LocalizedUiText.Get("active roster entries. Page") @_roster.PageNumber @LocalizedUiText.Get("of") @TotalPages.</p>
-                <div role="region" aria-label="@(LocalizedUiText.Get("Assigned group roster table"))" tabindex="0">
-                    <table>
-                        <caption>@LocalizedUiText.Get("Minimum authorized roster fields, sorted by display name then University ID")</caption>
-                        <thead><tr><th scope="col">@LocalizedUiText.Get("University ID")</th><th scope="col">@LocalizedUiText.Get("Display name")</th><th scope="col">@LocalizedUiText.Get("Enrollment state")</th></tr></thead>
-                        <tbody>
+                <DataTable TableId="staff-roster"
+                           Caption="@(LocalizedUiText.Get("Minimum authorized roster fields, sorted by display name then University ID"))"
+                           ViewportLabel="@(LocalizedUiText.Get("Assigned group roster table"))"
+                           Columns="@RosterColumns">
+                    <BodyContent>
+                        @foreach (var row in _roster.Items)
+                        {
+                            <tr><td>@row.UniversityId</td><td>@row.DisplayName</td><td>@row.EnrollmentState</td></tr>
+                        }
+                    </BodyContent>
+                    <NarrowAlternative>
+                        <ol aria-label="@(LocalizedUiText.Get("Roster compact view"))">
                             @foreach (var row in _roster.Items)
                             {
-                                <tr><td>@row.UniversityId</td><td>@row.DisplayName</td><td>@row.EnrollmentState</td></tr>
+                                <li><strong>@row.DisplayName</strong><span> @row.UniversityId · @row.EnrollmentState</span></li>
                             }
-                        </tbody>
-                    </table>
-                </div>
-                <ol aria-label="@(LocalizedUiText.Get("Roster compact view"))">
-                    @foreach (var row in _roster.Items)
-                    {
-                        <li><strong>@row.DisplayName</strong><span> @row.UniversityId · @row.EnrollmentState</span></li>
-                    }
-                </ol>
+                        </ol>
+                    </NarrowAlternative>
+                </DataTable>
                 <Pagination AccessibleLabel="@(LocalizedUiText.Get("Roster pages"))" PreviousLabel="@(LocalizedUiText.Get("Previous"))" NextLabel="@(LocalizedUiText.Get("Next"))"
                             CurrentPage="@_roster.PageNumber" TotalPages="@TotalPages" VisiblePages="@VisiblePages"
                             PageLabel="@(page => page.ToString(CultureInfo.CurrentCulture))"
@@ -131,6 +116,12 @@ else
     </article>;
 
     private int TotalPages => _roster is null ? 1 : Math.Max(1, (int)Math.Ceiling(_roster.TotalCount / (double)_roster.PageSize));
+    private static readonly IReadOnlyList<DataTable.ColumnDefinition> RosterColumns =
+    [
+        new("university-id", LocalizedUiText.Get("University ID"), false),
+        new("display-name", LocalizedUiText.Get("Display name"), false),
+        new("enrollment-state", LocalizedUiText.Get("Enrollment state"), false)
+    ];
     private IReadOnlyList<int> VisiblePages => _roster is null ? [1] : Enumerable.Range(1, TotalPages).Where(page => Math.Abs(page - _roster.PageNumber) <= 2).ToArray();
     private string ErrorHeading => _state switch
     {

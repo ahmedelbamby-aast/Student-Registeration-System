@@ -1,27 +1,25 @@
 @page "/admin/resources"
 @using System.Net
+@using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Features.Academics
 @inject SchedulingApiClient SchedulingApi
+@inject AcademicApiClient AcademicApi
 
 <PageTitle>@LocalizedUiText.Get("Resource administration | Student Registration")</PageTitle>
 
-<main class="srs-scheduling-admin"
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-07"
+                   HeadingId="resource-main-content"
+                   Heading="@(LocalizedUiText.Get("Resource administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Scheduling resources"))"
+                   Description="@(LocalizedUiText.Get("Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override."))">
+<div class="srs-scheduling-admin"
       data-route-id="ADM-07"
       data-state="@_state"
       data-testid="resource-administration-page">
-    <a class="srs-skip-link" href="#resource-main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-scheduling-admin__header">
-        <div>
-            <p class="srs-scheduling-admin__eyebrow">@LocalizedUiText.Get("Scheduling resources")</p>
-            <h1 id="resource-main-content" tabindex="-1">@LocalizedUiText.Get("Resource administration")</h1>
-            <p>@LocalizedUiText.Get("Manage versioned rooms, inspect Staff-owned availability, and resolve schedule impacts without an Admin override.")</p>
-        </div>
-        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
-            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
-            <a href="/admin/offerings">@LocalizedUiText.Get("Offerings")</a>
-        </nav>
-    </header>
 
     @if (_state == LoadingState)
     {
@@ -318,7 +316,8 @@
             }
         </section>
     }
-</main>
+</div>
+</AuthenticatedPage>
 
 @code {
     [SupplyParameterFromQuery(Name = "termId")]
@@ -354,7 +353,19 @@
     private string _resolutionReason = string.Empty;
     private bool _pending;
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
+        await LoadAsync();
+    }
 
     private async Task LoadAsync()
     {

@@ -17,8 +17,8 @@
 }
 
 .srs-scheduling-admin section {
-    border: 1px solid var(--color-border, #c7ced8);
-    border-radius: .75rem;
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-surface);
     padding: 1rem;
 }
 
@@ -34,7 +34,7 @@
 
 .srs-scheduling-admin th,
 .srs-scheduling-admin td {
-    border-bottom: 1px solid var(--color-border, #c7ced8);
+    border-bottom: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
     padding: .75rem;
     text-align: start;
 }
@@ -67,8 +67,8 @@
 }
 
 .srs-scheduling-admin__cards > li {
-    border: 1px solid var(--color-border, #c7ced8);
-    border-radius: .5rem;
+    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-radius: var(--srs-border-primitive-radius-control);
     padding: 1rem;
 }
 

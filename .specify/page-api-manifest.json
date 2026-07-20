@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "2.0.0",
   "pages": {
     "AUTH-01": [
       "GET /api/public/context"
@@ -61,6 +61,9 @@
       "POST /api/auth/password/change",
       "POST /api/auth/sessions/revoke-all",
       "POST /api/auth/logout"
+    ],
+    "STU-09": [
+      "GET /api/students/me/roadmap"
     ],
     "ADM-01": [
       "GET /api/context",
@@ -130,6 +133,11 @@
       "GET /api/admin/exports/{jobId}",
       "GET /api/admin/exports/{jobId}/download"
     ],
+    "ADM-10": [
+      "GET /api/admin/registration-approvals",
+      "GET /api/admin/registration-approvals/{submissionId}/lines/{lineId}",
+      "POST /api/admin/registration-approvals/{submissionId}/lines/{lineId}/decision"
+    ],
     "STF-01": [
       "GET /api/context",
       "PUT /api/auth/session/context",
@@ -145,6 +153,11 @@
     "STF-04": [
       "GET /api/staff/availability",
       "PUT /api/staff/availability"
+    ],
+    "STF-05": [
+      "GET /api/staff/registration-approvals",
+      "GET /api/staff/registration-approvals/{submissionId}/lines/{lineId}",
+      "POST /api/staff/registration-approvals/{submissionId}/lines/{lineId}/decision"
     ],
     "SYS-01": [
       "GET /api/public/context",

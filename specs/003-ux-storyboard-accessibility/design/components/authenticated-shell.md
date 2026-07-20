@@ -1,6 +1,6 @@
 # Authenticated Shell Context Contract
 
-**Version:** `authenticated-shell/1.0`  
+**Version:** `authenticated-shell/2.0`<br>
 **Composed API owner:** SPEC-006 with SPEC-007/SPEC-008 contributions  
 **Presentation owner:** SPEC-003
 
@@ -29,6 +29,23 @@ The shell provides a skip link, banner, labelled role navigation, main region,
 and content-info/support region. On narrow widths navigation collapses without
 changing its links or accessible name. Context details wrap or move into a
 labelled disclosure; they are never removed because of viewport size.
+
+At 1024 CSS px and above, navigation is a persistent 272px sidebar. Below
+1024px, a labelled Menu button opens a navigation drawer. The button exposes
+`aria-expanded`; opening moves focus into the drawer, Escape or outside click
+dismisses it, and focus returns to the Menu button. Route links and active-page
+semantics are supplied only by `WorkspaceNavigationCatalog`.
+
+`AuthenticatedPage` is the presentation-only composition wrapper around
+AppShell, shared navigation, PageHeader, route status/actions, and page body.
+It receives `FrontendAppContextView`, `UiStatus`, loading state,
+`WorkspaceKind`, current route ID, and `UiDensity`; it performs no fetching,
+authorization, academic calculation, or role inference.
+
+Student routes use comfortable density. Admin, Lecturer, and Teaching
+Assistant routes use compact density. Density changes spacing only; component
+shape, semantics, focus, status, and navigation behavior remain identical.
+The shell is light-only and English-first/localization-ready.
 
 Status updates are text plus semantic icon/color. Background time/session or
 service updates use a polite live region and do not move focus. Expiry that

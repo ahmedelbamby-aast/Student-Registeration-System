@@ -3,15 +3,19 @@
 
 <PageTitle>@LocalizedUiText.Get("System status")</PageTitle>
 
-<main id="system-status-main"
-      class="srs-system-status"
-      tabindex="-1"
-      data-route-id="SYS-01"
-      data-state="@_state.ToString().ToLowerInvariant()">
-    <a class="srs-skip-link" href="#system-status-main">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <section class="srs-system-status__panel" aria-labelledby="system-status-page-heading">
-        <h1 id="system-status-page-heading">@LocalizedUiText.Get("System status")</h1>
+<PublicPageShell MainContentId="system-status-main"
+                 SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
+                 BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))">
+    <HeaderContent>
+        <span>@LocalizedUiText.Get("System status and support")</span>
+    </HeaderContent>
+    <ChildContent>
+    <section class="srs-system-status"
+             data-route-id="SYS-01"
+             data-state="@_state.ToString().ToLowerInvariant()"
+             aria-labelledby="system-status-page-heading">
+      <div class="srs-system-status__panel">
+        <h1 id="system-status-page-heading" tabindex="-1">@LocalizedUiText.Get("System status")</h1>
 
         <RouteStatePanel HeadingId="system-status-detail-heading"
                          Status="@_status"
@@ -35,8 +39,13 @@
                 </div>
             </dl>
         }
+      </div>
     </section>
-</main>
+    </ChildContent>
+    <FooterContent>
+        <a href="/">@LocalizedUiText.Get("Open public gateway")</a>
+    </FooterContent>
+</PublicPageShell>
 
 @code {
     private static readonly IReadOnlyList<UiStatusAction> GatewayAction =

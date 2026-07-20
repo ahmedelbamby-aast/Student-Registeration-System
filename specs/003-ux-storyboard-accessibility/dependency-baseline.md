@@ -21,7 +21,15 @@
 ## Frontend ownership boundary
 
 SPEC-003 owns client-only presentation models, governed design/test metadata,
-neutral tokens, reusable components, the 27 Page Design Records, and SYS-01.
+neutral tokens, reusable components, the 30 Page Design Records, and SYS-01.
 It owns no server endpoint, runtime identity/policy entity, database mapping, or
 academic decision. Other route pages remain owned by their route-manifest
 implementation specifications.
+
+## 2026-07-20 approved contributor amendment
+
+- SPEC-008/009/011/014 contribute STU-09 roadmap/registration projections.
+- SPEC-014/017 contribute ADM-10 global approval projections.
+- SPEC-014/016 contribute STF-05 assignment-scoped approval projections.
+- SPEC-003 owns no approval, capacity, enrollment, policy, or authorization
+  decision.

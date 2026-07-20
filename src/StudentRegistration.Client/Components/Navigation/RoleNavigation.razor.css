@@ -20,7 +20,7 @@
     color: var(--srs-color-semantic-text-secondary);
     border: var(--srs-border-primitive-width-strong) solid transparent;
     border-radius: var(--srs-border-primitive-radius-medium);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
     text-decoration: none;
     transition:
         color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
@@ -31,7 +31,7 @@
 .srs-role-navigation__link:hover {
     color: var(--srs-color-primitive-blue-700);
     background: var(--srs-color-nav-hover-bg);
-    border-color: rgba(79,70,229,0.15);
+    border-color: var(--srs-color-semantic-border);
 }
 
 .srs-role-navigation__link:active,
@@ -61,7 +61,7 @@
     color: var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }
 
 .srs-role-navigation.has-error .srs-role-navigation__status {

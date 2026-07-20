@@ -1,5 +1,5 @@
 .srs-term-admin {
-    background: #f7f9fc;
+    background: var(--srs-color-semantic-canvas);
     color: var(--srs-color-semantic-text-primary);
     min-block-size: 100vh;
 }
@@ -13,7 +13,7 @@
 
 .srs-term-admin__header {
     align-items: center;
-    background: #eef3f8;
+    background: var(--srs-color-semantic-surface-muted);
     border-block-end: 1px solid var(--srs-color-semantic-border);
     display: flex;
     flex-wrap: wrap;
@@ -32,7 +32,7 @@
 
 .srs-term-admin__brand img {
     background: var(--srs-color-primitive-blue-900);
-    border-radius: .5rem;
+    border-radius: var(--srs-border-primitive-radius-control);
     block-size: 4rem;
     inline-size: auto;
     object-fit: contain;
@@ -56,7 +56,7 @@
 .srs-term-admin__success {
     background: var(--srs-color-semantic-surface-default);
     border: 1px solid var(--srs-color-semantic-border);
-    border-radius: .65rem;
+    border-radius: var(--srs-border-primitive-radius-surface);
     margin-block-end: 1rem;
     padding: clamp(1rem, 2vw, 1.5rem);
 }
@@ -185,7 +185,7 @@
 .srs-term-admin button,
 .srs-term-admin__action-link {
     border: 1px solid var(--srs-color-semantic-border);
-    border-radius: .3rem;
+    border-radius: var(--srs-border-primitive-radius-control);
     box-sizing: border-box;
     font: inherit;
     min-block-size: var(--srs-sizing-interactive-minimum);
@@ -194,7 +194,7 @@
 .srs-term-admin input,
 .srs-term-admin select,
 .srs-term-admin textarea {
-    background: #fff;
+    background: var(--srs-color-semantic-surface-default);
     inline-size: 100%;
     padding: .65rem .75rem;
 }
@@ -207,7 +207,7 @@
 .srs-term-admin button,
 .srs-term-admin__action-link {
     align-items: center;
-    background: #fff;
+    background: var(--srs-color-semantic-surface-default);
     color: var(--srs-color-semantic-text-primary);
     cursor: pointer;
     display: inline-flex;
@@ -240,7 +240,7 @@
 
 .srs-term-admin__windows {
     border: 1px solid var(--srs-color-primitive-gray-300);
-    border-radius: .5rem;
+    border-radius: var(--srs-border-primitive-radius-control);
     margin: 0 0 1rem;
     min-inline-size: 0;
     padding: 1rem;
@@ -340,7 +340,7 @@
 
     .srs-term-admin__semantic-alternative > ul > li {
         border: 1px solid var(--srs-color-semantic-border);
-        border-radius: .5rem;
+        border-radius: var(--srs-border-primitive-radius-control);
         padding: 1rem;
     }
 

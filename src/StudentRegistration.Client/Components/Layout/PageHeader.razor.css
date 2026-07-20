@@ -18,7 +18,7 @@
     inline-size: 3.5rem;
     block-size: 0.1875rem;
     background: linear-gradient(90deg, var(--srs-color-primitive-blue-600), var(--srs-color-primitive-violet-600));
-    border-radius: 999px;
+    border-radius: var(--srs-border-primitive-radius-round);
 }
 
 .srs-page-header__content {
@@ -26,19 +26,19 @@
 }
 
 .srs-page-header__eyebrow {
-    margin: 0 0 var(--srs-spacing-primitive-2);
+    margin: var(--srs-spacing-primitive-0) var(--srs-spacing-primitive-0) var(--srs-spacing-primitive-2);
     color: var(--srs-color-primitive-blue-600);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 800;
+    font-weight: var(--srs-typography-component-display-weight);
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .srs-page-header__heading {
     max-inline-size: var(--srs-sizing-content-readable);
-    margin: 0;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 800;
+    margin: var(--srs-spacing-primitive-0);
+    font-size: var(--srs-typography-primitive-font-size-page);
+    font-weight: var(--srs-typography-component-display-weight);
     line-height: 1.15;
     color: var(--srs-color-primitive-blue-900);
     letter-spacing: -0.01em;
@@ -48,7 +48,7 @@
     max-inline-size: var(--srs-sizing-content-readable);
     margin: var(--srs-spacing-primitive-3) 0 0;
     color: var(--srs-color-semantic-text-secondary);
-    font-size: 1.0625rem;
+    font-size: var(--srs-typography-primitive-font-size-body);
     line-height: 1.6;
 }
 

@@ -1,12 +1,54 @@
-.srs-registration-history { inline-size: min(100% - 2rem, 90rem); margin-inline: auto; padding-block: var(--srs-spacing-primitive-6); }
-.srs-registration-history__intro { display: flex; justify-content: space-between; align-items: start; gap: var(--srs-spacing-primitive-4); }
-.srs-registration-history__state, .srs-registration-history__cards > li { padding: var(--srs-spacing-primitive-5); border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border); border-radius: var(--srs-border-primitive-radius-medium); background: var(--srs-color-component-panel-background); }
-.srs-registration-history__table { overflow-x: auto; }
-.srs-registration-history table { inline-size: 100%; border-collapse: collapse; }
-.srs-registration-history th, .srs-registration-history td { padding: var(--srs-spacing-primitive-3); border-block-end: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border); text-align: start; }
-.srs-registration-history__cards { display: none; padding: 0; list-style: none; }
-.srs-registration-history__schedule { display: grid; gap: var(--srs-spacing-primitive-5); }
-.srs-registration-history__selector { display: flex; flex-wrap: wrap; gap: var(--srs-spacing-primitive-4); margin-block: var(--srs-spacing-primitive-5); }
-.srs-registration-history button, .srs-registration-history a { min-block-size: var(--srs-sizing-interactive-minimum); }
-@media (max-width: 45rem) { .srs-registration-history__intro { flex-direction: column; } .srs-registration-history__table { display: none; } .srs-registration-history__cards { display: grid; gap: var(--srs-spacing-primitive-4); } }
-@media print { .srs-registration-history__intro button, .srs-app-shell__navigation { display: none; } }
+.srs-registration-history {
+    min-inline-size: 0;
+}
+
+.srs-registration-history__intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--srs-spacing-primitive-4);
+}
+
+.srs-registration-history__table {
+    max-inline-size: 100%;
+    overflow-x: auto;
+}
+
+.srs-registration-history__cards {
+    display: none;
+    padding: 0;
+    list-style: none;
+}
+
+.srs-registration-history__schedule {
+    display: grid;
+    gap: var(--srs-spacing-primitive-5);
+}
+
+.srs-registration-history__selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-4);
+    margin-block: var(--srs-spacing-primitive-5);
+}
+
+@media (max-width: 47.99rem) {
+    .srs-registration-history__intro {
+        flex-direction: column;
+    }
+
+    .srs-registration-history__table {
+        display: none;
+    }
+
+    .srs-registration-history__cards {
+        display: grid;
+        gap: var(--srs-spacing-primitive-4);
+    }
+}
+
+@media print {
+    .srs-registration-history__intro button {
+        display: none;
+    }
+}

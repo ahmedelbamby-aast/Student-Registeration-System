@@ -18,6 +18,9 @@
     public string Type { get; set; } = "button";
 
     [Parameter]
+    public AppButtonVariant Variant { get; set; } = AppButtonVariant.Primary;
+
+    [Parameter]
     public bool Disabled { get; set; }
 
     [Parameter]
@@ -47,7 +50,7 @@
     private bool IsUnavailable => Disabled || IsLoading;
 
     private string CssClass =>
-        $"srs-button{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
+        $"srs-button srs-button--{Variant.ToString().ToLowerInvariant()}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";
 
     private async Task HandleClickAsync(MouseEventArgs args)
     {

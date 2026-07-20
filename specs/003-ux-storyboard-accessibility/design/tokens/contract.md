@@ -1,7 +1,7 @@
 # Neutral Design Token Contract
 
-**Schema:** `design-token-set/1.0`  
-**Initial token version:** `1.0.0`  
+**Schema:** `design-token-set/2.0`<br>
+**Current token version:** `2.0.0`<br>
 **Scope:** neutral, accessible demo presentation  
 **Approval authority:** Ahmed ELbamby
 
@@ -9,6 +9,25 @@ An approved version is immutable. Any value or semantic-name change creates a
 new version, reruns contrast/focus/component checks, and requires approval.
 Components consume CSS custom properties generated from the canonical JSON;
 they do not introduce ungoverned visual literals.
+
+## Version 2.0 approved visual direction
+
+Ahmed ELbamby approved this neutral modern-academic light palette on
+2026-07-20. It is not derived from the AASTMT logo.
+
+| Intent | Value |
+|---|---|
+| canvas / surface / muted surface | `#F6F8FC` / `#FFFFFF` / `#EEF2F7` |
+| primary / secondary text / border | `#172033` / `#475569` / `#CBD5E1` |
+| accent / hover / soft accent / focus | `#3730A3` / `#312E81` / `#EEF2FF` / `#4F46E5` |
+| typography | system UI; display 32px, page 28px, section 20px, body 16px, supporting 14px |
+| radius | controls 8px; surfaces 12px |
+| gutters | mobile 16px; tablet 24px; desktop 32px |
+| surface padding | comfortable 24px; compact 16px |
+
+Blue, green, amber, and red semantic pairs must satisfy the contrast contract.
+All controls remain at least 44px in both densities. Version 2.0 is light-only;
+dark mode requires a separately approved contract.
 
 ## Three layers
 
@@ -48,7 +67,8 @@ rule. The token set records `scope: neutral` and
 
 ## Projection and use
 
-- `wwwroot/design/design-tokens.json` is the approved source of truth.
+- `wwwroot/design/design-tokens.json` is the current approved source of truth;
+  immutable v1 remains archived.
 - `wwwroot/css/design-tokens.css` contains only deterministic CSS variables and
   accessibility media handling derived from the approved source.
 - `wwwroot/css/app.css` and component isolated styles reference variables with
@@ -56,3 +76,6 @@ rule. The token set records `scope: neutral` and
   token projection.
 - High contrast, forced colors, reduced motion, zoom/reflow, and browser default
   controls retain usable visible states.
+- Verification rejects mismatched or extra projected values, undefined
+  variables, alias cycles, external font imports, and raw visual literals
+  outside the generated token projection.

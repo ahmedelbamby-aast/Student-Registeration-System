@@ -25,12 +25,10 @@ public sealed class TermAdministrationPageComponentTests
         var cut = context.Render<DynamicComponent>(parameters =>
             parameters.Add(component => component.Type, RequiredPageType()));
 
-        Assert.NotNull(cut.Find("main[data-testid='term-administration-page']"));
-        var heading = cut.Find("h1#term-administration-heading");
-        Assert.Equal("-1", heading.GetAttribute("tabindex"));
-        var loading = cut.Find("[data-testid='term-administration-loading']");
+        Assert.NotNull(cut.Find("main#main-content"));
+        var loading = cut.Find(".srs-app-shell__state--loading");
         Assert.Equal("status", loading.GetAttribute("role"));
-        Assert.Equal("polite", loading.GetAttribute("aria-live"));
+        Assert.Equal("true", loading.GetAttribute("aria-busy"));
         Assert.Empty(cut.FindAll("[data-testid='create-term-submit']"));
     }
 

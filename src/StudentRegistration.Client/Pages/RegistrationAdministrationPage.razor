@@ -1,5 +1,6 @@
 @page "/admin/registrations"
 @using System.Net
+@using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Registration
 @using StudentRegistration.Contracts.Academics
@@ -11,30 +12,19 @@
 
 <PageTitle>@LocalizedUiText.Get("Registration monitoring | Student Registration")</PageTitle>
 
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@(_busy && _shellContext is null)"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-08"
+                   HeadingId="registration-monitor-heading"
+                   Heading="@(LocalizedUiText.Get("Read-only registration monitoring"))"
+                   Eyebrow="@(LocalizedUiText.Get("Operations and reconciliation"))"
+                   Description="@(LocalizedUiText.Get("Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state."))">
 <div class="srs-registration-monitor"
      data-route-id="ADM-08"
      data-state="@_state"
      data-supported-states="loading empty success stale degraded unauthorized session-expired offline">
-    <a class="srs-registration-monitor__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-registration-monitor__header" role="banner">
-        <a href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
-            <strong>@LocalizedUiText.Get("AASTMT")</strong>
-            <span>@LocalizedUiText.Get("Student Registration")</span>
-        </a>
-        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
-            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
-            <a href="/admin/registrations" aria-current="page">@LocalizedUiText.Get("Registrations")</a>
-            <a href="/admin/audit">@LocalizedUiText.Get("Audit")</a>
-        </nav>
-    </header>
-
-    <main id="main-content" tabindex="-1">
-        <section class="srs-registration-monitor__intro" aria-labelledby="registration-monitor-heading">
-            <p class="srs-registration-monitor__eyebrow">@LocalizedUiText.Get("Operations and reconciliation")</p>
-            <h1 id="registration-monitor-heading">@LocalizedUiText.Get("Read-only registration monitoring")</h1>
-            <p>@LocalizedUiText.Get("Inspect server-authorized submission, receipt, fill, failure, and reconciliation observations without changing registration state.")</p>
-        </section>
 
         @if (_busy)
         {
@@ -227,13 +217,12 @@
             <h2>@LocalizedUiText.Get("Observation only")</h2>
             <p>@LocalizedUiText.Get("No repair or correction actions are available. Capacity, enrollment, receipt, and reconciliation decisions remain with their server owners.")</p>
         </section>
-    </main>
-
-    <footer><a href="/status/support">@LocalizedUiText.Get("Open safe support reference")</a></footer>
 </div>
+</AuthenticatedPage>
 
 @code {
     private AdminOperationsMetricsDto? _metrics;
+    private FrontendAppContextView? _shellContext;
     private IReadOnlyList<RegistrationHistoryRowDto> _records = [];
     private RegistrationDetailDto? _detail;
     private AdminStudentLocatorDto? _matchedStudent;
@@ -270,6 +259,8 @@
                 ApplyFailure(contextResult.Error, contextResult.StatusCode);
                 return;
             }
+
+            _shellContext = AcademicContextViewMapper.ToView(contextResult.Value);
 
             if (!string.Equals(contextResult.Value.ActiveRole, "Admin", StringComparison.Ordinal))
             {

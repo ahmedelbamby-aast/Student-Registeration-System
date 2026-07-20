@@ -1,33 +1,7 @@
 .srs-account-page {
-    inline-size: min(100% - 2rem, 72rem);
-    margin-inline: auto;
-}
-
-.srs-account-page__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--srs-spacing-primitive-4);
-    padding-block: var(--srs-spacing-primitive-4);
-}
-
-.srs-account-page__header img {
-    block-size: 3.5rem;
-    inline-size: auto;
-}
-
-.srs-account-page main {
     display: grid;
     gap: var(--srs-spacing-primitive-8);
-    padding-block-end: var(--srs-spacing-primitive-8);
-}
-
-.srs-account-summary,
-.srs-account-security,
-.srs-account-sessions {
-    padding: var(--srs-spacing-primitive-6);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    min-inline-size: 0;
 }
 
 .srs-account-summary dl,
@@ -39,12 +13,23 @@
 .srs-account-summary dl div {
     display: grid;
     gap: var(--srs-spacing-primitive-1);
-}
-
-.srs-account-summary dt {
-    font-weight: var(--srs-typography-component-control-weight);
+    min-inline-size: 0;
 }
 
 .srs-account-summary dd {
     margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.srs-account-sessions__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--srs-spacing-primitive-3);
+}
+
+@media (max-width: 23.4375rem) {
+    .srs-account-sessions__actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
 }

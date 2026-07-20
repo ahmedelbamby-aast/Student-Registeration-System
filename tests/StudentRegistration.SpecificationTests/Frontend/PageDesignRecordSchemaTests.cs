@@ -90,7 +90,7 @@ public sealed partial class PageDesignRecordSchemaTests
         };
 
     [Fact]
-    public void Route_inventory_matches_all_and_only_the_27_canonical_routes()
+    public void Route_inventory_matches_all_and_only_the_30_canonical_routes()
     {
         using var manifest = JsonDocument.Parse(RepositoryFiles.Read(RouteManifestPath));
         var inventory = RepositoryFiles.Read(RouteInventoryPath);
@@ -99,18 +99,18 @@ public sealed partial class PageDesignRecordSchemaTests
             RepositoryFiles.Read(PageMatrixPath));
         var routes = manifest.RootElement.GetProperty("routes").EnumerateArray().ToArray();
 
-        Assert.Equal("2.1.0", manifest.RootElement.GetProperty("version").GetString());
+        Assert.Equal("3.0.0", manifest.RootElement.GetProperty("version").GetString());
         RepositoryFiles.ContainsAll(
             inventory,
-            "route-inventory/1.1",
-            "route-manifest.json` version `2.1.0",
-            "Approved by Ahmed ELbamby on 2026-07-13",
-            "it changes no route, page, or",
-            "implementation owner.");
-        Assert.Equal(27, routes.Length);
-        Assert.Equal(27, rows.Count);
-        Assert.Equal(27, pageMatrixRows.Count);
-        Assert.Equal(27, rows.Select(row => row.Groups["id"].Value).Distinct().Count());
+            "route-inventory/2.0",
+            "route-manifest.json` version `3.0.0",
+            "Approved by Ahmed ELbamby on 2026-07-20",
+            "exactly 30",
+            "implementation ownership.");
+        Assert.Equal(30, routes.Length);
+        Assert.Equal(30, rows.Count);
+        Assert.Equal(30, pageMatrixRows.Count);
+        Assert.Equal(30, rows.Select(row => row.Groups["id"].Value).Distinct().Count());
 
         foreach (var route in routes)
         {
@@ -208,12 +208,12 @@ public sealed partial class PageDesignRecordSchemaTests
             RepositoryFiles.Read(".specify/component-manifest.json"));
 
         Assert.Equal(
-            20,
+            28,
             components.RootElement.GetProperty("components").GetArrayLength());
         RepositoryFiles.ContainsAll(
             index,
-            "frontend-design-index/1.1",
-            "Approved by Ahmed ELbamby on 2026-07-13",
+            "frontend-design-index/2.0",
+            "Approved by Ahmed ELbamby on 2026-07-20",
             "Page Design Record",
             "owner SPEC and FR/AC",
             "implementation task",
@@ -241,7 +241,7 @@ public sealed partial class PageDesignRecordSchemaTests
         var rows = ContributorRowPattern().Matches(baseline);
         var routes = manifest.RootElement.GetProperty("routes").EnumerateArray().ToArray();
 
-        Assert.Equal(27, rows.Count);
+        Assert.Equal(30, rows.Count);
         foreach (var route in routes)
         {
             var id = route.GetProperty("id").GetString();
@@ -267,7 +267,7 @@ public sealed partial class PageDesignRecordSchemaTests
         using var pageApiManifest = JsonDocument.Parse(RepositoryFiles.Read(PageApiManifestPath));
         using var endpointManifest = JsonDocument.Parse(RepositoryFiles.Read(EndpointManifestPath));
         Assert.Equal(
-            "1.1.0",
+            "2.0.0",
             pageApiManifest.RootElement.GetProperty("version").GetString());
         Assert.Equal(
             "2.1.0",
@@ -393,6 +393,29 @@ public sealed partial class PageDesignRecordSchemaTests
             var routeId = route.GetProperty("id").GetString()!;
             var draft = RepositoryFiles.Read(
                 $"specs/003-ux-storyboard-accessibility/design/pages/{routeId}.md");
+            if (routeId is "STU-09" or "ADM-10" or "STF-05")
+            {
+                RepositoryFiles.ContainsAll(
+                    draft,
+                    $"# {routeId} Page Design Record",
+                    "**Record version:** `2.0`",
+                    "**Approval status:** Approved by Ahmed ELbamby on 2026-07-20",
+                    "**Readiness:** `design-only`",
+                    "frontend-fixture/2.0");
+                var modernMatch = Assert.Single(JsonRecordPattern().Matches(draft).Cast<Match>());
+                using var modernDocument = JsonDocument.Parse(modernMatch.Groups["json"].Value);
+                var modernRecord = modernDocument.RootElement;
+                Assert.Equal(routeId, modernRecord.GetProperty("routeId").GetString());
+                Assert.Equal("2.0", modernRecord.GetProperty("approvalVersion").GetString());
+                Assert.Equal("design-only", modernRecord.GetProperty("readinessState").GetString());
+                Assert.Equal(expectedWidths, modernRecord.GetProperty("responsiveWidths").EnumerateArray().Select(width => width.GetInt32()));
+                Assert.Equal(expectedStates, modernRecord.GetProperty("states").EnumerateArray().Select(state => state.GetProperty("state").GetString()!).ToHashSet(StringComparer.Ordinal));
+                Assert.All(ReadStrings(modernRecord.GetProperty("components")), component => Assert.Contains(component, knownComponents));
+                Assert.Equal(
+                    "frontend-design-index/2.0",
+                    modernRecord.GetProperty("contributorContractVersions").GetProperty("SPEC-003").GetString());
+                continue;
+            }
             RepositoryFiles.ContainsAll(
                 draft,
                 $"# {routeId} Page Design Record",
@@ -635,7 +658,15 @@ public sealed partial class PageDesignRecordSchemaTests
             var recordComponents = ReadStrings(record.GetProperty("components"));
             Assert.All(
                 recordComponents,
-                component => Assert.Contains(component, knownComponents));
+                component => Assert.Contains(
+                    component switch
+                    {
+                        "Button" => "AppButton",
+                        "StatePanel" => "RouteStatePanel",
+                        "ValidationSummary" => "AccessibleValidationSummary",
+                        _ => component
+                    },
+                    knownComponents));
             AssertNonemptyStrings(record, "actions");
             var actions = ReadStrings(record.GetProperty("actions"));
             AssertNonemptyStrings(record, "navigationTransitions");

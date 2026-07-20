@@ -1,0 +1,73 @@
+@using StudentRegistration.Client.Features.Frontend.Models
+
+<AppShell Context="Context"
+          Status="Status"
+          IsLoading="IsLoading"
+          Workspace="Workspace"
+          CurrentRouteId="CurrentRouteId"
+          Density="Density"
+          Navigation="Navigation"
+          BrandLogoSource="@BrandLogoSource"
+          BrandLogoAccessibleName="@BrandLogoAccessibleName"
+          SkipLinkLabel="@SkipLinkLabel"
+          LoadingLabel="@LoadingLabel"
+          ServerDateTimeLabel="@ServerDateTimeLabel"
+          TeachingTermLabel="@TeachingTermLabel"
+          RegistrationTermLabel="@RegistrationTermLabel"
+          RegistrationWindowLabel="@RegistrationWindowLabel"
+          NoTeachingTermLabel="@NoTeachingTermLabel"
+          NoRegistrationTermLabel="@NoRegistrationTermLabel"
+          NoRegistrationWindowLabel="@NoRegistrationWindowLabel"
+          AuthorizedRolesLabel="@AuthorizedRolesLabel"
+          ActiveRoleLabel="@ActiveRoleLabel"
+          SessionLabel="@SessionLabel"
+          ServiceLabel="@ServiceLabel"
+          SupportLinkLabel="@SupportLinkLabel">
+    <PageHeader HeadingId="@HeadingId"
+                Heading="@Heading"
+                Description="@Description"
+                Eyebrow="@Eyebrow"
+                Status="@HeaderStatus"
+                Actions="@Actions" />
+    @ChildContent
+</AppShell>
+
+@code {
+    [Parameter, EditorRequired] public FrontendAppContextView? Context { get; set; }
+    [Parameter] public UiStatus? Status { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter, EditorRequired] public WorkspaceKind Workspace { get; set; }
+    [Parameter, EditorRequired] public string CurrentRouteId { get; set; } = string.Empty;
+    [Parameter] public UiDensity Density { get; set; } = UiDensity.Comfortable;
+    [Parameter, EditorRequired] public string Heading { get; set; } = string.Empty;
+    [Parameter] public string HeadingId { get; set; } = "page-heading";
+    [Parameter] public string? Eyebrow { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? HeaderStatus { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? Navigation { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string BrandLogoSource { get; set; } = "/brand/aastmt-logo.png";
+    [Parameter] public string BrandLogoAccessibleName { get; set; } = "Arab Academy for Science, Technology and Maritime Transport";
+    [Parameter] public string SkipLinkLabel { get; set; } = "Skip to main content";
+    [Parameter] public string LoadingLabel { get; set; } = "Loading workspace";
+    [Parameter] public string ServerDateTimeLabel { get; set; } = "Server time";
+    [Parameter] public string TeachingTermLabel { get; set; } = "Teaching term";
+    [Parameter] public string RegistrationTermLabel { get; set; } = "Registration term";
+    [Parameter] public string RegistrationWindowLabel { get; set; } = "Registration window";
+    [Parameter] public string NoTeachingTermLabel { get; set; } = "No teaching term";
+    [Parameter] public string NoRegistrationTermLabel { get; set; } = "No registration term";
+    [Parameter] public string NoRegistrationWindowLabel { get; set; } = "No registration window";
+    [Parameter] public string AuthorizedRolesLabel { get; set; } = "Authorized role";
+    [Parameter] public string ActiveRoleLabel { get; set; } = "Active role";
+    [Parameter] public string SessionLabel { get; set; } = "Session";
+    [Parameter] public string ServiceLabel { get; set; } = "Service";
+    [Parameter] public string SupportLinkLabel { get; set; } = "Support and system status";
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(CurrentRouteId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+    }
+}

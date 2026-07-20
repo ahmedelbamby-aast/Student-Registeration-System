@@ -16,28 +16,28 @@
     background: var(--srs-color-semantic-information-surface);
     color: var(--srs-color-semantic-information-text);
     border-inline-start-color: var(--srs-color-semantic-information-text);
-    border-color: rgba(3,105,161,0.2);
+    border-color: var(--srs-color-semantic-border-strong);
 }
 
 .srs-state-panel--success {
     background: var(--srs-color-semantic-success-surface);
     color: var(--srs-color-semantic-success-text);
     border-inline-start-color: var(--srs-color-semantic-success-text);
-    border-color: rgba(4,120,87,0.2);
+    border-color: var(--srs-color-semantic-border-strong);
 }
 
 .srs-state-panel--warning {
     background: var(--srs-color-semantic-warning-surface);
     color: var(--srs-color-semantic-warning-text);
     border-inline-start-color: var(--srs-color-semantic-warning-text);
-    border-color: rgba(180,83,9,0.2);
+    border-color: var(--srs-color-semantic-border-strong);
 }
 
 .srs-state-panel--error {
     background: var(--srs-color-semantic-danger-surface);
     color: var(--srs-color-semantic-danger-text);
     border-inline-start-color: var(--srs-color-semantic-danger-text);
-    border-color: rgba(190,18,60,0.2);
+    border-color: var(--srs-color-semantic-border-strong);
 }
 
 .srs-state-panel[aria-busy="true"] {
@@ -52,8 +52,8 @@
 }
 
 .srs-state-panel__heading {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: var(--srs-typography-primitive-font-size-body);
+    font-weight: var(--srs-typography-component-emphasis-weight);
 }
 
 .srs-state-panel__reference,
@@ -82,11 +82,11 @@
 }
 
 .srs-state-panel__action:hover {
-    background: rgba(0,0,0,0.06);
+    background: var(--srs-color-semantic-surface-muted);
 }
 
 .srs-state-panel__action:active {
-    background: rgba(0,0,0,0.12);
+    background: var(--srs-color-semantic-disabled-surface);
 }
 
 .srs-state-panel__action:focus-visible {

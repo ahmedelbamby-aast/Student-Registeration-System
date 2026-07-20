@@ -66,11 +66,12 @@
                    ErrorMessage="@ErrorFor("activation-confirm-password")"
                    @bind-Value="_confirmPassword" />
 
-        <button class="srs-identity-command"
-                type="submit"
-                disabled="@IsSubmitting">
+        <AppButton Type="submit"
+                   IsLoading="@IsSubmitting"
+                   Disabled="@IsSubmitting"
+                   LoadingAnnouncement="@(LocalizedUiText.Get("Activating the account once."))">
             @(IsSubmitting ? LocalizedUiText.Get("Activating…") : LocalizedUiText.Get("Activate account"))
-        </button>
+        </AppButton>
     </form>
 </IdentityPageShell>
 

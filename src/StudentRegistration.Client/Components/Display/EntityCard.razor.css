@@ -16,7 +16,7 @@
 
 .srs-entity-card:hover {
     border-color: var(--srs-color-primitive-blue-400);
-    box-shadow: 0 0.25rem 1.25rem rgba(79,70,229,0.18), 0 0.0625rem 0.25rem rgba(79,70,229,0.08);
+    box-shadow: var(--srs-elevation-surface);
     transform: translateY(-0.125rem);
 }
 
@@ -50,8 +50,8 @@
 
 .srs-entity-card__heading {
     margin: var(--srs-spacing-primitive-0);
-    font-size: 1.0625rem;
-    font-weight: 700;
+    font-size: var(--srs-typography-primitive-font-size-body);
+    font-weight: var(--srs-typography-component-emphasis-weight);
     color: var(--srs-color-primitive-blue-900);
 }
 
@@ -61,7 +61,7 @@
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
     border-radius: var(--srs-border-primitive-radius-small);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }
 
 .srs-entity-card__error {
@@ -70,5 +70,5 @@
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
     border-radius: var(--srs-border-primitive-radius-small);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }

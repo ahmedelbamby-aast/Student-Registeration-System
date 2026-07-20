@@ -1,8 +1,7 @@
 .srs-system-status {
-    min-block-size: 100vh;
     display: grid;
     place-items: center;
-    padding: clamp(1rem, 4vw, 3rem);
+    padding-block: clamp(1rem, 4vw, 3rem);
     color: var(--srs-color-semantic-text-primary);
     background: var(--srs-color-semantic-surface-default);
 }

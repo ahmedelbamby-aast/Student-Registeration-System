@@ -31,3 +31,12 @@ terms and absent windows explicitly, consume the canonical nested server
 summary, and never calculate window state in the browser. This additive shared
 component amendment leaves all route contributor rows and later gates
 unchanged.
+
+## 2026-07-21 unified-design readiness
+
+- [x] The four canonical route/fixture artifacts contain exactly 30 routes.
+- [x] STU-09, ADM-10, and STF-05 have approved records with six widths, state
+  applicability, focus order, API dependencies, and five planned test layers.
+- [x] Design-token-set 2.0 and authenticated-shell 2.0 are approved.
+- [ ] T280 and remaining source/test/browser/visual tasks must pass before
+  unified-frontend completion or release may be claimed.

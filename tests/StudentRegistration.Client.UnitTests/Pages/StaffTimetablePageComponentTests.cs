@@ -9,7 +9,7 @@ public sealed class StaffTimetablePageComponentTests
     {
         var source = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StaffTimetablePage.razor");
         RepositoryFiles.ContainsAll(source,
-            "STF-02-COMP-STATE-LOADING", "STF-02-COMP-STATE-EMPTY",
+            "AuthenticatedPage", "WorkspaceKind.Staff", "UiDensity.Compact", "STF-02-COMP-STATE-EMPTY",
             "STF-02-COMP-STATE-SUCCESS", "STF-02-COMP-STATE-UNAUTHORIZED",
             "STF-02-COMP-STATE-STALE", "STF-02-COMP-STATE-SERVICE-ERROR",
             "Current authorized timetable calendar", "Chronological timetable list",

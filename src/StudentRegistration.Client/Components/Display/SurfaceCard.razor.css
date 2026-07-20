@@ -21,12 +21,12 @@
 
 .srs-surface-card__heading,
 .srs-surface-card__description {
-    margin: 0;
+    margin: var(--srs-spacing-primitive-0);
 }
 
 .srs-surface-card__heading {
     font-size: var(--srs-typography-primitive-font-size-heading);
-    font-weight: 700;
+    font-weight: var(--srs-typography-component-emphasis-weight);
     line-height: var(--srs-typography-primitive-line-height-compact);
     color: var(--srs-color-primitive-blue-900);
 }

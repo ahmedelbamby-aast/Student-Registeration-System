@@ -21,7 +21,7 @@ public sealed class StudentAdministrationPageContractTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(FixturePath));
         var root = document.RootElement;
 
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("ADM-04", root.GetProperty("routeId").GetString());
         Assert.Equal("/admin/students", root.GetProperty("routeTemplate").GetString());
         Assert.Equal("AcademicProfiles.Manage", root.GetProperty("permission").GetString());

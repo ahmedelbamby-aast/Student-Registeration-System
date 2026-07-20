@@ -83,13 +83,13 @@ public sealed class AC_3Tests
             .Select(route => route.GetProperty("id").GetString()!)
             .ToArray();
 
-        Assert.Equal(27, plannedIds.Length);
+        Assert.Equal(30, plannedIds.Length);
         Assert.Equal(routeIds.Order(), plannedIds.Order());
 
         // Then each route plan is multi-layered; a visual plan alone cannot satisfy AC-3.
         RepositoryFiles.ContainsAll(
             fixtureSource,
-            "frontend-fixture/1.0",
+            "frontend-fixture/2.0",
             "component",
             "contract",
             "e2e",

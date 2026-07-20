@@ -2,10 +2,7 @@
 .srs-admin-dashboard-host {
     min-block-size: 100vh;
     color: var(--srs-color-semantic-text-primary);
-    background:
-        radial-gradient(ellipse at 80% 0%,   rgba(79,70,229,0.07) 0%, transparent 45%),
-        radial-gradient(ellipse at  5% 100%, rgba(124,58,237,0.05) 0%, transparent 40%),
-        var(--srs-color-semantic-surface-default);
+    background: var(--srs-color-semantic-canvas);
     overflow-wrap: anywhere;
 }
 
@@ -107,7 +104,7 @@
 .srs-admin-dashboard__failure a:hover {
     background: var(--srs-color-primitive-blue-100);
     border-color: var(--srs-color-primitive-blue-400);
-    box-shadow: 0 0.125rem 0.5rem rgba(79,70,229,0.18);
+    box-shadow: var(--srs-elevation-surface);
 }
 
 .srs-admin-dashboard button:focus-visible,
@@ -132,7 +129,7 @@
 .srs-admin-dashboard__observation {
     border-inline-start: 0.3125rem solid var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
-    border-color: rgba(3,105,161,0.2);
+    border-color: var(--srs-color-semantic-border);
 }
 
 /* ── Metrics grid ── */
@@ -166,7 +163,7 @@
     color: var(--srs-color-semantic-warning-text);
     background: var(--srs-color-semantic-warning-surface);
     border-inline-start: 0.3125rem solid var(--srs-color-semantic-warning-text);
-    border-color: rgba(180,83,9,0.2);
+    border-color: var(--srs-color-semantic-border);
 }
 
 .srs-admin-dashboard__warnings ul,
@@ -197,7 +194,7 @@
     color: var(--srs-color-semantic-danger-text);
     background: var(--srs-color-semantic-danger-surface);
     border-inline-start: 0.3125rem solid var(--srs-color-semantic-danger-text);
-    border-color: rgba(190,18,60,0.2);
+    border-color: var(--srs-color-semantic-border);
 }
 
 /* ── Responsive ── */

@@ -1,197 +1,151 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
+/* Generated from design/design-tokens.json. Do not edit by hand. */
 :root {
     color-scheme: light;
-
-    /* ── Primitive palette ── */
     --srs-color-primitive-white: #FFFFFF;
-
-    /* Neutrals */
-    --srs-color-primitive-gray-50:  #F8F7FF;
-    --srs-color-primitive-gray-100: #F1EFFF;
-    --srs-color-primitive-gray-300: #C8C4E0;
-    --srs-color-primitive-gray-600: #5B5680;
-    --srs-color-primitive-gray-700: #3D3860;
-    --srs-color-primitive-gray-900: #1E1A3C;
-
-    /* Indigo / Brand */
-    --srs-color-primitive-blue-50:  #EEF2FF;
-    --srs-color-primitive-blue-100: #E0E7FF;
-    --srs-color-primitive-blue-400: #818CF8;
-    --srs-color-primitive-blue-600: #4F46E5;
-    --srs-color-primitive-blue-700: #4338CA;
-    --srs-color-primitive-blue-900: #312E81;
-
-    /* Violet / Accent */
-    --srs-color-primitive-violet-400: #A78BFA;
-    --srs-color-primitive-violet-600: #7C3AED;
-
-    /* Emerald / Success */
-    --srs-color-primitive-green-50:  #ECFDF5;
-    --srs-color-primitive-green-100: #D1FAE5;
-    --srs-color-primitive-green-700: #047857;
+    --srs-color-primitive-gray-50: #F6F8FC;
+    --srs-color-primitive-gray-100: #EEF2F7;
+    --srs-color-primitive-gray-300: #CBD5E1;
+    --srs-color-primitive-gray-600: #475569;
+    --srs-color-primitive-gray-700: #334155;
+    --srs-color-primitive-gray-900: #172033;
+    --srs-color-primitive-indigo-50: #EEF2FF;
+    --srs-color-primitive-indigo-600: #4F46E5;
+    --srs-color-primitive-indigo-700: #3730A3;
+    --srs-color-primitive-indigo-800: #312E81;
+    --srs-color-primitive-blue-50: #EFF6FF;
+    --srs-color-primitive-blue-100: #DBEAFE;
+    --srs-color-primitive-blue-400: #60A5FA;
+    --srs-color-primitive-blue-600: #2563EB;
+    --srs-color-primitive-blue-700: #1D4ED8;
+    --srs-color-primitive-blue-900: #1E3A8A;
+    --srs-color-primitive-green-50: #ECFDF5;
     --srs-color-primitive-green-800: #065F46;
-
-    /* Amber / Warning */
-    --srs-color-primitive-amber-50:  #FFFBEB;
-    --srs-color-primitive-amber-100: #FEF3C7;
-    --srs-color-primitive-amber-700: #B45309;
+    --srs-color-primitive-green-700: #047857;
+    --srs-color-primitive-amber-50: #FFFBEB;
     --srs-color-primitive-amber-900: #78350F;
-
-    /* Rose / Danger */
-    --srs-color-primitive-red-50:  #FFF1F2;
-    --srs-color-primitive-red-100: #FFE4E6;
-    --srs-color-primitive-red-700: #BE123C;
-    --srs-color-primitive-red-800: #9F1239;
-
-    /* Sky / Info */
-    --srs-color-primitive-sky-50:  #F0F9FF;
-    --srs-color-primitive-sky-100: #E0F2FE;
-    --srs-color-primitive-sky-700: #0369A1;
-    --srs-color-primitive-sky-800: #075985;
-
-    /* ── Semantic surfaces ── */
-    --srs-color-semantic-surface-default: #FAFAFA;
-    --srs-color-semantic-surface-muted:   #F1EFFF;
-    --srs-color-semantic-surface-raised:  #FFFFFF;
-    --srs-color-semantic-surface-accent:  #EEF2FF;
-
-    /* ── Text ── */
-    --srs-color-semantic-text-primary:   #1E1A3C;
-    --srs-color-semantic-text-secondary: #5B5680;
-
-    /* ── Borders ── */
-    --srs-color-semantic-border:        #5B5680;
-    --srs-color-semantic-border-subtle: #C8C4E0;
-
-    /* ── Links & focus ── */
-    --srs-color-semantic-link:       #4F46E5;
+    --srs-color-primitive-amber-700: #B45309;
+    --srs-color-primitive-red-50: #FEF2F2;
+    --srs-color-primitive-red-800: #991B1B;
+    --srs-color-primitive-violet-600: #7C3AED;
+    --srs-color-semantic-canvas: #F6F8FC;
+    --srs-color-semantic-surface-default: #FFFFFF;
+    --srs-color-semantic-surface-muted: #EEF2F7;
+    --srs-color-semantic-surface-accent: #EEF2FF;
+    --srs-color-semantic-text-primary: #172033;
+    --srs-color-semantic-text-secondary: #475569;
+    --srs-color-semantic-border: #CBD5E1;
+    --srs-color-semantic-border-strong: #94A3B8;
+    --srs-color-semantic-border-subtle: #E2E8F0;
+    --srs-color-semantic-link: #3730A3;
+    --srs-color-semantic-link-hover: #312E81;
     --srs-color-semantic-focus-ring: #4F46E5;
-
-    /* ── Status: Information (sky) ── */
-    --srs-color-semantic-information-surface: #E0F2FE;
-    --srs-color-semantic-information-text:    #0369A1;
-
-    /* ── Status: Success (emerald) ── */
-    --srs-color-semantic-success-surface: #D1FAE5;
-    --srs-color-semantic-success-text:    #047857;
-
-    /* ── Status: Warning (amber) ── */
-    --srs-color-semantic-warning-surface: #FEF3C7;
-    --srs-color-semantic-warning-text:    #B45309;
-
-    /* ── Status: Danger (rose) ── */
-    --srs-color-semantic-danger-surface: #FFE4E6;
-    --srs-color-semantic-danger-text:    #BE123C;
-
-    /* ── Disabled ── */
-    --srs-color-semantic-disabled-surface: #E5E2F5;
-    --srs-color-semantic-disabled-text:    #8480A8;
-
-    /* ── Buttons ── */
-    --srs-color-component-button-primary-background: #4F46E5;
-    --srs-color-component-button-primary-text:       #FFFFFF;
-    --srs-color-component-button-secondary-background: #EEF2FF;
-    --srs-color-component-button-secondary-text:       #4338CA;
-
-    /* ── Panels / Cards ── */
+    --srs-color-semantic-information-surface: #EFF6FF;
+    --srs-color-semantic-information-text: #1E3A8A;
+    --srs-color-semantic-success-surface: #ECFDF5;
+    --srs-color-semantic-success-text: #065F46;
+    --srs-color-semantic-warning-surface: #FFFBEB;
+    --srs-color-semantic-warning-text: #78350F;
+    --srs-color-semantic-danger-surface: #FEF2F2;
+    --srs-color-semantic-danger-text: #991B1B;
+    --srs-color-semantic-disabled-surface: #E2E8F0;
+    --srs-color-semantic-disabled-text: #64748B;
+    --srs-color-semantic-overlay-scrim: rgba(15, 23, 42, 0.45);
+    --srs-color-component-button-primary-background: #3730A3;
+    --srs-color-component-button-primary-hover: #312E81;
+    --srs-color-component-button-primary-text: #FFFFFF;
+    --srs-color-component-button-secondary-background: #FFFFFF;
+    --srs-color-component-button-secondary-text: #3730A3;
+    --srs-color-component-button-quiet-background: #EEF2FF;
+    --srs-color-component-button-danger-background: #991B1B;
     --srs-color-component-panel-background: #FFFFFF;
-    --srs-color-component-panel-border:     #C8C4E0;
-
-    /* ── Header gradient ── */
-    --srs-color-header-gradient-start: #312E81;
-    --srs-color-header-gradient-mid:   #4F46E5;
-    --srs-color-header-gradient-end:   #7C3AED;
-
-    /* ── Navigation ── */
-    --srs-color-nav-active-bg:   #EEF2FF;
-    --srs-color-nav-active-text: #4338CA;
-    --srs-color-nav-hover-bg:    rgba(79,70,229,0.08);
-
-    /* ── Typography ── */
-    --srs-typography-primitive-font-family-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --srs-typography-primitive-font-size-small:   0.875rem;
-    --srs-typography-primitive-font-size-body:    1rem;
-    --srs-typography-primitive-font-size-heading: 1.5rem;
+    --srs-color-component-panel-border: #CBD5E1;
+    --srs-color-component-navigation-active-background: #EEF2FF;
+    --srs-color-component-navigation-active-text: #312E81;
+    --srs-color-nav-active-bg: #EEF2FF;
+    --srs-color-nav-active-text: #312E81;
+    --srs-color-nav-hover-bg: #F6F8FC;
+    --srs-color-text-muted: #475569;
+    --srs-typography-primitive-font-family-sans: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+    --srs-typography-primitive-font-size-supporting: 0.875rem;
+    --srs-typography-primitive-font-size-small: 0.8125rem;
+    --srs-typography-primitive-font-size-body: 1rem;
+    --srs-typography-primitive-font-size-section: 1.25rem;
+    --srs-typography-primitive-font-size-heading: 1.25rem;
+    --srs-typography-primitive-font-size-page: 1.75rem;
+    --srs-typography-primitive-font-size-display: 2rem;
     --srs-typography-primitive-line-height-compact: 1.25;
-    --srs-typography-primitive-line-height-body:    1.6;
-    --srs-typography-semantic-body: 1rem/1.6 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --srs-typography-primitive-line-height-body: 1.5;
+    --srs-typography-semantic-body: 1rem/1.5 system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
     --srs-typography-component-control-weight: 600;
-
-    /* ── Spacing ── */
-    --srs-spacing-primitive-0:  0;
-    --srs-spacing-primitive-1:  0.25rem;
-    --srs-spacing-primitive-2:  0.5rem;
-    --srs-spacing-primitive-3:  0.75rem;
-    --srs-spacing-primitive-4:  1rem;
-    --srs-spacing-primitive-5:  1.25rem;
-    --srs-spacing-primitive-6:  1.5rem;
-    --srs-spacing-primitive-8:  2rem;
+    --srs-typography-component-heading-weight: 700;
+    --srs-typography-component-medium-weight: 500;
+    --srs-typography-component-emphasis-weight: 700;
+    --srs-typography-component-display-weight: 800;
+    --srs-typography-primitive-font-family-monospace: ui-monospace, Cascadia Code, monospace;
+    --srs-spacing-primitive-0: 0;
+    --srs-spacing-primitive-1: 0.25rem;
+    --srs-spacing-primitive-2: 0.5rem;
+    --srs-spacing-primitive-3: 0.75rem;
+    --srs-spacing-primitive-4: 1rem;
+    --srs-spacing-primitive-5: 1.25rem;
+    --srs-spacing-primitive-6: 1.5rem;
+    --srs-spacing-primitive-8: 2rem;
     --srs-spacing-primitive-10: 2.5rem;
-    --srs-spacing-page-gutter:  clamp(1rem, 3vw, 2rem);
-
-    /* ── Sizing ── */
+    --srs-spacing-page-gutter-mobile: 1rem;
+    --srs-spacing-page-gutter-tablet: 1.5rem;
+    --srs-spacing-page-gutter-desktop: 2rem;
+    --srs-spacing-surface-comfortable: 1.5rem;
+    --srs-spacing-surface-compact: 1rem;
     --srs-sizing-interactive-minimum: 2.75rem;
-    --srs-sizing-content-readable:    70ch;
-    --srs-sizing-content-wide:        90rem;
-    --srs-sizing-content-shell:       80rem;
-    --srs-sizing-header-minimum:      4.75rem;
-    --srs-sizing-dialog-maximum:      40rem;
-    --srs-sizing-progress-thickness:  0.25rem;
-
-    /* ── Borders ── */
-    --srs-border-primitive-width:        0.0625rem;
+    --srs-sizing-content-readable: 70ch;
+    --srs-sizing-content-wide: 90rem;
+    --srs-sizing-shell-sidebar: 17rem;
+    --srs-sizing-dialog-maximum: 40rem;
+    --srs-sizing-progress-thickness: 0.25rem;
+    --srs-border-primitive-width: 0.0625rem;
     --srs-border-primitive-width-strong: 0.125rem;
-    --srs-border-primitive-radius-small:  0.375rem;
-    --srs-border-primitive-radius-medium: 0.625rem;
-    --srs-border-primitive-radius-large:  1rem;
-
-    /* ── Focus ring ── */
-    --srs-focus-outline-width:  0.1875rem;
+    --srs-border-primitive-radius-control: 0.5rem;
+    --srs-border-primitive-radius-surface: 0.75rem;
+    --srs-border-primitive-radius-round: 999px;
+    --srs-border-primitive-radius-small: 0.5rem;
+    --srs-border-primitive-radius-medium: 0.5rem;
+    --srs-border-primitive-radius-large: 0.75rem;
+    --srs-radius-semantic-control: 0.5rem;
+    --srs-space-3: 0.75rem;
+    --srs-space-4: 1rem;
+    --srs-space-5: 1.25rem;
+    --srs-space-6: 1.5rem;
+    --srs-focus-outline-width: 0.1875rem;
     --srs-focus-outline-offset: 0.1875rem;
-    --srs-focus-outline-style:  solid;
-    --srs-focus-ring-color:     #4F46E5;
-
-    /* ── Elevation ── */
-    --srs-elevation-base:    none;
-    --srs-elevation-card:    0 0.125rem 0.75rem rgba(79,70,229,0.10), 0 0.0625rem 0.25rem rgba(79,70,229,0.06);
-    --srs-elevation-header:  0 0.125rem 1rem rgba(49,46,129,0.25);
-    --srs-elevation-overlay: 0 0.25rem 1.5rem rgba(0,0,0,0.18);
-    --srs-elevation-dialog:  0 0.75rem 2.5rem rgba(0,0,0,0.24);
-
-    /* ── Motion ── */
-    --srs-motion-duration-instant:  0ms;
-    --srs-motion-duration-feedback: 150ms;
-    --srs-motion-duration-overlay:  200ms;
-    --srs-motion-easing-standard:   cubic-bezier(0.4,0,0.2,1);
-
-    /* ── Breakpoints ── */
-    --srs-breakpoint-design-320:  320;
-    --srs-breakpoint-design-375:  375;
-    --srs-breakpoint-design-768:  768;
+    --srs-focus-outline-style: solid;
+    --srs-focus-ring-color: #4F46E5;
+    --srs-elevation-base: none;
+    --srs-elevation-surface: 0 0.0625rem 0.1875rem rgba(15, 23, 42, 0.08), 0 0.5rem 1.5rem rgba(15, 23, 42, 0.04);
+    --srs-elevation-card: 0 0.0625rem 0.1875rem rgba(15, 23, 42, 0.08), 0 0.5rem 1.5rem rgba(15, 23, 42, 0.04);
+    --srs-elevation-overlay: 0 0.75rem 2rem rgba(15, 23, 42, 0.18);
+    --srs-elevation-dialog: 0 1rem 3rem rgba(15, 23, 42, 0.24);
+    --srs-motion-duration-instant: 0ms;
+    --srs-motion-duration-feedback: 120ms;
+    --srs-motion-duration-overlay: 180ms;
+    --srs-motion-easing-standard: ease-out;
+    --srs-opacity-muted: 0.35;
+    --srs-breakpoint-design-320: 320;
+    --srs-breakpoint-design-375: 375;
+    --srs-breakpoint-design-768: 768;
     --srs-breakpoint-design-1024: 1024;
     --srs-breakpoint-design-1280: 1280;
     --srs-breakpoint-design-1920: 1920;
-
-    /* ── Z-index ── */
-    --srs-zIndex-base:            0;
-    --srs-zIndex-sticky:        100;
-    --srs-zIndex-overlay:       200;
-    --srs-zIndex-dialog:        300;
+    --srs-zIndex-base: 0;
+    --srs-zIndex-sticky: 100;
+    --srs-zIndex-overlay: 200;
+    --srs-zIndex-dialog: 300;
     --srs-zIndex-urgent-feedback: 400;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :root {
-        --srs-motion-duration-feedback: 0ms;
-        --srs-motion-duration-overlay:  0ms;
-    }
+    :root { --srs-motion-duration-feedback: 0ms; --srs-motion-duration-overlay: 0ms; }
 }
 
 @media (forced-colors: active) {
-    :root {
-        --srs-color-semantic-border:     CanvasText;
-        --srs-color-semantic-focus-ring: Highlight;
-        --srs-focus-ring-color:          Highlight;
-    }
+    :root { --srs-color-semantic-border: CanvasText; --srs-color-semantic-focus-ring: Highlight; --srs-focus-ring-color: Highlight; }
 }

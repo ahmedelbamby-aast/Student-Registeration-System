@@ -4,7 +4,6 @@
 @using System.Net
 @using StudentRegistration.Client.Components.Display
 @using StudentRegistration.Client.Components.Layout
-@using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Operations
 @using StudentRegistration.Contracts
@@ -14,67 +13,33 @@
 
 <PageTitle>@LocalizedUiText.Get("Admin dashboard | Student Registration")</PageTitle>
 
-<div class="srs-admin-dashboard-host">
-    @if (_loading)
-    {
-        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="admin-dashboard-main" tabindex="-1"
-              data-route-id="ADM-01" data-state="loading"
-              data-contract-state="ADM-01-COMP-STATE-LOADING">
-            <h1>@LocalizedUiText.Get("Admin dashboard")</h1>
-            <p role="status" aria-live="polite" aria-busy="true">
-                @LocalizedUiText.Get("Loading authoritative operational metrics.")
-            </p>
-        </main>
-    }
-    else if (_shellContext is not null)
-    {
-        <AppShell Context="@_shellContext" MainContentId="admin-dashboard-main"
-                  SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
-                  BrandLogoSource="/brand/aastmt-logo.png"
-                  BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-                  ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
-                  TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-                  RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
-                  RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-                  NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
-                  NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-                  NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
-                  AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-                  ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
-                  SessionLabel="@(LocalizedUiText.Get("Session"))"
-                  ServiceLabel="@(LocalizedUiText.Get("Service"))"
-                  SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
-                  LoadingLabel="@(LocalizedUiText.Get("Loading Admin dashboard"))">
-            <Navigation>
-                <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
-                                Items="@AdminNavigation" />
-            </Navigation>
-            <ChildContent>@DashboardContent</ChildContent>
-        </AppShell>
-    }
-    else
-    {
-        <a class="srs-admin-dashboard__skip-link" href="#admin-dashboard-main">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="admin-dashboard-main" tabindex="-1">@DashboardContent</main>
-    }
-</div>
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_loading"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-01"
+                   Heading="@(LocalizedUiText.Get("Admin dashboard"))"
+                   Eyebrow="@(LocalizedUiText.Get("Administration operations"))"
+                   Description="@(LocalizedUiText.Get("Monitor the current registration window from timestamped server observations."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading authoritative operational metrics."))">
+    <Actions>
+        <div class="srs-admin-dashboard__controls" aria-label="@(LocalizedUiText.Get("Metric refresh controls"))">
+            @if (_paused)
+            {
+                <AppButton Disabled="@_requesting" OnClick="ResumeRefreshAsync">@LocalizedUiText.Get("Resume refresh")</AppButton>
+            }
+            else
+            {
+                <AppButton Variant="AppButtonVariant.Quiet" Disabled="@_requesting" OnClick="PauseRefresh">@LocalizedUiText.Get("Pause refresh")</AppButton>
+                <AppButton Disabled="@_requesting" OnClick="RefreshMetricsAsync">@LocalizedUiText.Get("Refresh metrics")</AppButton>
+            }
+        </div>
+    </Actions>
+    <ChildContent>@DashboardContent</ChildContent>
+</AuthenticatedPage>
 
 @code {
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(30);
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdminNavigation =
-    [
-        new(LocalizedUiText.Get("Dashboard"), "/admin", IsActive: true),
-        new(LocalizedUiText.Get("Terms"), "/admin/terms"),
-        new(LocalizedUiText.Get("Users"), "/admin/users"),
-        new(LocalizedUiText.Get("Students"), "/admin/students"),
-        new(LocalizedUiText.Get("Catalogue"), "/admin/catalogue"),
-        new(LocalizedUiText.Get("Offerings"), "/admin/offerings"),
-        new(LocalizedUiText.Get("Approvals"), "/admin/approvals"),
-        new(LocalizedUiText.Get("Resources"), "/admin/resources"),
-        new(LocalizedUiText.Get("Registrations"), "/admin/registrations"),
-        new(LocalizedUiText.Get("Audit"), "/admin/audit")
-    ];
     private static readonly IReadOnlyDictionary<string, string> MetricLabels =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -104,6 +69,7 @@
 
     private string ContractState => _state switch
     {
+        "loading" => "ADM-01-COMP-STATE-LOADING",
         "success" => "ADM-01-COMP-STATE-SUCCESS",
         "unauthorized" => "ADM-01-COMP-STATE-UNAUTHORIZED",
         "session-expired" => "ADM-01-COMP-STATE-SESSION-EXPIRED",
@@ -134,31 +100,6 @@
     private RenderFragment DashboardContent => @<article class="srs-admin-dashboard"
         data-route-id="ADM-01" data-state="@_state"
         data-contract-state="@ContractState" data-refresh-state="@RefreshState">
-        <header class="srs-admin-dashboard__intro">
-            <div>
-                <p class="srs-admin-dashboard__eyebrow">@LocalizedUiText.Get("Administration operations")</p>
-                <h1>@LocalizedUiText.Get("Admin dashboard")</h1>
-                <p>@LocalizedUiText.Get("Monitor the current registration window from timestamped server observations.")</p>
-            </div>
-            <div class="srs-admin-dashboard__controls" aria-label="@(LocalizedUiText.Get("Metric refresh controls"))">
-                @if (_paused)
-                {
-                    <button type="button" disabled="@_requesting" @onclick="ResumeRefreshAsync">
-                        @LocalizedUiText.Get("Resume refresh")
-                    </button>
-                }
-                else
-                {
-                    <button type="button" disabled="@_requesting" @onclick="PauseRefresh">
-                        @LocalizedUiText.Get("Pause refresh")
-                    </button>
-                    <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
-                        @LocalizedUiText.Get("Refresh metrics")
-                    </button>
-                }
-            </div>
-        </header>
-
         @if (_state is "unauthorized" or "session-expired" or "offline"
             || (_state == "service-error" && _snapshot is null))
         {
@@ -269,9 +210,9 @@
             <nav class="srs-admin-dashboard__modules" aria-label="@(LocalizedUiText.Get("Administration modules"))">
                 <h2>@LocalizedUiText.Get("Administration modules")</h2>
                 <ul>
-                    @foreach (var item in AdminNavigation.Where(item => !item.IsActive))
+                    @foreach (var item in WorkspaceNavigationCatalog.For(WorkspaceKind.Admin).Where(item => item.RouteId != "ADM-01"))
                     {
-                        <li><a href="@item.Href">@LocalizedUiText.Get("Open") @item.Label.ToLowerInvariant()</a></li>
+                        <li><AppLink Href="@item.Href">@LocalizedUiText.Get("Open") @LocalizedUiText.Get(item.Label).ToLowerInvariant()</AppLink></li>
                     }
                 </ul>
             </nav>

@@ -12,11 +12,12 @@ public sealed class StaffDashboardPageContractTests
 
         RepositoryFiles.ContainsAll(page,
             "@page \"/staff\"", "data-route-id=\"STF-01\"",
-            "GetAppContextAsync", "GetAssignmentsAsync", "SelectRoleContextAsync",
-            "Role selection required", "Open assigned roster", "Open availability");
+            "GetAppContextAsync", "GetAssignmentsAsync", "ROLE_CONTEXT_INVALID",
+            "AuthenticatedPage", "WorkspaceKind.Staff", "Open assigned roster", "Open availability");
         RepositoryFiles.ContainsAll(client,
             "GetAssignmentsAsync", "\"/api/staff/assignments\"");
         Assert.DoesNotContain("role=", client, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("staffId", client, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SelectRoleContextAsync", page, StringComparison.Ordinal);
     }
 }

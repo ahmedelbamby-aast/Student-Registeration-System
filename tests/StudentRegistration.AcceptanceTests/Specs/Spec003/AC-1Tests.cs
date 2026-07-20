@@ -39,14 +39,14 @@ public sealed class AC_1Tests
             RepositoryFiles.Read(".specify/route-manifest.json"));
         var routes = manifest.RootElement.GetProperty("routes").EnumerateArray().ToArray();
 
-        Assert.Equal(27, routes.Length);
+        Assert.Equal(30, routes.Length);
         Assert.Equal(
-            27,
+            30,
             routes.Select(route => route.GetProperty("id").GetString())
                 .Distinct(StringComparer.Ordinal)
                 .Count());
         Assert.Equal(
-            27,
+            30,
             routes.Select(route => route.GetProperty("template").GetString())
                 .Distinct(StringComparer.Ordinal)
                 .Count());

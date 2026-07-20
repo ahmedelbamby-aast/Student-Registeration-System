@@ -55,6 +55,7 @@ jobs:
         run: |
           $projects = @(
             "tests/StudentRegistration.Client.UnitTests/StudentRegistration.Client.UnitTests.csproj",
+            "tests/StudentRegistration.Client.ContractTests/StudentRegistration.Client.ContractTests.csproj",
             "tests/StudentRegistration.ContractTests/StudentRegistration.ContractTests.csproj",
             "tests/StudentRegistration.SpecificationTests/StudentRegistration.SpecificationTests.csproj",
             "tests/StudentRegistration.AcceptanceTests/StudentRegistration.AcceptanceTests.csproj",
@@ -158,7 +159,10 @@ jobs:
         run: |
           dotnet restore tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj
           dotnet restore tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj
+          dotnet restore tests/StudentRegistration.VisualTests/StudentRegistration.VisualTests.csproj
           dotnet build tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-restore --configuration Release
+          dotnet build tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj --no-restore --configuration Release
+          dotnet build tests/StudentRegistration.VisualTests/StudentRegistration.VisualTests.csproj --no-restore --configuration Release
           dotnet publish src/StudentRegistration.Client/StudentRegistration.Client.csproj --no-restore --configuration Release
 
       - name: Gate 10 - E2E browser matrix
@@ -198,17 +202,24 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Pinned browser installation failed." }
           foreach ($target in $requiredTargets) {
             $env:SRS_BROWSER_TARGET = $target.name
-            dotnet test tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-build --configuration Release
+            dotnet test tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-build --configuration Release --fail-if-no-tests
             if ($LASTEXITCODE -ne 0) { throw "E2E failed for $($target.label)." }
           }
 
       - name: Gate 11 - Automated and manual accessibility
         shell: pwsh
         run: |
-          dotnet test tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj --no-restore --configuration Release
-          if ($LASTEXITCODE -ne 0) { throw "Accessibility evidence contract tests failed." }
-          dotnet test tests/StudentRegistration.E2ETests/StudentRegistration.E2ETests.csproj --no-build --configuration Release --filter "Category=Accessibility"
-          if ($LASTEXITCODE -ne 0) { throw "Automated accessibility checks failed." }
+          $requiredTargets = @(
+            "Google Chrome",
+            "Microsoft Edge",
+            "Mozilla Firefox",
+            "Playwright WebKit"
+          )
+          foreach ($target in $requiredTargets) {
+            $env:SRS_BROWSER_TARGET = $target
+            dotnet test tests/StudentRegistration.AccessibilityTests/StudentRegistration.AccessibilityTests.csproj --no-build --configuration Release --fail-if-no-tests
+            if ($LASTEXITCODE -ne 0) { throw "Accessibility failed for $target." }
+          }
           $manualPath = "docs/release-evidence/SPEC-018-screen-reader-manual.md"
           if (-not (Test-Path -LiteralPath $manualPath -PathType Leaf)) {
             throw "Signed manual keyboard and NVDA/Windows evidence is absent."
@@ -232,6 +243,14 @@ jobs:
               throw "Manual accessibility evidence field is absent or unsigned: $field"
             }
           }
+
+      - name: Gate 11a - Governed visual regression matrix
+        shell: pwsh
+        env:
+          STUDENTREGISTRATION_BROWSER_CONFIGURATION: Release
+        run: |
+          dotnet test tests/StudentRegistration.VisualTests/StudentRegistration.VisualTests.csproj --no-build --configuration Release --fail-if-no-tests
+          if ($LASTEXITCODE -ne 0) { throw "Visual regression matrix failed." }
 
   security-release:
     needs: browser-accessibility

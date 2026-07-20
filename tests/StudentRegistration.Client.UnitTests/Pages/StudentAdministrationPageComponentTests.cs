@@ -25,12 +25,10 @@ public sealed class StudentAdministrationPageComponentTests
         var cut = context.Render<DynamicComponent>(parameters =>
             parameters.Add(component => component.Type, RequiredPageType()));
 
-        Assert.NotNull(cut.Find("main[data-testid='student-administration-page']"));
-        var heading = cut.Find("h1#student-administration-heading");
-        Assert.Equal("-1", heading.GetAttribute("tabindex"));
-        var loading = cut.Find("[data-testid='ADM-04-COMP-STATE-LOADING']");
+        Assert.NotNull(cut.Find("main#main-content"));
+        var loading = cut.Find(".srs-app-shell__state--loading");
         Assert.Equal("status", loading.GetAttribute("role"));
-        Assert.Equal("polite", loading.GetAttribute("aria-live"));
+        Assert.Equal("true", loading.GetAttribute("aria-busy"));
         Assert.Empty(cut.FindAll("[data-testid='student-search-results']"));
     }
 

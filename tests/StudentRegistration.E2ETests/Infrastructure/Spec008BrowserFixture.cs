@@ -16,11 +16,11 @@ public sealed class Spec008BrowserCollection : ICollectionFixture<Spec008Browser
 
 /// <summary>
 /// Runs the real Blazor WebAssembly development host and a pinned headless
-/// Chromium instance. A missing local browser/runtime is reported as a skip;
-/// an application startup or journey failure remains a failing test.
+/// governed browser target. Missing browser/runtime dependencies fail the gate.
 /// </summary>
 public sealed class Spec008BrowserFixture : IAsyncLifetime
 {
+    private const string BrowserTargetVariable = "SRS_BROWSER_TARGET";
     private readonly ConcurrentQueue<string> _hostOutput = new();
     private Process? _host;
     private IPlaywright? _playwright;
@@ -52,10 +52,26 @@ public sealed class Spec008BrowserFixture : IAsyncLifetime
         try
         {
             _playwright = await Playwright.CreateAsync();
-            _browser = await _playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions { Headless = true });
+            var target = Environment.GetEnvironmentVariable(BrowserTargetVariable)
+                ?? "Playwright Chromium";
+            _browser = target switch
+            {
+                "Google Chrome" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = true, Channel = "chrome" }),
+                "Microsoft Edge" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = true, Channel = "msedge" }),
+                "Mozilla Firefox" => await _playwright.Firefox.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = true }),
+                "Playwright WebKit" => await _playwright.Webkit.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = true }),
+                "Playwright Chromium" => await _playwright.Chromium.LaunchAsync(
+                    new BrowserTypeLaunchOptions { Headless = true }),
+                _ => throw new InvalidOperationException(
+                    $"Unsupported {BrowserTargetVariable} value '{target}'.")
+            };
         }
-        catch (PlaywrightException exception)
+        catch (Exception exception) when (
+            exception is PlaywrightException or InvalidOperationException)
         {
             _runtimeUnavailable =
                 $"The pinned Playwright Chromium runtime is unavailable: {exception.Message}";
@@ -85,7 +101,7 @@ public sealed class Spec008BrowserFixture : IAsyncLifetime
 
         if (_runtimeUnavailable is not null)
         {
-            throw SkipException.ForSkip(_runtimeUnavailable);
+            throw new XunitException(_runtimeUnavailable);
         }
 
         if (_browser is null)

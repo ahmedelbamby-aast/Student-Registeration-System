@@ -12,6 +12,6 @@ public sealed class RegistrationRecordsPageVisualContractTests
         var design = RepositoryFiles.Read($"specs/003-ux-storyboard-accessibility/design/pages/{routeId}.md");
         var styles = RepositoryFiles.Read($"src/StudentRegistration.Client/Pages/{pageName}.razor.css");
         RepositoryFiles.ContainsAll(design, "320,", "375,", "768,", "1024,", "1280,", "1920");
-        RepositoryFiles.ContainsAll(styles, "@media (max-width: 45rem)", "inline-size: min(100% - 2rem, 90rem)", "min-block-size");
+        RepositoryFiles.ContainsAll(styles, "@media (max-width: 47.99rem)", "min-inline-size: 0", "var(--srs-spacing-");
     }
 }

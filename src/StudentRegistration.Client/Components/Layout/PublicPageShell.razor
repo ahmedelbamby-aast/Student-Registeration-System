@@ -1,0 +1,64 @@
+@using StudentRegistration.Client.Features.Frontend.Models
+
+<div class="srs-public-shell">
+    <a class="srs-skip-link" href="#@MainContentId">@SkipLinkLabel</a>
+    <header class="srs-public-shell__header" role="banner">
+        <a class="srs-public-shell__brand" href="/" aria-label="@BrandLogoAccessibleName">
+            <img src="@BrandLogoSource" alt="@BrandLogoAccessibleName" />
+        </a>
+        @HeaderContent
+    </header>
+    <main id="@MainContentId" tabindex="-1" class="srs-public-shell__main">
+        @if (IsLoading)
+        {
+            <RouteStatePanel HeadingId="public-shell-loading"
+                             State="RouteUiState.Loading"
+                             Status="@LoadingStatus"
+                             Announcement="RouteStatePanel.AnnouncementMode.Polite" />
+        }
+        else if (Status is not null)
+        {
+            <RouteStatePanel HeadingId="public-shell-status"
+                             State="@StatusRouteState"
+                             Status="@Status"
+                             ReferenceLabel="@(Status.ReferenceId is null ? null : ReferenceLabel)"
+                             Announcement="@(Status.Severity == UiStatusSeverity.Error ? RouteStatePanel.AnnouncementMode.Assertive : RouteStatePanel.AnnouncementMode.Polite)" />
+        }
+        else
+        {
+            @ChildContent
+        }
+    </main>
+    <footer class="srs-public-shell__footer" role="contentinfo">@FooterContent</footer>
+</div>
+
+@code {
+    [Parameter] public UiStatus? Status { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string MainContentId { get; set; } = "main-content";
+    [Parameter] public string SkipLinkLabel { get; set; } = "Skip to main content";
+    [Parameter] public string BrandLogoSource { get; set; } = "/brand/aastmt-logo.png";
+    [Parameter] public string BrandLogoAccessibleName { get; set; } = "Arab Academy for Science, Technology and Maritime Transport";
+    [Parameter] public string LoadingLabel { get; set; } = "Loading";
+    [Parameter] public string LoadingMessage { get; set; } = "Please wait while the page becomes ready.";
+    [Parameter] public string ReferenceLabel { get; set; } = "Reference";
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
+    private UiStatus LoadingStatus => new(
+        "LOADING",
+        LoadingLabel,
+        LoadingMessage,
+        UiStatusSeverity.Information,
+        [],
+        null);
+
+    private RouteUiState StatusRouteState => Status?.Severity switch
+    {
+        UiStatusSeverity.Error => RouteUiState.ServiceError,
+        UiStatusSeverity.Warning => RouteUiState.Stale,
+        UiStatusSeverity.Success => RouteUiState.Success,
+        _ => RouteUiState.Success
+    };
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "frontend-route-readiness/2.0",
+  "approvalVersion": "SPEC-003-UNIFIED-DESIGN-READINESS-2026-07-21",
+  "approvedBy": "Ahmed ELbamby",
+  "approvedOn": "2026-07-20",
+  "recordedOn": "2026-07-21",
+  "decision": "design-governance-ready",
+  "routeCount": 30,
+  "contracts": ["frontend-design-index/2.0", "route-inventory/2.0", "design-token-set/2.0", "authenticated-shell/2.0", "frontend-fixture/2.0"],
+  "addedRoutes": [
+    {"routeId":"STU-09","implementationOwner":"SPEC-008","contributors":["SPEC-008","SPEC-009","SPEC-011","SPEC-014"]},
+    {"routeId":"ADM-10","implementationOwner":"SPEC-017","contributors":["SPEC-014","SPEC-017"]},
+    {"routeId":"STF-05","implementationOwner":"SPEC-016","contributors":["SPEC-014","SPEC-016"]}
+  ],
+  "sourceImplementationGate": "open tasks T280-T287, T289-T292, T294-T295, T297-T302 must provide executable evidence; this design-governance record does not mark them complete",
+  "limitations": ["Non-production design-capability demo only", "Light theme only", "English-first and localization-ready", "No combined Lecturer and TeachingAssistant role"]
+}

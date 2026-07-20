@@ -26,9 +26,10 @@ public sealed class StudentDashboardPageComponentTests
         var cut = context.Render<DynamicComponent>(parameters =>
             parameters.Add(component => component.Type, pageType));
 
-        Assert.NotNull(cut.Find("main[data-testid='student-dashboard-page']"));
+        Assert.NotNull(cut.Find("main"));
+        Assert.NotNull(cut.Find("[data-testid='student-dashboard-page']"));
         var heading = cut.Find("h1#student-dashboard-heading");
-        Assert.Equal("-1", heading.GetAttribute("tabindex"));
+        Assert.Equal("Student dashboard", heading.TextContent.Trim());
         var loading = cut.Find("[data-testid='student-dashboard-loading']");
         Assert.Equal("status", loading.GetAttribute("role"));
         Assert.Equal("polite", loading.GetAttribute("aria-live"));
@@ -130,20 +131,19 @@ public sealed class StudentDashboardPageComponentTests
     }
 
     [Fact]
-    public void Pending_spec015_timetable_is_an_honest_unavailable_region_not_live_or_sample_data()
+    public void Current_timetable_links_to_the_authoritative_registration_record()
     {
         var source = RequiredPageSource();
 
         RepositoryFiles.ContainsAll(
             source,
-            "data-testid=\"current-timetable-unavailable\"",
-            "Current timetable is unavailable until SPEC-015 is delivered.",
-            "/api/student/registrations/current/timetable",
-            "data-contributor-state=\"unavailable\"");
+            "Current timetable",
+            "Open current timetable",
+            "/student/registrations#current-registration",
+            "data-contributor-state=\"available\"");
         Assert.DoesNotContain("GetCurrentTimetableAsync", source, StringComparison.Ordinal);
         Assert.DoesNotContain("sample timetable", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("mock timetable", source, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("data-contributor-state=\"success\"", source, StringComparison.Ordinal);
     }
 
     private static Type RequiredPageType()

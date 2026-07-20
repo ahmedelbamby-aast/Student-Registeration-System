@@ -4,6 +4,11 @@
 **Scope:** non-production design-capability demo  
 **Release decision:** WITHHELD while any required, non-waived row below is not PASS
 
+**2026-07-21 amendment:** the canonical scope is now exactly 30 routes. The
+historical 27-route PASS statements below apply only to the v1 baseline.
+STU-09, ADM-10, and STF-05 have approved design records but their five-layer
+executable evidence remains PENDING; release therefore remains withheld.
+
 Status is fail-closed: a created test, an approval to execute work, or an
 automated persona does not count as passing evidence unless the normative
 clause it maps to is actually satisfied.
@@ -115,6 +120,7 @@ implementation owner is hash-pinned in
 | STU-06 | `/student/registration/result/{id}` — RegistrationResultPage | contract, component, E2E, accessibility, visual | PASS |
 | STU-07 | `/student/registrations` — RegistrationHistoryPage | contract, component, E2E, accessibility, visual | PASS |
 | STU-08 | `/student/account` — StudentAccountPage | contract, component, E2E, accessibility, visual | PASS |
+| STU-09 | `/student/roadmap` — StudentRoadmapPage | contract, component, E2E, accessibility, visual | PENDING — T289 |
 | ADM-01 | `/admin` — AdminDashboardPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-02 | `/admin/terms` — TermAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-03 | `/admin/users` — UserAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
@@ -124,10 +130,12 @@ implementation owner is hash-pinned in
 | ADM-07 | `/admin/resources` — ResourceAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-08 | `/admin/registrations` — RegistrationAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-09 | `/admin/audit` — AuditAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
+| ADM-10 | `/admin/approvals` — ApprovalAdministrationPage | contract, component, E2E, accessibility, visual | PENDING — T294 |
 | STF-01 | `/staff` — StaffDashboardPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-02 | `/staff/timetable` — StaffTimetablePage | contract, component, E2E, accessibility, visual | PASS |
 | STF-03 | `/staff/groups/{groupId}/roster` — StaffRosterPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-04 | `/staff/availability` — StaffAvailabilityPage | contract, component, E2E, accessibility, visual | PASS |
+| STF-05 | `/staff/approvals` — StaffApprovalInboxPage | contract, component, E2E, accessibility, visual | PENDING — T297 |
 | SYS-01 | `/status/{code}` — SystemStatusPage | contract, component, E2E, accessibility, visual | PASS |
 
 ## Release rejection

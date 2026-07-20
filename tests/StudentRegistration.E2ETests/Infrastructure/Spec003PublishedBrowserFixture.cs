@@ -103,7 +103,7 @@ public sealed class Spec003PublishedBrowserFixture : IAsyncLifetime
 
         if (_runtimeUnavailable is not null)
         {
-            throw SkipException.ForSkip(_runtimeUnavailable);
+            throw new XunitException(_runtimeUnavailable);
         }
 
         if (_browser is null)

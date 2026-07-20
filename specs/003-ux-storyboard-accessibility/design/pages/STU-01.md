@@ -337,6 +337,8 @@ Required and forbidden content is normative; a forbidden item fails the route te
 | `STU-01-no-term-v1` (no term) | empty | no term heading, server-controlled explanation, and support/reference path | invented current term, enabled registration, or browser-date fallback | Refresh context or open support | `STU-01-COMP-STATE-EMPTY` | `STU-01-E2E-FAILURE` |
 | `STU-01-hold-v1` (hold) | validation-error | REGISTRATION_HOLD, every safe hold reason, linked blocker text, and disabled Start/Resume | dismiss/override control, hidden reason, or registration navigation | Use supplied blocker/support action | `STU-01-COMP-STATE-VALIDATION-ERROR` | `STU-01-E2E-FAILURE` |
 | `STU-01-incomplete-profile-v1` (incomplete profile) | validation-error | incomplete profile reason, required safe next step, and disabled Start/Resume | client-completed profile claim, enabled registration, or protected correction action | Use the server-provided profile/support action | `STU-01-COMP-STATE-VALIDATION-ERROR` | `STU-01-E2E-FAILURE` |
+| `STU-01-first-term-auto-enrolled-v2` (first-term auto-enrolled) | success | first-year first-term subjects are already enrolled without prerequisite or manual registration controls | editable first-term registration, prerequisite blocker, or duplicate enrollment action | Review the automatic enrollment and timetable | `STU-01-COMP-STATE-SUCCESS` | `STU-01-E2E-PRIMARY` |
+| `STU-01-term-two-self-registration-v2` (term-two self-registration) | success | later-term registration action, authoritative load context, and normal 18-credit boundary | automatic later-term enrollment or client-authorized overload | Open subject discovery or resume the current plan | `STU-01-COMP-STATE-SUCCESS` | `STU-01-E2E-PRIMARY` |
 
 ## Review notes
 

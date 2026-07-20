@@ -2,6 +2,7 @@
 @using System.Globalization
 @using System.Net
 @using System.Text
+@using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Components.Overlay
 @using StudentRegistration.Client.Features.Academics
@@ -10,35 +11,19 @@
 
 <PageTitle>@LocalizedUiText.Get("Term administration | Student Registration")</PageTitle>
 
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-02"
+                   HeadingId="term-administration-heading"
+                   Heading="@(LocalizedUiText.Get("Term administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Academic context administration"))"
+                   Description="@(LocalizedUiText.Get("Create explicit teaching terms, maintain versioned registration windows, and publish only after the owner service accepts the command."))">
 <div class="srs-term-admin"
      data-route-id="ADM-02"
      data-state="@_state"
      data-contract-state="@CurrentStateFixture">
-    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-term-admin__header" role="banner">
-        <a class="srs-term-admin__brand" href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
-            <img src="/brand/aastmt-logo.png"
-                 alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            <span>
-                <strong>@LocalizedUiText.Get("AASTMT")</strong>
-                <small>@LocalizedUiText.Get("Student Registration")</small>
-            </span>
-        </a>
-        <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
-                        Items="@AdministrationNavigation" />
-    </header>
-
-    <main id="main-content"
-          data-testid="term-administration-page"
-          tabindex="-1">
-        <section class="srs-term-admin__intro" aria-labelledby="term-administration-heading">
-            <p class="srs-term-admin__eyebrow">@LocalizedUiText.Get("Academic context administration")</p>
-            <h1 id="term-administration-heading" tabindex="-1">@LocalizedUiText.Get("Term administration")</h1>
-            <p>
-                @LocalizedUiText.Get("Create explicit teaching terms, maintain versioned registration windows, and publish only after the owner service accepts the command.")
-            </p>
-        </section>
 
         @if (_isLoadingTerms && !_hasLoadedTerms)
         {
@@ -624,13 +609,8 @@
                 }
             </div>
         }
-    </main>
-
-    <footer class="srs-term-admin__footer" role="contentinfo">
-        <p>@LocalizedUiText.Get("Academic term owner: SPEC-008")</p>
-        <a href="/status/support">@LocalizedUiText.Get("System status and support")</a>
-    </footer>
 </div>
+</AuthenticatedPage>
 
 @if (_showPublishConfirmation)
 {
@@ -683,17 +663,12 @@
     private const string SessionExpired = "SESSION_EXPIRED";
     private const string ServiceUnavailable = "SERVICE_UNAVAILABLE";
 
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdministrationNavigation =
-    [
-        new(LocalizedUiText.Get("Dashboard"), "/admin"),
-        new(LocalizedUiText.Get("Terms"), "/admin/terms", IsActive: true),
-        new(LocalizedUiText.Get("Registrations"), "/admin/registrations")
-    ];
-
     private readonly List<AdminTermDto> _terms = [];
     private readonly List<ValidationIssue> _validationErrors = [];
     private readonly List<string> _conflictingWindows = [];
     private readonly List<ChangedField> _staleChangedFields = [];
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
 
     private ElementReference _validationSummary;
     private ElementReference _stateHeading;
@@ -766,7 +741,16 @@
             .ToArray()
         ?? [];
 
-    protected override Task OnInitializedAsync() => LoadTermsAsync(initialNavigation: true);
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
+        await LoadTermsAsync(initialNavigation: true);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

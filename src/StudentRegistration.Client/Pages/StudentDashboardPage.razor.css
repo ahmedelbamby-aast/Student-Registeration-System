@@ -1,92 +1,15 @@
-/* ── Student Dashboard host ── */
+.srs-student-dashboard-host,
+.srs-student-dashboard,
+.srs-student-dashboard__intro > div,
+.srs-dashboard-card,
+.srs-dashboard-registration-action,
+.srs-dashboard-blockers,
+.srs-dashboard-failure {
+    min-inline-size: 0;
+}
+
 .srs-student-dashboard-host {
-    min-block-size: 100vh;
-    color: var(--srs-color-semantic-text-primary);
-    background:
-        radial-gradient(ellipse at 90% 0%,   rgba(79,70,229,0.08) 0%, transparent 45%),
-        radial-gradient(ellipse at  5% 80%,  rgba(124,58,237,0.06) 0%, transparent 40%),
-        var(--srs-color-semantic-surface-default);
     overflow-wrap: anywhere;
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    min-block-size: 100vh;
-    background: transparent;
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__header,
-.srs-student-dashboard-host ::deep .srs-app-shell__footer,
-.srs-student-dashboard-host ::deep .srs-app-shell main,
-.srs-dashboard-standalone-header,
-.srs-dashboard-standalone-footer,
-.srs-student-dashboard-host > main {
-    inline-size: min(100% - 2rem, 78rem);
-    min-inline-size: 0;
-    margin-inline: auto;
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__identity {
-    margin-block: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-2);
-    color: rgba(255,255,255,0.9);
-    font-size: 1.0625rem;
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__context {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--srs-spacing-primitive-3);
-    max-inline-size: none;
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__context > div {
-    display: block;
-    min-inline-size: 0;
-    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
-    background: rgba(255,255,255,0.10);
-    border: var(--srs-border-primitive-width) solid rgba(255,255,255,0.18);
-    border-radius: var(--srs-border-primitive-radius-medium);
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell__context dd {
-    display: grid;
-    margin-block-start: var(--srs-spacing-primitive-1);
-}
-
-.srs-student-dashboard-host ::deep .srs-role-navigation {
-    margin-block-start: var(--srs-spacing-primitive-3);
-}
-
-.srs-student-dashboard-host ::deep .srs-skip-link,
-.srs-dashboard-skip-link {
-    position: fixed;
-    z-index: var(--srs-zIndex-urgent-feedback);
-    inset-block-start: var(--srs-spacing-primitive-2);
-    inset-inline-start: var(--srs-spacing-primitive-2);
-    display: inline-flex;
-    align-items: center;
-    min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-4);
-    color: var(--srs-color-component-button-primary-text);
-    background: var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-medium);
-    box-shadow: var(--srs-elevation-overlay);
-    transform: translateY(-200%);
-    transition: transform var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
-}
-
-.srs-student-dashboard-host ::deep .srs-skip-link:focus,
-.srs-dashboard-skip-link:focus {
-    transform: translateY(0);
-}
-
-.srs-student-dashboard-host ::deep .srs-app-shell main {
-    padding-block: clamp(1.5rem, 4vw, 3rem);
-}
-
-/* ── Dashboard layout ── */
-.srs-student-dashboard {
-    min-inline-size: 0;
 }
 
 .srs-student-dashboard__intro {
@@ -97,167 +20,35 @@
     margin-block-end: var(--srs-spacing-primitive-4);
 }
 
-.srs-student-dashboard__intro > div {
-    min-inline-size: 0;
-}
-
-.srs-student-dashboard__eyebrow {
-    margin: 0;
-    color: var(--srs-color-primitive-violet-600);
-    font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.srs-student-dashboard__intro h1,
-.srs-student-dashboard-host > main > h1 {
-    margin-block: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
-    color: var(--srs-color-primitive-blue-900);
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-}
-
-.srs-student-dashboard__intro p:last-child {
-    max-inline-size: var(--srs-sizing-content-readable);
-    margin-block: 0;
-    color: var(--srs-color-semantic-text-secondary);
-    font-size: 1.0625rem;
-    line-height: 1.65;
-}
-
-/* ── Dashboard action buttons ── */
-.srs-dashboard-refresh,
-.srs-dashboard-primary-action,
-.srs-dashboard-related-links a,
-.srs-dashboard-failure__actions button,
-.srs-dashboard-failure__actions a,
-.srs-dashboard-standalone-footer a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-5);
-    border: var(--srs-border-primitive-width-strong) solid transparent;
-    border-radius: var(--srs-border-primitive-radius-medium);
-    font: inherit;
-    font-weight: var(--srs-typography-component-control-weight);
-    text-align: center;
-    text-decoration: none;
-    transition:
-        filter var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
-        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
-}
-
-.srs-dashboard-refresh,
-.srs-dashboard-primary-action,
-.srs-dashboard-failure__actions button {
-    color: var(--srs-color-component-button-primary-text);
-    background: var(--srs-color-component-button-primary-background);
-    border-color: var(--srs-color-component-button-primary-background);
-}
-
-.srs-dashboard-refresh:hover:not(:disabled),
-.srs-dashboard-primary-action:hover:not(:disabled),
-.srs-dashboard-failure__actions button:hover:not(:disabled) {
-    filter: brightness(1.12);
-    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
-}
-
-.srs-dashboard-refresh:disabled,
-.srs-dashboard-primary-action:disabled,
-.srs-dashboard-primary-action[aria-disabled="true"],
-.srs-dashboard-failure__actions button:disabled {
-    color: var(--srs-color-semantic-disabled-text);
-    background: var(--srs-color-semantic-disabled-surface);
-    border-color: transparent;
-    cursor: not-allowed;
-}
-
-/* ── Status banner ── */
-.srs-student-dashboard__status {
-    margin-block: 0 var(--srs-spacing-primitive-5);
-    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
-    color: var(--srs-color-semantic-information-text);
-    background: var(--srs-color-semantic-information-surface);
-    border-inline-start: 0.3rem solid var(--srs-color-semantic-information-text);
-    border-radius: var(--srs-border-primitive-radius-medium);
-    font-weight: 500;
-}
-
-/* ── Summary grid ── */
-.srs-student-dashboard__summary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--srs-spacing-primitive-5);
-}
-
-.srs-dashboard-card,
-.srs-dashboard-registration-action,
-.srs-dashboard-blockers,
-.srs-dashboard-failure,
-[data-testid="student-dashboard-loading"] {
-    min-inline-size: 0;
-    padding: clamp(1rem, 3vw, 1.5rem);
-    background: var(--srs-color-component-panel-background);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
-    border-radius: var(--srs-border-primitive-radius-large);
-    box-shadow: var(--srs-elevation-card);
-}
-
-.srs-dashboard-card h2,
-.srs-dashboard-registration-action h2,
-.srs-dashboard-blockers h2,
-.srs-dashboard-failure h2,
-[data-testid="student-dashboard-loading"] h2 {
-    margin-block-start: 0;
-    color: var(--srs-color-primitive-blue-900);
-    font-weight: 700;
-}
-
-/* ── Facts DL ── */
+.srs-student-dashboard__summary-grid,
 .srs-dashboard-facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.srs-student-dashboard__summary-grid {
+    gap: var(--srs-spacing-primitive-5);
+}
+
+.srs-dashboard-facts {
     gap: var(--srs-spacing-primitive-3);
     margin-block: 0;
 }
 
 .srs-dashboard-facts > div {
     min-inline-size: 0;
-    padding-inline-start: var(--srs-spacing-primitive-3);
-    border-inline-start: 0.1875rem solid var(--srs-color-primitive-blue-100);
-}
-
-.srs-dashboard-facts dt {
-    color: var(--srs-color-semantic-text-secondary);
-    font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
 }
 
 .srs-dashboard-facts dd {
     margin: var(--srs-spacing-primitive-1) 0 0;
-    font-weight: 700;
-    color: var(--srs-color-primitive-blue-900);
 }
 
-.srs-dashboard-data-version {
-    margin-block-end: 0;
-    color: var(--srs-color-semantic-text-secondary);
-    font-size: var(--srs-typography-primitive-font-size-small);
-}
-
-/* ── Blockers ── */
-.srs-dashboard-blockers {
+.srs-dashboard-blockers,
+.srs-dashboard-registration-action,
+.srs-dashboard-timetable,
+.srs-dashboard-related-links,
+.srs-dashboard-failure__actions {
     margin-block-start: var(--srs-spacing-primitive-5);
-    color: var(--srs-color-semantic-danger-text);
-    background: var(--srs-color-semantic-danger-surface);
-    border-inline-start: 0.3rem solid var(--srs-color-semantic-danger-text);
-    border-color: rgba(190,18,60,0.2);
 }
 
 .srs-dashboard-blockers ul {
@@ -271,101 +62,18 @@
 .srs-dashboard-reason {
     display: inline-block;
     max-inline-size: 100%;
-    padding: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
-    background: rgba(255,255,255,0.65);
-    border-radius: var(--srs-border-primitive-radius-small);
-    font-family: ui-monospace, 'Cascadia Code', monospace;
-    font-weight: 700;
-    color: var(--srs-color-primitive-blue-900);
-}
-
-/* ── Registration action card ── */
-.srs-dashboard-registration-action {
-    margin-block-start: var(--srs-spacing-primitive-5);
-    border-inline-start: 0.3rem solid var(--srs-color-primitive-blue-600);
-}
-
-/* ── Timetable ── */
-.srs-dashboard-timetable {
-    margin-block-start: var(--srs-spacing-primitive-5);
-    color: var(--srs-color-semantic-text-secondary);
-    background: var(--srs-color-semantic-surface-muted);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
-    border-radius: var(--srs-border-primitive-radius-large);
+    overflow-wrap: anywhere;
 }
 
 .srs-dashboard-timetable code {
-    color: var(--srs-color-semantic-text-primary);
     white-space: normal;
 }
 
-/* ── Related links ── */
 .srs-dashboard-related-links,
 .srs-dashboard-failure__actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--srs-spacing-primitive-3);
-    margin-block-start: var(--srs-spacing-primitive-5);
-}
-
-.srs-dashboard-related-links a,
-.srs-dashboard-failure__actions a,
-.srs-dashboard-standalone-footer a {
-    color: var(--srs-color-component-button-secondary-text);
-    background: var(--srs-color-component-button-secondary-background);
-    border-color: var(--srs-color-primitive-blue-100);
-}
-
-.srs-dashboard-related-links a:hover,
-.srs-dashboard-failure__actions a:hover,
-.srs-dashboard-standalone-footer a:hover {
-    background: var(--srs-color-primitive-blue-100);
-    border-color: var(--srs-color-primitive-blue-400);
-}
-
-/* ── Standalone header/footer ── */
-.srs-dashboard-standalone-header {
-    display: flex;
-    align-items: center;
-    gap: var(--srs-spacing-primitive-3);
-    padding-block: var(--srs-spacing-primitive-4);
-}
-
-.srs-dashboard-standalone-header > div {
-    display: grid;
-}
-
-.srs-dashboard-standalone-header span {
-    color: var(--srs-color-semantic-text-secondary);
-}
-
-.srs-student-dashboard-host > main {
-    min-block-size: calc(100vh - 12rem);
-    padding-block: clamp(2rem, 6vw, 4rem);
-}
-
-.srs-dashboard-standalone-footer {
-    display: flex;
-    align-items: center;
-    min-block-size: 5rem;
-    padding-block: var(--srs-spacing-primitive-4);
-    color: var(--srs-color-semantic-text-secondary);
-}
-
-/* ── Failure panel ── */
-.srs-dashboard-failure {
-    max-inline-size: var(--srs-sizing-content-readable);
-    color: var(--srs-color-semantic-danger-text);
-    background: var(--srs-color-semantic-danger-surface);
-    border-inline-start: 0.3rem solid var(--srs-color-semantic-danger-text);
-    border-color: rgba(190,18,60,0.2);
-}
-
-/* ── Responsive ── */
-@media (max-width: 64rem) {
-    .srs-student-dashboard-host ::deep .srs-app-shell__context {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 }
 
 @media (max-width: 47.99rem) {
@@ -375,8 +83,7 @@
     }
 
     .srs-student-dashboard__summary-grid,
-    .srs-dashboard-facts,
-    .srs-student-dashboard-host ::deep .srs-app-shell__context {
+    .srs-dashboard-facts {
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -385,36 +92,10 @@
     }
 }
 
-@media (max-width: 30rem) {
-    .srs-student-dashboard-host ::deep .srs-app-shell__header,
-    .srs-student-dashboard-host ::deep .srs-app-shell__footer,
-    .srs-student-dashboard-host ::deep .srs-app-shell main,
-    .srs-dashboard-standalone-header,
-    .srs-dashboard-standalone-footer,
-    .srs-student-dashboard-host > main {
-        inline-size: min(100% - 1rem, 78rem);
-        padding-inline: var(--srs-spacing-primitive-3);
-    }
-
-    .srs-dashboard-refresh,
-    .srs-dashboard-primary-action,
-    .srs-dashboard-related-links a,
-    .srs-dashboard-failure__actions button,
-    .srs-dashboard-failure__actions a {
-        inline-size: 100%;
-    }
-
+@media (max-width: 23.4375rem) {
     .srs-dashboard-related-links,
     .srs-dashboard-failure__actions {
+        align-items: stretch;
         flex-direction: column;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .srs-student-dashboard-host *,
-    .srs-student-dashboard-host *::before,
-    .srs-student-dashboard-host *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
     }
 }

@@ -3,70 +3,42 @@
 @using System.Net
 @using StudentRegistration.Client.Components.Display
 @using StudentRegistration.Client.Components.Layout
-@using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Staff
 @using StudentRegistration.Contracts
-@using StudentRegistration.Contracts.Identity
 @using StudentRegistration.Contracts.Staff
 @inject AcademicApiClient AcademicApi
-@inject IdentityApiClient IdentityApi
 @inject StaffApiClient StaffApi
 
 <PageTitle>@LocalizedUiText.Get("Staff workspace | Student Registration")</PageTitle>
 
-@if (_loading)
-{
-    <div data-route-id="STF-01" data-state="loading" data-contract-state="STF-01-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="main-content" tabindex="-1">
-            <h1>@LocalizedUiText.Get("Staff workspace")</h1>
-            <p role="status" aria-live="polite" aria-busy="true">@LocalizedUiText.Get("Loading authorized assignments.")</p>
-        </main>
-    </div>
-}
-else if (_shellContext is not null)
-{
-    <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading staff workspace"))">
-        <Navigation>
-            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" />
-        </Navigation>
-        <ChildContent>@DashboardContent</ChildContent>
-    </AppShell>
-}
-else
-{
-    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-    <main id="main-content" tabindex="-1">@DashboardContent</main>
-}
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_loading"
+                   Status="@ShellStatus"
+                   Workspace="WorkspaceKind.Staff"
+                   CurrentRouteId="STF-01"
+                   Density="UiDensity.Compact"
+                   Eyebrow="@(LocalizedUiText.Get("Lecturer and Teaching Assistant workspace"))"
+                   Heading="@(LocalizedUiText.Get("Staff workspace"))"
+                   Description="@(LocalizedUiText.Get("Review your authorized assignments and open the tools available to your current staff role."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading authorized assignments."))">
+    @DashboardContent
+</AuthenticatedPage>
 
 @code {
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
-    [
-        new(LocalizedUiText.Get("Staff home"), "/staff", IsActive: true),
-        new(LocalizedUiText.Get("Timetable"), "/staff/timetable"),
-        new(LocalizedUiText.Get("Availability"), "/staff/availability"),
-        new(LocalizedUiText.Get("Approvals"), "/staff/approvals")
-    ];
-
     private FrontendAppContextView? _shellContext;
     private AppContextDto? _context;
     private IReadOnlyList<StaffAssignmentDto> _assignments = [];
-    private string? _selectedRole;
     private string _state = "loading";
     private string _reasonCode = "STAFF_WORKSPACE_UNAVAILABLE";
     private string _message = LocalizedUiText.Get("The staff workspace could not be loaded safely.");
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
+    private UiStatus? ShellStatus => _shellContext is null && !_loading
+        ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
+            [new("return-home", LocalizedUiText.Get("Return to authorized home"), "/")], _reference)
+        : null;
 
     private string ContractState => _state switch
     {
@@ -82,39 +54,12 @@ else
 
     private RenderFragment DashboardContent => @<article data-route-id="STF-01"
         data-state="@_state" data-contract-state="@ContractState">
-        <header>
-            <p>@LocalizedUiText.Get("Lecturer and Teaching Assistant workspace")</p>
-            <h1>@LocalizedUiText.Get("Staff workspace")</h1>
-            @if (_context?.ActiveRole is { } activeRole)
-            {
-                <p><strong>@LocalizedUiText.Get("Role context:")</strong> @RoleLabel(activeRole)</p>
-            }
-        </header>
-
-        @if (_context?.SessionState is SessionState.RoleSelectionRequired)
+        @if (_context?.ActiveRole is { } activeRole)
         {
-            <section aria-labelledby="role-context-heading">
-                <h2 id="role-context-heading">@LocalizedUiText.Get("Role selection required")</h2>
-                <p>@LocalizedUiText.Get("Select one server-authorized context before assignments load. Roles are never combined.")</p>
-                @if (_state == "validation-error")
-                {
-                    <div role="alert" aria-live="assertive" tabindex="-1">
-                        <h3>@LocalizedUiText.Get("Context selection needs attention")</h3>
-                        <p><strong>@_reasonCode</strong> @_message</p>
-                    </div>
-                }
-                <label for="staff-role-context">@LocalizedUiText.Get("Authorized role context")</label>
-                <select id="staff-role-context" @bind="_selectedRole" disabled="@_requesting">
-                    <option value="">@LocalizedUiText.Get("Select a role")</option>
-                    @foreach (var role in _context.AuthorizedRoles.Where(StaffPageSupport.IsStaffRole))
-                    {
-                        <option value="@role">@RoleLabel(role)</option>
-                    }
-                </select>
-                <button type="button" disabled="@_requesting" @onclick="SwitchContextAsync">@LocalizedUiText.Get("Switch context")</button>
-            </section>
+            <p><strong>@LocalizedUiText.Get("Role context:")</strong> @RoleLabel(activeRole)</p>
         }
-        else if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
+
+        @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
         {
             <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
                 <h2>@ErrorHeading</h2>
@@ -126,7 +71,7 @@ else
                 }
                 @if (_state is "service-error" or "offline")
                 {
-                    <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
+                    <AppButton Disabled="@_requesting" OnClick="@(_ => LoadAsync())">@LocalizedUiText.Get("Retry")</AppButton>
                 }
                 <a href="/">@LocalizedUiText.Get("Return to authorized home")</a>
             </section>
@@ -136,7 +81,7 @@ else
             <section role="status" aria-live="polite">
                 <h2>@LocalizedUiText.Get("Assignments changed")</h2>
                 <p><strong>@_reasonCode</strong> @_message</p>
-                <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh assignments")</button>
+                <AppButton Disabled="@_requesting" OnClick="@(_ => LoadAsync())">@LocalizedUiText.Get("Refresh assignments")</AppButton>
             </section>
         }
         else if (_state == "empty")
@@ -224,9 +169,8 @@ else
 
             if (_context.SessionState is SessionState.RoleSelectionRequired)
             {
-                _assignments = [];
-                _state = "success";
-                _selectedRole = _context.AuthorizedRoles.FirstOrDefault(StaffPageSupport.IsStaffRole);
+                ApplyFailure(HttpStatusCode.Forbidden,
+                    new("ROLE_CONTEXT_INVALID", LocalizedUiText.Get("This account does not have one valid active staff role."), "STF-01-ROLE"));
                 return;
             }
 
@@ -256,53 +200,6 @@ else
         {
             _requesting = false;
         }
-    }
-
-    private async Task SwitchContextAsync()
-    {
-        if (_requesting)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(_selectedRole) ||
-            _context is null ||
-            !_context.AuthorizedRoles.Contains(_selectedRole, StringComparer.Ordinal) ||
-            !StaffPageSupport.IsStaffRole(_selectedRole))
-        {
-            _state = "validation-error";
-            _reasonCode = "ROLE_CONTEXT_INVALID";
-            _message = LocalizedUiText.Get("Select one role returned by the server.");
-            return;
-        }
-
-        _requesting = true;
-        try
-        {
-            var result = await IdentityApi.SelectRoleContextAsync(
-                new SelectRoleContextRequest(_selectedRole));
-            if (!result.IsSuccess)
-            {
-                _state = result.StatusCode == HttpStatusCode.BadRequest
-                    ? "validation-error"
-                    : "service-error";
-                _reasonCode = result.Error?.Code ?? "ROLE_CONTEXT_REJECTED";
-                _message = result.Error?.Message ?? LocalizedUiText.Get("The role context was not changed.");
-                _reference = result.Error?.CorrelationId;
-                return;
-            }
-        }
-        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JSException)
-        {
-            ApplyOffline();
-            return;
-        }
-        finally
-        {
-            _requesting = false;
-        }
-
-        await LoadAsync();
     }
 
     private void ApplyFailure(HttpStatusCode status, ApiError? error)

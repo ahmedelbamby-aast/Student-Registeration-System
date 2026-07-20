@@ -35,7 +35,11 @@ public static class Spec003RouteVisualAssertions
             design,
             $"{routeId}-VIS-{taskId}",
             "\"375\"", "\"768\"", "\"1280\"", "\"1920\"");
-        RepositoryFiles.ContainsAll(page, $"data-route-id=\"{routeId}\"", "<h1");
+        Assert.Contains($"data-route-id=\"{routeId}\"", page, StringComparison.Ordinal);
+        Assert.True(
+            page.Contains("<h1", StringComparison.Ordinal) ||
+            page.Contains("<AuthenticatedPage", StringComparison.Ordinal),
+            $"{pageName} must expose its heading directly or through AuthenticatedPage.");
         if (usesIntrinsicTableReflow)
         {
             RepositoryFiles.ContainsAll(
@@ -67,7 +71,8 @@ public static class Spec003RouteVisualAssertions
             StringComparison.Ordinal);
         if (!RepositoryFiles.Exists(manifestPath) && !approvalRun)
         {
-            return;
+            throw new XunitException(
+                $"Approved visual baseline manifest is missing for {routeId}: {manifestPath}");
         }
 
         using var manifest = RepositoryFiles.Exists(manifestPath)
@@ -107,6 +112,9 @@ public static class Spec003RouteVisualAssertions
             item => item.GetProperty("browser").GetString() == browser &&
                     item.GetProperty("viewport").GetInt32() == width);
         var expectedHash = target.GetProperty("sha256").GetString();
+        Assert.True(
+            File.Exists(baselinePath),
+            $"Approved visual baseline image is missing for {routeId}: {baselinePath}");
         var actualHash = Hash(actual);
         if (!string.Equals(expectedHash, actualHash, StringComparison.Ordinal))
         {

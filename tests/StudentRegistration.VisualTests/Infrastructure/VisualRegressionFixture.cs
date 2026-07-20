@@ -109,7 +109,7 @@ public sealed class VisualRegressionFixture : IAsyncLifetime
         }
         catch (PlaywrightException exception)
         {
-            throw SkipException.ForSkip(
+            throw new XunitException(
                 $"The governed {browserName} browser runtime is unavailable: {exception.Message}");
         }
     }
@@ -123,7 +123,7 @@ public sealed class VisualRegressionFixture : IAsyncLifetime
 
         if (_runtimeUnavailable is not null)
         {
-            throw SkipException.ForSkip(_runtimeUnavailable);
+            throw new XunitException(_runtimeUnavailable);
         }
 
         if (_playwright is null)

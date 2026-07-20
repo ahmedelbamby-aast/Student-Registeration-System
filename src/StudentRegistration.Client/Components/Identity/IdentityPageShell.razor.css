@@ -14,7 +14,7 @@
 .srs-identity-shell__header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--srs-spacing-primitive-4);
     padding-block: 1rem;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .srs-identity-shell__product {
-    font-weight: 700;
+    font-weight: var(--srs-typography-component-emphasis-weight);
 }
 
 .srs-identity-shell__main {
@@ -43,7 +43,7 @@
 
 .srs-identity-panel form {
     display: grid;
-    gap: 1rem;
+    gap: var(--srs-spacing-primitive-4);
 }
 
 .srs-identity-panel__intro {
@@ -53,7 +53,7 @@
 .srs-identity-shell__navigation {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: var(--srs-spacing-primitive-4);
     padding-block: 1.5rem;
 }
 

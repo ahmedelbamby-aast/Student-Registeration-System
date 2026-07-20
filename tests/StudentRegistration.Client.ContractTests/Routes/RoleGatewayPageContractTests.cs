@@ -22,7 +22,7 @@ public sealed class RoleGatewayPageContractTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(FixturePath));
         var root = document.RootElement;
 
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("AUTH-01", root.GetProperty("routeId").GetString());
         Assert.Equal("/", root.GetProperty("routeTemplate").GetString());
         Assert.Equal("GET", root.GetProperty("api").GetProperty("method").GetString());

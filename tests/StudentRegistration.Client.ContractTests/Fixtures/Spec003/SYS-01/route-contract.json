@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "frontend-fixture/1.0",
+  "schemaVersion": "frontend-fixture/2.0",
   "routeId": "SYS-01",
   "routeTemplate": "/status/{code}",
   "apis": [

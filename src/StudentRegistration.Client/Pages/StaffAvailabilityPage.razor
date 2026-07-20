@@ -2,7 +2,6 @@
 @using System.Globalization
 @using System.Net
 @using StudentRegistration.Client.Components.Layout
-@using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Components.Scheduling
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Staff
@@ -14,37 +13,20 @@
 
 <PageTitle>@LocalizedUiText.Get("Staff availability | Student Registration")</PageTitle>
 
-@if (_loading)
-{
-    <div data-route-id="STF-04" data-state="loading" data-contract-state="STF-04-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Staff availability")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading owned availability.")</p></main>
-    </div>
-}
-else if (_shellContext is not null)
-{
-    <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading staff availability"))">
-        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" /></Navigation>
-        <ChildContent>@AvailabilityContent</ChildContent>
-    </AppShell>
-}
-else
-{
-    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@AvailabilityContent</main>
-}
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_loading"
+                   Status="@ShellStatus"
+                   Workspace="WorkspaceKind.Staff"
+                   CurrentRouteId="STF-04"
+                   Density="UiDensity.Compact"
+                   Eyebrow="@(LocalizedUiText.Get("Staff workspace"))"
+                   Heading="@(LocalizedUiText.Get("Staff availability"))"
+                   Description="@(LocalizedUiText.Get("Maintain your complete availability range set before the server-controlled editing deadline."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading owned availability."))">
+    @AvailabilityContent
+</AuthenticatedPage>
 
 @code {
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
-    [new(LocalizedUiText.Get("Staff home"), "/staff"), new(LocalizedUiText.Get("Timetable"), "/staff/timetable"), new(LocalizedUiText.Get("Availability"), "/staff/availability", IsActive: true)];
-
     private FrontendAppContextView? _shellContext;
     private AppContextDto? _context;
     private WorkspaceAvailabilityDto? _authoritative;
@@ -60,6 +42,10 @@ else
     private bool _requesting;
     private bool _dirty;
     private bool _saved;
+    private UiStatus? ShellStatus => _shellContext is null && !_loading
+        ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
+            [new("staff-home", LocalizedUiText.Get("Return to Staff home"), "/staff")], _reference)
+        : null;
 
     private string ContractState => _state switch
     {
@@ -78,21 +64,18 @@ else
 
     private RenderFragment AvailabilityContent => @<article data-route-id="STF-04"
         data-state="@_state" data-contract-state="@ContractState">
-        <header>
-            <p>@LocalizedUiText.Get("Staff workspace")</p><h1>@LocalizedUiText.Get("Staff availability")</h1>
-            @if (_authoritative is not null)
-            {
-                <p id="availability-deadline">@LocalizedUiText.Get("Editing deadline:") <time datetime="@_authoritative.DeadlineUtc.ToString("O")">@FormatUtc(_authoritative.DeadlineUtc)</time></p>
-                <p>@LocalizedUiText.Get("Version:") @_authoritative.RowVersion</p>
-            }
-        </header>
+        @if (_authoritative is not null)
+        {
+            <p id="availability-deadline">@LocalizedUiText.Get("Editing deadline:") <time datetime="@_authoritative.DeadlineUtc.ToString("O")">@FormatUtc(_authoritative.DeadlineUtc)</time></p>
+            <p>@LocalizedUiText.Get("Version:") @_authoritative.RowVersion</p>
+        }
 
         @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
         {
             <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
                 <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") @_reference</p> }
-                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button> }
+                @if (_state is "service-error" or "offline") { <AppButton Disabled="@_requesting" OnClick="@(_ => LoadAsync())">@LocalizedUiText.Get("Retry")</AppButton> }
                 <a href="/staff">@LocalizedUiText.Get("Return to Staff home")</a>
             </section>
         }
@@ -117,7 +100,7 @@ else
                     {
                         <p>@LocalizedUiText.Get("The current server ranges are shown below. Refresh and reapply changes; the stale draft was not saved.")</p>
                     }
-                    <button type="button" disabled="@_requesting" @onclick="RefreshAndReapplyAsync">@LocalizedUiText.Get("Refresh and review")</button>
+                    <AppButton Disabled="@_requesting" OnClick="@(_ => RefreshAndReapplyAsync())">@LocalizedUiText.Get("Refresh and review")</AppButton>
                 </section>
             }
             else if (_saved)
@@ -150,13 +133,13 @@ else
                                     <td><label for="start-@range.Key">@LocalizedUiText.Get("Start")</label><input id="start-@range.Key" type="time" value="@range.StartLocal" @onchange="eventArgs => UpdateStart(range, eventArgs.Value?.ToString())" aria-describedby="availability-editor-help" disabled="@EditingDisabled" /></td>
                                     <td><label for="end-@range.Key">@LocalizedUiText.Get("End")</label><input id="end-@range.Key" type="time" value="@range.EndLocal" @onchange="eventArgs => UpdateEnd(range, eventArgs.Value?.ToString())" aria-describedby="availability-editor-help" disabled="@EditingDisabled" /></td>
                                     <td><label for="kind-@range.Key">@LocalizedUiText.Get("Kind")</label><select id="kind-@range.Key" @bind="range.Kind" @bind:after="MarkDirty" disabled="@EditingDisabled"><option value="available">@LocalizedUiText.Get("Available")</option><option value="unavailable">@LocalizedUiText.Get("Unavailable")</option></select></td>
-                                    <td><button type="button" disabled="@EditingDisabled" @onclick="() => RemoveRange(range.Key)">@LocalizedUiText.Get("Remove range")</button></td>
+                                    <td><AppButton Variant="AppButtonVariant.Quiet" Disabled="@EditingDisabled" OnClick="@(_ => RemoveRange(range.Key))">@LocalizedUiText.Get("Remove range")</AppButton></td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
-                <button type="button" disabled="@EditingDisabled" @onclick="AddRange">@LocalizedUiText.Get("Add availability range")</button>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@EditingDisabled" OnClick="@(_ => AddRange())">@LocalizedUiText.Get("Add availability range")</AppButton>
             </section>
 
             <section aria-labelledby="availability-representations-heading">
@@ -185,7 +168,7 @@ else
             }
 
             <p role="status">@(_dirty ? LocalizedUiText.Get("Unsaved draft") : _saved ? LocalizedUiText.Get("Saved by the server") : LocalizedUiText.Get("No unsaved changes"))</p>
-            <button type="button" disabled="@(EditingDisabled || !_dirty)" @onclick="SaveAsync">@LocalizedUiText.Get("Save availability")</button>
+            <AppButton Disabled="@(EditingDisabled || !_dirty)" IsLoading="@_requesting" OnClick="@(_ => SaveAsync())">@LocalizedUiText.Get("Save availability")</AppButton>
             <nav aria-label="@(LocalizedUiText.Get("Availability actions"))"><a href="/staff/timetable">@LocalizedUiText.Get("Open timetable")</a><a href="/staff">@LocalizedUiText.Get("Return to Staff dashboard")</a></nav>
         }
     </article>;

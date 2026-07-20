@@ -1,27 +1,25 @@
 @page "/admin/offerings"
 @using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Features.Academics
 @inject SchedulingApiClient SchedulingApi
+@inject AcademicApiClient AcademicApi
 
 <PageTitle>@LocalizedUiText.Get("Offering administration | Student Registration")</PageTitle>
 
-<main class="srs-scheduling-admin"
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-06"
+                   HeadingId="offering-main-content"
+                   Heading="@(LocalizedUiText.Get("Offering administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Scheduling"))"
+                   Description="@(LocalizedUiText.Get("Create Draft offerings, edit complete groups, validate every resource, and publish only after server confirmation."))">
+<div class="srs-scheduling-admin"
       data-route-id="ADM-06"
       data-state="@_state"
       data-testid="offering-administration-page">
-    <a class="srs-skip-link" href="#offering-main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-scheduling-admin__header">
-        <div>
-            <p class="srs-scheduling-admin__eyebrow">@LocalizedUiText.Get("Scheduling")</p>
-            <h1 id="offering-main-content" tabindex="-1">@LocalizedUiText.Get("Offering administration")</h1>
-            <p>@LocalizedUiText.Get("Create Draft offerings, edit complete groups, validate every resource, and publish only after server confirmation.")</p>
-        </div>
-        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
-            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
-            <a href="/admin/catalogue">@LocalizedUiText.Get("Catalogue")</a>
-            <a href="/admin/resources">@LocalizedUiText.Get("Resources")</a>
-        </nav>
-    </header>
 
     @if (_state == LoadingState)
     {
@@ -295,7 +293,8 @@
             </section>
         </div>
     }
-</main>
+</div>
+</AuthenticatedPage>
 
 @code {
     private const string LoadingState = "loading";
@@ -330,7 +329,19 @@
     private bool _pending;
     private bool _showPublishDialog;
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
+        await LoadAsync();
+    }
 
     private async Task LoadAsync()
     {

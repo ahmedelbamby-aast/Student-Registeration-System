@@ -16,7 +16,7 @@ internal static class IdentityRouteContractAssertions
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(fixturePath));
         var root = document.RootElement;
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal(routeId, root.GetProperty("routeId").GetString());
         Assert.Equal(routeTemplate, root.GetProperty("routeTemplate").GetString());
         Assert.Contains("SERVICE_UNAVAILABLE", Strings(root, "reasonCodes"));

@@ -1,35 +1,27 @@
 @page "/admin/audit"
 @using System.Net
+@using StudentRegistration.Client.Components.Layout
+@using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Contracts.Admin
 @inject AdminOperationsApiClient OperationsApi
+@inject AcademicApiClient AcademicApi
 @inject NavigationManager Navigation
 
 <PageTitle>@LocalizedUiText.Get("Audit administration | Student Registration")</PageTitle>
 
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-09"
+                   HeadingId="audit-administration-heading"
+                   Heading="@(LocalizedUiText.Get("Scoped audit search"))"
+                   Eyebrow="@(LocalizedUiText.Get("Immutable administrative evidence"))"
+                   Description="@(LocalizedUiText.Get("Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle."))">
 <div class="srs-audit-admin"
      data-route-id="ADM-09"
      data-state="@_state"
      data-supported-states="loading empty success validation-error service-error unauthorized session-expired stale offline queued ready failed expired restricted">
-    <a class="srs-audit-admin__skip" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-audit-admin__header" role="banner">
-        <a href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
-            <strong>@LocalizedUiText.Get("AASTMT")</strong>
-            <span>@LocalizedUiText.Get("Student Registration")</span>
-        </a>
-        <nav aria-label="@(LocalizedUiText.Get("Administration navigation"))">
-            <a href="/admin">@LocalizedUiText.Get("Dashboard")</a>
-            <a href="/admin/registrations">@LocalizedUiText.Get("Registrations")</a>
-            <a href="/admin/audit" aria-current="page">@LocalizedUiText.Get("Audit")</a>
-        </nav>
-    </header>
-
-    <main id="main-content" tabindex="-1">
-        <section class="srs-audit-admin__intro" aria-labelledby="audit-administration-heading">
-            <p class="srs-audit-admin__eyebrow">@LocalizedUiText.Get("Immutable administrative evidence")</p>
-            <h1 id="audit-administration-heading">@LocalizedUiText.Get("Scoped audit search")</h1>
-            <p>@LocalizedUiText.Get("Search only events visible in the current server scope and follow an asynchronous, expiring export lifecycle.")</p>
-        </section>
 
         @if (_busy)
         {
@@ -204,13 +196,13 @@
             </div>
             <p class="srs-audit-admin__authorization-note">@LocalizedUiText.Get("Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions.")</p>
         </section>
-    </main>
-
-    <footer><a href="/status/support">@LocalizedUiText.Get("Open safe support")</a></footer>
 </div>
+</AuthenticatedPage>
 
 @code {
     private IReadOnlyList<AdminAuditEventDto> _events = [];
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
     private AdminAuditEventDto? _selectedEvent;
     private AdminExportJobDto? _exportJob;
     private string _state = "loading";
@@ -233,7 +225,16 @@
     private bool IsTerminalExport => _exportJob?.State is "complete" or "failed" or "expired";
     private bool CanDownload => _exportJob is { State: "complete", DownloadUrl: not null };
 
-    protected override Task OnInitializedAsync() => SearchAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
+        await SearchAsync();
+    }
 
     private async Task SearchAsync()
     {

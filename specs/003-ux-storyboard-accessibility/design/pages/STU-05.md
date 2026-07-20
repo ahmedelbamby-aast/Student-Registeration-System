@@ -344,6 +344,8 @@ Required and forbidden content is normative; a forbidden item fails the route te
 | `STU-05-policy-changed-v1` (policy changed) | stale | POLICY_CHANGED, changed policy summary, refreshed plan requirement, and disabled submit | cached policy acceptance, automatic submit, or success | Refresh, review, and revalidate | `STU-05-COMP-STATE-STALE` | `STU-05-E2E-FAILURE` |
 | `STU-05-window-closed-v1` (window closed) | stale | WINDOW_CLOSED, server close time/timezone, support path, and disabled submit | browser clock authority, enabled submit, queued registration, or success | Return to dashboard or support | `STU-05-COMP-STATE-STALE` | `STU-05-E2E-FAILURE` |
 | `STU-05-double-submit-v1` (double submit) | loading | pending and disabled Confirm registration, one idempotent request, and one authoritative result | two POSTs, two results, re-enabled command while pending, or partial outcome | Wait for or safely recover the one result | `STU-05-COMP-STATE-LOADING` | `STU-05-E2E-FAILURE` |
+| `STU-05-pending-approval-v2` (pending approval/held) | validation-error | pending subject approval, held-capacity effect, expiry, and disabled final submission | confirmed seat, hidden pending line, or bypass action | Review the pending approval | `STU-05-COMP-STATE-VALIDATION-ERROR` | `STU-05-E2E-FAILURE` |
+| `STU-05-overload-approval-v2` (overload pending/approved/rejected) | validation-error | authoritative 19-21 credit overload state, CGPA eligibility, reason, and Admin decision status | client-calculated eligibility, more than 21 credits, or bypassed Admin decision | Wait, revise to 18 credits, or continue only after approval | `STU-05-COMP-STATE-VALIDATION-ERROR` | `STU-05-E2E-FAILURE` |
 
 ## Review notes
 

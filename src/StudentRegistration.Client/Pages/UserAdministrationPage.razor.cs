@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using StudentRegistration.Client.Components.Forms;
 using StudentRegistration.Client.Features.Identity;
+using StudentRegistration.Client.Features.Academics;
+using StudentRegistration.Client.Features.Frontend.Models;
 using StudentRegistration.Client.Localization;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Identity;
@@ -42,6 +44,9 @@ public partial class UserAdministrationPage : ComponentBase
     [Inject]
     private IdentityApiClient IdentityApi { get; set; } = null!;
 
+    [Inject]
+    private AcademicApiClient AcademicApi { get; set; } = null!;
+
     private ElementReference _statusChangeButton;
     private IReadOnlyList<IdentityUserSummaryDto> _users = [];
     private IdentityUserSummaryDto? _selectedUser;
@@ -74,6 +79,8 @@ public partial class UserAdministrationPage : ComponentBase
     private string? _feedbackState;
     private string? _correlationId;
     private bool _feedbackIsError;
+    private FrontendAppContextView? _shellContext;
+    private bool _isLoadingContext = true;
 
     private bool IsBusy =>
         _isLoadingUsers ||
@@ -102,6 +109,12 @@ public partial class UserAdministrationPage : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        var context = await AcademicApi.GetAppContextAsync();
+        if (context.IsSuccess && context.Value is not null)
+        {
+            _shellContext = AcademicContextViewMapper.ToView(context.Value);
+        }
+        _isLoadingContext = false;
         await LoadUsersAsync(1);
     }
 

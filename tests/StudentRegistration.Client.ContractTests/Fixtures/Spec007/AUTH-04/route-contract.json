@@ -1,11 +1,10 @@
 {
-  "schemaVersion": "frontend-fixture/1.0",
+  "schemaVersion": "frontend-fixture/2.0",
   "routeId": "AUTH-04",
   "routeTemplate": "/staff/login",
   "apis": [
-    { "method": "POST", "path": "/api/auth/staff/login" },
-    { "method": "PUT", "path": "/api/auth/session/context" }
+    { "method": "POST", "path": "/api/auth/staff/login" }
   ],
   "requiredStates": ["loading", "success", "validation-error", "service-error", "offline"],
-  "reasonCodes": ["INVALID_CREDENTIALS", "NO_AUTHORIZED_ROLE", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]
+  "reasonCodes": ["INVALID_CREDENTIALS", "INVALID_ROLE_CONFIGURATION", "NO_AUTHORIZED_ROLE", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]
 }

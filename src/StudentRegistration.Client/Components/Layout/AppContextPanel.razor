@@ -1,0 +1,43 @@
+@using System.Globalization
+@using StudentRegistration.Client.Features.Frontend.Models
+@using StudentRegistration.Contracts
+
+<dl class="srs-app-shell__context" aria-live="polite">
+    <div><dt>@ServerDateTimeLabel</dt><dd><time data-context="server-time" datetime="@Context.ServerDateTime.ToString("O")">@Context.ServerDateTime.ToString("g", CultureInfo.CurrentCulture)</time><span>@Context.TimeZone</span></dd></div>
+    <div><dt>@TeachingTermLabel</dt><dd data-context="teaching-term">@(Context.TeachingTerm ?? NoTeachingTermLabel)</dd></div>
+    <div><dt>@RegistrationTermLabel</dt><dd data-context="registration-term">@(Context.RegistrationTerm ?? NoRegistrationTermLabel)</dd></div>
+    <div>
+        <dt>@RegistrationWindowLabel</dt>
+        <dd data-context="registration-window" data-window-state="@WindowStateValue(Context.RegistrationWindowState)">
+            <span data-context="registration-window-state">@WindowStateValue(Context.RegistrationWindowState)</span>
+            @if (Context.RegistrationWindow is { } window)
+            {
+                <time datetime="@window.OpensAtUtc.ToString("O")">@window.OpensAtUtc.ToString("g", CultureInfo.CurrentCulture)</time><span aria-hidden="true">–</span><time datetime="@window.ClosesAtUtc.ToString("O")">@window.ClosesAtUtc.ToString("g", CultureInfo.CurrentCulture)</time>
+            }
+            else
+            {
+                <span>@NoRegistrationWindowLabel</span>
+            }
+        </dd>
+    </div>
+    <div><dt>@AuthorizedRolesLabel</dt><dd>@string.Join(", ", Context.AuthorizedRoles)</dd></div>
+    <div><dt>@ActiveRoleLabel</dt><dd>@Context.ActiveRole</dd></div>
+    <div><dt>@SessionLabel</dt><dd><span>@Context.SessionState</span><time datetime="@Context.SessionExpiresAt.ToString("O")">@Context.SessionExpiresAt.ToString("g", CultureInfo.CurrentCulture)</time></dd></div>
+    <div><dt>@ServiceLabel</dt><dd>@Context.ServiceState</dd></div>
+</dl>
+
+@code {
+    [Parameter, EditorRequired] public FrontendAppContextView Context { get; set; } = null!;
+    [Parameter] public string ServerDateTimeLabel { get; set; } = string.Empty;
+    [Parameter] public string TeachingTermLabel { get; set; } = string.Empty;
+    [Parameter] public string RegistrationTermLabel { get; set; } = string.Empty;
+    [Parameter] public string RegistrationWindowLabel { get; set; } = string.Empty;
+    [Parameter] public string NoTeachingTermLabel { get; set; } = string.Empty;
+    [Parameter] public string NoRegistrationTermLabel { get; set; } = string.Empty;
+    [Parameter] public string NoRegistrationWindowLabel { get; set; } = string.Empty;
+    [Parameter] public string AuthorizedRolesLabel { get; set; } = string.Empty;
+    [Parameter] public string ActiveRoleLabel { get; set; } = string.Empty;
+    [Parameter] public string SessionLabel { get; set; } = string.Empty;
+    [Parameter] public string ServiceLabel { get; set; } = string.Empty;
+    private static string WindowStateValue(RegistrationWindowState state) => state switch { RegistrationWindowState.Open => "open", RegistrationWindowState.Upcoming => "upcoming", RegistrationWindowState.Closed => "closed", _ => "none" };
+}

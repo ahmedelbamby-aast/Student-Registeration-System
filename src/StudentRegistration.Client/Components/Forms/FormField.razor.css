@@ -1,105 +1,15 @@
-.srs-form-field {
-    display: grid;
-    gap: var(--srs-spacing-primitive-2);
-    color: var(--srs-color-semantic-text-primary);
-}
-
-.srs-form-field__label {
-    font-weight: var(--srs-typography-component-control-weight);
-    font-size: 0.9375rem;
-    color: var(--srs-color-semantic-text-primary);
-}
-
-.srs-form-field__input {
-    min-height: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-3);
-    color: var(--srs-color-semantic-text-primary);
-    background: var(--srs-color-semantic-surface-raised);
-    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-semantic-border-subtle);
-    border-radius: var(--srs-border-primitive-radius-medium);
-    font: var(--srs-typography-semantic-body);
-    transition:
-        border-color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
-        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
-}
-
-.srs-form-field:hover .srs-form-field__input:not(:disabled) {
-    border-color: var(--srs-color-primitive-blue-400);
-}
-
-.srs-form-field:focus-within .srs-form-field__input {
-    border-color: var(--srs-color-semantic-link);
-    box-shadow: 0 0 0 0.1875rem rgba(79,70,229,0.18);
-    outline: none;
-}
-
-.srs-form-field.is-disabled .srs-form-field__input {
-    color: var(--srs-color-semantic-disabled-text);
-    background: var(--srs-color-semantic-disabled-surface);
-    border-color: transparent;
-    cursor: not-allowed;
-}
-
-.srs-form-field.is-loading .srs-form-field__input {
-    border-color: var(--srs-color-semantic-information-text);
-    background: var(--srs-color-semantic-information-surface);
-}
-
-.srs-form-field.has-error .srs-form-field__input {
-    border-color: var(--srs-color-semantic-danger-text);
-    background: var(--srs-color-semantic-danger-surface);
-    box-shadow: 0 0 0 0.1875rem rgba(190,18,60,0.12);
-}
-
-.srs-form-field__description,
-.srs-form-field__error,
-.srs-form-field__status {
-    margin: var(--srs-spacing-primitive-0);
-    font-size: var(--srs-typography-primitive-font-size-small);
-}
-
-.srs-form-field__description {
-    color: var(--srs-color-semantic-text-secondary);
-}
-
-.srs-form-field__error {
-    color: var(--srs-color-semantic-danger-text);
-    font-weight: 500;
-}
-
-.srs-form-field__status {
-    color: var(--srs-color-semantic-information-text);
-}
-
-.srs-form-field__reveal {
-    justify-self: start;
-    min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-3);
-    color: var(--srs-color-component-button-secondary-text);
-    background: var(--srs-color-component-button-secondary-background);
-    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-primitive-blue-100);
-    border-radius: var(--srs-border-primitive-radius-medium);
-    font: inherit;
-    font-weight: var(--srs-typography-component-control-weight);
-    cursor: pointer;
-    transition:
-        background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
-        border-color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
-}
-
-.srs-form-field__reveal:hover {
-    background: var(--srs-color-primitive-blue-100);
-    border-color: var(--srs-color-primitive-blue-400);
-}
-
-.srs-form-field__reveal[aria-pressed="true"] {
-    color: var(--srs-color-semantic-information-text);
-    border-color: var(--srs-color-semantic-information-text);
-    background: var(--srs-color-semantic-information-surface);
-}
-
-.srs-form-field__reveal:disabled {
-    color: var(--srs-color-semantic-disabled-text);
-    background: var(--srs-color-semantic-disabled-surface);
-    cursor: not-allowed;
-}
+.srs-form-field { display:grid; gap:var(--srs-spacing-primitive-2); color:var(--srs-color-semantic-text-primary); }
+.srs-form-field:hover { color:var(--srs-color-semantic-text-primary); }
+.srs-form-field.is-loading { color:var(--srs-color-semantic-information-text); }
+.srs-form-field__control { min-block-size: var(--srs-sizing-interactive-minimum); }
+.srs-form-field__label { font-weight:var(--srs-typography-component-control-weight); }
+.srs-form-field__input,.srs-form-field__control :deep(input),.srs-form-field__control :deep(select),.srs-form-field__control :deep(textarea) { inline-size:100%; min-block-size:var(--srs-sizing-interactive-minimum); padding:var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3); color:var(--srs-color-semantic-text-primary); background:var(--srs-color-semantic-surface-default); border:var(--srs-border-primitive-width) solid var(--srs-color-semantic-border-strong); border-radius:var(--srs-border-primitive-radius-control); font:inherit; }
+.srs-form-field__control :deep(textarea) { min-block-size:7rem; resize:vertical; }
+.srs-form-field:focus-within .srs-form-field__input,.srs-form-field__control:focus-within :deep(input),.srs-form-field__control:focus-within :deep(select),.srs-form-field__control:focus-within :deep(textarea) { border-color:var(--srs-focus-ring-color); outline:var(--srs-focus-outline-width) solid var(--srs-focus-ring-color); outline-offset:var(--srs-focus-outline-offset); }
+.srs-form-field.is-disabled .srs-form-field__input,.srs-form-field.is-disabled .srs-form-field__control { color:var(--srs-color-semantic-disabled-text); background:var(--srs-color-semantic-disabled-surface); }
+.srs-form-field.has-error .srs-form-field__input,.srs-form-field.has-error .srs-form-field__control { border-color:var(--srs-color-semantic-danger-text); background:var(--srs-color-semantic-danger-surface); }
+.srs-form-field__description,.srs-form-field__error,.srs-form-field__status { margin:var(--srs-spacing-primitive-0); font-size:var(--srs-typography-primitive-font-size-supporting); }
+.srs-form-field__description { color:var(--srs-color-semantic-text-secondary); }
+.srs-form-field__error { color:var(--srs-color-semantic-danger-text); font-weight:var(--srs-typography-component-control-weight); }
+.srs-form-field__status { color:var(--srs-color-semantic-information-text); }
+.srs-form-field__reveal { justify-self:start; min-block-size:var(--srs-sizing-interactive-minimum); padding-inline:var(--srs-spacing-primitive-3); color:var(--srs-color-component-button-secondary-text); background:var(--srs-color-component-button-secondary-background); border:var(--srs-border-primitive-width) solid var(--srs-color-semantic-border-strong); border-radius:var(--srs-border-primitive-radius-control); font:inherit; font-weight:var(--srs-typography-component-control-weight); }

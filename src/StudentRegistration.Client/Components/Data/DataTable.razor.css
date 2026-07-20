@@ -14,7 +14,7 @@
 
 .srs-data-table caption {
     font-size: var(--srs-typography-primitive-font-size-heading);
-    font-weight: 700;
+    font-weight: var(--srs-typography-component-emphasis-weight);
     padding: var(--srs-spacing-primitive-4) var(--srs-spacing-primitive-4) var(--srs-spacing-primitive-3);
     text-align: start;
     color: var(--srs-color-primitive-blue-900);
@@ -27,8 +27,8 @@
     border-block-end: 0.125rem solid var(--srs-color-primitive-blue-100);
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
     text-align: start;
-    font-weight: 700;
-    font-size: 0.875rem;
+    font-weight: var(--srs-typography-component-emphasis-weight);
+    font-size: var(--srs-typography-primitive-font-size-supporting);
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
@@ -51,8 +51,8 @@
     color: var(--srs-color-primitive-blue-700);
     min-block-size: var(--srs-sizing-interactive-minimum);
     padding: var(--srs-spacing-primitive-2);
-    font-weight: 700;
-    font-size: 0.875rem;
+    font-weight: var(--srs-typography-component-emphasis-weight);
+    font-size: var(--srs-typography-primitive-font-size-supporting);
     letter-spacing: 0.03em;
     text-transform: uppercase;
     cursor: pointer;
@@ -89,12 +89,12 @@
     background: var(--srs-color-semantic-danger-surface);
     color: var(--srs-color-semantic-danger-text);
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }
 
 .srs-data-table [role="status"] {
     background: var(--srs-color-semantic-information-surface);
     color: var(--srs-color-semantic-information-text);
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }

@@ -42,32 +42,13 @@
                    ErrorMessage="@ErrorFor("staff-password")"
                    @bind-Value="_password" />
 
-        <button class="srs-identity-command"
-                type="submit"
-                disabled="@IsSubmitting">
+        <AppButton Type="submit"
+                   IsLoading="@IsSubmitting"
+                   Disabled="@IsSubmitting"
+                   LoadingAnnouncement="@(LocalizedUiText.Get("Signing in once."))">
             @(IsSubmitting ? LocalizedUiText.Get("Signing in…") : LocalizedUiText.Get("Sign in"))
-        </button>
+        </AppButton>
     </form>
-
-    @if (_availableRoles.Count > 0)
-    {
-        <section class="srs-role-selection"
-                 aria-labelledby="staff-role-selection-heading"
-                 data-state="role-selection-required">
-            <h2 id="staff-role-selection-heading">@LocalizedUiText.Get("Choose an authorized staff context")</h2>
-            <p>@LocalizedUiText.Get("The server returned these roles. Choose one to continue.")</p>
-            <div class="srs-role-selection__actions">
-                @foreach (var role in _availableRoles)
-                {
-                    <button type="button"
-                            disabled="@IsSelectingRole"
-                            @onclick="() => SelectRoleAsync(role)">
-                        @LocalizedUiText.Get("Continue as") @DisplayRole(role)
-                    </button>
-                }
-            </div>
-        </section>
-    }
 </IdentityPageShell>
 
 @code {
@@ -81,12 +62,9 @@
     private string _feedbackHeading = LocalizedUiText.Get("Sign-in status");
     private string? _feedbackState;
     private string? _correlationId;
-    private IReadOnlyList<string> _availableRoles = [];
     private IReadOnlyList<AccessibleValidationSummary.ValidationItem> _validationErrors = [];
 
     private bool IsSubmitting { get; set; }
-
-    private bool IsSelectingRole { get; set; }
 
     private async Task SubmitAsync()
     {
@@ -121,53 +99,16 @@
         }
     }
 
-    private async Task SelectRoleAsync(string role)
-    {
-        if (IsSelectingRole || !_availableRoles.Contains(role, StringComparer.Ordinal))
-        {
-            return;
-        }
-
-        IsSelectingRole = true;
-        try
-        {
-            var result = await IdentityApi.SelectRoleContextAsync(
-                new SelectRoleContextRequest(role));
-            if (result.IsSuccess && result.Value is not null)
-            {
-                await HandleSessionAsync(result.Value);
-                return;
-            }
-
-            ApplyFailure(result.Error);
-        }
-        catch (HttpRequestException)
-        {
-            ApplyFailure(null);
-        }
-        finally
-        {
-            IsSelectingRole = false;
-        }
-    }
-
     private Task HandleSessionAsync(SessionDto session)
     {
         if (string.Equals(session.SessionState, "role-selection-required", StringComparison.Ordinal))
         {
-            _availableRoles = session.Roles
-                .Where(StaffRoles.Contains)
-                .Distinct(StringComparer.Ordinal)
-                .ToArray();
-            if (_availableRoles.Count == 0)
-            {
-                ApplyFailure(null);
-            }
-
+            ApplyUnsupportedRoleConfiguration();
             return Task.CompletedTask;
         }
 
         if (!string.IsNullOrWhiteSpace(session.ActiveRole) &&
+            session.Roles.Count == 1 &&
             session.Roles.Contains(session.ActiveRole, StringComparer.Ordinal) &&
             StaffRoles.Contains(session.ActiveRole))
         {
@@ -212,7 +153,6 @@
 
     private void ApplyFailure(ApiError? error)
     {
-        _availableRoles = [];
         _feedbackCode = error?.Code ?? "SERVICE_UNAVAILABLE";
         _feedbackHeading = _feedbackCode == "RATE_LIMITED"
             ? LocalizedUiText.Get("Try again later")
@@ -228,13 +168,18 @@
 
     private void ResetOutcome()
     {
-        _availableRoles = [];
         _feedbackCode = null;
         _feedbackMessage = null;
         _feedbackState = null;
         _correlationId = null;
     }
 
-    private static string DisplayRole(string role) =>
-        role == "TeachingAssistant" ? LocalizedUiText.Get("Teaching Assistant") : role;
+    private void ApplyUnsupportedRoleConfiguration()
+    {
+        _feedbackCode = "INVALID_ROLE_CONFIGURATION";
+        _feedbackHeading = LocalizedUiText.Get("Staff account configuration unavailable");
+        _feedbackMessage = LocalizedUiText.Get("Each staff account must have exactly one role: Admin, Lecturer, or Teaching Assistant. Contact an administrator to correct this account.");
+        _feedbackState = "error";
+        _correlationId = null;
+    }
 }

@@ -1,15 +1,15 @@
 # Canonical Route Inventory
 
-**Contract version:** `route-inventory/1.1`<br>
-**Source:** `.specify/route-manifest.json` version `2.1.0`<br>
+**Contract version:** `route-inventory/2.0`<br>
+**Source:** `.specify/route-manifest.json` version `3.0.0`<br>
 **Design owner:** `SPEC-003`<br>
-**Amendment status:** Approved by Ahmed ELbamby on 2026-07-13
+**Amendment status:** Approved by Ahmed ELbamby on 2026-07-20
 
 This is the exact MVP route inventory. A row marked `design-only` authorizes
 design review, not route source or executable route tests. Implementation stays
-with the single owner shown below. Version 1.1 reconciles omitted
-API-authority and explicit composite contributors from the endpoint manifest;
-it changes no route, page, or implementation owner and remains design-only.
+with the single owner shown below. Version 2.0 adds the approved Student
+roadmap and separate Admin and Staff approval inboxes. It contains exactly 30
+routes and remains the source of route identity and implementation ownership.
 
 | Route ID | Template | Canonical page | Implementation owner | Owner/contributor specs | Readiness |
 |---|---|---|---|---|---|
@@ -26,6 +26,7 @@ it changes no route, page, or implementation owner and remains design-only.
 | STU-06 | `/student/registration/result/{id}` | `RegistrationResultPage.razor` | SPEC-015 | SPEC-003, SPEC-014, SPEC-015 | design-only |
 | STU-07 | `/student/registrations` | `RegistrationHistoryPage.razor` | SPEC-015 | SPEC-003, SPEC-015 | design-only |
 | STU-08 | `/student/account` | `StudentAccountPage.razor` | SPEC-007 | SPEC-003, SPEC-007 | design-only |
+| STU-09 | `/student/roadmap` | `StudentRoadmapPage.razor` | SPEC-008 | SPEC-003, SPEC-008, SPEC-009, SPEC-011, SPEC-014 | design-only |
 | ADM-01 | `/admin` | `AdminDashboardPage.razor` | SPEC-017 | SPEC-003, SPEC-007, SPEC-008, SPEC-010, SPEC-017 | design-only |
 | ADM-02 | `/admin/terms` | `TermAdministrationPage.razor` | SPEC-008 | SPEC-003, SPEC-008, SPEC-017 | design-only |
 | ADM-03 | `/admin/users` | `UserAdministrationPage.razor` | SPEC-007 | SPEC-003, SPEC-007, SPEC-017 | design-only |
@@ -35,10 +36,12 @@ it changes no route, page, or implementation owner and remains design-only.
 | ADM-07 | `/admin/resources` | `ResourceAdministrationPage.razor` | SPEC-010 | SPEC-003, SPEC-010, SPEC-017 | design-only |
 | ADM-08 | `/admin/registrations` | `RegistrationAdministrationPage.razor` | SPEC-017 | SPEC-003, SPEC-014, SPEC-015, SPEC-017 | design-only |
 | ADM-09 | `/admin/audit` | `AuditAdministrationPage.razor` | SPEC-017 | SPEC-003, SPEC-017 | design-only |
+| ADM-10 | `/admin/approvals` | `ApprovalAdministrationPage.razor` | SPEC-017 | SPEC-003, SPEC-014, SPEC-017 | design-only |
 | STF-01 | `/staff` | `StaffDashboardPage.razor` | SPEC-016 | SPEC-003, SPEC-007, SPEC-008, SPEC-016 | design-only |
 | STF-02 | `/staff/timetable` | `StaffTimetablePage.razor` | SPEC-016 | SPEC-003, SPEC-016 | design-only |
 | STF-03 | `/staff/groups/{groupId}/roster` | `StaffRosterPage.razor` | SPEC-016 | SPEC-003, SPEC-016 | design-only |
 | STF-04 | `/staff/availability` | `StaffAvailabilityPage.razor` | SPEC-016 | SPEC-003, SPEC-016 | design-only |
+| STF-05 | `/staff/approvals` | `StaffApprovalInboxPage.razor` | SPEC-016 | SPEC-003, SPEC-014, SPEC-016 | design-only |
 | SYS-01 | `/status/{code}` | `SystemStatusPage.razor` | SPEC-003 | SPEC-003, SPEC-006, SPEC-007, SPEC-008, SPEC-018 | design-only |
 
 ## Change control

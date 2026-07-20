@@ -21,7 +21,7 @@ public sealed class TermAdministrationPageContractTests
         using var document = Fixture();
         var root = document.RootElement;
 
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("ADM-02", root.GetProperty("routeId").GetString());
         Assert.Equal("/admin/terms", root.GetProperty("routeTemplate").GetString());
         Assert.Equal("TermAdministrationPage.razor", root.GetProperty("pageName").GetString());

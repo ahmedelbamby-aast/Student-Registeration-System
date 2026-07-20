@@ -9,7 +9,7 @@ body,
 #app,
 #application-root {
     min-height: 100%;
-    margin: 0;
+    margin: var(--srs-spacing-primitive-0);
 }
 
 body {
@@ -49,7 +49,7 @@ a:visited {
     block-size: var(--srs-sizing-progress-thickness);
     background: linear-gradient(90deg, var(--srs-color-primitive-blue-600), var(--srs-color-primitive-violet-600));
     inline-size: var(--blazor-load-percentage, 0%);
-    transition: inline-size 200ms ease-out;
+    transition: inline-size var(--srs-motion-duration-overlay) var(--srs-motion-easing-standard);
 }
 
 #blazor-error-ui {
@@ -82,9 +82,9 @@ select {
     *::before,
     *::after {
         scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
+        animation-duration: var(--srs-motion-duration-instant) !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: var(--srs-motion-duration-instant) !important;
     }
 }
 
@@ -104,8 +104,6 @@ select {
 /* ────────────────────────────────────────────────────────────────
    Identity / Login pages
 ──────────────────────────────────────────────────────────────── */
-.srs-identity-command,
-.srs-role-selection button,
 .srs-account-sessions button {
     display: inline-flex;
     align-items: center;
@@ -115,7 +113,7 @@ select {
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
     border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border-radius: var(--srs-border-primitive-radius-control);
     font: inherit;
     font-weight: var(--srs-typography-component-control-weight);
     cursor: pointer;
@@ -124,15 +122,11 @@ select {
         box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
-.srs-identity-command:hover:not(:disabled),
-.srs-role-selection button:hover:not(:disabled),
 .srs-account-sessions button:hover:not(:disabled) {
-    filter: brightness(1.12);
-    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
+    background: var(--srs-color-component-button-primary-hover);
+    box-shadow: var(--srs-elevation-surface);
 }
 
-.srs-identity-command:disabled,
-.srs-role-selection button:disabled,
 .srs-account-sessions button:disabled {
     color: var(--srs-color-semantic-disabled-text);
     background: var(--srs-color-semantic-disabled-surface);
@@ -140,14 +134,12 @@ select {
     cursor: not-allowed;
 }
 
-.srs-role-selection,
 .srs-recovery-step {
     margin-block-start: var(--srs-spacing-primitive-8);
     padding-block-start: var(--srs-spacing-primitive-6);
     border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
 }
 
-.srs-role-selection__actions,
 .srs-account-sessions__actions {
     display: flex;
     flex-wrap: wrap;
@@ -162,8 +154,7 @@ select {
     grid-template-rows: auto 1fr auto;
     min-block-size: 100vh;
     background:
-        radial-gradient(ellipse at 85% 0%, rgba(79,70,229,0.12) 0%, transparent 55%),
-        radial-gradient(ellipse at 10% 90%, rgba(124,58,237,0.09) 0%, transparent 50%),
+        linear-gradient(var(--srs-color-semantic-surface-accent), var(--srs-color-semantic-surface-default)),
         var(--srs-color-semantic-surface-default);
 }
 
@@ -175,7 +166,7 @@ select {
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border-radius: var(--srs-border-primitive-radius-control);
     transform: translateY(-200%);
 }
 
@@ -215,7 +206,7 @@ select {
     padding: var(--srs-spacing-primitive-2);
     object-fit: contain;
     background: linear-gradient(135deg, var(--srs-color-primitive-blue-900), var(--srs-color-primitive-violet-600));
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border-radius: var(--srs-border-primitive-radius-control);
 }
 
 .srs-public-gateway__brand span {
@@ -225,7 +216,7 @@ select {
 .srs-public-gateway__brand strong {
     color: var(--srs-color-primitive-blue-900);
     letter-spacing: 0.04em;
-    font-weight: 800;
+    font-weight: var(--srs-typography-component-display-weight);
 }
 
 .srs-public-gateway__brand small,
@@ -236,11 +227,11 @@ select {
 .srs-public-gateway__demo-label {
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
     border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
-    border-radius: 999px;
+    border-radius: var(--srs-border-primitive-radius-round);
     font-size: var(--srs-typography-primitive-font-size-small);
     color: var(--srs-color-primitive-blue-700);
     background: var(--srs-color-primitive-blue-50);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }
 
 .srs-public-gateway__main {
@@ -255,8 +246,8 @@ select {
 .srs-public-gateway__intro h1 {
     margin-block: var(--srs-spacing-primitive-2);
     color: var(--srs-color-primitive-blue-900);
-    font-size: clamp(2rem, 6vw, 3.75rem);
-    font-weight: 800;
+    font-size: var(--srs-typography-primitive-font-size-display);
+    font-weight: var(--srs-typography-component-display-weight);
     line-height: 1.08;
     letter-spacing: -0.02em;
 }
@@ -264,15 +255,15 @@ select {
 .srs-public-gateway__intro > p:last-child {
     max-inline-size: var(--srs-sizing-content-readable);
     color: var(--srs-color-semantic-text-secondary);
-    font-size: 1.125rem;
+    font-size: var(--srs-typography-primitive-font-size-body);
     line-height: 1.65;
 }
 
 .srs-public-gateway__eyebrow {
-    margin: 0;
+    margin: var(--srs-spacing-primitive-0);
     color: var(--srs-color-primitive-violet-600);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 800;
+    font-weight: var(--srs-typography-component-display-weight);
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
@@ -280,11 +271,11 @@ select {
 /* Context / info panel */
 .srs-public-context {
     padding: clamp(1rem, 3vw, 1.75rem);
-    background: #FFFFFF;
+    background: var(--srs-color-semantic-surface-default);
     border: var(--srs-border-primitive-width-strong) solid var(--srs-color-primitive-blue-100);
     border-inline-start: 0.35rem solid var(--srs-color-primitive-blue-600);
-    border-radius: var(--srs-border-primitive-radius-large);
-    box-shadow: var(--srs-elevation-card);
+    border-radius: var(--srs-border-primitive-radius-surface);
+    box-shadow: var(--srs-elevation-surface);
 }
 
 .srs-public-context--loading {
@@ -313,8 +304,8 @@ select {
     inline-size: 0.75rem;
     block-size: 0.75rem;
     background: currentColor;
-    border-radius: 50%;
-    animation: srs-public-context-pulse 1.2s ease-in-out infinite alternate;
+    border-radius: var(--srs-border-primitive-radius-round);
+    animation: srs-public-context-pulse var(--srs-motion-duration-overlay) var(--srs-motion-easing-standard) infinite alternate;
 }
 
 .srs-public-context h2,
@@ -345,14 +336,14 @@ select {
 .srs-public-context__facts dt {
     color: var(--srs-color-semantic-text-secondary);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: 600;
+    font-weight: var(--srs-typography-component-control-weight);
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
 
 .srs-public-context__facts dd {
     margin: var(--srs-spacing-primitive-1) 0 0;
-    font-weight: 700;
+    font-weight: var(--srs-typography-component-emphasis-weight);
     color: var(--srs-color-primitive-blue-900);
     overflow-wrap: anywhere;
 }
@@ -366,9 +357,9 @@ select {
     display: inline-block;
     padding: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
     background: var(--srs-color-primitive-blue-50);
-    border-radius: var(--srs-border-primitive-radius-small);
-    font-family: ui-monospace, 'Cascadia Code', monospace;
-    font-weight: 700;
+    border-radius: var(--srs-border-primitive-radius-control);
+    font-family: var(--srs-typography-primitive-font-family-monospace);
+    font-weight: var(--srs-typography-component-emphasis-weight);
     color: var(--srs-color-primitive-blue-700);
     overflow-wrap: anywhere;
 }
@@ -394,7 +385,7 @@ select {
     min-block-size: var(--srs-sizing-interactive-minimum);
     padding-inline: var(--srs-spacing-primitive-5);
     border: var(--srs-border-primitive-width-strong) solid transparent;
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border-radius: var(--srs-border-primitive-radius-control);
     font: inherit;
     font-weight: var(--srs-typography-component-control-weight);
     text-decoration: none;
@@ -413,8 +404,8 @@ select {
 
 .srs-public-context__actions button:hover,
 .srs-public-gateway__primary-link:hover {
-    filter: brightness(1.12);
-    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
+    background: var(--srs-color-component-button-primary-hover);
+    box-shadow: var(--srs-elevation-surface);
 }
 
 .srs-public-context__actions a,
@@ -489,7 +480,7 @@ select {
     display: inline-flex;
     align-items: center;
     color: var(--srs-color-semantic-link);
-    font-weight: 500;
+    font-weight: var(--srs-typography-component-medium-weight);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -521,7 +512,7 @@ select {
 
 /* ── Animations ── */
 @keyframes srs-public-context-pulse {
-    from { opacity: 0.35; }
+    from { opacity: var(--srs-opacity-muted); }
     to   { opacity: 1; }
 }
 

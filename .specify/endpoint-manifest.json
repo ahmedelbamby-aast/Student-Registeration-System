@@ -61,6 +61,7 @@
 
     { "method": "GET", "path": "/api/student/terms/{termId}/offerings", "owner": "011" },
     { "method": "GET", "path": "/api/student/offerings/{offeringId}/eligibility", "owner": "011" },
+    { "method": "GET", "path": "/api/students/me/roadmap", "owner": "008", "contributors": ["009", "011", "014"] },
 
     { "method": "GET", "path": "/api/student/terms/{termId}/registration-plan", "owner": "012" },
     { "method": "PUT", "path": "/api/student/terms/{termId}/registration-plan", "owner": "012" },
@@ -83,12 +84,18 @@
     { "method": "GET", "path": "/api/staff/groups/{groupId}/roster", "owner": "016" },
     { "method": "GET", "path": "/api/staff/availability", "owner": "016" },
     { "method": "PUT", "path": "/api/staff/availability", "owner": "016" },
+    { "method": "GET", "path": "/api/staff/registration-approvals", "owner": "016", "contributors": ["014"] },
+    { "method": "GET", "path": "/api/staff/registration-approvals/{submissionId}/lines/{lineId}", "owner": "016", "contributors": ["014"] },
+    { "method": "POST", "path": "/api/staff/registration-approvals/{submissionId}/lines/{lineId}/decision", "owner": "016", "contributors": ["014"] },
 
     { "method": "GET", "path": "/api/admin/operations/metrics", "owner": "017" },
     { "method": "GET", "path": "/api/admin/audit", "owner": "017" },
     { "method": "POST", "path": "/api/admin/exports", "owner": "017" },
     { "method": "GET", "path": "/api/admin/exports/{jobId}", "owner": "017" },
     { "method": "GET", "path": "/api/admin/exports/{jobId}/download", "owner": "017" },
+    { "method": "GET", "path": "/api/admin/registration-approvals", "owner": "017", "contributors": ["014"] },
+    { "method": "GET", "path": "/api/admin/registration-approvals/{submissionId}/lines/{lineId}", "owner": "017", "contributors": ["014"] },
+    { "method": "POST", "path": "/api/admin/registration-approvals/{submissionId}/lines/{lineId}/decision", "owner": "017", "contributors": ["014"] },
 
     { "method": "GET", "path": "/api/health", "owner": "018" },
     { "method": "GET", "path": "/api/operations/metrics", "owner": "018" }

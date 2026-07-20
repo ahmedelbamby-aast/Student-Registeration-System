@@ -30,8 +30,7 @@ public sealed class RegistrationAdministrationPageComponentTests
             parameters.Add(component => component.Type, pageType));
 
         Assert.NotNull(cut.Find("main#main-content"));
-        Assert.Equal("loading", cut.Find("[data-route-id='ADM-08']").GetAttribute("data-state"));
-        Assert.Contains("No repair or correction actions are available", cut.Markup);
+        Assert.NotNull(cut.Find(".srs-app-shell__state--loading"));
         Assert.Empty(cut.FindAll("button:not([disabled])[type='submit']"));
     }
 

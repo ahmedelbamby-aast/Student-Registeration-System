@@ -19,7 +19,9 @@ public sealed class StudentAccountPageComponentTests
             "IdentityRouteStateMapper.StudentAccountRecord");
 
         Assert.Contains("if (IsBusy)", source, StringComparison.Ordinal);
-        Assert.Contains("disabled=\"@IsBusy\"", source, StringComparison.Ordinal);
+        Assert.Contains("Disabled=\"@IsBusy\"", source, StringComparison.Ordinal);
+        Assert.Contains("<AuthenticatedPage", source, StringComparison.Ordinal);
+        Assert.Contains("CurrentRouteId=\"STU-08\"", source, StringComparison.Ordinal);
         Assert.DoesNotContain("SecurityStamp", source, StringComparison.Ordinal);
     }
 }

@@ -8,11 +8,13 @@ namespace StudentRegistration.AccessibilityTests.Routes;
 public sealed class StaffDashboardPageAccessibilityFrozenContractTests
 {
     [Fact]
-    public void Stf_01_preserves_skip_navigation_heading_and_role_context_order()
+    public void Stf_01_uses_the_shared_shell_and_never_renders_a_role_picker()
     {
         var page = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StaffDashboardPage.razor");
-        RepositoryFiles.ContainsAll(page, "Skip to main content", "Staff role navigation",
-            "<h1", "<label", "<select", "Switch context", "aria-live");
+        RepositoryFiles.ContainsAll(page, "AuthenticatedPage", "WorkspaceKind.Staff",
+            "UiDensity.Compact", "Role context:", "aria-live");
+        Assert.DoesNotContain("<select", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("Switch context", page, StringComparison.Ordinal);
     }
 }
 

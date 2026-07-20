@@ -18,7 +18,6 @@ public sealed class AxeAccessibilityCollection : ICollectionFixture<AxeAccessibi
 public sealed class AxeAccessibilityFixture : IAsyncLifetime
 {
     private const string BrowserTargetVariable = "SRS_BROWSER_TARGET";
-    private const string RequireRuntimeVariable = "SRS_ACCESSIBILITY_REQUIRE_RUNTIME";
     private const string HeadedVariable = "SRS_ACCESSIBILITY_HEADED";
 
     private readonly ConcurrentQueue<string> _hostOutput = new();
@@ -118,12 +117,7 @@ public sealed class AxeAccessibilityFixture : IAsyncLifetime
 
         if (_runtimeUnavailable is not null)
         {
-            if (IsEnabled(RequireRuntimeVariable))
-            {
-                throw new XunitException(_runtimeUnavailable);
-            }
-
-            throw SkipException.ForSkip(_runtimeUnavailable);
+            throw new XunitException(_runtimeUnavailable);
         }
 
         if (_browser is null)

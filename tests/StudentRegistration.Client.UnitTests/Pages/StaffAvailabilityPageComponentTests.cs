@@ -9,7 +9,7 @@ public sealed class StaffAvailabilityPageComponentTests
     {
         var source = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StaffAvailabilityPage.razor");
         RepositoryFiles.ContainsAll(source,
-            "STF-04-COMP-STATE-LOADING", "STF-04-COMP-STATE-EMPTY",
+            "AuthenticatedPage", "WorkspaceKind.Staff", "UiDensity.Compact", "STF-04-COMP-STATE-EMPTY",
             "STF-04-COMP-STATE-SUCCESS", "STF-04-COMP-STATE-VALIDATION-ERROR",
             "STF-04-COMP-STATE-UNAUTHORIZED", "STF-04-COMP-STATE-STALE",
             "STF-04-COMP-STATE-SERVICE-ERROR", "Validation summary",

@@ -1,21 +1,17 @@
 @page "/admin/users"
+@using StudentRegistration.Client.Components.Layout
 
 <PageTitle>@LocalizedUiText.Get("User administration")</PageTitle>
 
-<div class="srs-admin-users">
-    <a class="srs-skip-link" href="#admin-users-main">@LocalizedUiText.Get("Skip to main content")</a>
-    <header class="srs-admin-users__header">
-        <img src="brand/aastmt-logo.png"
-             alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-        <nav aria-label="@(LocalizedUiText.Get("Administration"))">
-            <a href="/admin">@LocalizedUiText.Get("Admin dashboard")</a>
-            <a href="/admin/users" aria-current="page">@LocalizedUiText.Get("Users")</a>
-        </nav>
-    </header>
-
-    <main id="admin-users-main" tabindex="-1">
-        <h1>@LocalizedUiText.Get("User administration")</h1>
-        <p>@LocalizedUiText.Get("Search pre-provisioned identities, review imports, and submit governed account changes.")</p>
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-03"
+                   Heading="@(LocalizedUiText.Get("User administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Identity administration"))"
+                   Description="@(LocalizedUiText.Get("Search pre-provisioned identities, review imports, and submit governed account changes."))">
+<div class="srs-admin-users" data-route-id="ADM-03">
 
         <IdentityFeedback IsBusy="@IsBusy"
                           BusyMessage="@(LocalizedUiText.Get("Applying one identity operation."))"
@@ -272,8 +268,8 @@
                 </section>
             }
         </section>
-    </main>
 </div>
+</AuthenticatedPage>
 
 <ConfirmationDialog IsOpen="@_showStatusConfirmation"
                     DialogId="status-change-dialog"

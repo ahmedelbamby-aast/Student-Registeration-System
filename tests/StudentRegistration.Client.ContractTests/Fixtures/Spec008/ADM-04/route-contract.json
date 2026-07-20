@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "frontend-fixture/1.0",
+  "schemaVersion": "frontend-fixture/2.0",
   "routeId": "ADM-04",
   "routeTemplate": "/admin/students",
   "pageName": "StudentAdministrationPage.razor",

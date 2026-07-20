@@ -146,26 +146,14 @@ public sealed class ExecutableIdentityJourneys
     }
 
     [Fact]
-    public void Dual_role_staff_chooses_only_a_server_returned_context()
+    public void Multiple_role_staff_configuration_is_rejected_without_a_context_picker()
     {
-        var responseNumber = 0;
-        var handler = new RecordingHandler(request =>
-        {
-            responseNumber++;
-            return responseNumber == 1
-                ? Json(new SessionDto(
-                    "Synthetic Lecturer",
-                    ["Lecturer", "TeachingAssistant"],
-                    null,
-                    "role-selection-required",
-                    DateTime.UtcNow.AddHours(1)))
-                : Json(new SessionDto(
-                    "Synthetic Lecturer",
-                    ["Lecturer", "TeachingAssistant"],
-                    "Lecturer",
-                    "active",
-                    DateTime.UtcNow.AddHours(1)));
-        });
+        var handler = new RecordingHandler(_ => Json(new SessionDto(
+            "Invalid multi-role staff",
+            ["Lecturer", "TeachingAssistant"],
+            null,
+            "role-selection-required",
+            DateTime.UtcNow.AddHours(1))));
         using var context = CreateContext(handler);
         var page = context.Render<StaffLoginPage>();
 
@@ -173,19 +161,13 @@ public sealed class ExecutableIdentityJourneys
         page.Find("#staff-password").Input(CreateSecret());
         page.Find("form[data-testid=staff-login-form]").Submit();
 
-        page.WaitForElement("[data-state=role-selection-required]");
-        var options = page.FindAll("[data-state=role-selection-required] button");
-        Assert.Equal(2, options.Count);
-        Assert.DoesNotContain(options, option => option.TextContent.Contains("Student", StringComparison.Ordinal));
-        options.Single(option => option.TextContent.Contains("Lecturer", StringComparison.Ordinal)).Click();
-
-        page.WaitForAssertion(() => Assert.EndsWith(
+        page.WaitForAssertion(() => Assert.NotNull(
+            page.Find("[data-code=INVALID_ROLE_CONFIGURATION]")));
+        Assert.Empty(page.FindAll("[data-state=role-selection-required]"));
+        Assert.False(context.Services.GetRequiredService<NavigationManager>().Uri.EndsWith(
             "/staff",
-            context.Services.GetRequiredService<NavigationManager>().Uri,
             StringComparison.Ordinal));
-        Assert.Equal(
-            ["/api/auth/staff/login", "/api/auth/session/context"],
-            handler.Requests.Select(request => request.Uri.AbsolutePath).ToArray());
+        Assert.Equal("/api/auth/staff/login", Assert.Single(handler.Requests).Uri.AbsolutePath);
     }
 
     [Fact]

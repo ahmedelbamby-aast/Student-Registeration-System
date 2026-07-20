@@ -2,66 +2,26 @@
 @using System.Globalization
 @using System.Net
 @using StudentRegistration.Client.Components.Data
-@using StudentRegistration.Client.Components.Navigation
+@using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Contracts.Academics
 @inject AcademicApiClient AcademicApi
 
 <PageTitle>@LocalizedUiText.Get("Student administration | Student Registration")</PageTitle>
 
+<AuthenticatedPage Context="@ShellContext"
+                   IsLoading="@_isLoadingContext"
+                   Workspace="WorkspaceKind.Admin"
+                   Density="UiDensity.Compact"
+                   CurrentRouteId="ADM-04"
+                   HeadingId="student-administration-heading"
+                   Heading="@(LocalizedUiText.Get("Student administration"))"
+                   Eyebrow="@(LocalizedUiText.Get("Sourced academic records"))"
+                   Description="@(LocalizedUiText.Get("Locate one Student inside the server-selected academic term, review the sourced record, and submit a reasoned version-safe correction."))">
 <div class="srs-student-admin"
      data-route-id="ADM-04"
      data-state="@_state">
-    <a class="srs-skip-link" href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-
-    <header class="srs-student-admin__header" role="banner">
-        <a class="srs-student-admin__brand" href="/admin" aria-label="@(LocalizedUiText.Get("Administration home"))">
-            <span class="srs-student-admin__logo-panel">
-                <img src="/brand/aastmt-logo.png"
-                     alt="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))" />
-            </span>
-            <span>
-                <strong>@LocalizedUiText.Get("AASTMT")</strong>
-                <small>@LocalizedUiText.Get("Student Registration")</small>
-            </span>
-        </a>
-
-        <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Administration navigation"))"
-                        Items="@AdministrationNavigation" />
-
-        @if (_appContext is not null)
-        {
-            <dl class="srs-student-admin__context" aria-label="@(LocalizedUiText.Get("Authoritative application context"))">
-                <div>
-                    <dt>@LocalizedUiText.Get("Signed in as")</dt>
-                    <dd>@_appContext.DisplayName</dd>
-                </div>
-                <div>
-                    <dt>@LocalizedUiText.Get("Academic term")</dt>
-                    <dd>@(_appContext.RegistrationTerm?.Label ?? _appContext.TeachingTerm?.Label ?? "No server-selected term")</dd>
-                </div>
-                <div>
-                    <dt>@LocalizedUiText.Get("Server date")</dt>
-                    <dd>
-                        <time datetime="@_appContext.ServerTimeUtc.ToString("O")">
-                            @_appContext.ServerTimeUtc.ToString("g", CultureInfo.CurrentCulture)
-                        </time>
-                    </dd>
-                </div>
-            </dl>
-        }
-    </header>
-
-    <main id="main-content"
-          data-testid="student-administration-page"
-          tabindex="-1">
-        <section class="srs-student-admin__intro" aria-labelledby="student-administration-heading">
-            <p class="srs-student-admin__eyebrow">@LocalizedUiText.Get("Sourced academic records")</p>
-            <h1 id="student-administration-heading" tabindex="-1">@LocalizedUiText.Get("Student administration")</h1>
-            <p>
-                @LocalizedUiText.Get("Locate one Student inside the server-selected academic term, review the sourced record, and submit a reasoned version-safe correction.")
-            </p>
-        </section>
+    <div data-testid="student-administration-page">
 
         @if (_isLoadingContext)
         {
@@ -570,13 +530,9 @@
             }
             </div>
         }
-    </main>
-
-    <footer class="srs-student-admin__footer" role="contentinfo">
-        <p>@LocalizedUiText.Get("AASTMT Student Registration · Sourced academic administration")</p>
-        <a href="@(_appContext?.SupportReferencePath ?? "/status/support")">@LocalizedUiText.Get("Support")</a>
-    </footer>
+    </div>
 </div>
+</AuthenticatedPage>
 
 @if (_showCorrectionDialog && _selectedStudent is not null)
 {
@@ -711,15 +667,8 @@
     private const string OfflineState = "offline";
     private const int SearchPageSize = 20;
 
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> AdministrationNavigation =
-    [
-        new(LocalizedUiText.Get("Admin home"), "/admin"),
-        new(LocalizedUiText.Get("Terms"), "/admin/terms"),
-        new(LocalizedUiText.Get("Students"), "/admin/students", IsActive: true),
-        new(LocalizedUiText.Get("Audit and reports"), "/admin/audit", IsDisabled: true)
-    ];
-
     private AppContextDto? _appContext;
+    private FrontendAppContextView? ShellContext => _appContext is null ? null : AcademicContextViewMapper.ToView(_appContext);
     private string? _termId;
     private string _state = LoadingState;
     private string _searchQuery = string.Empty;

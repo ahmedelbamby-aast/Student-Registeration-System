@@ -32,11 +32,12 @@
                        ErrorMessage="@RequestErrorFor("recovery-identifier")"
                        @bind-Value="_identifier" />
 
-            <button class="srs-identity-command"
-                    type="submit"
-                    disabled="@(IsRequesting || IsCompleting)">
+            <AppButton Type="submit"
+                       IsLoading="@IsRequesting"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       LoadingAnnouncement="@(LocalizedUiText.Get("Submitting one recovery request."))">
                 @(IsRequesting ? LocalizedUiText.Get("Requesting…") : LocalizedUiText.Get("Request recovery"))
-            </button>
+            </AppButton>
         </form>
     </section>
 
@@ -81,11 +82,12 @@
                        ErrorMessage="@CompleteErrorFor("recovery-confirm-password")"
                        @bind-Value="_confirmPassword" />
 
-            <button class="srs-identity-command"
-                    type="submit"
-                    disabled="@(IsRequesting || IsCompleting)">
+            <AppButton Type="submit"
+                       IsLoading="@IsCompleting"
+                       Disabled="@(IsRequesting || IsCompleting)"
+                       LoadingAnnouncement="@(LocalizedUiText.Get("Submitting one recovery request."))">
                 @(IsCompleting ? LocalizedUiText.Get("Completing…") : LocalizedUiText.Get("Complete recovery"))
-            </button>
+            </AppButton>
         </form>
     </section>
 </IdentityPageShell>

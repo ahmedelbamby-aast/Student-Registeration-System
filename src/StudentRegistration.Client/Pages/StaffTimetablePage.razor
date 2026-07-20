@@ -1,7 +1,6 @@
 @page "/staff/timetable"
 @using System.Net
 @using StudentRegistration.Client.Components.Layout
-@using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Components.Scheduling
 @using StudentRegistration.Client.Features.Academics
 @using StudentRegistration.Client.Features.Staff
@@ -12,41 +11,20 @@
 
 <PageTitle>@LocalizedUiText.Get("Staff timetable | Student Registration")</PageTitle>
 
-@if (_loading)
-{
-    <div data-route-id="STF-02" data-state="loading" data-contract-state="STF-02-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
-        <main id="main-content" tabindex="-1"><h1>@LocalizedUiText.Get("Staff timetable")</h1><p role="status" aria-busy="true">@LocalizedUiText.Get("Loading authorized timetable.")</p></main>
-    </div>
-}
-else if (_shellContext is not null)
-{
-    <AppShell Context="@_shellContext" MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))" BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))" TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))" RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))" NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))" AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))" SessionLabel="@(LocalizedUiText.Get("Session"))" ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))" LoadingLabel="@(LocalizedUiText.Get("Loading staff timetable"))">
-        <Navigation><RoleNavigation AccessibleName="@(LocalizedUiText.Get("Staff role navigation"))" Items="@StaffNavigation" /></Navigation>
-        <ChildContent>@TimetableContent</ChildContent>
-    </AppShell>
-}
-else
-{
-    <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a><main id="main-content" tabindex="-1">@TimetableContent</main>
-}
+<AuthenticatedPage Context="@_shellContext"
+                   IsLoading="@_loading"
+                   Status="@ShellStatus"
+                   Workspace="WorkspaceKind.Staff"
+                   CurrentRouteId="STF-02"
+                   Density="UiDensity.Compact"
+                   Eyebrow="@(LocalizedUiText.Get("Staff workspace"))"
+                   Heading="@(LocalizedUiText.Get("Staff timetable"))"
+                   Description="@(LocalizedUiText.Get("Review the meetings assigned to your current staff role in equivalent calendar and chronological views."))"
+                   LoadingLabel="@(LocalizedUiText.Get("Loading authorized timetable."))">
+    @TimetableContent
+</AuthenticatedPage>
 
 @code {
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StaffNavigation =
-    [
-        new(LocalizedUiText.Get("Staff home"), "/staff"),
-        new(LocalizedUiText.Get("Timetable"), "/staff/timetable", IsActive: true),
-        new(LocalizedUiText.Get("Availability"), "/staff/availability")
-    ];
-
     private FrontendAppContextView? _shellContext;
     private StaffTimetableDto? _timetable;
     private IReadOnlyList<ScheduleCalendar.ScheduleMeetingItem> _meetings = [];
@@ -56,6 +34,10 @@ else
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
+    private UiStatus? ShellStatus => _shellContext is null && !_loading
+        ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
+            [new("staff-home", LocalizedUiText.Get("Return to Staff home"), "/staff")], _reference)
+        : null;
 
     private string ContractState => _state switch
     {
@@ -70,21 +52,17 @@ else
 
     private RenderFragment TimetableContent => @<article data-route-id="STF-02"
         data-state="@_state" data-contract-state="@ContractState">
-        <header>
-            <p>@LocalizedUiText.Get("Staff workspace")</p>
-            <h1>@LocalizedUiText.Get("Staff timetable")</h1>
-            @if (_timetable is not null)
-            {
-                <p><strong>@LocalizedUiText.Get("Role context:")</strong> @RoleLabel(_timetable.RoleContext)</p>
-            }
-        </header>
+        @if (_timetable is not null)
+        {
+            <p><strong>@LocalizedUiText.Get("Role context:")</strong> @RoleLabel(_timetable.RoleContext)</p>
+        }
 
         @if (_state is "unauthorized" or "session-expired" or "service-error" or "offline")
         {
             <section role="alert" aria-live="@(_state is "unauthorized" or "session-expired" ? "assertive" : "polite")">
                 <h2>@ErrorHeading</h2><p><strong>@_reasonCode</strong></p><p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") @_reference</p> }
-                @if (_state is "service-error" or "offline") { <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button> }
+                @if (_state is "service-error" or "offline") { <AppButton Disabled="@_requesting" OnClick="@(_ => LoadAsync())">@LocalizedUiText.Get("Retry")</AppButton> }
                 <a href="/staff">@LocalizedUiText.Get("Return to Staff home")</a>
             </section>
         }
@@ -92,7 +70,7 @@ else
         {
             <section role="status" aria-live="polite">
                 <h2>@LocalizedUiText.Get("Timetable changed")</h2><p><strong>@_reasonCode</strong> @_message</p>
-                <button type="button" disabled="@_requesting" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh timetable")</button>
+                <AppButton Disabled="@_requesting" OnClick="@(_ => LoadAsync())">@LocalizedUiText.Get("Refresh timetable")</AppButton>
             </section>
         }
         else if (_state == "empty")

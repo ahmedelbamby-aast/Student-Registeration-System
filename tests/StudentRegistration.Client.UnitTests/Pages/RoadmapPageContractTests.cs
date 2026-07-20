@@ -14,8 +14,9 @@ public sealed class RoadmapPageContractTests
             source,
             "@page \"/student/roadmap\"",
             "data-route-id=\"STU-09\"",
-            "<AppShell",
-            "<PageHeader",
+            "<AuthenticatedPage",
+            "Workspace=\"WorkspaceKind.Student\"",
+            "CurrentRouteId=\"STU-09\"",
             "<SurfaceCard",
             "<RouteStatePanel",
             "CatalogueApi.GetStudentRoadmapAsync",
@@ -25,6 +26,8 @@ public sealed class RoadmapPageContractTests
             "In progress",
             "Available",
             "Locked");
+        Assert.DoesNotContain("StudentNavigation", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("<Navigation>", source, StringComparison.Ordinal);
     }
 
     [Fact]

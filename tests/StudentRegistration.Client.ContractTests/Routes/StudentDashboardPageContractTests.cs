@@ -22,7 +22,7 @@ public sealed class StudentDashboardPageContractTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(FixturePath));
         var root = document.RootElement;
 
-        Assert.Equal("frontend-fixture/1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("frontend-fixture/2.0", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("STU-01", root.GetProperty("routeId").GetString());
         Assert.Equal("/student", root.GetProperty("routeTemplate").GetString());
         Assert.Equal("StudentDashboardPage.razor", root.GetProperty("pageName").GetString());
@@ -139,9 +139,8 @@ public sealed class StudentDashboardPageContractTests
             "GetStudentAcademicContextAsync",
             "STU-01-CONTRACT-T148",
             "data-route-id=\"STU-01\"",
-            "Current timetable is unavailable until SPEC-015 is delivered.",
-            "/api/student/registrations/current/timetable",
-            "data-testid=\"current-timetable-unavailable\"");
+            "data-testid=\"current-timetable-summary\"",
+            "Open current timetable");
         Assert.DoesNotContain("DateTime.Now", page, StringComparison.Ordinal);
         Assert.DoesNotContain("DateTime.UtcNow", page, StringComparison.Ordinal);
         Assert.DoesNotContain("localStorage", page, StringComparison.OrdinalIgnoreCase);

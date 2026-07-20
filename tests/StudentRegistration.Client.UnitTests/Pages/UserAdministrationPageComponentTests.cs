@@ -14,7 +14,8 @@ public sealed class UserAdministrationPageComponentTests
 
         RepositoryFiles.ContainsAll(
             page,
-            "Skip to main content",
+            "AuthenticatedPage",
+            "CurrentRouteId=\"ADM-03\"",
             "role=\"search\"",
             "aria-label=\"@(LocalizedUiText.Get(\"User results\"))\"",
             "aria-busy=",

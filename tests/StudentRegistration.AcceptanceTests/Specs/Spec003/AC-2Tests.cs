@@ -25,8 +25,8 @@ public sealed class AC_2Tests
         var tokenRoot = tokensDocument.RootElement;
         var tokens = tokenRoot.GetProperty("tokens");
 
-        Assert.Equal("1.0.0", tokenRoot.GetProperty("version").GetString());
-        Assert.Equal("neutral", tokenRoot.GetProperty("scope").GetString());
+        Assert.Equal("2.0.0", tokenRoot.GetProperty("version").GetString());
+        Assert.Equal("neutral-modern-academic", tokenRoot.GetProperty("scope").GetString());
         Assert.False(tokenRoot.GetProperty("brandValuesDerivedFromLogo").GetBoolean());
         Assert.Equal(
             "approved",
@@ -46,9 +46,12 @@ public sealed class AC_2Tests
                     "spacing",
                     "sizing",
                     "border",
+                    "radius",
+                    "space",
                     "focus",
                     "elevation",
                     "motion",
+                    "opacity",
                     "breakpoint",
                     "zIndex"
                 ],
@@ -60,9 +63,9 @@ public sealed class AC_2Tests
         var components = componentManifest.RootElement.GetProperty("components")
             .EnumerateArray()
             .ToArray();
-        Assert.Equal(20, components.Length);
+        Assert.Equal(28, components.Length);
         Assert.Equal(
-            20,
+            28,
             components.Select(component => component.GetProperty("name").GetString())
                 .Distinct(StringComparer.Ordinal)
                 .Count());

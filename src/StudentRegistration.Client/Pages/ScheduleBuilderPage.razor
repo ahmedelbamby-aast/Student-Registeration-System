@@ -24,7 +24,6 @@
          data-route-id="STU-04"
          data-state="loading"
          data-contract-state="STU-04-COMP-STATE-LOADING">
-        <a href="#main-content">@LocalizedUiText.Get("Skip to main content")</a>
         <main id="main-content" tabindex="-1">
             <h1>@LocalizedUiText.Get("Schedule builder")</h1>
             <section role="status" aria-live="polite" aria-busy="true">
@@ -36,29 +35,14 @@
 }
 else if (_shellContext is not null)
 {
-    <AppShell Context="@_shellContext"
-              MainContentId="main-content"
-              SkipLinkLabel="@(LocalizedUiText.Get("Skip to main content"))"
-              BrandLogoSource="/brand/aastmt-logo.png"
-              BrandLogoAccessibleName="@(LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport"))"
-              ServerDateTimeLabel="@(LocalizedUiText.Get("Server date and time"))"
-              TeachingTermLabel="@(LocalizedUiText.Get("Teaching term"))"
-              RegistrationTermLabel="@(LocalizedUiText.Get("Registration term"))"
-              RegistrationWindowLabel="@(LocalizedUiText.Get("Registration window"))"
-              NoTeachingTermLabel="@(LocalizedUiText.Get("No current teaching term"))"
-              NoRegistrationTermLabel="@(LocalizedUiText.Get("No current registration term"))"
-              NoRegistrationWindowLabel="@(LocalizedUiText.Get("No registration window"))"
-              AuthorizedRolesLabel="@(LocalizedUiText.Get("Authorized roles"))"
-              ActiveRoleLabel="@(LocalizedUiText.Get("Active role"))"
-              SessionLabel="@(LocalizedUiText.Get("Session"))"
-              ServiceLabel="@(LocalizedUiText.Get("Service"))"
-              SupportLinkLabel="@(LocalizedUiText.Get("Open support"))"
-              LoadingLabel="@(LocalizedUiText.Get("Loading schedule builder"))">
-        <Navigation>
-            <RoleNavigation AccessibleName="@(LocalizedUiText.Get("Student role navigation"))"
-                            Items="@StudentNavigation" />
-        </Navigation>
-        <ChildContent>
+    <AuthenticatedPage Context="@_shellContext"
+                       Workspace="WorkspaceKind.Student"
+                       CurrentRouteId="STU-04"
+                       Density="UiDensity.Comfortable"
+                       Heading="@(LocalizedUiText.Get("Schedule builder"))"
+                       Eyebrow="@(LocalizedUiText.Get("Student registration"))"
+                       Description="@(LocalizedUiText.Get("Build and validate your server-stored plan before review."))"
+                       LoadingLabel="@(LocalizedUiText.Get("Loading schedule builder"))">
             <main id="main-content"
                   class="srs-schedule-builder"
                   data-route-id="STU-04"
@@ -310,8 +294,7 @@ else if (_shellContext is not null)
                     }
                 }
             </main>
-        </ChildContent>
-    </AppShell>
+    </AuthenticatedPage>
 }
 else
 {
@@ -345,16 +328,6 @@ else
     private const string SessionExpiredState = "session-expired";
     private const string StaleState = "stale";
     private const string OfflineState = "offline";
-
-    private static readonly IReadOnlyList<RoleNavigation.NavigationItem> StudentNavigation =
-    [
-        new(LocalizedUiText.Get("Dashboard"), "/student"),
-        new(LocalizedUiText.Get("Roadmap"), "/student/roadmap"),
-        new(LocalizedUiText.Get("Available subjects"), "/student/subjects"),
-        new(LocalizedUiText.Get("Current plan"), "/student/schedule", IsActive: true),
-        new(LocalizedUiText.Get("Registrations"), "/student/registrations"),
-        new(LocalizedUiText.Get("Account"), "/student/account")
-    ];
 
     private FrontendAppContextView? _shellContext;
     private RegistrationPlanDto? _plan;
