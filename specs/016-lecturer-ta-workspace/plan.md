@@ -1,10 +1,15 @@
 # Implementation Plan: Lecturer and Teaching Assistant Workspace
 
 **Branch**: 016-lecturer-ta-workspace | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; assignment-scoped line-approval amendment approved 2026-07-20 (Gate A).
 
 **2026-07-20 owner amendment:** Lecturer and TeachingAssistant are separate,
 single-role account contexts; the combined-role demo fixture is frozen.
+
+**2026-07-20 registration amendment:** Lecturer and TeachingAssistant may
+decide only pending registration lines for currently assigned groups through
+the narrow SPEC-014 approval contract. They gain no general student,
+capacity, policy, term, or plan-acceptance authority.
 
 ## Summary
 
@@ -43,6 +48,12 @@ copy and no correction/override workflow.
    durable impact-alert creation/revalidation.
 6. Map handlers and implement STF-01..STF-04 only after their behavior/E2E tests
    fail; produce release evidence.
+7. Add failing permission/resource-authorization, minimal-projection,
+   decision-idempotency/audit, assignment-ended race, component, E2E,
+   accessibility, browser, and all-role capacity-language tests.
+8. Add the bounded staff approval queue/detail/decision flow and unified UI
+   components only after amended tests fail, then refresh trace/release
+   evidence without overwriting the earlier baseline.
 
 ## Design Decisions
 
@@ -60,6 +71,15 @@ view and may select its aggregate ID and rowversion as an immutable
 offering-planning dependency. No
 Admin availability correction/override route, permission, editable control,
 notification workflow, or correction-audit flow is part of the POC.
+
+### Registration line approval
+
+SPEC-014 owns pending lines, holds, decisions, plan finalization, and decision
+transactions. SPEC-016 contributes only assignment-scoped staff queries,
+resource authorization, and UI. A current GroupStaffAssignment is required at
+read and write time. The projection is PII-minimized, a staff decision cannot
+alter capacity/policy or directly accept a plan, and unified SPEC-003
+roadmap/capacity/status/timeline/decision components are reused.
 
 ## Constitution and Approval Gate
 

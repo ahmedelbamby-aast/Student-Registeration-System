@@ -2,11 +2,16 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13; global line-approval and first-term monitoring amendment approved 2026-07-20<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Admin/Registrar, Security, Data, DevOps, QA<br>
 **Target:** Sprint 2-S7<br>
 **Dependencies:** SPEC-003, SPEC-004, SPEC-007, SPEC-008, SPEC-009, SPEC-010, SPEC-014, SPEC-015, SPEC-016, SPEC-018<br>
+
+**Owner-approved amendment (2026-07-20):** Admin may globally decide pending
+SPEC-014 lines and monitor/retry failed first-term automatic batch items
+through owner commands. This grants no accepted-enrollment correction,
+capacity override, or rule waiver and moves no writer into SPEC-017.
 
 ## Context
 
@@ -37,7 +42,8 @@ is limited to bounded viewing and read-only import into offering planning.
   commands MUST preserve capacity and timetable invariants and cannot bypass
   the owning feature module. It also MUST NOT expose an Admin availability
   mutation/correction/override command, permission, editable control,
-  notification workflow, or correction-audit flow.
+  notification workflow, or correction-audit flow. FR-14's pending-line
+  decision is not an accepted Enrollment or capacity-configuration mutation.
 - FR-5: Exports MUST enforce the same row/data scope and PII minimization as
   UI and use an explicit request/status/download lifecycle. ExportJob MUST be
   durable, owner/scope/request-bound, expiring, and claimed by workers through
@@ -70,6 +76,20 @@ is limited to bounded viewing and read-only import into offering planning.
   recount/mutation/audit. SPEC-017 MUST NOT mutate RoleAssignment or the guard.
   Concurrent revocations MUST leave one active Admin and return
   FINAL_ADMIN_REQUIRED from the Identity owner when necessary.
+- FR-14: Admin with `RegistrationApproval.DecideAll` MUST list/read and decide
+  any pending SPEC-014 line through the owner endpoint with expected
+  submission/line versions, reason, ClientRequestId, and antiforgery. Approval
+  cannot waive any server rule or directly mutate Enrollment/counters.
+- FR-15: Admin registration/approval projections MUST show requested credits,
+  normal/probation/overload explanation, line status/decision, window close,
+  and capacity/enrolled/held/available counts without holder lists or
+  unrelated student data. Reads and decisions are scoped and audited.
+- FR-16: Admin MUST view bounded FirstTermAutoEnrollmentBatch progress and safe
+  failure codes and MAY idempotently retry failed items with expected batch
+  version and reason. Retry cannot change roadmap selection, waive failure, or
+  create a partial schedule.
+- FR-17: ADM-01/ADM-08 and linked views MUST use unified SPEC-003 roadmap,
+  capacity, approval status/timeline, decision, and route-state components.
 
 ## Non-Functional Requirements
 
@@ -148,6 +168,21 @@ a durable lease, while authorized status/download and secure expiry are
 enforced<br>
 And every admin action passes authorization, audit, concurrency, and
 anti-forgery checks.
+
+### AC-10: Global pending-line decision (FR-14, FR-15)
+Given multiple pending student plans and an Admin with DecideAll<br>
+When the Admin searches and decides one line<br>
+Then the bounded result shows only approved context and truthful
+capacity/enrolled/held/available counts<br>
+And the versioned idempotent audited decision delegates to SPEC-014 without
+rule/capacity bypass or holder-list disclosure.
+
+### AC-11: First-term batch monitoring (FR-16, FR-17)
+Given a first-term automatic batch has accepted and failed student items<br>
+When Admin reviews and retries failed items<br>
+Then progress/failure codes are bounded, timestamped, and actionable<br>
+And retry is idempotent, cannot change roadmap subjects, and never creates a
+partial student schedule.
 
 ## Edge Cases
 
@@ -259,6 +294,16 @@ import, export, and confirmation commands require clientRequestId.
 Confirmation requires a previewToken bound to actor/scope/payload/dependency
 versions/expiry; conflicts return 409 STALE_PREVIEW, STALE_VERSION,
 FINAL_ADMIN_REQUIRED, or IDEMPOTENCY_KEY_REUSED.
+
+Registration approval adds GET `/api/admin/registration-approvals`, GET
+`/api/admin/registration-approvals/{submissionId}/lines/{lineId}`, and POST
+`/api/admin/registration-approvals/{submissionId}/lines/{lineId}/decision`.
+First-term monitoring adds GET
+`/api/admin/terms/{termId}/first-term-auto-enrollment-batches`, GET
+`/api/admin/first-term-auto-enrollment-batches/{batchId}`, and POST
+`/api/admin/first-term-auto-enrollment-batches/{batchId}/retry-failed`.
+All consume canonical SPEC-014 contracts; mutations require exact permission,
+antiforgery, expected version, reason, and ClientRequestId.
 
 Admin availability viewing consumes SPEC-010's bounded read-only endpoint.
 Import copies staff-declared ranges into offering-planning input; SPEC-017

@@ -139,3 +139,23 @@
 - [x] T110 [GATE] Record Admin, staff representative, data, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-010-release-approval.md.
 
 No task is complete and no implementation file has been created.
+
+## Owner-Approved 2026-07-20 Held-Capacity Amendment
+
+These tasks append new work without changing any historical completion record.
+Ahmed ELbamby's explicit 2026-07-20 instruction approves the bounded hold and
+all-role capacity projection described in the amended specification.
+
+- [ ] T111 [GATE] Record the 2026-07-20 owner-approved held-capacity amendment and rebaseline SPEC-009, SPEC-011, SPEC-014, SPEC-015, SPEC-016, and SPEC-017 dependencies in specs/010-offerings-groups-resources/dependency-baseline.md and checklists/approval.md.
+- [ ] T112 [US10] [OWNER-SPEC-010] Amend SectionGroup/capacity contracts for Capacity, EnrolledCount, HeldCount, AvailableCount, privacy-safe role projections, and expected rowversions in specs/010-offerings-groups-resources/contracts/api.md and src/StudentRegistration.Contracts/Scheduling/SchedulingContracts.cs.
+- [ ] T113 [P] [US10] [FR-11] [FR-12] Create failing domain and SQL collision tests for hold/enrollment final-seat races, capacity reduction below enrolled plus held, completed subject decisions retaining holds, and atomic plan-approve/plan-reject/window-close terminal races in tests/StudentRegistration.IntegrationTests/Specs/Spec010/HeldCapacityConcurrencyTests.cs.
+- [ ] T114 [P] [US10] [DEFECT-LIVE-ENDPOINTS] Create failing real-SQL tests proving the SPEC-010 offering/group/room/alert endpoints return durable results instead of unconditional `SCHEDULING_UNAVAILABLE` in tests/StudentRegistration.IntegrationTests/Specs/Spec010/LiveSchedulingEndpointTests.cs.
+- [ ] T115 [US10] [FR-11] Add HeldCount and derived AvailableCount to src/StudentRegistration.Scheduling/Domain/SectionGroup.cs and preserve the amended invariant in src/StudentRegistration.Scheduling/Application/SectionGroupCapacityService.cs after T113 fails.
+- [ ] T116 [US10] [PERSISTENCE] Add the held-capacity check constraint, rowversion/index changes, and an incremental EF migration in src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/SchedulingModelConfiguration.cs and src/StudentRegistration.Infrastructure.SqlServer/Migrations after T113 fails.
+- [ ] T117 [US10] [DEFECT-LIVE-ENDPOINTS] Implement and register the real SQL offering/resource stores, then wire src/StudentRegistration.Scheduling/Endpoints/Spec010Endpoints.cs to owner services so valid calls no longer fall through to unavailable responses after T114 and T116.
+- [ ] T118 [US10] [DEFECT-DEMO-SEED] Seed published offerings, complete activity bundles, rooms, assigned Lecturer/TA staff, and varied capacity/held-count fixtures through src/StudentRegistration.Api/Development/DemoDatabaseInitializer.cs after the SPEC-009 roadmap seed exists.
+- [ ] T119 [P] [US10] [ALL-ROLES] Add authorization and contract tests showing Student, Admin, assigned Lecturer, and assigned Teaching Assistant receive the same capacity counts while unassigned/direct-object access and holder PII remain denied in tests/StudentRegistration.AuthorizationTests/HeldCapacityVisibilityTests.cs.
+- [ ] T120 [US10] [ADM-06] Replace raw term/course GUID entry with accessible selects/autocomplete and show total/enrolled/held/available values in src/StudentRegistration.Client/Pages/OfferingAdministrationPage.razor.
+- [ ] T121 [P] [US10] [STU-02] [STU-03] [STF-01] Add total/enrolled/held/available presentation to student and staff pages/components in src/StudentRegistration.Client/Features/Registration/EligibilityPresentation.razor and src/StudentRegistration.Client/Pages/StaffDashboardPage.razor without holder PII.
+- [ ] T122 [P] [US10] [E2E] Add live SQL/browser offering creation, capacity edit, held-seat visibility, and all-role consistency journeys in tests/StudentRegistration.E2ETests/Specs/Spec010/LiveHeldCapacityFeatureTests.cs.
+- [ ] T123 [TRACE] [US10] Update held-capacity traceability, scope review, migration evidence, concurrency evidence, and release approval in docs/release-evidence/SPEC-010-traceability.md, docs/release-evidence/SPEC-010-scope-review.md, and docs/release-evidence/SPEC-010-release-approval.md after T111-T122 pass.

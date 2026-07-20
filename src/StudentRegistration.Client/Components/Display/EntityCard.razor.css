@@ -1,23 +1,28 @@
 .srs-entity-card {
     background: var(--srs-color-component-panel-background);
     border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    border-radius: var(--srs-border-primitive-radius-large);
     color: var(--srs-color-semantic-text-primary);
     display: flex;
     flex-direction: column;
     gap: var(--srs-spacing-primitive-3);
-    padding: var(--srs-spacing-primitive-4);
-    transition-duration: var(--srs-motion-duration-feedback);
-    transition-property: background, border-color;
-    transition-timing-function: var(--srs-motion-easing-standard);
+    padding: var(--srs-spacing-primitive-5);
+    box-shadow: var(--srs-elevation-card);
+    transition:
+        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        border-color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        transform var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-entity-card:hover {
-    border-color: var(--srs-color-semantic-focus-ring);
+    border-color: var(--srs-color-primitive-blue-400);
+    box-shadow: 0 0.25rem 1.25rem rgba(79,70,229,0.18), 0 0.0625rem 0.25rem rgba(79,70,229,0.08);
+    transform: translateY(-0.125rem);
 }
 
 .srs-entity-card:active {
-    background: var(--srs-color-semantic-surface-muted);
+    transform: translateY(0);
+    box-shadow: var(--srs-elevation-card);
 }
 
 .srs-entity-card:focus-within {
@@ -28,6 +33,8 @@
 .srs-entity-card[aria-disabled="true"] {
     background: var(--srs-color-semantic-disabled-surface);
     color: var(--srs-color-semantic-disabled-text);
+    box-shadow: none;
+    transform: none;
 }
 
 .srs-entity-card[aria-busy="true"] {
@@ -43,16 +50,25 @@
 
 .srs-entity-card__heading {
     margin: var(--srs-spacing-primitive-0);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-900);
 }
 
 .srs-entity-card__loading {
     background: var(--srs-color-semantic-information-surface);
     color: var(--srs-color-semantic-information-text);
-    padding: var(--srs-spacing-primitive-2);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font-size: var(--srs-typography-primitive-font-size-small);
+    font-weight: 500;
 }
 
 .srs-entity-card__error {
     background: var(--srs-color-semantic-danger-surface);
     color: var(--srs-color-semantic-danger-text);
-    padding: var(--srs-spacing-primitive-2);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
+    border-radius: var(--srs-border-primitive-radius-small);
+    font-size: var(--srs-typography-primitive-font-size-small);
+    font-weight: 500;
 }

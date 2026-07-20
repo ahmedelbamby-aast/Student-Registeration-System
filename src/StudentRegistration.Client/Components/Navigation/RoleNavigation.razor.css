@@ -5,7 +5,7 @@
 .srs-role-navigation__list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--srs-spacing-primitive-2);
+    gap: var(--srs-spacing-primitive-1);
     padding: var(--srs-spacing-primitive-0);
     margin: var(--srs-spacing-primitive-0);
     list-style: none;
@@ -16,22 +16,31 @@
     display: inline-flex;
     align-items: center;
     min-height: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-3);
-    color: var(--srs-color-semantic-link);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-surface-default);
-    border-radius: var(--srs-border-primitive-radius-small);
+    padding-inline: var(--srs-spacing-primitive-4);
+    color: var(--srs-color-semantic-text-secondary);
+    border: var(--srs-border-primitive-width-strong) solid transparent;
+    border-radius: var(--srs-border-primitive-radius-medium);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+        color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        border-color var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-role-navigation__link:hover {
-    color: var(--srs-color-semantic-information-text);
-    background: var(--srs-color-semantic-information-surface);
+    color: var(--srs-color-primitive-blue-700);
+    background: var(--srs-color-nav-hover-bg);
+    border-color: rgba(79,70,229,0.15);
 }
 
 .srs-role-navigation__link:active,
-.srs-role-navigation__link--active {
-    color: var(--srs-color-semantic-text-primary);
-    border-color: var(--srs-color-semantic-border);
-    background: var(--srs-color-semantic-surface-muted);
+.srs-role-navigation__link--active,
+.srs-role-navigation__link--active:visited {
+    color: var(--srs-color-nav-active-text);
+    background: var(--srs-color-nav-active-bg);
+    border-color: var(--srs-color-primitive-blue-400);
+    font-weight: var(--srs-typography-component-control-weight);
 }
 
 .srs-role-navigation__link:focus-visible {
@@ -42,12 +51,17 @@
 .srs-role-navigation__link--disabled {
     color: var(--srs-color-semantic-disabled-text);
     background: var(--srs-color-semantic-disabled-surface);
+    cursor: not-allowed;
 }
 
 .srs-role-navigation__status {
-    padding: var(--srs-spacing-primitive-2);
+    padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-4);
+    margin-block-end: var(--srs-spacing-primitive-2);
+    border-radius: var(--srs-border-primitive-radius-small);
     color: var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
+    font-size: var(--srs-typography-primitive-font-size-small);
+    font-weight: 500;
 }
 
 .srs-role-navigation.has-error .srs-role-navigation__status {

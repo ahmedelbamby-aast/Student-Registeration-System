@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13; owner amendment approved 2026-07-20)<br>
 **Owner:** AASTMT Registrar/Policy SME<br>
 **Reviewers:** Product Owner, Data Lead, QA Lead<br>
 **Target:** Sprint 0; maintained thereafter<br>
@@ -23,6 +23,10 @@ For this non-production proof of concept, Ahmed ELbamby approved the bounded
 evaluation with simple rules and a small, sourced curriculum; it is not an
 official AASTMT production rulebook.
 
+The 2026-07-20 owner amendment adds first-term automatic enrollment,
+capacity-consuming pending subject approvals, and the CGPA-qualified 19-21
+credit overload boundary described normatively below.
+
 ## Functional Requirements
 
 - FR-1: The system MUST version policy sets by effective dates and academic
@@ -32,10 +36,15 @@ official AASTMT production rulebook.
   The demo profile MUST enforce configured registration windows, eligible
   standing, absence of blocking holds, and completed prerequisites; accept a
   regular load from 9 through 18 credits with 18 as both the default/recommended
-  target and hard normal maximum; limit GPA below 2.0 to 12 credits; allocate
-  capacity to the first successful commit with no waitlist or override; block
-  every unresolved meeting overlap with travel-time buffering disabled; and
-  provide no automatic exception, add/drop, withdrawal, or advisor workflow.
+  target and normal maximum; limit GPA below 2.0 to 12 credits; permit 19
+  through 21 credits only when authoritative CGPA is at least 3.00 and every
+  selected subject receives the required scoped approval; reject more than 21;
+  automatically enroll matching required first-program-term prerequisite
+  roots; hold capacity for each term-two-or-later self-service subject until
+  the complete plan is approved/rejected or the window closes; block every
+  unresolved meeting overlap with travel-time buffering disabled; and provide
+  no prerequisite waiver, capacity override, add/drop, withdrawal, or generic
+  advisor workflow.
   Its catalogue MUST be the 19-course AASTMT College of Artificial Intelligence
   Data Science snapshot in `docs/DEMO_CURRICULUM.md`, with any gap-filling synthetic row
   clearly labelled as synthetic and never represented as official curriculum.
@@ -147,6 +156,6 @@ snapshots by SPEC-015.
 - OS-1: Legal interpretation by software.
 - OS-2: Arbitrary scripting/expressions uploaded by users.
 - OS-3: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop,
-  withdrawal, and Advisor or Deanery approval workflows until separately
-  approved.
+  withdrawal, and generic Advisor or Deanery workflows. The bounded 2026-07-20
+  subject-line approval and seat-hold amendment is in scope.
 - OS-4: Automatic dismissal or academic-path decisions.

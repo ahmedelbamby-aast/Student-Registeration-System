@@ -2,13 +2,19 @@
 
 **Feature Branch**: 016-lecturer-ta-workspace
 **Created**: 2026-07-12
-**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; assignment-scoped line-approval amendment approved 2026-07-20
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 
 **Owner-approved demo amendment (2026-07-20):** Lecturer and Teaching
 Assistant remain separate account roles. The former combined-role fixture is
 frozen; an enabled staff account has exactly one server-derived staff role.
+
+**Owner-approved registration amendment (2026-07-20):** Lecturer and Teaching
+Assistant receive a narrow `RegistrationApproval.DecideAssigned` capability.
+They may inspect and decide only pending self-service lines whose selected
+group has their current effective assignment. This is not capacity, policy,
+term, profile, or unrelated-student administration and cannot waive any rule.
 
 ## Context
 
@@ -130,6 +136,20 @@ And rosters contain only approved fields with safe audit metadata<br>
 And timetable/availability is fully keyboard operable with a list/table
 alternative.
 
+### User Story 9 - Assignment-scoped registration line decision (FR-11-FR-14) (P1)
+
+As a Lecturer or Teaching Assistant, I need to decide pending lines only for
+groups I currently teach so that approval remains narrow and auditable.
+
+**Acceptance Scenario (AC-9)**
+
+Given staff is assigned to Group A but not Group B<br>
+When the approval queue and decision endpoints are used<br>
+Then Group A is shown with the minimal approved context and a versioned,
+idempotent decision can succeed<br>
+And Group B or an ended assignment is denied without data/version disclosure
+or a direct held-capacity mutation.
+
 ## Edge Cases
 
 - EC-1: Duplicate assignment rows for the same active staff role -> display
@@ -167,7 +187,9 @@ alternative.
   availability aggregate ID and rowversion as an immutable offering-planning
   dependency, but no Admin availability
   mutation/correction/override command, permission, editable control,
-  notification workflow, or correction-audit flow exists.
+  notification workflow, or correction-audit flow exists. The separate narrow
+  line-approval capability in FR-11 does not mutate capacity configuration or
+  bypass registration policy.
 - FR-8: If an accepted availability change conflicts with a published
   assignment, the same transaction MUST create or update a durable
   ScheduleImpactAlert containing term, staff, affected group, availability and
@@ -183,6 +205,23 @@ alternative.
   version, current published assignments, and impact-alert state using server
   time inside one local SQL transaction. Availability update and required
   ScheduleImpactAlert write MUST commit or roll back together.
+- FR-11: Lecturer/TeachingAssistant with
+  `RegistrationApproval.DecideAssigned` MUST see only bounded pending approval
+  lines whose selected group has their current effective
+  GroupStaffAssignment. Authorization precedes lookup and is repeated inside
+  the decision transaction.
+- FR-12: Staff MAY approve/reject one assigned pending line with reason,
+  expected submission/line versions, ClientRequestId, and antiforgery. They
+  MUST NOT decide an unassigned/ended line, approve the whole plan directly,
+  alter held capacity, or waive prerequisite/load/hold/conflict rules.
+- FR-13: Approval queues/details MUST minimize student data to UniversityId,
+  display name, selected subject/group, requested total credits, current CGPA,
+  overload indicator, governed eligibility summary, line/window status, and
+  capacity/enrolled/held/available counts. Full transcript, hold details,
+  contact, grades, and holder lists are forbidden.
+- FR-14: Staff dashboard/approval pages MUST compose the unified SPEC-003
+  roadmap, capacity, approval status/timeline, decision, and standard route-
+  state components used by Student and Admin.
 
 ### Non-Functional Requirements
 
@@ -205,6 +244,9 @@ alternative.
 - **SC-1**: Staff can view only assignments and roster data within their current scope.
 - **SC-2**: Lecturer and TA contexts use shared journeys without merging their permissions.
 - **SC-3**: Availability changes never silently move a published class.
+- **SC-4**: Lecturer/TA can decide only currently assigned pending lines, and
+  their decision never exposes unrelated records or bypasses registration
+  invariants.
 
 ## Assumptions
 

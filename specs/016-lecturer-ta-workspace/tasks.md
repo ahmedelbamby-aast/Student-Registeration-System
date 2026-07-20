@@ -172,3 +172,16 @@ All 84 tasks are checked. Focused implementation, acceptance, accessibility,
 concurrency, quality, scope, traceability, and bounded demo approval evidence
 are recorded in `docs/release-evidence/SPEC-016-*.md`. Production deployment,
 Gate B-D, and unresolved upstream/global quality work remain out of scope.
+
+## Phase 8 - 2026-07-20 Assignment-Scoped Line-Approval Amendment
+
+- [ ] T085 [GATE] Rebaseline SPEC-016 against amended SPEC-001/003/010/014/015 permissions, DTOs, capacity, and route contracts; update dependency hashes and traceability before runtime changes.
+- [ ] T086 [FR-11] Add positive and negative authorization tests for `RegistrationApproval.DecideAssigned`, current GroupStaffAssignment scope, Lecturer versus TeachingAssistant roles, unrelated/ended assignment, wrong role, missing permission, authorization-before-lookup, and privacy-safe no-version disclosure.
+- [ ] T087 [FR-13] Add query/contract tests for bounded stable approval pages and the exact minimal field allow-list; reject full transcript, detailed holds, contact, grades, unrelated identifiers, holder identity, and unbounded queries.
+- [ ] T088 [FR-12] Add antiforgery, expected-version, actor+line ClientRequestId replay/mismatch, duplicate/contradictory decision, audit-failure rollback, and assignment-ended-before-commit real-SQL tests.
+- [ ] T089 [FR-11-FR-13] Implement staff approval queue/detail/decision orchestration over SPEC-014 ports only after T086-T088 fail; create no duplicate hold, decision, capacity, or plan-finalization writer.
+- [ ] T090 [FR-14] Add component/E2E/browser/accessibility/responsive tests for unified roadmap, capacity, approval status/timeline, decision, pending/empty/success/rejected/expired/stale/denied/offline/error states, keyboard focus, and every enabled action.
+- [ ] T091 [FR-14] Implement staff approval navigation/pages using shared SPEC-003 components and preserve separate Lecturer/TeachingAssistant role context and assignment scope.
+- [ ] T092 [PERF] Verify staff approval queue/detail p95, bounded payloads, two-replica assignment/decision race behavior, safe metrics/logs, and no holder PII.
+- [ ] T093 [TRACE] Refresh API/OpenAPI, route manifest, permissions, threat model, traceability, scope, accessibility, and release evidence for FR-11..FR-14/AC-9..AC-10.
+- [ ] T094 [GATE] Record Ahmed Elbamby's product/domain/QA/security/accessibility/data/operations approval perspectives and reject amended release while T085-T093 is unchecked.

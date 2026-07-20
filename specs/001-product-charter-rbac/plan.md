@@ -1,8 +1,9 @@
 # Implementation Plan: Product Charter and RBAC
 
 **Branch**: 001-product-charter-rbac | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
-and production release approval remain required.
+**Status**: Approved for Gate A demo implementation on 2026-07-13;
+approval-workflow RBAC amendment approved 2026-07-20; Gates B-D and production
+release approval remain required.
 
 ## Summary
 
@@ -60,6 +61,9 @@ role assignments, authorization policies, and staff/student login behavior.
   superuser or permission-inference behavior. Bound academic-profile location
   to a required term plus University ID/name query and minimal locator fields;
   require named StudentId plus AcademicTermId for detail and correction.
+- Add `RegistrationApproval.DecideAll` for explicitly granted Admin scope and
+  `RegistrationApproval.DecideAssigned` for effective assignment-scoped
+  Lecturer/TeachingAssistant decisions; prove authorization-before-disclosure.
 - Treat `Role` and `Permission` as governed vocabulary in this charter, not
   runtime persistence entities. `RoleAssignment` is referenced from SPEC-007.
 - Prove product scope through conformance and release-evidence tests; do not

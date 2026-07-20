@@ -95,13 +95,13 @@ public sealed class CataloguePublicationService
 
         foreach (var course in normalized)
         {
-            if (course.Credits <= 0m)
+            if (course.Credits != 3m)
             {
                 errors.Add(Error(
                     course.Row,
                     "credits",
                     "INVALID_CREDITS",
-                    $"Course {course.Code} has invalid credits.",
+                    $"Course {course.Code} must have exactly three credits.",
                     course.Code));
             }
 

@@ -1,5 +1,10 @@
 # Project Plan
 
+**Owner-approved policy amendment (2026-07-20):** Ahmed ELbamby's explicit
+instruction approves the three-credit roadmap, first-term automatic
+registration, term-2-or-later approval-held self-registration, bounded
+CGPA-qualified overload, and privacy-safe held-capacity rules recorded below.
+
 ## 1. Product goal
 
 Deliver a simple, accessible, secure registration system in which:
@@ -7,7 +12,8 @@ Deliver a simple, accessible, secure registration system in which:
 - A student activates an institutional account, signs in with University ID
   and password, sees the server date and current academic context, discovers
   eligible subjects, selects groups, resolves schedule conflicts, and submits
-  one atomic registration.
+  one atomic registration from recommended term 2 onward. Matching-cohort
+  recommended-term-1 subjects are registered automatically.
 - Admin, Lecturer, and Teaching Assistant use one shared password-only demo
   staff login with no MFA/2FA. The server derives roles and data scope; a login
   form never lets a user claim a role.
@@ -36,10 +42,23 @@ boundaries.
 - Student academic profile, GPA, standing, transcript, prerequisites, holds,
   cohort, program, and earned credits.
 - Effective-dated AASTMT policy configuration with rule provenance.
-- A simple `DEMO-POC-2026.1` policy profile: empty starting plan, 18-credit
-  default target/normal maximum, 9-credit submitted-plan minimum, probation
-  maximum 12, hard prerequisites/capacity/overlap checks, no travel buffer,
-  first-commit seat allocation, and no advisor/exception/drop/withdrawal flow.
+- A simple `DEMO-POC-2026.1` policy profile: every demo subject is exactly
+  three credits; `CurriculumCourse` is the programme/cohort roadmap;
+  recommended-term-1 roots have no prerequisite and every later roadmap
+  subject has at least one prerequisite; matching-cohort term-1 registration
+  is automatic and students self-register from term 2 onward; 18 credits is
+  the normal maximum, while 19-21 credits requires CGPA at least 3.0 and a
+  per-subject approval; plans above 21 credits fail; prerequisites, capacity,
+  and overlap remain hard checks; no travel buffer, generic advisor,
+  prerequisite-waiver, drop, or withdrawal flow exists.
+- A self-registration request holds each selected subject seat while its
+  per-subject approval by an authorized Admin or group-assigned Lecturer/TA is
+  pending. All required subject decisions aggregate to one plan decision; a
+  hold ends when the plan is approved or rejected, or when the registration
+  window closes. Capacity always satisfies
+  enrolled plus held less than or equal to configured capacity, and Student,
+  Admin, Lecturer, and Teaching Assistant views show total, enrolled, held,
+  and available counts without exposing holder identity.
 - The small curated, provenance-recorded AASTMT College of AI snapshot in
   [DEMO_CURRICULUM.md](DEMO_CURRICULUM.md), with clearly labeled synthetic gap
   rows, plus offerings, groups, capacities, lecturers, TAs, rooms, and meeting
@@ -55,7 +74,7 @@ boundaries.
 
 ### Not in MVP
 
-- Payments, grades entry, attendance capture, waitlists, advisor workflow,
+- Payments, grades entry, attendance capture, waitlists, generic advisor workflow,
   notifications, chat, mobile applications, multi-tenancy, AI/ML scheduling,
   and institution-wide timetable generation.
 - A break-glass capacity or conflict override.

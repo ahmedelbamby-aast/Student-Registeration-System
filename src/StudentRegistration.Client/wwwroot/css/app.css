@@ -18,6 +18,26 @@ body {
     font-family: var(--srs-typography-primitive-font-family-sans);
     font-size: var(--srs-typography-primitive-font-size-body);
     line-height: var(--srs-typography-primitive-line-height-body);
+    overflow-wrap: anywhere;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+    max-inline-size: 100%;
+}
+
+main,
+section,
+article,
+nav,
+header,
+footer,
+form,
+table,
+dl {
+    min-inline-size: 0;
 }
 
 a,
@@ -27,8 +47,9 @@ a:visited {
 
 .startup-progress {
     block-size: var(--srs-sizing-progress-thickness);
-    background: var(--srs-color-semantic-information-text);
+    background: linear-gradient(90deg, var(--srs-color-primitive-blue-600), var(--srs-color-primitive-violet-600));
     inline-size: var(--blazor-load-percentage, 0%);
+    transition: inline-size 200ms ease-out;
 }
 
 #blazor-error-ui {
@@ -42,17 +63,72 @@ a:visited {
     outline-width: var(--srs-focus-outline-width);
 }
 
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button,
+[role="button"],
+input:not([type="hidden"]),
+select {
+    min-block-size: var(--srs-sizing-interactive-minimum);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (forced-colors: active) {
+    :focus-visible {
+        outline-color: Highlight;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        border-color: ButtonText;
+    }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Identity / Login pages
+──────────────────────────────────────────────────────────────── */
 .srs-identity-command,
 .srs-role-selection button,
 .srs-account-sessions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-4);
+    padding-inline: var(--srs-spacing-primitive-5);
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
     border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border-radius: var(--srs-border-primitive-radius-medium);
     font: inherit;
     font-weight: var(--srs-typography-component-control-weight);
+    cursor: pointer;
+    transition:
+        filter var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
+}
+
+.srs-identity-command:hover:not(:disabled),
+.srs-role-selection button:hover:not(:disabled),
+.srs-account-sessions button:hover:not(:disabled) {
+    filter: brightness(1.12);
+    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
 }
 
 .srs-identity-command:disabled,
@@ -60,14 +136,15 @@ a:visited {
 .srs-account-sessions button:disabled {
     color: var(--srs-color-semantic-disabled-text);
     background: var(--srs-color-semantic-disabled-surface);
-    border-color: var(--srs-color-semantic-disabled-text);
+    border-color: var(--srs-color-semantic-disabled-surface);
+    cursor: not-allowed;
 }
 
 .srs-role-selection,
 .srs-recovery-step {
     margin-block-start: var(--srs-spacing-primitive-8);
     padding-block-start: var(--srs-spacing-primitive-6);
-    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
 }
 
 .srs-role-selection__actions,
@@ -77,12 +154,16 @@ a:visited {
     gap: var(--srs-spacing-primitive-3);
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Public gateway (login / landing page)
+──────────────────────────────────────────────────────────────── */
 .srs-public-gateway {
     display: grid;
     grid-template-rows: auto 1fr auto;
     min-block-size: 100vh;
     background:
-        radial-gradient(circle at 85% 5%, var(--srs-color-primitive-blue-50), transparent 28rem),
+        radial-gradient(ellipse at 85% 0%, rgba(79,70,229,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 90%, rgba(124,58,237,0.09) 0%, transparent 50%),
         var(--srs-color-semantic-surface-default);
 }
 
@@ -94,7 +175,7 @@ a:visited {
     padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border-radius: var(--srs-border-primitive-radius-medium);
     transform: translateY(-200%);
 }
 
@@ -115,7 +196,7 @@ a:visited {
     justify-content: space-between;
     gap: var(--srs-spacing-primitive-4);
     padding-block: var(--srs-spacing-primitive-4);
-    border-block-end: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-block-end: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
 }
 
 .srs-public-gateway__brand {
@@ -133,7 +214,7 @@ a:visited {
     max-inline-size: 10rem;
     padding: var(--srs-spacing-primitive-2);
     object-fit: contain;
-    background: var(--srs-color-primitive-blue-900);
+    background: linear-gradient(135deg, var(--srs-color-primitive-blue-900), var(--srs-color-primitive-violet-600));
     border-radius: var(--srs-border-primitive-radius-medium);
 }
 
@@ -143,7 +224,8 @@ a:visited {
 
 .srs-public-gateway__brand strong {
     color: var(--srs-color-primitive-blue-900);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
+    font-weight: 800;
 }
 
 .srs-public-gateway__brand small,
@@ -153,9 +235,12 @@ a:visited {
 
 .srs-public-gateway__demo-label {
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
     border-radius: 999px;
     font-size: var(--srs-typography-primitive-font-size-small);
+    color: var(--srs-color-primitive-blue-700);
+    background: var(--srs-color-primitive-blue-50);
+    font-weight: 500;
 }
 
 .srs-public-gateway__main {
@@ -171,30 +256,35 @@ a:visited {
     margin-block: var(--srs-spacing-primitive-2);
     color: var(--srs-color-primitive-blue-900);
     font-size: clamp(2rem, 6vw, 3.75rem);
+    font-weight: 800;
     line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
 .srs-public-gateway__intro > p:last-child {
     max-inline-size: var(--srs-sizing-content-readable);
     color: var(--srs-color-semantic-text-secondary);
     font-size: 1.125rem;
+    line-height: 1.65;
 }
 
 .srs-public-gateway__eyebrow {
     margin: 0;
-    color: var(--srs-color-primitive-blue-700);
+    color: var(--srs-color-primitive-violet-600);
     font-size: var(--srs-typography-primitive-font-size-small);
-    font-weight: var(--srs-typography-component-control-weight);
-    letter-spacing: 0.08em;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
+/* Context / info panel */
 .srs-public-context {
     padding: clamp(1rem, 3vw, 1.75rem);
-    background: var(--srs-color-component-panel-background);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-component-panel-border);
-    border-inline-start: 0.35rem solid var(--srs-color-primitive-blue-700);
-    border-radius: var(--srs-border-primitive-radius-medium);
+    background: #FFFFFF;
+    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-primitive-blue-100);
+    border-inline-start: 0.35rem solid var(--srs-color-primitive-blue-600);
+    border-radius: var(--srs-border-primitive-radius-large);
+    box-shadow: var(--srs-elevation-card);
 }
 
 .srs-public-context--loading {
@@ -203,6 +293,7 @@ a:visited {
     gap: var(--srs-spacing-primitive-4);
     color: var(--srs-color-semantic-information-text);
     background: var(--srs-color-semantic-information-surface);
+    border-inline-start-color: var(--srs-color-semantic-information-text);
 }
 
 .srs-public-context--warning {
@@ -219,8 +310,8 @@ a:visited {
 
 .srs-public-context__pulse {
     flex: 0 0 auto;
-    inline-size: 1rem;
-    block-size: 1rem;
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
     background: currentColor;
     border-radius: 50%;
     animation: srs-public-context-pulse 1.2s ease-in-out infinite alternate;
@@ -248,17 +339,21 @@ a:visited {
 .srs-public-context__facts div {
     min-inline-size: 0;
     padding-inline-start: var(--srs-spacing-primitive-3);
-    border-inline-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-inline-start: 0.1875rem solid var(--srs-color-primitive-blue-100);
 }
 
 .srs-public-context__facts dt {
     color: var(--srs-color-semantic-text-secondary);
     font-size: var(--srs-typography-primitive-font-size-small);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .srs-public-context__facts dd {
     margin: var(--srs-spacing-primitive-1) 0 0;
-    font-weight: var(--srs-typography-component-control-weight);
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-900);
     overflow-wrap: anywhere;
 }
 
@@ -270,10 +365,11 @@ a:visited {
 .srs-public-context__code {
     display: inline-block;
     padding: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
-    background: var(--srs-color-semantic-surface-default);
+    background: var(--srs-color-primitive-blue-50);
     border-radius: var(--srs-border-primitive-radius-small);
-    font-family: ui-monospace, "Cascadia Code", monospace;
-    font-weight: var(--srs-typography-component-control-weight);
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-weight: 700;
+    color: var(--srs-color-primitive-blue-700);
     overflow-wrap: anywhere;
 }
 
@@ -296,42 +392,75 @@ a:visited {
     align-items: center;
     justify-content: center;
     min-block-size: var(--srs-sizing-interactive-minimum);
-    padding-inline: var(--srs-spacing-primitive-4);
-    border: var(--srs-border-primitive-width-strong) solid var(--srs-color-component-button-primary-background);
-    border-radius: var(--srs-border-primitive-radius-small);
+    padding-inline: var(--srs-spacing-primitive-5);
+    border: var(--srs-border-primitive-width-strong) solid transparent;
+    border-radius: var(--srs-border-primitive-radius-medium);
     font: inherit;
     font-weight: var(--srs-typography-component-control-weight);
     text-decoration: none;
+    cursor: pointer;
+    transition:
+        filter var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard),
+        box-shadow var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-public-context__actions button,
 .srs-public-gateway__primary-link {
     color: var(--srs-color-component-button-primary-text);
     background: var(--srs-color-component-button-primary-background);
+    border-color: var(--srs-color-component-button-primary-background);
+}
+
+.srs-public-context__actions button:hover,
+.srs-public-gateway__primary-link:hover {
+    filter: brightness(1.12);
+    box-shadow: 0 0.25rem 0.75rem rgba(79,70,229,0.35);
 }
 
 .srs-public-context__actions a,
 .srs-public-gateway__secondary-link {
     color: var(--srs-color-component-button-secondary-text);
     background: var(--srs-color-component-button-secondary-background);
+    border-color: var(--srs-color-primitive-blue-100);
+}
+
+.srs-public-context__actions a:hover,
+.srs-public-gateway__secondary-link:hover {
+    background: var(--srs-color-primitive-blue-100);
+    border-color: var(--srs-color-primitive-blue-400);
 }
 
 .srs-public-context__actions button:disabled {
     color: var(--srs-color-semantic-disabled-text);
     background: var(--srs-color-semantic-disabled-surface);
-    border-color: var(--srs-color-semantic-disabled-text);
+    border-color: transparent;
+    cursor: not-allowed;
 }
 
+/* Role destination cards */
 .srs-public-gateway__destinations {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--srs-spacing-primitive-6);
-    margin-block-start: var(--srs-spacing-primitive-6);
+    margin-block-start: var(--srs-spacing-primitive-8);
 }
 
 .srs-public-gateway__destinations .srs-entity-card {
     min-inline-size: 0;
     padding: clamp(1rem, 3vw, 1.75rem);
+    border-block-start: 0.3rem solid var(--srs-color-primitive-blue-600);
+}
+
+.srs-public-gateway__destinations .srs-entity-card:nth-child(2) {
+    border-block-start-color: var(--srs-color-primitive-violet-600);
+}
+
+.srs-public-gateway__destinations .srs-entity-card:nth-child(3) {
+    border-block-start-color: var(--srs-color-primitive-green-700);
+}
+
+.srs-public-gateway__destinations .srs-entity-card:nth-child(4) {
+    border-block-start-color: var(--srs-color-primitive-amber-700);
 }
 
 .srs-public-gateway__destinations .srs-entity-card__content {
@@ -343,13 +472,14 @@ a:visited {
     display: block;
 }
 
+/* Footer */
 .srs-public-gateway__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--srs-spacing-primitive-4);
     padding-block: var(--srs-spacing-primitive-6);
-    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
     color: var(--srs-color-semantic-text-secondary);
     font-size: var(--srs-typography-primitive-font-size-small);
 }
@@ -359,8 +489,12 @@ a:visited {
     display: inline-flex;
     align-items: center;
     color: var(--srs-color-semantic-link);
+    font-weight: 500;
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Registration / schedule pages
+──────────────────────────────────────────────────────────────── */
 .srs-registration-review__actions {
     display: flex;
     flex-wrap: wrap;
@@ -385,11 +519,13 @@ a:visited {
     padding-inline: var(--srs-spacing-primitive-4);
 }
 
+/* ── Animations ── */
 @keyframes srs-public-context-pulse {
     from { opacity: 0.35; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
 }
 
+/* ── Responsive ── */
 @media (max-width: 60rem) {
     .srs-public-context__facts {
         grid-template-columns: repeat(2, minmax(0, 1fr));

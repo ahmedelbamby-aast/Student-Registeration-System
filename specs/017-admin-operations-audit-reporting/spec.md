@@ -2,9 +2,15 @@
 
 **Feature Branch**: 017-admin-operations-audit-reporting
 **Created**: 2026-07-12
-**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; global line-approval and first-term monitoring amendment approved 2026-07-20
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
+
+**Owner-approved amendment (2026-07-20):** Admin gains the narrow
+`RegistrationApproval.DecideAll` capability over pending SPEC-014 lines and
+read/retry-failed monitoring for first-term automatic batches. This is not an
+enrollment correction, drop, withdrawal, seat-decrement, capacity override, or
+rule waiver. SPEC-014 remains the only decision/hold/finalization writer.
 
 ## Context
 
@@ -135,6 +141,33 @@ enforced<br>
 And every admin action passes authorization, audit, concurrency, and
 anti-forgery checks.
 
+### User Story 10 - Global pending-line decision (FR-14, FR-15) (P1)
+
+As an authorized Admin, I need to decide any pending registration line so that
+student plans can complete without bypassing academic or capacity rules.
+
+**Acceptance Scenario (AC-10)**
+
+Given multiple pending student plans and Admin has DecideAll<br>
+When Admin searches and decides one line<br>
+Then the bounded result shows approved context and truthful
+capacity/enrolled/held/available counts<br>
+And the versioned, idempotent, audited decision delegates to SPEC-014 without
+rule/capacity bypass or holder-list disclosure.
+
+### User Story 11 - First-term automatic-batch monitoring (FR-16, FR-17) (P2)
+
+As an authorized Admin, I need to monitor first-term automatic enrollment and
+retry failed items safely so that capacity or timetable gaps are actionable.
+
+**Acceptance Scenario (AC-11)**
+
+Given a batch contains accepted and failed student items<br>
+When Admin reviews and retries failed items<br>
+Then progress/failure codes are bounded, timestamped, and actionable<br>
+And retry is idempotent, cannot change roadmap subjects, and never creates a
+partial student schedule.
+
 ## Edge Cases
 
 - EC-1: Metrics backend unavailable -> show stale timestamp/degraded state, not
@@ -168,7 +201,9 @@ anti-forgery checks.
   commands MUST preserve capacity and timetable invariants and cannot bypass
   the owning feature module. It also MUST NOT expose an Admin availability
   mutation/correction/override command, permission, editable control,
-  notification workflow, or correction-audit flow.
+  notification workflow, or correction-audit flow. The FR-14 line decision is
+  an approved pending-request decision through SPEC-014 and is not a mutation
+  of an accepted Enrollment or capacity configuration.
 - FR-5: Exports MUST enforce the same row/data scope and PII minimization as
   UI and use an explicit request/status/download lifecycle. ExportJob MUST be
   durable, owner/scope/request-bound, expiring, and claimed by workers through
@@ -196,6 +231,23 @@ anti-forgery checks.
 - FR-13: Role changes MUST delegate to SPEC-007, which owns AdminSecurityGuard,
   RoleAssignment mutation, audit, and FINAL_ADMIN_REQUIRED; SPEC-017 MUST NOT
   implement a competing role writer.
+- FR-14: Admin with `RegistrationApproval.DecideAll` MUST list/read and
+  approve/reject any pending SPEC-014 line through the owner endpoint using
+  expected submission/line versions, reason, ClientRequestId, and antiforgery.
+  The decision cannot bypass eligibility/load/prerequisite/hold/conflict/
+  capacity rules or directly mutate Enrollment/SectionGroup counters.
+- FR-15: Admin approval/registration monitoring MUST show requested credits,
+  normal/probation/overload explanation, line states/decisions, window close,
+  and capacity/enrolled/held/available counts without holder lists or
+  unrelated student data. Every read/decision is permission-scoped and
+  audited.
+- FR-16: Admin MUST view bounded durable FirstTermAutoEnrollmentBatch progress
+  and safe per-student failure codes. Admin MAY idempotently retry failed items
+  with expected batch version and reason but cannot select different roadmap
+  subjects, waive a failure, or create a partial student schedule.
+- FR-17: ADM-01/ADM-08 and linked approval/batch views MUST compose unified
+  SPEC-003 roadmap, capacity, approval status/timeline, decision, and standard
+  route-state components shared with Student and staff.
 
 ### Non-Functional Requirements
 
@@ -224,6 +276,9 @@ anti-forgery checks.
 - **SC-1**: Every sensitive administrative mutation records actor, reason, time, and before/after context.
 - **SC-2**: Normal administrative actions cannot bypass capacity or timetable invariants.
 - **SC-3**: Operational information is timestamped, scoped, and distinguishable from stale or unavailable data.
+- **SC-4**: Admin can decide every pending line and monitor first-term
+  automatic batches without acquiring an enrollment/capacity bypass or
+  exposing holder PII.
 
 ## Assumptions
 

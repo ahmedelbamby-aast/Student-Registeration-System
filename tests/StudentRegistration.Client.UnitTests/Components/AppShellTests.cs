@@ -36,6 +36,10 @@ public sealed class AppShellTests
 
         Assert.Equal("#main-content", cut.Find("a.srs-skip-link").GetAttribute("href"));
         Assert.NotNull(cut.Find("header[role='banner']"));
+        Assert.NotNull(cut.Find(".srs-app-shell__brand"));
+        Assert.NotNull(cut.Find(".srs-app-shell__context-strip"));
+        Assert.NotNull(cut.Find(".srs-app-shell__navigation"));
+        Assert.NotNull(cut.Find(".srs-app-shell__container"));
         Assert.NotNull(cut.Find("main#main-content"));
         Assert.NotNull(cut.Find("footer[role='contentinfo']"));
         Assert.Equal("Academy logo", cut.Find("img").GetAttribute("alt"));
@@ -125,6 +129,9 @@ public sealed class AppShellTests
             ".srs-app-shell a:hover",
             ".srs-app-shell a:active",
             ".srs-app-shell a:focus-visible",
+            ".srs-app-shell__navigation",
+            "position: sticky",
+            "@media (forced-colors: active)",
             "var(--srs-");
     }
 

@@ -18,6 +18,12 @@ internal sealed class OfferingStoreFake : IOfferingStore
         Task.FromResult<OfferingSnapshot?>(
             Snapshot.Id == offeringId ? Snapshot : null);
 
+    public Task<OfferingGroupSnapshot?> LoadGroupAsync(
+        Guid groupId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<OfferingGroupSnapshot?>(
+            Snapshot.Groups.SingleOrDefault(g => g.Id == groupId));
+
     public Task<OfferingSnapshot> CreateAsync(
         CreateOfferingStoreCommand command,
         CancellationToken cancellationToken)
@@ -39,12 +45,22 @@ internal sealed class OfferingStoreFake : IOfferingStore
         return Task.FromResult(Snapshot);
     }
 
-    public Task<byte[]> UpdateGroupAsync(
+    public Task<OfferingGroupSnapshot> UpdateGroupAsync(
         UpdateGroupStoreCommand command,
         CancellationToken cancellationToken)
     {
         Updates.Add(command);
-        return Task.FromResult<byte[]>([2]);
+        var group = Snapshot.Groups.Single(g => g.Id == command.GroupId);
+        var updatedGroup = group with
+        {
+            GroupCode = command.GroupCode,
+            Capacity = command.Capacity,
+            RegistrationPaused = command.RegistrationPaused,
+            RowVersion = [2]
+        };
+        var newGroups = Snapshot.Groups.Select(g => g.Id == command.GroupId ? updatedGroup : g).ToArray();
+        Snapshot = Snapshot with { Groups = newGroups };
+        return Task.FromResult(updatedGroup);
     }
 
     public Task<AdminOfferingPage> ListAsync(

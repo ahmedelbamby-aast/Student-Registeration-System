@@ -2,9 +2,22 @@
 
 **Feature Branch**: 014-registration-capacity-concurrency
 **Created**: 2026-07-12
-**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; reconciled baseline reaffirmed 2026-07-17; registration-roadmap and line-approval amendment approved 2026-07-20
 **Owner**: Data/Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
+
+**Owner-approved amendment (2026-07-20):** `CurriculumCourse` is the
+authoritative program roadmap. Required prerequisite-root subjects in a
+student's first program term are enrolled automatically without prerequisite
+or human approval. From program term two onward, a student submits a complete
+plan and every selected subject receives a capacity-consuming seat hold until
+one authorized line decision is recorded. Admin may decide any line;
+Lecturers and Teaching Assistants may decide only lines whose selected group
+they are currently assigned to. The plan becomes accepted atomically only
+after every line is approved; one rejection or registration-window close
+releases every hold. Normal load remains at most 18 credits, 19-21 credits
+requires CGPA at least 3.00, more than 21 is rejected, and the stricter
+probation rule remains authoritative.
 
 ## Context
 
@@ -15,9 +28,12 @@ requests can arrive before, during, or after commit; and a scheduled window can
 close while a request waits.
 
 Every registration command therefore has a database-backed linearization
-boundary. It is accepted in full or rejected in full. Preview, recommendation,
-and browser state are stale by definition. ADR-002 and concurrency-matrix.md
-define the required ordering and winner/loser outcomes.
+boundary. A self-service plan is held in full, then accepted in full after all
+line approvals or rejected/expired with every hold released; a first-term
+automatic plan is accepted in full or fails without partial enrollment.
+Preview, recommendation, and browser state are stale by definition. ADR-002
+and concurrency-matrix.md define the required ordering and winner/loser
+outcomes.
 
 ## User Scenarios and Testing
 
@@ -204,6 +220,63 @@ Then no committed orphan Processing record exists<br>
 And retry can claim and execute normally<br>
 And a fault after commit replays the stored final result.
 
+### User Story 14 - First-term roadmap auto-enrollment (FR-19, FR-26) (P1)
+
+As a first-program-term student, I need required roadmap roots registered
+automatically so that I begin with a valid foundation schedule without a
+self-service or approval step.
+
+**Acceptance Scenario (AC-14)**
+
+Given the student's authoritative program term is one and the published
+roadmap has applicable required prerequisite roots<br>
+When the idempotent auto-enrollment batch runs<br>
+Then all applicable roots are enrolled in deterministic valid groups or none
+are enrolled for that student<br>
+And no prerequisite or line approval is requested.
+
+### User Story 15 - Held self-service lines await scoped approval (FR-20-FR-25) (P1)
+
+As a term-two-or-later student, I need each selected subject to hold a seat
+while authorized staff decide it so that capacity and approval state are
+truthful.
+
+**Acceptance Scenario (AC-15)**
+
+Given an eligible self-service plan whose occupied-seat capacity is available<br>
+When the student submits<br>
+Then one active hold and pending line are created for every selected subject
+atomically<br>
+And an assigned Lecturer/TA can decide only their group lines while Admin can
+decide any line.
+
+### User Story 16 - All lines finalize atomically (FR-21, FR-23, FR-24) (P1)
+
+As a student with a pending plan, I need approval completion or rejection to
+resolve every hold consistently so that I never receive a partial schedule.
+
+**Acceptance Scenario (AC-16)**
+
+Given every line but one is approved<br>
+When the final line is approved<br>
+Then the server revalidates and converts all holds to enrollments atomically<br>
+And when any line is rejected or the window closes, every hold is released and
+no enrollment from that submission exists.
+
+### User Story 17 - Governed normal, overload, and capacity visibility (FR-20, FR-25, FR-27) (P2)
+
+As a student or authorized staff member, I need clear load and capacity state
+so that the same server decision is understandable in every role workspace.
+
+**Acceptance Scenario (AC-17)**
+
+Given normal, probation, overload, and over-maximum fixtures<br>
+When policy and UI verification runs<br>
+Then the probation maximum remains stricter, <=18 follows the normal rule,
+19-21 requires CGPA >=3.00, and >21 is rejected<br>
+And every role sees capacity/enrolled/held/available counts without holder PII
+through the unified components.
+
 ## Edge Cases
 
 - EC-1: Deadlock/transient SQL error -> retry the complete idempotent
@@ -214,8 +287,9 @@ And a fault after commit replays the stored final result.
   back the whole transaction/claim and retry safely.
 - EC-3: Request cancellation or network loss after commit -> recover the
   committed stored result by idempotency key; never compensate a valid commit.
-- EC-4: Capacity reduction races enrollment -> shared SectionGroup boundary
-  permits only outcomes satisfying 0 <= EnrolledCount <= Capacity.
+- EC-4: Capacity reduction races enrollment or a pending hold -> shared
+  SectionGroup boundary preserves
+  `0 <= EnrolledCount + HeldSeatCount <= Capacity`.
 - EC-5: Counter reconciliation mismatch -> alert, pause the affected group,
   and use an authorized, audited, idempotent controlled repair.
 - EC-6: Two different plans for the same student/term -> serialize through one
@@ -231,6 +305,16 @@ And a fault after commit replays the stored final result.
   atomic submission/idempotency record remains sufficient to replay the result.
 - EC-10: Application process fails after in-transaction idempotency claim but
   before commit -> SQL rollback removes the claim and every partial mutation.
+- EC-11: Approval and window-close expiry race -> one submission/version
+  transition wins; the outcome is either fully accepted before close or fully
+  expired with all holds released.
+- EC-12: An assigned staff member loses the group assignment after loading a
+  line -> in-transaction authorization denies the decision without disclosing
+  a newer version or changing the hold.
+- EC-13: Capacity reduction races an active hold -> one SectionGroup serial
+  order wins and Capacity never falls below EnrolledCount + HeldSeatCount.
+- EC-14: First-term batch lacks a complete feasible schedule -> that student
+  receives no partial enrollment and an Admin-visible safe failure is stored.
 
 ## Requirements
 
@@ -246,9 +330,11 @@ And a fault after commit replays the stored final result.
 - FR-3: The server MUST revalidate window, student profile/holds, policy and
   catalogue versions, eligibility, credit load, duplicate courses, group
   state/meeting versions, and timetable inside the commit transaction.
-- FR-4: Every selected group seat MUST be allocated by a conditional atomic SQL
-  update that succeeds only when the published group is selectable and
-  EnrolledCount is less than Capacity.
+- FR-4: Every selected self-service group seat MUST be held by a conditional
+  atomic SQL update that succeeds only when the published group is selectable
+  and `EnrolledCount + HeldSeatCount < Capacity`. First-term automatic
+  enrollment uses the same occupied-seat predicate and allocates directly to
+  Enrollment. A hold consumes capacity but is not an Enrollment or waitlist.
 - FR-5: Registration MUST acquire database serialization boundaries in this
   stable order: the SPEC-008 `StudentTermAcademicState` boundary through
   `ExecuteRegistrationBoundaryAsync`, the remaining registration-context/
@@ -273,39 +359,49 @@ And a fault after commit replays the stored final result.
   Reusing the same opaque ClientRequestId in another term is independent and
   MUST NOT conflict; another student cannot discover the first student's key.
 - FR-8: Unique, foreign-key, and check constraints MUST be final guards for
-  student/offering duplicates, idempotency ownership, group ownership, and
-  0 <= EnrolledCount <= Capacity.
+  student/offering duplicates, idempotency ownership, group ownership, one
+  active hold per submission line, and
+  `0 <= EnrolledCount + HeldSeatCount <= Capacity`.
 - FR-9: Student drop, withdrawal, enrollment correction, and seat decrement
   workflows MUST NOT be exposed in MVP; each requires a separate approved
   policy/workflow specification.
 - FR-10: Expected business conflicts MUST return 409 with a stable reason code,
   current version where relevant, and no mutation.
-- FR-11: A scheduled worker MUST reconcile under the SectionGroup lock, pause
-  and alert on mismatch, and permit repair only to the Registration.Reconcile
-  operations identity using a GroupId/rowversion/evidence-hash idempotency
-  scope. Repair MUST recompute from active Enrollment, audit atomically, and
-  verify before resume; no Admin/public repair endpoint exists in MVP.
+- FR-11: A scheduled worker MUST reconcile both EnrolledCount against active
+  Enrollment and HeldSeatCount against active RegistrationSeatHold evidence
+  under the SectionGroup lock, pause and alert on mismatch, and permit repair
+  only to the Registration.Reconcile operations identity using a
+  GroupId/rowversion/evidence-hash idempotency scope. Repair MUST recompute
+  both counters, audit atomically, and verify the occupied-seat invariant
+  before resume; no Admin/public repair endpoint exists in MVP.
 - FR-12: Every registration mutation for one student and term MUST consume the
   database-backed SPEC-008 `StudentTermAcademicState` boundary through
   `ExecuteRegistrationBoundaryAsync`; the successful transaction advances its
   version, and in-memory or duplicate Registration-owned guards are prohibited
   because multiple application replicas are supported.
-- FR-13: RegistrationSubmission is the sole idempotency claim/final-result
-  record. Its database uniqueness scope MUST be (StudentId, TermId,
-  ClientRequestId), and it MUST atomically store that owner/scope, canonical
-  payload hash, internal processing state, deterministic result, timestamps,
-  and—when accepted—a unique human-safe Reference plus immutable
-  ReceiptSnapshot. Reuse in the same scope with a different payload MUST
-  return 409 IDEMPOTENCY_KEY_REUSED; reuse in another term is independent.
+- FR-13: RegistrationSubmission is the sole submission idempotency claim and
+  durable lifecycle record. Its database uniqueness scope MUST be (StudentId,
+  TermId, ClientRequestId), and it MUST atomically store that owner/scope,
+  canonical payload hash, origin, requested credits, internal processing or
+  durable PendingApproval/Accepted/Rejected/Expired state, deterministic
+  result, timestamps, and—when accepted—a unique human-safe Reference plus
+  immutable ReceiptSnapshot. Reuse in the same scope with a different payload
+  MUST return 409 IDEMPOTENCY_KEY_REUSED; reuse in another term is independent.
 - FR-14: After acquiring the required database boundaries, the server MUST
-  re-read and validate every mutable input and commit guard/version changes,
-  seat counters, enrollments, submission result, unique reference, immutable
-  receipt and decision snapshots, audit event, and idempotency final result in
-  one short local SQL transaction with no remote calls.
+  re-read and validate every mutable input. Initial self-service submission
+  MUST atomically create every line and hold, increment held counters, store
+  PendingApproval, and audit. Final approval MUST atomically consume every
+  hold, decrement held counters, increment enrolled counters, create every
+  Enrollment, accepted result, reference, immutable receipt/decision
+  snapshots, and audit event. Rejection or expiry MUST atomically release
+  every active hold and store its final audited result. No transaction may
+  contain a remote call.
 - FR-15: The server MUST capture ReceivedAtUtc once at authenticated command
   ingress. Scheduled opening/closing boundaries use that instant; an emergency
   administrative closure or registration-context version change before commit
-  MUST reject the uncommitted request.
+  MUST reject the uncommitted request. A committed PendingApproval submission
+  that reaches scheduled/emergency close MUST expire through FR-23 and release
+  all holds.
 - FR-16: Accepted and deterministic business-rejected outcomes MUST be stored
   as final results and replayable. A transient infrastructure failure before
   commit MAY be retried; an uncertain/lost response after commit MUST be
@@ -314,10 +410,59 @@ And a fault after commit replays the stored final result.
   boundaries defined by SPEC-008 for student/term/window mutations, SPEC-009
   for policy publication, and SPEC-010 for group/capacity publication.
 - FR-18: The idempotency claim and internal Processing state MUST be created
-  inside the same SQL transaction as the final result. The allocation
-  savepoint MUST be created after that claim so a deterministic rejection can
-  retain and finalize it; no separately committed orphaned Processing claim
-  is permitted.
+  inside the same SQL transaction as PendingApproval or a final result. The
+  allocation savepoint MUST be created after that claim so a deterministic
+  rejection can retain and finalize it; no separately committed orphaned
+  Processing claim is permitted.
+- FR-19: `CurriculumCourse` roadmap membership, `RecommendedTerm`, required
+  flag, cohort scope, and prerequisite-root status MUST be resolved on the
+  server. For program term one, every applicable required root is enrolled by
+  an idempotent FirstTermAutoEnrollmentBatch without prerequisite or approval;
+  student self-service submission is unavailable. From program term two
+  onward, registration is student-initiated and all normal prerequisites and
+  roadmap gates apply.
+- FR-20: The load evaluator MUST keep the approved probation maximum, allow a
+  non-probation normal load of at most 18 credits, allow 19 through 21 credits
+  only when current authoritative CGPA is at least 3.00, and reject more than
+  21 credits. Approval MUST NOT waive prerequisites, holds, standing,
+  conflicts, publication state, or any other failing rule.
+- FR-21: A self-service submission MUST create one RegistrationSubmissionLine
+  and one active RegistrationSeatHold for every selected group in one
+  all-or-nothing transaction. Every line begins PendingApproval and requires
+  exactly one final Approve or Reject decision. Holds remain active until a
+  decision finalizes the plan or the registration window closes.
+- FR-22: Admin with `RegistrationApproval.DecideAll` MAY decide any pending
+  line. Lecturer or Teaching Assistant with
+  `RegistrationApproval.DecideAssigned` MAY decide only a line whose selected
+  group has their current effective GroupStaffAssignment. Authorization MUST
+  precede line existence/version disclosure and MUST be revalidated inside the
+  decision transaction.
+- FR-23: When every line has an approved decision, the server MUST revalidate
+  the entire plan and convert all holds to active enrollments atomically. One
+  rejected line, expired window, stale governing input, or failed final
+  revalidation rejects or expires the entire submission and releases every
+  active hold; partial plan acceptance is prohibited.
+- FR-24: Line decisions MUST require expected submission/line versions and an
+  actor-scoped ClientRequestId. Same-payload retry returns the stored decision;
+  different-payload reuse returns IDEMPOTENCY_KEY_REUSED. Approval, rejection,
+  expiry, and duplicate decisions serialize so exactly one terminal line or
+  plan transition wins and every decision records actor, role, reason,
+  assignment scope where applicable, server time, and correlation.
+- FR-25: Capacity changes and immediate or automatic allocation MUST serialize
+  on the same SectionGroup row and use occupied seats. Capacity MUST NOT be
+  reduced below EnrolledCount + HeldSeatCount. General capacity projections
+  for Student, Admin, Lecturer, and Teaching Assistant MUST expose capacity,
+  enrolled count, held count, and available count without holder identity.
+- FR-26: FirstTermAutoEnrollmentBatch MUST be durable, bounded, retryable, and
+  idempotent per student, term, catalogue version, and batch purpose. Each
+  student is enrolled all-or-nothing into the applicable required term-one
+  roots using deterministic valid groups. Missing offerings, schedule
+  infeasibility, or capacity shortage produces an Admin-visible safe failure
+  and no partial student schedule.
+- FR-27: Student review/results, staff approval queues, and Admin registration
+  monitoring MUST compose the unified SPEC-003 design-system primitives for
+  roadmap, capacity, approval status/timeline, decision actions, and loading,
+  empty, success, validation, denied, stale, offline, and service-error states.
 
 ### Non-Functional Requirements
 
@@ -339,6 +484,10 @@ And a fault after commit replays the stored final result.
 ### Key Entities
 
 - **RegistrationSubmission**: SPEC-014/Registration-owned aggregate and sole scoped idempotency/final-result record.
+- **RegistrationSubmissionLine**: Selected subject/group line and approval lifecycle owned by SPEC-014.
+- **RegistrationSeatHold**: Capacity-consuming pending line hold owned by SPEC-014.
+- **RegistrationApprovalDecision**: Immutable actor/scoped decision evidence owned by SPEC-014.
+- **FirstTermAutoEnrollmentBatch**: Durable idempotent first-program-term orchestration owned by SPEC-014.
 - **Enrollment**: SPEC-014/Registration-owned active enrollment entity.
 - **SectionGroup**: Consumed Scheduling aggregate owned by SPEC-010; SPEC-014 may only allocate through its published concurrency contract.
 - **DecisionSnapshot**: SPEC-014/Registration-owned immutable decision evidence.
@@ -351,6 +500,12 @@ And a fault after commit replays the stored final result.
 - **SC-1**: Concurrent submissions never overbook a group or duplicate an active course enrollment.
 - **SC-2**: A multi-group registration is either fully accepted or has no committed enrollment changes.
 - **SC-3**: Retrying the same submission never allocates an additional seat.
+- **SC-4**: Every self-service plan either converts all held lines to active
+  enrollments after complete approval or releases all holds without partial
+  enrollment.
+- **SC-5**: First-program-term students receive exactly the applicable required
+  roadmap roots automatically, while term-two-and-later students use the
+  approval-backed self-service flow.
 
 ## Assumptions
 
@@ -380,7 +535,8 @@ And a fault after commit replays the stored final result.
 
 ## Out of Scope
 
-- OS-1: Waitlist, temporary seat reservation, or queue.
+- OS-1: Waitlist, queue, and any reservation other than the bounded
+  owner-approved RegistrationSeatHold attached to a pending self-service line.
 - OS-2: Distributed/application-instance locks.
 - OS-3: Partial schedule acceptance.
 - OS-4: Capacity override above approved group capacity.

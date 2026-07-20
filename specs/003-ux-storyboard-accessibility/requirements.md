@@ -17,6 +17,15 @@ they remain `design-only` and do not authorize route implementation.
 Student, Admin, Lecturer, and TeachingAssistant accounts with exactly one role
 per enabled account. The combined Lecturer/TA fixture is frozen.
 
+**Owner-approved unified-workflow amendment (2026-07-20):** Ahmed ELbamby
+approved one authenticated design language for Student, Admin, Lecturer, and
+TeachingAssistant routes and expanded this contract to 30 route templates.
+The approved design scope adds a Student roadmap, first-term automatic-
+enrollment states, pending per-subject approval that visibly holds capacity,
+19-21-credit overload request states for server-reported CGPA >= 3.0, and
+separate role-scoped staff and Admin approval inbox routes. Downstream server
+contracts remain gated by their owning specifications.
+
 ## Context
 
 Registration occurs under time pressure and must communicate eligibility,
@@ -26,13 +35,13 @@ reusable component composition, complete state behavior, responsive rules,
 accessibility semantics, and executable functional-test coverage.
 
 This specification owns the frontend design system and the design/test contract
-for all 27 MVP route templates in docs/STORYBOARD.md. Feature specifications
+for all 30 MVP route templates in docs/STORYBOARD.md. Feature specifications
 own their domain behavior and APIs; this specification owns how that behavior
 is presented, operated, and verified in the Blazor WebAssembly client.
 
 ## Functional Requirements
 
-- FR-1: The product MUST design and deliver exactly the 27 MVP route templates
+- FR-1: The product MUST design and deliver exactly the 30 MVP route templates
   listed in the Page Coverage Matrix below.
 - FR-2: Before implementation, every route MUST have an approved Page Design
   Record containing its design-owner SPEC, single implementation-owner SPEC,
@@ -86,15 +95,53 @@ is presented, operated, and verified in the Blazor WebAssembly client.
 - FR-14: The client MUST treat eligibility, authorization, time/term, conflict,
   capacity, and submission results as server-authoritative and MUST re-render
   stable server reason codes without converting a rejected result into success.
+- FR-15: Every authenticated route for Student, Admin, Lecturer, and
+  TeachingAssistant MUST use one versioned composition contract for AppShell,
+  role navigation, page header, cards, forms, tables, status states, buttons,
+  spacing, typography, focus, and responsive behavior. Only authorized
+  role-specific content, labels, and actions may differ.
+- FR-16: STU-09 MUST present the server-authoritative curriculum roadmap by
+  level and recommended term, including each subject's three-credit value,
+  prerequisite chain, completion state, availability, approval requirement,
+  and transition to an eligible offering detail.
+- FR-17: STU-01, STU-07, and STU-09 MUST distinguish first-term automatic
+  enrollment from self-registration. First-term Students see assigned subjects
+  and timetable without manual selection; term-two-and-later Students may use
+  discovery, schedule, and review subject to server eligibility.
+- FR-18: Later-level subjects MUST show unmet prerequisite and other
+  server-reported eligibility reasons. The client MUST NOT infer permission
+  from roadmap level, term number, or locally calculated completion state.
+- FR-19: Applicable Student routes MUST present per-subject request state as
+  not-requested, pending-approval, approved, rejected, expired/released, or
+  registered. Pending approval MUST be labelled as holding capacity and MUST
+  NOT be presented as enrollment or approval success.
+- FR-20: Capacity on Student, Admin, Lecturer, and TeachingAssistant routes MUST
+  use text-labelled total, enrolled, held, and available values from the same
+  server response, including loading, stale, and unavailable presentations.
+- FR-21: ADM-10 and STF-05 MUST provide bounded, paged, role-scoped approval
+  inboxes with request details, Student/subject/group context, normal or
+  overload request type, capacity effect, submitted/expiry times, reasoned
+  approve/reject confirmation, stale-decision recovery, and audit/reference
+  feedback.
+- FR-22: The UI MUST present 18 credits as the normal maximum. A 19-21-credit
+  overload request action is available only when the server reports CGPA >=
+  3.0 and remains pending until an authorized staff decision is returned.
+- FR-23: The UI MUST block plans above 21 credits and 19-21-credit plans when
+  server-reported CGPA is below 3.0, showing exact current/required values and
+  an accessible text explanation.
+- FR-24: Every interactive request MUST recover from offline, timeout,
+  malformed-response, and service-error outcomes through the shared status
+  pattern, restore an operable action, retain safe correlation information,
+  and never leave a permanent busy or false-success state.
 
 ## Page Coverage Matrix
 
 | Area | Required route IDs |
 |---|---|
 | Public/authentication | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05 |
-| Student | STU-01, STU-02, STU-03, STU-04, STU-05, STU-06, STU-07, STU-08 |
-| Administration | ADM-01, ADM-02, ADM-03, ADM-04, ADM-05, ADM-06, ADM-07, ADM-08, ADM-09 |
-| Lecturer/Teaching Assistant | STF-01, STF-02, STF-03, STF-04 |
+| Student | STU-01, STU-02, STU-03, STU-04, STU-05, STU-06, STU-07, STU-08, STU-09 |
+| Administration | ADM-01, ADM-02, ADM-03, ADM-04, ADM-05, ADM-06, ADM-07, ADM-08, ADM-09, ADM-10 |
+| Lecturer/Teaching Assistant | STF-01, STF-02, STF-03, STF-04, STF-05 |
 | System status | SYS-01 |
 
 The route, purpose, owning feature, component composition, states, and minimum
@@ -134,11 +181,15 @@ functional tests for each ID are normative in page-matrix.md.
   strings MUST be externalized, formats MUST be culture-aware, layout MUST be
   direction-safe, and user text MUST NOT be embedded as component control
   logic.
+- NFR-11: Shared authenticated composition MUST pass one cross-role structural
+  conformance suite; equivalent components and states MUST use the same token,
+  spacing, typography, focus, responsive, and accessible-name contracts on
+  Student, Admin, Lecturer, and TeachingAssistant routes.
 
 ## Acceptance Criteria
 
 ### AC-1: Complete Page Design Record (FR-1, FR-2, FR-5, FR-11, FR-13)
-Given any one of the 27 route IDs is selected for implementation<br>
+Given any one of the 30 route IDs is selected for implementation<br>
 When its frontend readiness review occurs<br>
 Then its approved Page Design Record contains every FR-2 field<br>
 And every applicable state and responsive width is designed<br>
@@ -184,7 +235,7 @@ And submission remains disabled with every blocking reason.
 
 ### AC-7: Admin page functionality (FR-1, FR-5, FR-12, FR-14)
 Given valid, invalid, stale-rowversion, unauthorized, and concurrent-edit
-fixtures exist for ADM-02 through ADM-09<br>
+fixtures exist for ADM-02 through ADM-10<br>
 When their functional tests execute<br>
 Then preview, validation, confirmation, pagination, conflict recovery, audit,
 and server-authority behaviors match the owning feature contracts.
@@ -192,12 +243,12 @@ and server-authority behaviors match the owning feature contracts.
 ### AC-8: Lecturer and TA page functionality (FR-1, FR-8, FR-12, FR-14)
 Given Lecturer-only, TA-only, unassigned, stale-assignment, and
 availability-deadline fixtures exist<br>
-When STF-01 through STF-04 functional tests execute<br>
+When STF-01 through STF-05 functional tests execute<br>
 Then shared components display only server-authorized assignments and actions<br>
 And timetable calendar/list content is equivalent.
 
 ### AC-9: Responsive and accessible route matrix (FR-11, FR-12, NFR-1, NFR-2, NFR-5)
-Given each of the 27 routes is rendered at every required responsive width and
+Given each of the 30 routes is rendered at every required responsive width and
 at 400% zoom<br>
 When keyboard, automated accessibility, and responsive functional suites run<br>
 Then no critical action or reason is clipped or unreachable<br>
@@ -262,6 +313,50 @@ Then the correct safe health/status heading, public or authorized next action,
 and reference ID when applicable are shown<br>
 And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
+### AC-18: Unified authenticated design system (FR-4, FR-10, FR-15, NFR-11)
+Given each Student, Admin, Lecturer, and TeachingAssistant route is rendered<br>
+When shared structure, state, and interaction contracts are compared<br>
+Then each route uses the shared AppShell, role navigation, page header, cards,
+forms, tables, status panels, buttons, spacing, typography, focus, and
+responsive patterns<br>
+And only authorized role-specific content and actions differ.
+
+### AC-19: Roadmap and first-term automatic enrollment (FR-16, FR-17, FR-18)
+Given first-term, second-term, completed-prerequisite, and missing-prerequisite
+Student fixtures<br>
+When STU-01, STU-07, and STU-09 are exercised<br>
+Then first-term assignments are labelled automatically enrolled with no manual
+selection action<br>
+And term-two-and-later Students can open eligible offerings from their roadmap<br>
+And unmet prerequisite chains remain visible and block progression.
+
+### AC-20: Subject approval and held capacity (FR-19, FR-20, FR-21)
+Given pending, approved, rejected, expired/released, full, stale, and
+unauthorized approval fixtures<br>
+When the Student and authorized approver journeys execute<br>
+Then the Student sees the exact per-subject state and pending held-seat effect<br>
+And ADM-10 or STF-05 exposes only requests inside the approver's server scope<br>
+And every capacity view shows total, enrolled, held, and available values with
+text labels and safe stale-state recovery.
+
+### AC-21: Governed overload request (FR-22, FR-23)
+Given CGPA 2.99 and 3.00 fixtures and requested loads of 18, 19, 21, and 22
+credits<br>
+When STU-04, STU-05, ADM-10, and STF-05 journeys execute<br>
+Then 18 credits requires no overload request<br>
+And 19-21 credits exposes a request only for CGPA >= 3.0 and remains pending
+until a scoped staff decision<br>
+And a lower CGPA or 22-credit load remains blocked with exact explanation.
+
+### AC-22: Recoverable real-composition journey (FR-12, FR-24)
+Given a real authenticated demo database contains published roadmap subjects,
+offerings, capacities, and approval fixtures<br>
+When the browser exercises the Student journey and each approving role without
+intercepting or fulfilling application API calls<br>
+Then every interactive action reaches the composed server and durable store<br>
+And offline, timeout, malformed-response, and service-error failures restore a
+safe operable state rather than remaining busy or reporting false success.
+
 ## Edge Cases
 
 - EC-1: Status changes while keyboard focus is in a group card -> announce the
@@ -285,6 +380,15 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
   values remain reviewable, and secret values are not exposed.
 - EC-10: Rapid double activation of a command button -> disable while pending
   and rely on the command idempotency contract; only one result is presented.
+- EC-11: Approval changes while a Student views an earlier pending response ->
+  preserve focus, announce the decision, and refresh capacity before enabling
+  the next action.
+- EC-12: A held seat expires or is released -> show updated
+  total/enrolled/held/available values and never imply enrollment success.
+- EC-13: CGPA exactly 3.0 permits the 19-21 request action; 2.99 does not, and
+  22 credits remains blocked.
+- EC-14: An approval inbox has no authorized scope -> show a scoped empty state
+  or 403 without another Student's request data.
 
 ## API Contracts
 
@@ -326,6 +430,21 @@ interface UiStateCase {
   nextActions: string[];
   testIds: string[];
 }
+interface CapacityStatusView {
+  total: number;
+  enrolled: number;
+  held: number;
+  available: number;
+  state: "current" | "stale" | "unavailable";
+}
+interface SubjectApprovalStatusView {
+  state: "not-requested" | "pending-approval" | "approved" | "rejected" |
+    "expired-released" | "registered";
+  requestType: "subject" | "overload";
+  submittedAtUtc?: string;
+  expiresAtUtc?: string;
+  safeReason?: string;
+}
 interface FrontendTestRecord {
   testId: string;
   routeId: string;
@@ -354,6 +473,8 @@ unknown-code fallback behavior. SPEC-003 owns no server endpoint.
 | PageDesignRecord | Route, design owner, single implementation owner, contributors, layout/component/state/interaction/responsive/accessibility/test contract and approval version |
 | DesignTokenSet | Version, approval, color/type/spacing/size/border/focus/elevation/motion/breakpoint/z-index tokens |
 | FrontendTestRecord | Test ID, route, requirement links, type, fixture, expected outcome |
+| CapacityStatusView | Server-reported total, enrolled, held, available, and freshness state shown identically across roles |
+| SubjectApprovalStatusView | Per-subject or overload request state, submitted/expiry time, safe reason, and next action |
 
 ## Out of Scope
 

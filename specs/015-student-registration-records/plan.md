@@ -1,7 +1,7 @@
 # Implementation Plan: Student Registration Records
 
 **Branch**: 015-student-registration-records | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; pending-line and first-term record amendment approved 2026-07-20 (Gate A).
 
 ## Summary
 
@@ -9,6 +9,10 @@ Build scoped read models and Blazor pages over the canonical SPEC-014
 registration aggregate. SPEC-015 does not introduce a second receipt table:
 it projects the unique reference and immutable receipt/decision snapshot that
 SPEC-014 commits atomically with a registration result.
+
+The amended projection also renders durable PendingApproval lines and held
+capacity, immutable line decisions, rejection/expiry, and first-term automatic
+origin without moving any write ownership into SPEC-015.
 
 ## Technical Context
 
@@ -38,6 +42,10 @@ SPEC-014 commits atomically with a registration result.
 5. Map handlers after behavior tests; implement STU-06/STU-07 only after the
    SPEC-003 page contracts and E2E tests fail.
 6. Produce retention, PII-minimization, accessibility, and trace evidence.
+7. Write failing pending/approved/rejected/expired, first-term-origin, no-holder-
+   PII, unified-component, browser, accessibility, and authorization tests.
+8. Extend bounded queries and STU-06/STU-07/Admin inspection only after the
+   amended contract tests fail, then refresh trace and release evidence.
 
 ## Design Decisions
 
@@ -47,6 +55,11 @@ SPEC-014 owns `RegistrationSubmission`, `Enrollment`,
 `DecisionSnapshot`, `Reference`, and `ReceiptSnapshot`. SPEC-015 owns only
 the receipt/history DTOs, query services, endpoints, and canonical student
 pages. No drop, withdrawal, or correction command is introduced.
+
+Pending lines and decisions are projections over SPEC-014-owned
+RegistrationSubmissionLine, RegistrationSeatHold, and
+RegistrationApprovalDecision. General capacity shows counts only. Automatic
+records name roadmap roots and origin but do not invent approval history.
 
 ## Constitution and Approval Gate
 

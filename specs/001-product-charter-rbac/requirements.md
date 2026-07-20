@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved (Gate A demo implementation, 2026-07-13)<br>
+**Status:** Approved (Gate A demo implementation, 2026-07-13; approval-workflow RBAC amendment approved 2026-07-20)<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Registrar/Policy SME, UX, Architecture, Data, QA, Security, DevOps<br>
 **Target:** Sprint 0<br>
@@ -32,9 +32,15 @@ specs do not invent scope or permission rules.
   required-term, bounded University ID/name locator returning minimal fields,
   followed by named StudentId plus AcademicTermId scope for detail or
   correction.
+- FR-3A: Admin MAY receive `RegistrationApproval.DecideAll`; Lecturer and
+  TeachingAssistant MAY receive `RegistrationApproval.DecideAssigned` only
+  for subject lines whose selected group has their current effective
+  assignment. Authorization MUST precede approval-request existence and
+  version disclosure and MUST be revalidated during the decision transaction.
 - FR-4: The system MUST support the end-to-end student flow from login through
   an atomic registration receipt.
-- FR-5: The system MUST expose role-scoped staff/admin workspaces.
+- FR-5: The system MUST expose role-scoped staff/admin workspaces, including
+  capability- and assignment-scoped registration approval inboxes.
 - FR-6: MVP scope and non-goals MUST match docs/PROJECT_PLAN.md.
 - FR-7: Every implementation story MUST trace to an approved spec and
   acceptance criterion.

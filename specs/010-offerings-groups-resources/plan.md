@@ -3,6 +3,11 @@
 **Branch**: 010-offerings-groups-resources | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13, including staff-owned availability and read-only Admin use.
 
+**Owner-approved capacity amendment (2026-07-20):** Ahmed ELbamby's explicit
+instruction approves pending per-subject seat holds, shared held/enrolled
+capacity accounting, and privacy-safe capacity visibility for every active
+role. Implementation remains gated on the new unchecked amendment tasks.
+
 ## Summary
 
 Deliver Offerings, Groups, and Resources inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
@@ -62,7 +67,14 @@ it does not create a second StaffAdministration aggregate.
    declarations into offering planning as read-only inputs; no Admin
    availability edit or override route exists in
    the POC. Staff-owned changes can create Scheduling-owned impact alerts.
-6. ADM-06/ADM-07 use Scheduling owner APIs; SPEC-017 contributes monitoring
+6. Extend the SectionGroup serialization boundary to approval holds so every
+   mutation preserves EnrolledCount plus HeldCount at or below Capacity;
+   derive AvailableCount and expose total/enrolled/held/available consistently
+   to every role without holder PII.
+7. Replace validation-only/unavailable scheduling handlers with owner services
+   and SQL stores, use selectable term/course inputs in ADM-06, and seed
+   complete published Development offerings for browser testing.
+8. ADM-06/ADM-07 use Scheduling owner APIs; SPEC-017 contributes monitoring
    and audit views without duplicate writers.
 
 ## Execution and Gate Order

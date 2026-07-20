@@ -2,7 +2,7 @@
 
 **Feature Branch**: 002-aastmt-policy-rulebook
 **Created**: 2026-07-12
-**Status**: Approved (Gate A demo implementation, 2026-07-13)
+**Status**: Approved (Gate A demo implementation, 2026-07-13; first-term, approval-hold, and overload amendment approved by Ahmed ELbamby on 2026-07-20)
 **Owner**: Registrar/Policy SME
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -20,6 +20,15 @@ For this non-production proof of concept, Ahmed ELbamby approved the bounded
 `DEMO-POC-2026.1` profile on 2026-07-13. It intentionally demonstrates policy
 evaluation with simple rules and a small, sourced curriculum; it is not an
 official AASTMT production rulebook.
+
+On 2026-07-20 Ahmed approved the following demo amendment: first-program-term
+required prerequisite roots are enrolled automatically; self-registration
+starts in program term two; every self-service subject holds capacity pending
+a scoped line approval; normal load is at most 18 credits; 19 through 21
+credits additionally requires current CGPA at least 3.00; more than 21 is
+rejected; and the existing stricter probation maximum remains in force. This
+bounded hold/approval workflow is not a waitlist, prerequisite waiver, generic
+advisor workflow, or capacity override.
 
 ## User Scenarios and Testing
 
@@ -108,10 +117,14 @@ And source/access/approval/effective metadata remains auditable.
   The demo profile MUST enforce configured registration windows, eligible
   standing, absence of blocking holds, and completed prerequisites; accept a
   regular load from 9 through 18 credits with 18 as both the default/recommended
-  target and hard normal maximum; limit GPA below 2.0 to 12 credits; allocate
-  capacity to the first successful commit with no waitlist or override; block
-  every unresolved meeting overlap with travel-time buffering disabled; and
-  provide no automatic exception, add/drop, withdrawal, or advisor workflow.
+  target and normal maximum; limit GPA below 2.0 to 12 credits; allow 19
+  through 21 credits only when current CGPA is at least 3.00 and the normal
+  line-approval workflow completes; reject more than 21 credits; automatically
+  enroll required first-program-term prerequisite roots; hold one occupied
+  seat for every term-two-or-later self-service line pending scoped approval;
+  block every unresolved meeting overlap with travel-time buffering disabled;
+  and provide no prerequisite waiver, capacity override, add/drop, withdrawal,
+  or generic advisor workflow.
   Its catalogue MUST be the 19-course AASTMT College of Artificial Intelligence
   Data Science snapshot in `docs/DEMO_CURRICULUM.md`, with any gap-filling synthetic row
   clearly labelled as synthetic and never represented as official curriculum.
@@ -171,6 +184,7 @@ No route is directly owned. Any later UI exposure requires a SPEC-003 route-mani
 - OS-1: Legal interpretation by software.
 - OS-2: Arbitrary scripting/expressions uploaded by users.
 - OS-3: Waitlists, capacity/conflict overrides, automatic exceptions, add/drop,
-  withdrawal, and Advisor or Deanery approval workflows until separately
-  approved.
+  withdrawal, and generic Advisor or Deanery workflows. The bounded
+  RegistrationSeatHold and subject-line approval amendment approved on
+  2026-07-20 is explicitly in scope and does not waive another policy rule.
 - OS-4: Automatic dismissal or academic-path decisions.

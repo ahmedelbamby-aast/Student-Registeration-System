@@ -16,6 +16,16 @@ demo journeys cover Student, Admin, Lecturer, and TeachingAssistant accounts,
 with exactly one role per enabled account. The combined Lecturer/TA fixture is
 frozen and excluded from the route matrix.
 
+**Owner-approved unified-workflow amendment (2026-07-20):** Ahmed ELbamby
+approved a single authenticated design language across Student, Admin,
+Lecturer, and TeachingAssistant experiences and expanded the design contract
+to 30 route templates. The amendment adds a Student roadmap, role-scoped staff
+and Admin approval inboxes, first-term automatic-enrollment presentation,
+per-subject pending approval with capacity-holding status, and a 19-21-credit
+overload-request presentation for students whose server-reported CGPA is at
+least 3.0. This is design and test-contract approval; each domain owner must
+approve its server contract before application implementation begins.
+
 ## Context
 
 Registration occurs under time pressure and must communicate eligibility,
@@ -25,7 +35,7 @@ reusable component composition, complete state behavior, responsive rules,
 accessibility semantics, and executable functional-test coverage.
 
 This specification owns the frontend design system and the design/test contract
-for all 27 MVP route templates in docs/STORYBOARD.md. Feature specifications
+for all 30 MVP route templates in docs/STORYBOARD.md. Feature specifications
 own their domain behavior and APIs; this specification owns how that behavior
 is presented, operated, and verified in the Blazor WebAssembly client.
 
@@ -39,7 +49,7 @@ As a Student or staff user, I need the Complete Page Design Record (FR-1, FR-2, 
 
 **Acceptance Scenario (AC-1)**
 
-Given any one of the 27 route IDs is selected for implementation<br>
+Given any one of the 30 route IDs is selected for implementation<br>
 When its frontend readiness review occurs<br>
 Then its approved Page Design Record contains every FR-2 field<br>
 And every applicable state and responsive width is designed<br>
@@ -96,7 +106,8 @@ As a Student or staff user, I need the Student discovery and group details (FR-1
 
 Given eligible, unavailable, full, stale, and service-error fixtures exist<br>
 When STU-02 and STU-03 functional tests execute<br>
-Then search/filter results, reasons, credits, capacity, Lecturer, TA, room,
+Then search/filter results, roadmap position, prerequisites, reasons, credits,
+capacity totals/enrolled/held/available, Lecturer, TA, room,
 day/time, state changes, and retry actions match the server contracts.
 ### User Story 6 - Accessible schedule conflict (FR-6, FR-7, FR-8, NFR-1, NFR-2) (P3)
 
@@ -121,7 +132,7 @@ As a Student or staff user, I need the Admin page functionality (FR-1, FR-5, FR-
 **Acceptance Scenario (AC-7)**
 
 Given valid, invalid, stale-rowversion, unauthorized, and concurrent-edit
-fixtures exist for ADM-02 through ADM-09<br>
+fixtures exist for ADM-02 through ADM-10<br>
 When their functional tests execute<br>
 Then preview, validation, confirmation, pagination, conflict recovery, audit,
 and server-authority behaviors match the owning feature contracts.
@@ -135,7 +146,7 @@ As a Student or staff user, I need the Lecturer and TA page functionality (FR-1,
 
 Given Lecturer-only, TA-only, unassigned, stale-assignment, and
 availability-deadline fixtures exist<br>
-When STF-01 through STF-04 functional tests execute<br>
+When STF-01 through STF-05 functional tests execute<br>
 Then shared components display only server-authorized assignments and actions<br>
 And timetable calendar/list content is equivalent.
 ### User Story 9 - Responsive and accessible route matrix (FR-11, FR-12, NFR-1, NFR-2, NFR-5) (P3)
@@ -146,7 +157,7 @@ As a Student or staff user, I need the Responsive and accessible route matrix (F
 
 **Acceptance Scenario (AC-9)**
 
-Given each of the 27 routes is rendered at every required responsive width and
+Given each of the 30 routes is rendered at every required responsive width and
 at 400% zoom<br>
 When keyboard, automated accessibility, and responsive functional suites run<br>
 Then no critical action or reason is clipped or unreachable<br>
@@ -259,6 +270,99 @@ Then the correct safe health/status heading, public or authorized next action,
 and reference ID when applicable are shown<br>
 And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
+### User Story 18 - One authenticated design system (FR-4, FR-10, FR-15, NFR-11) (P1)
+
+As a Student, Admin, Lecturer, or Teaching Assistant, I need every authenticated
+screen to use the same shell and interaction language so that navigation,
+forms, states, and actions remain predictable when my role-specific content
+changes.
+
+**Independent Test**: Execute AC-18 in requirements.md across every
+authenticated route without relying on a route-specific visual exception.
+
+**Acceptance Scenario (AC-18)**
+
+Given any authenticated route is rendered for its authorized role<br>
+When its structure and interactive states are compared with the shared design
+contract<br>
+Then it uses the shared AppShell, role navigation, page header, cards, forms,
+tables, status panels, buttons, spacing, typography, and responsive patterns<br>
+And only the role-specific labels, data, permissions, and actions differ.
+
+### User Story 19 - Roadmap and first-term enrollment (FR-16, FR-17, FR-18) (P1)
+
+As a Student, I need a term-by-term roadmap and clear enrollment ownership so
+that I understand what is automatic in my first term and what I can choose
+from my second term onward.
+
+**Independent Test**: Execute AC-19 in requirements.md with first-term,
+second-term, completed-prerequisite, and missing-prerequisite fixtures.
+
+**Acceptance Scenario (AC-19)**
+
+Given the server identifies a first-term student<br>
+When STU-01, STU-07, and STU-09 load<br>
+Then the assigned first-term subjects appear as automatically enrolled and
+manual subject selection is unavailable with a clear explanation<br>
+And a second-term-or-later student can navigate from the roadmap to eligible
+subject details while unmet prerequisite chains remain visible and blocked.
+
+### User Story 20 - Approval and capacity holding (FR-19, FR-20, FR-21) (P1)
+
+As a Student, Lecturer, Teaching Assistant, or Admin, I need one understandable
+approval workflow so that a pending subject request visibly holds capacity and
+the appropriate staff can decide it without ambiguity.
+
+**Independent Test**: Execute AC-20 in requirements.md with pending, approved,
+rejected, expired/released, full, stale, and unauthorized fixtures.
+
+**Acceptance Scenario (AC-20)**
+
+Given a student submits a subject that requires approval<br>
+When the server accepts the request as pending<br>
+Then the Student sees the subject-level pending status and held-seat effect<br>
+And ADM-10 or STF-05 shows the request only to an authorized approver<br>
+And every capacity presentation shows total, enrolled, held, and available
+values with text labels and a safe stale-state refresh action.
+
+### User Story 21 - Governed overload request (FR-22, FR-23) (P1)
+
+As a Student with a qualifying CGPA, I need to request 19-21 credits and track
+the decision so that the normal 18-credit maximum remains clear and no
+overload is implied before approval.
+
+**Independent Test**: Execute AC-21 in requirements.md at CGPA 2.99 and 3.00,
+for 18, 19, 21, and 22 requested credits, including pending, approved, and
+rejected decisions.
+
+**Acceptance Scenario (AC-21)**
+
+Given the normal maximum is 18 credits<br>
+When a student builds a 19-21-credit plan<br>
+Then CGPA below 3.0 receives a blocking explanation with no request action<br>
+And CGPA at least 3.0 may submit an overload request but cannot treat it as
+approved until an authorized staff decision is returned<br>
+And 22 or more credits remains blocked.
+
+### User Story 22 - Real composed browser recovery (FR-12, FR-24) (P1)
+
+As a demo tester, I need the critical registration and approval journeys to
+use the running application and database so that successful mock responses do
+not hide a missing handler, seed, or persistence connection.
+
+**Independent Test**: Execute AC-22 in requirements.md with composed demo data
+and no browser request interception.
+
+**Acceptance Scenario (AC-22)**
+
+Given the demo database contains published roadmap subjects, offerings,
+capacities, and approval fixtures<br>
+When Student, Admin, Lecturer, and TeachingAssistant browser journeys execute
+without intercepting application API calls<br>
+Then every action reaches the composed server and durable store<br>
+And offline, timeout, malformed-response, and service-error outcomes restore a
+safe operable state instead of remaining busy or showing false success.
+
 ## Edge Cases
 
 - EC-1: Status changes while keyboard focus is in a group card -> announce the
@@ -282,12 +386,22 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
   values remain reviewable, and secret values are not exposed.
 - EC-10: Rapid double activation of a command button -> disable while pending
   and rely on the command idempotency contract; only one result is presented.
+- EC-11: An approval is decided while the Student views an earlier pending
+  response -> preserve focus, announce the changed decision, and refresh
+  capacity before enabling the next action.
+- EC-12: A held seat expires or is released -> do not present enrollment or
+  approval success; show the updated total/enrolled/held/available values and
+  a safe retry path.
+- EC-13: CGPA is exactly 3.0 -> the 19-21-credit request action is available;
+  CGPA 2.99 remains ineligible and 22 credits remains blocked.
+- EC-14: A user opens an approval inbox with no authorized scope -> render a
+  scoped empty state or 403 without leaking another student's request.
 
 ## Requirements
 
 ### Functional Requirements
 
-- FR-1: The product MUST design and deliver exactly the 27 MVP route templates
+- FR-1: The product MUST design and deliver exactly the 30 MVP route templates
   listed in the Page Coverage Matrix below.
 - FR-2: Before implementation, every route MUST have an approved Page Design
   Record containing its design-owner SPEC, single implementation-owner SPEC,
@@ -341,6 +455,48 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 - FR-14: The client MUST treat eligibility, authorization, time/term, conflict,
   capacity, and submission results as server-authoritative and MUST re-render
   stable server reason codes without converting a rejected result into success.
+- FR-15: Every authenticated route for Student, Admin, Lecturer, and
+  TeachingAssistant MUST use one versioned composition contract for AppShell,
+  role navigation, page header, cards, forms, tables, status states, buttons,
+  spacing, typography, focus, and responsive behavior. Role-specific content
+  and authorization MAY vary; the interaction language and component states
+  MUST NOT fork by role without an approved accessibility reason.
+- FR-16: STU-09 MUST present the Student's server-authoritative curriculum
+  roadmap by level and recommended term, including every subject's three-credit
+  value, prerequisite chain, completion state, current availability, approval
+  requirement, and transition to the eligible offering detail.
+- FR-17: STU-01, STU-07, and STU-09 MUST distinguish first-term automatic
+  enrollment from self-registration. A first-term Student MUST see assigned
+  subjects and timetable without a manual selection action; from term two
+  onward, the Student MAY use discovery, schedule, and review subject to
+  server-reported eligibility.
+- FR-18: Roadmap and discovery presentation MUST explain that a later-level
+  subject remains unavailable until every server-reported prerequisite and
+  other eligibility condition is met; presentation MUST NOT infer eligibility
+  from level, term number, or client-side completion calculations.
+- FR-19: STU-03, STU-04, STU-05, STU-06, STU-07, and STU-09 MUST present each
+  subject request as not-requested, pending-approval, approved, rejected,
+  expired/released, or registered when the owning server contract makes that
+  state applicable. Pending MUST be described as holding capacity, not as an
+  enrollment or approval success.
+- FR-20: Capacity presentation on Student, Admin, Lecturer, and Teaching
+  Assistant routes MUST show text-labelled total, enrolled, held, and available
+  values from one server response and MUST render stale/concurrent changes
+  without computing authoritative availability in the client.
+- FR-21: ADM-10 and STF-05 MUST provide bounded, paged, role-scoped approval
+  inboxes with request detail, Student/subject/group context, normal or overload
+  request type, capacity effect, submitted/expiry times, reasoned approve/reject
+  confirmation, stale-decision recovery, and audit/reference feedback.
+- FR-22: The normal plan maximum MUST be presented as 18 credits. A 19-21-credit
+  overload request action MUST appear only when the server reports CGPA at
+  least 3.0 and MUST remain visibly pending until an authorized staff decision;
+  the client MUST never convert qualifying CGPA into approval.
+- FR-23: Plans above 21 credits and 19-21-credit plans for CGPA below 3.0 MUST
+  remain blocked with exact current/required values and a text explanation.
+- FR-24: Every interactive request MUST recover from offline, timeout,
+  malformed-response, and service-error outcomes through the common status
+  pattern, restore an operable control, retain safe correlation information,
+  and never leave a permanently busy or false-success state.
 
 ### Non-Functional Requirements
 
@@ -376,6 +532,10 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
   strings MUST be externalized, formats MUST be culture-aware, layout MUST be
   direction-safe, and user text MUST NOT be embedded as component control
   logic.
+- NFR-11: Shared authenticated composition MUST pass one cross-role structural
+  conformance suite; equivalent components and states MUST use the same token,
+  spacing, typography, focus, responsive, and accessible-name contracts on
+  Student, Admin, Lecturer, and TeachingAssistant routes.
 
 ### Key Entities
 
@@ -386,9 +546,16 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 
 ## Success Criteria
 
-- **SC-1**: All 27 route templates have approved page-design records and complete component, contract, E2E, accessibility, and visual test plans.
+- **SC-1**: All 30 route templates have approved page-design records and complete component, contract, E2E, accessibility, and visual test plans.
 - **SC-2**: Critical journeys meet WCAG 2.2 AA requirements before release.
 - **SC-3**: At least 90% of representative users complete registration in usability validation.
+- **SC-4**: In cross-role usability checks, every participant identifies total,
+  enrolled, held, and available capacity plus pending/approved/rejected status
+  without relying on color or an undocumented calculation.
+- **SC-5**: At least one complete first-term journey, one term-two-or-later
+  registration journey, and one subject/overload approval journey pass in a
+  browser against the composed demo application and durable database without
+  intercepted application API responses.
 
 ## Assumptions
 
@@ -418,6 +585,7 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 | STU-06 | /student/registration/result/{id} | RegistrationResultPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-015 |
 | STU-07 | /student/registrations | RegistrationHistoryPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-015 |
 | STU-08 | /student/account | StudentAccountPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-007 |
+| STU-09 | /student/roadmap | StudentRoadmapPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-011 with SPEC-008/SPEC-009/SPEC-014 contributions |
 | ADM-01 | /admin | AdminDashboardPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-017 |
 | ADM-02 | /admin/terms | TermAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-008 |
 | ADM-03 | /admin/users | UserAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-007 |
@@ -427,10 +595,12 @@ And no stack trace, SQL text, credential, or unauthorized identifier appears.
 | ADM-07 | /admin/resources | ResourceAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-010 |
 | ADM-08 | /admin/registrations | RegistrationAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-017 |
 | ADM-09 | /admin/audit | AuditAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-017 |
+| ADM-10 | /admin/approvals | ApprovalAdministrationPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-017 with SPEC-014 contribution |
 | STF-01 | /staff | StaffDashboardPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-016 |
 | STF-02 | /staff/timetable | StaffTimetablePage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-016 |
 | STF-03 | /staff/groups/{groupId}/roster | StaffRosterPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-016 |
 | STF-04 | /staff/availability | StaffAvailabilityPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-016 |
+| STF-05 | /staff/approvals | StaffApprovalInboxPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-016 with SPEC-014 contribution |
 | SYS-01 | /status/{code} | SystemStatusPage.razor | Design/test contract owner; design SPEC-003, implementation SPEC-003 |
 
 ## Out of Scope

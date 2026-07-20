@@ -114,3 +114,9 @@ No direct frontend route is owned by this specification; frontend integration re
 All forty-two tasks are complete with executable evidence. The SPEC-001
 approval is limited to its non-production charter/RBAC and bounded aggregate
 scope; it does not waive broader SPEC-018 manual or production release gates.
+
+## Phase 8 - Owner-approved 2026-07-20 approval RBAC amendment
+
+- [ ] T043 [P] [RBAC] Add `RegistrationApproval.DecideAll` and `RegistrationApproval.DecideAssigned` to the governed permission vocabulary and role matrix in specs/001-product-charter-rbac/contracts/role-boundary.md and the canonical permission artifacts.
+- [ ] T044 [RBAC] Add positive Admin, assigned Lecturer/TA, unassigned staff, wrong-role, missing-permission, and authorization-before-disclosure tests under tests/StudentRegistration.AuthorizationTests and tests/StudentRegistration.ContractTests.
+- [ ] T045 [TRACE] Regenerate SPEC-001 RBAC, scope, traceability, and release evidence after the executable SPEC-007/SPEC-014 policies pass.

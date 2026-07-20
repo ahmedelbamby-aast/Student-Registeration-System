@@ -1,46 +1,70 @@
 .srs-alert {
-    align-items: center;
+    align-items: flex-start;
     background: var(--srs-color-semantic-information-surface);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-information-text);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border: var(--srs-border-primitive-width-strong) solid rgba(3,105,161,0.3);
+    border-inline-start-width: 0.3125rem;
+    border-inline-start-color: var(--srs-color-semantic-information-text);
+    border-radius: var(--srs-border-primitive-radius-medium);
     color: var(--srs-color-semantic-information-text);
     display: flex;
     gap: var(--srs-spacing-primitive-3);
     justify-content: space-between;
-    padding: var(--srs-spacing-primitive-3);
+    padding: var(--srs-spacing-primitive-3) var(--srs-spacing-primitive-4);
 }
 
 .srs-alert--error {
     background: var(--srs-color-semantic-danger-surface);
-    border-color: var(--srs-color-semantic-danger-text);
+    border-color: rgba(190,18,60,0.3);
+    border-inline-start-color: var(--srs-color-semantic-danger-text);
     color: var(--srs-color-semantic-danger-text);
+}
+
+.srs-alert--warning {
+    background: var(--srs-color-semantic-warning-surface);
+    border-color: rgba(180,83,9,0.3);
+    border-inline-start-color: var(--srs-color-semantic-warning-text);
+    color: var(--srs-color-semantic-warning-text);
+}
+
+.srs-alert--success {
+    background: var(--srs-color-semantic-success-surface);
+    border-color: rgba(4,120,87,0.3);
+    border-inline-start-color: var(--srs-color-semantic-success-text);
+    color: var(--srs-color-semantic-success-text);
 }
 
 .srs-alert--disabled,
 .srs-alert[aria-disabled="true"] {
     background: var(--srs-color-semantic-disabled-surface);
     color: var(--srs-color-semantic-disabled-text);
+    border-color: transparent;
+    border-inline-start-color: var(--srs-color-semantic-disabled-text);
 }
 
 .srs-alert[aria-busy="true"] {
-    border-color: var(--srs-color-semantic-warning-text);
+    border-inline-start-color: var(--srs-color-semantic-warning-text);
 }
 
 .srs-alert__dismiss {
-    background: var(--srs-color-component-button-secondary-background);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.06);
+    border: var(--srs-border-primitive-width) solid rgba(0,0,0,0.12);
     border-radius: var(--srs-border-primitive-radius-small);
-    color: var(--srs-color-component-button-secondary-text);
+    color: inherit;
     min-block-size: var(--srs-sizing-interactive-minimum);
     padding: var(--srs-spacing-primitive-2) var(--srs-spacing-primitive-3);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--srs-motion-duration-feedback) var(--srs-motion-easing-standard);
 }
 
 .srs-alert__dismiss:hover {
-    background: var(--srs-color-semantic-surface-muted);
+    background: rgba(0,0,0,0.10);
 }
 
 .srs-alert__dismiss:active {
-    border-color: var(--srs-color-semantic-focus-ring);
+    background: rgba(0,0,0,0.14);
 }
 
 .srs-alert__dismiss:focus-visible {
@@ -51,4 +75,5 @@
 .srs-alert__dismiss:disabled {
     background: var(--srs-color-semantic-disabled-surface);
     color: var(--srs-color-semantic-disabled-text);
+    cursor: not-allowed;
 }

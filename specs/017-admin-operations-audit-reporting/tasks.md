@@ -209,3 +209,18 @@
 Phases 1-7 tasks T001-T101 are complete from their recorded evidence. This is
 a demo implementation result only and does not claim Gate D, production, or
 official AASTMT approval.
+
+## Phase 8 - 2026-07-20 Global Line-Approval and First-Term Monitoring Amendment
+
+- [ ] T102 [GATE] Rebaseline SPEC-017 against amended SPEC-001/003/008-010/014-016/018 permission, roadmap, hold, batch, capacity, API, and route contracts; update dependency hashes before runtime work.
+- [ ] T103 [FR-14] Add authorization tests for `RegistrationApproval.DecideAll`, missing/wrong permission, authentication, antiforgery, authorization-before-lookup, named resource scope, and no protected line/version disclosure.
+- [ ] T104 [FR-15] Add bounded stable query/contract tests for requested credits, normal/probation/overload explanation, line/decision/window state, and capacity/enrolled/held/available counts; forbid holder lists, full transcript, detailed holds, contacts, grades, and unrelated data.
+- [ ] T105 [FR-14] Add expected submission/line version, Admin+line ClientRequestId replay/mismatch, duplicate/contradictory decision, approval/expiry race, audit-failure rollback, and no rule/capacity bypass real-SQL tests.
+- [ ] T106 [FR-14-FR-15] Implement global Admin approval list/detail/decision orchestration over canonical SPEC-014 ports only after T103-T105 fail; add no competing decision, hold, counter, or enrollment writer.
+- [ ] T107 [FR-16] Add durable batch list/detail/retry-failed contract, permission, antiforgery, expected-version, reason, idempotency, two-worker/restart, safe failure, unchanged-roadmap, and no-partial-schedule tests.
+- [ ] T108 [FR-16] Implement first-term batch monitoring and failed-item retry delegation to SPEC-014 only after T107 fails; expose no subject override or failure waiver.
+- [ ] T109 [FR-17] Add component/E2E/browser/accessibility/responsive tests for ADM-01/ADM-08 approval and batch states using unified roadmap, capacity, approval status/timeline, decision, loading, empty, success, rejected, expired, stale, denied, offline, and error components.
+- [ ] T110 [FR-17] Implement Admin approval/batch UI with shared SPEC-003 components and verify every enabled action, focus transition, recovery path, and all-role terminology.
+- [ ] T111 [NFR-1-NFR-4] Verify bounded query latency, two-replica decision/retry correctness, audit/metrics/log privacy, held-capacity observability, and no holder PII under the amended load fixture.
+- [ ] T112 [TRACE] Refresh permissions, API/OpenAPI, route manifest, threat model, audit action registry, metrics, traceability, scope, accessibility, and release evidence for FR-14..FR-17/AC-10..AC-11.
+- [ ] T113 [GATE] Record Ahmed Elbamby's product/domain/QA/security/accessibility/data/operations approval perspectives and reject amended release while T102-T112 is unchecked.

@@ -6,6 +6,14 @@
 **Owner**: Registrar/Policy SME and Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
+**Owner-approved policy amendment (2026-07-20):** Ahmed ELbamby explicitly
+approved `CurriculumCourse` as the programme/cohort roadmap, exactly three
+credits for every demo subject, prerequisite-free recommended-term-1 roots,
+at least one prerequisite for every recommended-term-2-or-later subject, and
+the bounded 19-21-credit CGPA/approval policy. This instruction supersedes
+the earlier demo exclusion only for that bounded workflow; generic advisor,
+prerequisite-waiver, and arbitrary exception workflows remain excluded.
+
 ## Context
 
 The demo needs a small, believable curriculum without pretending to reproduce
@@ -55,7 +63,8 @@ credits, the normal demo target/maximum is 18 credits, and GPA below 2.0 has a
 When the admin simulates the Project I boundary plus normal 18/19-credit and
 probation 12/13-credit plans<br>
 Then 95 earned credits fails Project I, 18 and 12 pass their respective load
-boundaries, and 19 and 13 fail<br>
+boundaries, unapproved 19 and probation 13 fail, and the separate qualifying
+19-21 approval-required outcome remains distinguishable<br>
 And every result identifies the draft policy version, value classification,
 and source.
 ### User Story 4 - Governed catalogue publish (FR-1, FR-6, FR-7) (P2)
@@ -112,6 +121,25 @@ And simulations are deterministic<br>
 And publication is all-or-nothing<br>
 And each published change records actor, reason, source, and timestamp.
 
+### User Story 8 - Valid three-credit roadmap (FR-11, FR-12) (P1)
+
+As an authorized administrator, I need each published curriculum roadmap to
+encode the required term order and prerequisites so students receive a safe,
+explainable progression.
+
+**Independent Test**: Execute AC-8 in requirements.md against a draft that
+mixes term-1 roots, later subjects, invalid credits, and missing prerequisites.
+
+**Acceptance Scenario (AC-8)**
+
+Given a programme/cohort roadmap contains recommended-term-1 roots and later
+subjects<br>
+When the catalogue is validated<br>
+Then every subject has exactly three credits<br>
+And every term-1 root has no prerequisite<br>
+And every subject recommended for term 2 or later has at least one valid,
+acyclic prerequisite.
+
 ## Edge Cases
 
 - EC-1: Duplicate course code differs only by case/spacing -> normalize and
@@ -122,6 +150,11 @@ And each published change records actor, reason, source, and timestamp.
 - EC-4: Unknown rule type/config -> reject draft validation.
 - EC-5: Audit persistence fails during publish -> the policy/catalogue version
   and activation change roll back in the same local SQL transaction.
+- EC-6: A roadmap assigns a prerequisite to a term-1 root or omits every
+  prerequisite from a later subject -> reject publication with the subject and
+  recommended term identified.
+- EC-7: A demo subject has credits other than exactly 3 -> reject import,
+  draft validation, and publication without partial change.
 
 ## Requirements
 
@@ -143,12 +176,12 @@ And each published change records actor, reason, source, and timestamp.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
   The initial simple demo PolicySet MUST cover registration-window state,
   prerequisites, course-specific GPA/earned-credit gates, academic standing,
-  a normal recommended target and hard maximum of 18 credits, a 12-credit hard
+  a normal recommended target and normal-path maximum of 18 credits, a 12-credit hard
   maximum when GPA is below 2.0, published group capacity, and timetable
   conflict. Each value MUST distinguish an official-source fact from an
   Ahmed-approved synthetic demo rule.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
-  before publication, including the 18/19-credit normal boundary, 12/13-credit
+  before publication, including the 18/19-credit normal/approval boundary, 12/13-credit
   probation boundary, and any source-backed course GPA/prerequisite boundary.
 - FR-6: Draft/import/publication lifecycles MUST be explicit and versioned;
   published catalogue/policy versions MUST be immutable and superseded.
@@ -162,6 +195,18 @@ And each published change records actor, reason, source, and timestamp.
 - FR-10: Retryable import/publish commands MUST use an idempotency key; replay
   of the same key/payload returns its stored result and reuse with a different
   payload returns 409 IDEMPOTENCY_KEY_REUSED.
+- FR-11: `CurriculumCourse` MUST be the versioned programme/cohort roadmap and
+  MUST carry the subject level, recommended term, required/elective status,
+  and cohort scope used by downstream discovery and registration.
+- FR-12: Every demo Course MUST have exactly 3 credits. A roadmap subject with
+  recommended term 1 MUST have no prerequisite, while every roadmap subject
+  with recommended term 2 or later MUST have at least one valid prerequisite.
+  Validation MUST reject violations, missing references, and cycles before
+  publication.
+- FR-13: The effective policy set MUST encode 18 credits as the normal maximum,
+  require the downstream per-subject approval workflow for every term-2-or-
+  later self-registration plan, permit a 19-21-credit plan only when CGPA is at
+  least 3.0, and reject any plan above 21 credits.
 
 ### Non-Functional Requirements
 
@@ -175,7 +220,7 @@ And each published change records actor, reason, source, and timestamp.
 
 - **Program**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **Course**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
-- **CurriculumCourse**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
+- **CurriculumCourse**: The SPEC-009-owned versioned programme/cohort roadmap row containing level, recommended term, required/elective status, cohort scope, and subject membership.
 - **CoursePrerequisite**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **PolicySet**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **PolicyRule**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
@@ -216,7 +261,8 @@ And each published change records actor, reason, source, and timestamp.
 - OS-1: Live web scraping as a runtime/production catalogue source, or claiming
   the curated snapshot and synthetic gap values are the complete current
   official curriculum.
-- OS-2: Arbitrary policy scripting and advisor, overload, prerequisite-waiver,
-  or other exception workflows.
+- OS-2: Arbitrary policy scripting, generic advisor workflows,
+  prerequisite waivers, and overloads outside the owner-approved 19-21-credit
+  CGPA-at-least-3.0 per-subject approval workflow.
 - OS-3: Silent auto-correction of referential errors.
 - OS-4: Deleting historical course/policy records.

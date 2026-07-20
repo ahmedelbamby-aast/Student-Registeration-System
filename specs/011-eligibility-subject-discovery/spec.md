@@ -6,6 +6,12 @@
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 
+**Owner-approved progression amendment (2026-07-20):** Ahmed ELbamby
+explicitly approved roadmap-aware term progression, automatic matching-cohort
+term-1 enrollment, student self-registration from term 2 onward, and the
+bounded 19-21-credit CGPA/per-subject-approval state. Pending self-registration
+seats are approval holds governed by SPEC-010/SPEC-014, not waitlist entries.
+
 ## Context
 
 Students need to see available subjects based on program, GPA, standing,
@@ -82,6 +88,37 @@ And search is length-bounded and parameterized<br>
 And eligibility is deterministic<br>
 And every status has text/icon meaning independent of color.
 
+### User Story 6 - Roadmap-aware registration path (FR-9, FR-10, FR-11) (P1)
+
+As a student, I need discovery to distinguish automatic first-term subjects,
+normal-load self-registration, and overload self-registration so I know what
+action is available, why every self-selected subject requires approval, and
+whether the overload gate also applies.
+
+**Independent Test**: Execute AC-6 and AC-7 in requirements.md with term-1,
+term-2, CGPA 2.99/3.00, and 18/19/21/22-credit fixtures.
+
+**Acceptance Scenario (AC-6)**
+
+Given a matching-cohort student is in roadmap term 1<br>
+When discovery loads<br>
+Then prerequisite-free roadmap roots are identified as automatically
+registered and no self-registration action is offered<br>
+And from term 2 onward only subjects whose roadmap prerequisites and other
+hard rules pass can enter the student's plan and hold a seat pending
+per-subject approval.
+
+**Acceptance Scenario (AC-7)**
+
+Given a term-2-or-later student has CGPA 3.00 and an 18-credit plan<br>
+When the student selects a three-credit subject<br>
+Then both normal-load and overload selections are labelled pending per-subject
+approval rather than eligible for direct enrollment<br>
+And the 21-credit result also explains the satisfied CGPA overload gate<br>
+And its capacity shows total, enrolled, held, and available counts without
+holder PII<br>
+And CGPA 2.99 or a plan above 21 credits is rejected.
+
 ## Edge Cases
 
 - EC-1: Policy/profile data unavailable -> safe unavailable result and support
@@ -93,6 +130,12 @@ And every status has text/icon meaning independent of color.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
   codes, reset-filter action, current window state, and the configured
   Registrar support path.
+- EC-5: A term-1 student opens a self-registration deep link -> show the
+  authoritative automatic-enrollment state and do not create a duplicate plan.
+- EC-6: CGPA or plan credits change while approval-required discovery is open
+  -> refresh the server decision; never preserve client-authored eligibility.
+- EC-7: A held seat changes capacity -> show the new held/available counts and
+  require the later SPEC-014 command to revalidate the group version.
 
 ## Requirements
 
@@ -105,7 +148,9 @@ And every status has text/icon meaning independent of color.
   plan targets and caps at 18 credits; GPA below 2.0 caps at 12 credits. A
   passed current transcript leaf fails closed as `REPEAT_POLICY_UNAVAILABLE`.
   The Registration-owned current-plan port uses a versioned empty live adapter
-  until SPEC-012 contributes its reader; no advisor/exception workflow exists.
+  until SPEC-012 contributes its reader; no generic advisor,
+  prerequisite-waiver, or arbitrary exception workflow exists. The bounded
+  19-21 per-subject approval path is governed separately below.
 - FR-2: Default discovery MUST list eligible offerings having at least one
   published selectable group.
 - FR-3: Students MUST be able to search by code/title and filter by
@@ -128,6 +173,22 @@ And every status has text/icon meaning independent of color.
   `Page<OfferingEligibilityDto>` and echoes its applied sort. The exact
   allow-listed filters/sorts and NFKC/literal search protocol are normative in
   contracts/api.md.
+- FR-9: Eligibility MUST consume SPEC-009 `CurriculumCourse` as the
+  programme/cohort roadmap. Recommended-term-1 roots MUST have no prerequisite
+  and MUST be represented as automatic-registration subjects for a matching
+  term-1 cohort. Student self-registration actions MUST be absent for those
+  subjects and available only from recommended term 2 onward.
+- FR-10: From term 2 onward, subjects MUST remain unavailable until every
+  roadmap prerequisite and other hard eligibility rule passes. Every valid
+  self-selected subject MUST enter a held-seat state pending per-subject
+  approval, including plans up to the normal 18-credit maximum. A 19-21-credit
+  plan additionally MUST be rejected when CGPA is below 3.0 and MAY enter the
+  same approval-held state only when CGPA is at least 3.0. Plans above 21
+  credits MUST be rejected.
+- FR-11: Every group projection MUST show total capacity, enrolled count, held
+  count, and available count from one authoritative version without holder
+  PII. Pending approval MUST have a distinct text/icon status and MUST NOT be
+  presented as enrolled until SPEC-014 converts its hold.
 
 ### Non-Functional Requirements
 
@@ -147,6 +208,9 @@ And every status has text/icon meaning independent of color.
 - Academics and Scheduling expose narrow eligibility readers. Registration
   owns `ICurrentPlanReader`; SPEC-011 owns no writable eligibility or plan
   table.
+- Registration consumes automatic-enrollment and per-subject approval/hold
+  lifecycle from SPEC-014; discovery owns only the explained read projection
+  and permitted next action.
 
 ## Success Criteria
 
@@ -182,4 +246,6 @@ And every status has text/icon meaning independent of color.
 - OS-1: Recommendations before a student selects courses.
 - OS-2: Search across other colleges/terms unless approved.
 - OS-3: Client-authoritative eligibility.
-- OS-4: Advisor approval workflow.
+- OS-4: Generic advisor, prerequisite-waiver, and arbitrary exception
+  workflows. The bounded 19-21-credit CGPA-at-least-3.0 per-subject approval
+  flow is in scope through SPEC-014/SPEC-016/SPEC-017.

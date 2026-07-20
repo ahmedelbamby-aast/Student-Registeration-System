@@ -1,0 +1,49 @@
+<section class="srs-surface-card" aria-labelledby="@HeadingId">
+    <header class="srs-surface-card__header">
+        <div>
+            <h2 id="@HeadingId" class="srs-surface-card__heading">@Heading</h2>
+            @if (!string.IsNullOrWhiteSpace(Description))
+            {
+                <p class="srs-surface-card__description">@Description</p>
+            }
+        </div>
+        @if (HeaderContent is not null)
+        {
+            <div class="srs-surface-card__header-content">@HeaderContent</div>
+        }
+    </header>
+
+    <div class="srs-surface-card__content">@ChildContent</div>
+
+    @if (Actions is not null)
+    {
+        <footer class="srs-surface-card__actions">@Actions</footer>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string HeadingId { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(HeadingId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Heading);
+        ArgumentNullException.ThrowIfNull(ChildContent);
+    }
+}

@@ -6,6 +6,13 @@
 **Owner**: Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 
+**Owner-approved capacity amendment (2026-07-20):** Ahmed ELbamby explicitly
+approved pending per-subject seat holds, the invariant
+`EnrolledCount + HeldCount <= Capacity`, and privacy-safe total/enrolled/held/
+available capacity visibility for Student, Admin, Lecturer, and Teaching
+Assistant. This bounded approval hold is not a waitlist or force-capacity
+override.
+
 ## Context
 
 Students need accurate, complete activity bundles with capacity, Lecturer/TA,
@@ -137,17 +144,43 @@ Then the declaration remains read-only and no edit or override action is exposed
 And an attempted Admin availability mutation has no mapped endpoint and changes nothing<br>
 And a staff-owned change affecting a published group creates a durable schedule impact alert.
 
+### User Story 10 - Pending approval holds a bounded seat (FR-11, FR-12) (P1)
+
+As a student or authorized staff member, I need capacity to distinguish
+enrolled and approval-held seats so a pending request cannot be overbooked or
+leak another student's identity.
+
+**Independent Test**: Execute AC-10 in requirements.md while a pending request,
+an approval decision, and a capacity edit race for the final seat.
+
+**Acceptance Scenario (AC-10)**
+
+Given one available seat remains<br>
+When a valid self-registration subject request enters pending approval<br>
+Then one held seat is recorded atomically and available becomes zero<br>
+And Student, Admin, Lecturer, and Teaching Assistant views show the same total,
+enrolled, held, and available counts without holder PII<br>
+And completed per-subject decisions keep the hold until the plan is approved<br>
+And plan approval converts all plan holds atomically, while plan rejection or
+window close releases them.
+
 ## Edge Cases
 
 - EC-1: Multi-slot group has one invalid slot -> entire group cannot publish.
-- EC-2: Capacity change races with enrollment -> transaction/rowversion
-  preserves Capacity >= EnrolledCount.
+- EC-2: Capacity change races with enrollment or hold mutation ->
+  transaction/rowversion preserves Capacity >= EnrolledCount + HeldCount.
 - EC-3: Staff becomes unavailable after publish -> flag affected group for
   admin resolution; do not silently move the class.
 - EC-4: Overnight meeting slot -> reject in MVP unless separately specified.
 - EC-5: A transaction touches multiple rooms/staff/groups -> acquire every
   resource lock in stable type-and-ID order; a deadlock retry reruns the whole
   idempotent transaction, never a partial publication.
+- EC-6: Hold creation races enrollment or another hold for the final seat ->
+  exactly one wins and enrolled plus held never exceeds capacity.
+- EC-7: Capacity reduction races an active hold -> reject any result below
+  enrolled plus held without changing capacity or the hold.
+- EC-8: Approval, rejection, and registration-window close race -> exactly one
+  terminal transition wins and the hold is converted or released once.
 
 ## Requirements
 
@@ -181,11 +214,22 @@ And a staff-owned change affecting a published group creates a durable schedule 
   same transaction to prevent concurrent write skew.
 - FR-9: Capacity edits and registration seat allocation MUST serialize on the
   same SectionGroup database row/version and preserve
-  0 <= EnrolledCount <= Capacity for every outcome.
+  0 <= EnrolledCount + HeldCount <= Capacity for every outcome.
 - FR-10: Every group-state, meeting-slot, room-assignment, and staff-assignment
   mutation MUST lock and advance the owning SectionGroup rowversion. Staff
   availability mutation and group publication share the SPEC-010-owned
   versioned StaffTermAvailability boundary; SPEC-016 consumes it.
+- FR-11: `SectionGroup` capacity accounting MUST distinguish EnrolledCount and
+  HeldCount and preserve `0 <= EnrolledCount + HeldCount <= Capacity` for every
+  hold, enrollment, decision, expiry, window-close, capacity-edit, and retry
+  outcome. AvailableCount MUST equal Capacity minus EnrolledCount minus
+  HeldCount.
+- FR-12: Student, Admin, Lecturer, and Teaching Assistant projections MUST show
+  total capacity, enrolled count, held count, and available count from the
+  same server-authoritative snapshot without exposing seat-holder identity.
+  Completed subject decisions do not independently release or convert a hold.
+  A pending approval hold ends only by atomic plan approval/conversion, plan
+  rejection, or registration-window close.
 
 ### Non-Functional Requirements
 
@@ -205,12 +249,13 @@ And a staff-owned change affecting a published group creates a durable schedule 
 - **StaffAvailability**: Feature-owned concept; attributes and relationships are refined in requirements.md and the shared ERD.
 - **StaffTermAvailability**: SPEC-010-owned aggregate root for the complete staff-plus-term range set.
 - **ScheduleImpactAlert**: SPEC-010-owned durable revalidation state for availability/resource changes affecting published groups.
+- **SectionGroup held capacity**: SPEC-010-owned counter and concurrency boundary consumed by SPEC-014 approval holds; holder identity remains Registration-owned and is never exposed by capacity projections.
 
 ## Success Criteria
 
 - **SC-1**: Only offerings whose selectable groups satisfy the complete FR-2 activity bundle and conflict checks become visible for registration.
 - **SC-2**: Every visible group identifies capacity and, for every Lecture/Tutorial/Laboratory activity, its assigned staff, room/location, day, and time.
-- **SC-3**: Capacity can never be configured below active enrollment.
+- **SC-3**: Capacity can never be configured below active enrollment plus pending held seats.
 
 ## Assumptions
 
@@ -238,5 +283,6 @@ And a staff-owned change affecting a published group creates a durable schedule 
 
 - OS-1: Institution-wide timetable generation.
 - OS-2: Automatic reassignment of Lecturer, TA, or room for one student.
-- OS-3: Waitlist and seat reservation.
+- OS-3: Waitlists, priority queues, and reservations other than the bounded
+  owner-approved pending per-subject approval hold.
 - OS-4: Normal admin force-over-capacity action.

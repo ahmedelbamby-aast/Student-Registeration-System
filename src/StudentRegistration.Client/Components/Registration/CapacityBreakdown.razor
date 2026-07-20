@@ -1,0 +1,72 @@
+<div class="srs-capacity-breakdown"
+     role="status"
+     aria-label="@AccessibleName"
+     aria-live="polite"
+     aria-atomic="true">
+    <dl class="srs-capacity-breakdown__values">
+        <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--total">
+            <dt>@TotalLabel</dt>
+            <dd>@Total</dd>
+        </div>
+        <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--enrolled">
+            <dt>@EnrolledLabel</dt>
+            <dd>@Enrolled</dd>
+        </div>
+        <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--held">
+            <dt>@HeldLabel</dt>
+            <dd>@Held</dd>
+        </div>
+        <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--available">
+            <dt>@AvailableLabel</dt>
+            <dd>@Available</dd>
+        </div>
+    </dl>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string AccessibleName { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string TotalLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Total { get; set; }
+
+    [Parameter, EditorRequired]
+    public string EnrolledLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Enrolled { get; set; }
+
+    [Parameter, EditorRequired]
+    public string HeldLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Held { get; set; }
+
+    [Parameter, EditorRequired]
+    public string AvailableLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Available { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(AccessibleName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(TotalLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(EnrolledLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(HeldLabel);
+        ArgumentException.ThrowIfNullOrWhiteSpace(AvailableLabel);
+
+        if (Total < 0 || Enrolled < 0 || Held < 0 || Available < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(Total));
+        }
+
+        if (Enrolled + Held + Available != Total)
+        {
+            throw new ArgumentException(nameof(Total));
+        }
+    }
+}

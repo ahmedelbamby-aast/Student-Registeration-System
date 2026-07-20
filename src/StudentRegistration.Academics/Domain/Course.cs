@@ -17,9 +17,11 @@ public sealed class Course
     {
         DomainValue.Identifier(id, nameof(id));
         DomainValue.Identifier(catalogueVersionId, nameof(catalogueVersionId));
-        if (credits <= 0m)
+        if (credits != 3m)
         {
-            throw new ArgumentOutOfRangeException(nameof(credits), "Credits must be positive.");
+            throw new ArgumentOutOfRangeException(
+                nameof(credits),
+                "Every subject in the approved demo curriculum must be exactly three credits.");
         }
 
         Id = id;

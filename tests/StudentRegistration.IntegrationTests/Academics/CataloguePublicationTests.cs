@@ -73,7 +73,7 @@ public sealed class CataloguePublicationTests
         var invalidCredit = source with
         {
             Courses = source.Courses
-                .Select(course => course.Code == "BA101" ? course with { Credits = 0m } : course)
+                .Select(course => course.Code == "BA101" ? course with { Credits = 4m } : course)
                 .ToArray()
         };
         var cycle = new CatalogueDraftContent(

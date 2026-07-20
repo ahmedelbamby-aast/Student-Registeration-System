@@ -8,6 +8,11 @@
 **Target:** Sprint 3<br>
 **Dependencies:** SPEC-002, SPEC-003, SPEC-006, SPEC-008, SPEC-009, SPEC-010, SPEC-018<br>
 
+**Owner-approved progression amendment (2026-07-20):** Ahmed ELbamby
+explicitly approved roadmap-aware term progression, matching-cohort term-1
+automatic enrollment, self-registration from term 2 onward, and the bounded
+19-21-credit CGPA/per-subject-approval state.
+
 ## Context
 
 Students need to see available subjects based on program, GPA, standing,
@@ -24,8 +29,9 @@ curated catalogue in `docs/DEMO_CURRICULUM.md`.
   capacity, repeat eligibility, and exact meeting-conflict checks. A normal
   plan targets and caps at 18 credits; GPA below 2.0 caps at 12 credits. A
   passed current transcript leaf for the requested course fails closed with
-  `REPEAT_POLICY_UNAVAILABLE`; no advisor/repeat/exception workflow is
-  evaluated. Plan input crosses a Registration-owned `ICurrentPlanReader`;
+  `REPEAT_POLICY_UNAVAILABLE`; no generic advisor, repeat, prerequisite-waiver,
+  or arbitrary exception workflow is evaluated. The bounded 19-21 per-subject
+  approval state is governed by FR-10. Plan input crosses a Registration-owned `ICurrentPlanReader`;
   until SPEC-012 contributes its reader, the live adapter returns a versioned
   empty plan while direct service fixtures prove 15-credit/conflict inputs.
 - FR-2: Default discovery MUST list eligible offerings having at least one
@@ -59,6 +65,20 @@ curated catalogue in `docs/DEMO_CURRICULUM.md`.
   trimmed, literal, parameterized, and at most 100 characters. The response
   MUST use canonical SPEC-006 `Page<OfferingEligibilityDto>` and echo the
   applied canonical sort.
+- FR-9: Eligibility MUST consume `CurriculumCourse` as the programme/cohort
+  roadmap. Recommended-term-1 roots are automatic-registration subjects for a
+  matching term-1 cohort and MUST expose no self-registration action. Student
+  self-registration begins at recommended term 2.
+- FR-10: From term 2 onward, every roadmap prerequisite and existing hard rule
+  MUST pass before a subject can be requested. Every valid self-selected
+  subject MUST hold a seat pending per-subject approval, including a plan up to
+  the normal 18-credit maximum. A 19-21-credit plan additionally requires CGPA
+  at least 3.0 before it can enter that same approval-held state; CGPA below
+  3.0 or a plan above 21 credits MUST be rejected.
+- FR-11: Group projections MUST include Capacity, EnrolledCount, HeldCount, and
+  AvailableCount from one SPEC-010 version. Pending approval MUST use a
+  distinct accessible status, MUST NOT expose holder PII, and MUST NOT be
+  represented as enrolled until SPEC-014 converts the hold.
 
 ## Non-Functional Requirements
 
@@ -106,6 +126,22 @@ And search is length-bounded and parameterized<br>
 And eligibility is deterministic<br>
 And every status has text/icon meaning independent of color.
 
+### AC-6: Roadmap term progression (FR-9, FR-10)
+Given matching-cohort term-1 and term-2 students<br>
+When discovery evaluates the same published roadmap<br>
+Then the term-1 roots are labelled automatically registered with no self
+action<br>
+And the term-2 student can request only later subjects whose prerequisites and
+hard rules pass.
+
+### AC-7: Bounded overload and held capacity (FR-10, FR-11)
+Given CGPA 2.99 and 3.00 students with plans at 18 credits<br>
+When they evaluate an additional three-credit subject<br>
+Then normal-load self-registration is approval-held<br>
+And only the CGPA 3.00 result can become approval-held at 21 credits<br>
+And 22 credits is rejected<br>
+And total/enrolled/held/available capacity remains visible without holder PII.
+
 ## Edge Cases
 
 - EC-1: Policy/profile data unavailable -> safe unavailable result and support
@@ -118,6 +154,10 @@ And every status has text/icon meaning independent of color.
 - EC-4: No eligible offerings -> show the evaluated policy version and reason
   codes, reset-filter action, current window state, and the configured
   Registrar support path.
+- EC-5: Term-1 self-registration deep link -> no duplicate plan or enrollment.
+- EC-6: CGPA/credit change during approval-required view -> server refresh
+  replaces the stale decision.
+- EC-7: Held capacity changes -> refresh counts and group version.
 
 ## API Contracts
 
@@ -151,4 +191,6 @@ credits, day, availability, sort, page, and pageSize; and GET
 - OS-1: Recommendations before a student selects courses.
 - OS-2: Search across other colleges/terms unless approved.
 - OS-3: Client-authoritative eligibility.
-- OS-4: Advisor approval workflow.
+- OS-4: Generic advisor, prerequisite-waiver, and arbitrary exception
+  workflows. The bounded 19-21-credit CGPA-at-least-3.0 per-subject approval
+  flow is in scope through SPEC-014/SPEC-016/SPEC-017.

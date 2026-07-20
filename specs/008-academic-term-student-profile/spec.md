@@ -2,7 +2,7 @@
 
 **Feature Branch**: 008-academic-term-student-profile
 **Created**: 2026-07-12
-**Status**: APPROVED
+**Status**: APPROVED; program-term amendment approved by Ahmed ELbamby on 2026-07-20
 **Owner**: Backend Lead
 **Normative detail**: [requirements.md](requirements.md)
 **Standing approval**: Ahmed ELbamby approved the clarified non-production demo
@@ -249,6 +249,12 @@ query before a named detail or correction may be requested.
   their request/response, success, validation, authorization, conflict,
   unavailable, and unexpected-error outcomes. Feature field errors are bounded
   to 20 keys, 5 messages per key, and 256 characters per message.
+- FR-12: `StudentTermAcademicState` MUST persist the server-authoritative
+  positive `ProgramTermOrdinal` and expose whether the state is the student's
+  first program term. First-term status MUST NOT be inferred only from earned
+  credits, browser state, or transcript count. The value is the shared
+  serialization input consumed by SPEC-014 automatic enrollment and
+  self-registration.
 
 ### Non-Functional Requirements
 

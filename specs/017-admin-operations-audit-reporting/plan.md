@@ -1,7 +1,7 @@
 # Implementation Plan: Admin Operations, Audit, and Reporting
 
 **Branch**: 017-admin-operations-audit-reporting | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13 (Gate A).
+**Status**: Approved for non-production demo implementation by Ahmed ELbamby on 2026-07-13; global line-approval and first-term monitoring amendment approved 2026-07-20 (Gate A).
 
 ## Summary
 
@@ -11,6 +11,11 @@ metrics, and durable asynchronous exports in
 withdrawal are excluded from MVP; Admin registration views are inspection and
 monitoring only. Staff own availability edits; Admin may view/import declared
 ranges only as read-only offering-planning inputs.
+
+The 2026-07-20 amendment adds global Admin pending-line decisions and bounded
+first-term automatic-batch monitoring/retry through canonical SPEC-014
+commands. It does not authorize correction of accepted Enrollment, capacity
+override, policy bypass, or a second writer.
 
 ## Technical Context
 
@@ -48,6 +53,12 @@ ranges only as read-only offering-planning inputs.
    ExportJob mapping and S7 incremental migration, then map
    endpoint handlers and canonical pages after behavior tests fail.
 8. Produce performance, security, scope, and trace evidence.
+9. Add failing DecideAll permission, bounded/PII-minimized query, expected-
+   version/idempotency/antiforgery/audit rollback, batch-monitor/retry,
+   component, browser, accessibility, and two-replica tests.
+10. Add Admin approval and first-term batch orchestration/UI only after amended
+    tests fail; call SPEC-014 owner commands directly and refresh trace/release
+    evidence without overwriting the historical baseline.
 
 ## Concurrency Boundaries
 
@@ -74,6 +85,16 @@ facade, or enrollment correction behavior.
 Availability consumption is read-only: no Admin availability correction or
 override command/permission, editable control, notification workflow, or
 correction-audit flow is introduced. Schedule-impact alerts remain visible.
+
+### Registration approval and automatic-batch monitoring
+
+SPEC-014 owns pending lines, holds, decisions, finalization, expiry, and
+FirstTermAutoEnrollmentBatch. SPEC-017 supplies global Admin query/action
+orchestration and unified UI only. Every decision/retry uses an exact
+permission, expected version, reason, ClientRequestId, antiforgery, and the
+transaction-aware owner audit. General capacity shows enrolled/held/available
+counts without holder identities. The same SPEC-003 roadmap, capacity,
+approval status/timeline, decision, and route-state components are reused.
 
 ## Constitution and Approval Gate
 

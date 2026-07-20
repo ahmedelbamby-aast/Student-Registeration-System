@@ -2,11 +2,16 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13; pending-line and first-term record amendment approved 2026-07-20<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Registrar/Policy SME, UX, Data, QA<br>
 **Target:** Sprint 6<br>
 **Dependencies:** SPEC-003, SPEC-008, SPEC-014, SPEC-018<br>
+
+**Owner-approved amendment (2026-07-20):** This read model now includes
+first-term automatic origin plus self-service PendingApproval lines, held-seat
+capacity, scoped decision summaries, rejection, and window-close expiry. All
+writes remain SPEC-014-owned.
 
 ## Context
 
@@ -35,6 +40,17 @@ Rejected submissions must clearly state that no partial registration occurred.
   meeting, policy-version, and server-time meaning after later edits.
 - FR-8: Drop/correction actions MUST be absent until approved policy/workflow
   is specified.
+- FR-9: Student and Admin history/detail MUST project PendingApproval,
+  Accepted, Rejected, and Expired states, requested credits, origin, line
+  statuses/decision summaries, window close, and
+  capacity/enrolled/held/available counts without hold-owner identity.
+- FR-10: First-term automatic accepted records MUST identify their origin and
+  applicable CurriculumCourse roadmap roots, use the same immutable receipt
+  projection, and contain no fabricated approval event.
+- FR-11: STU-06/STU-07 and Admin inspection MUST compose the unified SPEC-003
+  roadmap, capacity, approval status/timeline, receipt, and route-state
+  components. Pending/rejected/expired records cannot render as accepted
+  timetable or receipt data.
 
 ## Non-Functional Requirements
 
@@ -85,6 +101,21 @@ And printed/exported views meet accessibility checks with minimized PII<br>
 And historical records remain durable and readable throughout the approved
 retention lifecycle.
 
+### AC-7: Pending lines and held capacity (FR-9, FR-11)
+Given a term-two-or-later submission is awaiting line decisions<br>
+When the student or authorized Admin opens its record<br>
+Then every line and its pending/approved status, window close, requested
+credits, and capacity/enrolled/held/available counts are shown<br>
+And no holder identity, accepted receipt, or current timetable is fabricated.
+
+### AC-8: First-term automatic record (FR-10, FR-11)
+Given an automatic first-program-term batch accepted all required roadmap
+roots<br>
+When the student opens history/detail<br>
+Then the record identifies automatic origin and the exact roots<br>
+And the accepted receipt uses unified components without an approval timeline
+claim.
+
 ## Edge Cases
 
 - EC-1: Result response lost -> idempotent lookup returns receipt.
@@ -110,10 +141,19 @@ interface RegistrationHistoryRowDto {
   submissionId: string;
   reference?: string;
   term: TermSummaryDto;
-  status: "accepted" | "rejected";
+  status: "pendingApproval" | "accepted" | "rejected" | "expired";
   submittedAtUtc: string;
   groupCount: number;
   totalCredits: number;
+  origin: "studentSelfService" | "firstTermAutomatic";
+}
+interface RegistrationPendingResultDto {
+  submissionId: string;
+  status: "pendingApproval";
+  requestedCredits: number;
+  windowClosesAtUtc: string;
+  lines: RegistrationSubmissionLineDto[];
+  noPartialRegistration: true;
 }
 interface RegistrationRejectedResultDto {
   submissionId: string;
@@ -126,7 +166,8 @@ interface RegistrationRejectedResultDto {
 }
 type RegistrationDetailDto =
   | { status: "accepted"; receipt: RegistrationReceiptDto }
-  | { status: "rejected"; rejection: RegistrationRejectedResultDto };
+  | { status: "pendingApproval"; pending: RegistrationPendingResultDto }
+  | { status: "rejected" | "expired"; rejection: RegistrationRejectedResultDto };
 type RegistrationHistoryPageDto = Page<RegistrationHistoryRowDto>;
 ```
 

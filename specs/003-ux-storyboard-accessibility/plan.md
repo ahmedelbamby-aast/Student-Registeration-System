@@ -1,10 +1,15 @@
 # Implementation Plan: Frontend Page Design, Storyboard, Accessibility and Functional Testing
 
 **Branch**: 003-ux-storyboard-accessibility | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for Gate A demo implementation on 2026-07-13; all 27 Page
-Design Records are approved as design-only version 1.0 records under the 1.1
+**Status**: Approved for Gate A demo implementation on 2026-07-13; the original
+27 Page Design Records are approved as design-only version 1.0 records under the 1.1
 governance contract. Route-owner contract pins, Gates B-D, and production
 release approval remain required.
+
+**Owner-approved amendment (2026-07-20):** Ahmed ELbamby approved the unified
+cross-role design contract and a 30-route target. The three new Page Design
+Records and amendments to affected existing records remain unchecked work;
+application implementation remains gated by the owning domain specifications.
 
 ## Summary
 
@@ -56,7 +61,7 @@ Infrastructure.SqlServer projects plus `tests/`.
 
 ## Feature Design
 
-- Produce one approved Page Design Record for each of the 27 route templates,
+- Produce one approved Page Design Record for each of the 30 route templates,
   with six widths, state applicability, focus order, data/reason contracts,
   component inventory, transitions, and unique test IDs.
 - Own frontend view models, design/test metadata, tokens, reusable components,
@@ -66,6 +71,19 @@ Infrastructure.SqlServer projects plus `tests/`.
   from a reviewed contract, but contract tests, page implementation, and E2E
   evidence require the implementation-owner spec and all contributing API
   contracts to be approved and version-pinned.
+- Use one authenticated composition system across Student, Admin, Lecturer,
+  and TeachingAssistant routes: shared AppShell, role navigation, page header,
+  cards, forms, tables, status panels, buttons, spacing, typography, focus, and
+  responsive behavior. Role-specific content and permissions remain supplied
+  by the owning feature contracts.
+- Add STU-09 for the Student roadmap, ADM-10 for the Admin approval inbox, and
+  STF-05 for the Lecturer/TeachingAssistant approval inbox. Treat first-term
+  automatic enrollment, per-subject pending approval/held capacity, and
+  overload request/decision as explicit states contributed by SPEC-008,
+  SPEC-009, SPEC-011, SPEC-014, SPEC-016, and SPEC-017.
+- Standardize capacity presentation as total, enrolled, held, and available
+  from one server response on every applicable role route. The browser never
+  derives authoritative availability or approval.
 
 ## Execution Strategy
 
@@ -74,9 +92,15 @@ Infrastructure.SqlServer projects plus `tests/`.
 2. Enforce Ahmed ELbamby's approved English-first neutral UI and the official
    AASTMT logo provenance contract in `docs/BRAND_ASSETS.md`; additional
    institutional brand values remain blocked rather than inferred.
-3. Build design/test schemas, then failing component/contract/accessibility/E2E
+3. Amend the route manifest, storyboard, design/test schemas, and affected Page
+   Design Records for the 30-route unified design contract.
+4. Build failing component/contract/accessibility/E2E
    tests, then the smallest page/component implementation that passes them.
-4. Run each route slice only after its owner/contributor approval gate; collect
+5. Require at least one browser journey per critical workflow to use the real
+   composed API and demo SQL data without request interception; mock fixtures
+   remain useful for deterministic state coverage but cannot prove runtime
+   composition.
+6. Run each route slice only after its owner/contributor approval gate; collect
    deterministic browser, visual, keyboard, screen-reader, and usability
    evidence without allowing retries to hide a first-run failure.
 
@@ -108,6 +132,33 @@ Infrastructure.SqlServer projects plus `tests/`.
 - docs/release-evidence/frontend: manual screen-reader, usability, browser
   provenance, WebKit-not-Safari labeling, and baseline-approval records;
   actual Safari/macOS evidence is a future separately approved artifact.
+
+## Unified Authenticated Composition
+
+- AppShell owns the unchanged local logo, skip link, server time/timezone,
+  term/window context, identity/role/session context, support action, and the
+  responsive navigation container on every authenticated route.
+- Role navigation uses one interaction and focus model. Its destinations are
+  role-specific, complete for that workspace, and consistent across every page
+  in the same role.
+- Page headers use one title, description, status/metadata, and primary-action
+  hierarchy. Cards, forms, tables and compact list alternatives, status
+  panels, confirmation dialogs, and buttons use the same tokenized states.
+- Status presentation covers loading, empty, success, validation, recoverable
+  service error, unauthorized, session expired, stale/concurrent change, and
+  offline behavior with shared live-region and recovery rules.
+- Spacing, typography, focus indication, 44-by-44 targets, responsive reflow,
+  table alternatives, and 400-percent zoom behavior remain identical by
+  component rather than being redefined per role.
+- Capacity uses the same total/enrolled/held/available order and labels on
+  Student discovery/detail/plan/review/records, Admin offering/monitoring/
+  approval routes, and Lecturer/TA assignment/approval routes.
+- STU-09 groups the curriculum by level and recommended term and exposes
+  completed, automatically enrolled, eligible, blocked-prerequisite,
+  pending-approval, approved, rejected, expired/released, and registered
+  states without client-authoritative academic decisions.
+- ADM-10 and STF-05 share one approval-list/detail/confirmation composition;
+  server authorization changes visible scope and available actions.
 
 ## Non-Functional Requirements
 
@@ -143,6 +194,10 @@ Infrastructure.SqlServer projects plus `tests/`.
   strings MUST be externalized, formats MUST be culture-aware, layout MUST be
   direction-safe, and user text MUST NOT be embedded as component control
   logic.
+- NFR-11: Shared authenticated composition MUST pass one cross-role structural
+  conformance suite; equivalent components and states MUST use the same token,
+  spacing, typography, focus, responsive, and accessible-name contracts on
+  Student, Admin, Lecturer, and TeachingAssistant routes.
 
 ## Complexity Tracking
 

@@ -1,8 +1,9 @@
 # Implementation Plan: AASTMT Policy Rulebook
 
 **Branch**: 002-aastmt-policy-rulebook | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
-**Status**: Approved for Gate A demo implementation on 2026-07-13; Gates B-D
-and production release approval remain required.
+**Status**: Approved for Gate A demo implementation on 2026-07-13; first-term,
+subject-approval/hold, and 19-21-credit amendment approved 2026-07-20; Gates
+B-D and production release approval remain required.
 
 ## Summary
 
@@ -65,7 +66,10 @@ runtime policy aggregates and evaluator.
   Preserve URL/access-date provenance and label every synthetic gap-filling
   row; never silently blend synthetic content into official curriculum data.
 - Keep waitlists, overrides, automatic exceptions, add/drop, withdrawal, and
-  advisor workflows outside this demo profile. Other unresolved `POLICY-Q`
+  generic advisor workflows outside this demo profile. The bounded subject
+  approval/seat-hold workflow is the sole approved reservation exception and
+  never waives prerequisite, capacity, conflict, standing, or window rules.
+  Other unresolved `POLICY-Q`
   values remain In Review and fail closed rather than becoming defaults.
 - Publish a typed policy contract and boundary examples for SPEC-009 to
   implement. `PolicySet`, `PolicyRule`, and decision snapshots are reference

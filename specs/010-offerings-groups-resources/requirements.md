@@ -8,6 +8,11 @@
 **Target:** Sprint 2<br>
 **Dependencies:** SPEC-003, SPEC-005, SPEC-006, SPEC-009, SPEC-018<br>
 
+**Owner-approved capacity amendment (2026-07-20):** Ahmed ELbamby explicitly
+approved pending per-subject seat holds, the invariant
+`EnrolledCount + HeldCount <= Capacity`, and privacy-safe total/enrolled/held/
+available capacity visibility for every active role.
+
 ## Context
 
 Students need accurate, complete activity bundles with capacity, Lecturer/TA,
@@ -49,12 +54,25 @@ visible for registration.
   the same transaction to prevent concurrent write skew.
 - FR-9: Capacity edits and registration seat allocation MUST serialize on the
   same SectionGroup database row/version and preserve
-  0 <= EnrolledCount <= Capacity for every outcome.
+  0 <= EnrolledCount + HeldCount <= Capacity for every outcome.
 - FR-10: Every group-state, meeting-slot, room-assignment, and staff-assignment
   mutation MUST lock and advance the owning SectionGroup rowversion. Staff
   availability mutation and group publication MUST also share the versioned
   staff-term availability boundary defined and owned by SPEC-010; SPEC-016
   consumes that aggregate through the Scheduling application contract.
+- FR-11: `SectionGroup` MUST maintain EnrolledCount and HeldCount under its
+  shared row/version boundary and preserve
+  `0 <= EnrolledCount + HeldCount <= Capacity`. AvailableCount MUST be derived
+  as Capacity minus EnrolledCount minus HeldCount. Hold creation/conversion/
+  release, direct enrollment, capacity edit, retry, and window close MUST use
+  this same serialization boundary.
+- FR-12: Student, Admin, Lecturer, and Teaching Assistant capacity DTOs and
+  pages MUST show total, enrolled, held, and available counts from one
+  authoritative version. Capacity projections MUST NOT expose the identity or
+  academic details of a student holding a seat. Completed subject decisions do
+  not independently release or convert a hold. A pending hold terminates only
+  on atomic plan approval/conversion, plan rejection, or registration-window
+  close.
 
 ## Non-Functional Requirements
 
@@ -132,17 +150,31 @@ changes no StaffTermAvailability state<br>
 And a staff-owned update affecting a published group creates a durable
 ScheduleImpactAlert requiring Admin revalidation.
 
+### AC-10: Pending approval holds a bounded seat (FR-11, FR-12)
+Given one available seat remains in a published group<br>
+When concurrent valid requests attempt to hold or enroll that seat<br>
+Then exactly one succeeds<br>
+And enrolled plus held never exceeds capacity<br>
+And all four active roles see the same total/enrolled/held/available counts
+without holder PII<br>
+And completed per-subject decisions keep the hold until the plan is terminal<br>
+And plan approval converts every plan hold atomically while plan rejection or
+window close releases every plan hold exactly once.
+
 ## Edge Cases
 
 - EC-1: Multi-slot group has one invalid slot -> entire group cannot publish.
-- EC-2: Capacity change races with enrollment -> transaction/rowversion
-  preserves Capacity >= EnrolledCount.
+- EC-2: Capacity change races with enrollment or hold mutation ->
+  transaction/rowversion preserves Capacity >= EnrolledCount + HeldCount.
 - EC-3: Staff becomes unavailable after publish -> flag affected group for
   admin resolution; do not silently move the class.
 - EC-4: Overnight meeting slot -> reject in MVP unless separately specified.
 - EC-5: A transaction touches multiple rooms/staff/groups -> acquire every
   resource lock in stable type-and-ID order; a deadlock retry reruns the whole
   idempotent transaction, never a partial publication.
+- EC-6: Final-seat hold/enrollment collision -> exactly one winner.
+- EC-7: Capacity reduction below enrolled plus held -> reject atomically.
+- EC-8: Concurrent approve/reject/window-close -> one terminal hold outcome.
 
 ## API Contracts
 
@@ -152,6 +184,8 @@ interface GroupDto {
   groupCode: string;
   capacity: number;
   enrolledCount: number;
+  heldCount: number;
+  availableCount: number;
   registrationPaused: boolean;
   state: "draft" | "published" | "closed" | "cancelled";
   staff: Array<{
@@ -224,7 +258,9 @@ availability mutation, edit, or override route.
 | Field/example | Type | Constraints |
 |---|---|---|
 | CourseOffering | entity | unique term + course |
-| SectionGroup.Capacity | integer | >= EnrolledCount; nonnegative |
+| SectionGroup.Capacity | integer | >= EnrolledCount + HeldCount; nonnegative |
+| SectionGroup.HeldCount | integer | nonnegative; pending approval seats only |
+| SectionGroup.AvailableCount | projection | Capacity - EnrolledCount - HeldCount |
 | MeetingSlot | value/entity | Lecture/Tutorial/Laboratory; EndLocal > StartLocal; room/day/start/end required |
 | GroupStaffAssignment | bridge | unique meeting slot + staff + teaching role; Lecturer only covers Lecture; TA only covers Tutorial/Laboratory |
 | StaffTermAvailability | aggregate root | unique staff + term; deadline; complete range-set rowversion |
@@ -235,5 +271,6 @@ availability mutation, edit, or override route.
 
 - OS-1: Institution-wide timetable generation.
 - OS-2: Automatic reassignment of Lecturer, TA, or room for one student.
-- OS-3: Waitlist and seat reservation.
+- OS-3: Waitlists, priority queues, and reservations other than the bounded
+  owner-approved pending per-subject approval hold.
 - OS-4: Normal admin force-over-capacity action.

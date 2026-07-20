@@ -113,3 +113,10 @@ No direct frontend route is owned by this specification; frontend integration re
 
 All forty-three governance, executable-test, scope-review, traceability, and
 scoped release-approval tasks are complete.
+
+## Phase 8 - Owner-approved 2026-07-20 policy amendment
+
+- [ ] T044 [P] [POLICY] Add typed first-program-term, self-registration-start, normal-18, overload-21, overload-minimum-CGPA-3.00, subject-approval, and occupied-seat-hold rules to specs/002-aastmt-policy-rulebook/schemas/policy-rule-definition.schema.json and specs/002-aastmt-policy-rulebook/policy-rules.md.
+- [ ] T045 [P] [POLICY] Add 18/19/21/22-credit, CGPA-2.99/3.00, first-term-root, pending-hold, approval, rejection, and window-close release fixtures to specs/002-aastmt-policy-rulebook/policy-boundary-examples.md.
+- [ ] T046 [POLICY] Update policy specification, application, integration, and provenance evidence tests under tests/StudentRegistration.SpecificationTests/Specs/Spec002 and tests/StudentRegistration.IntegrationTests/Specs/Spec002 for the approved amendment after T044-T045 fail for the expected reasons.
+- [ ] T047 [TRACE] Regenerate SPEC-002 scope, traceability, NFR, and release evidence in docs/release-evidence after the amended executable rulebook and downstream runtime tests pass.

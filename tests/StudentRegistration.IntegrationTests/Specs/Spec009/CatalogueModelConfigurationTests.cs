@@ -138,6 +138,7 @@ public sealed class CatalogueModelConfigurationTests
         Assert.Contains("CK_ImportBatches_State", script, StringComparison.Ordinal);
         Assert.Contains("CK_PolicySets_State", script, StringComparison.Ordinal);
         Assert.Contains("CK_Courses_Credits", script, StringComparison.Ordinal);
+        Assert.Contains("[Credits] = 3", script, StringComparison.Ordinal);
         Assert.Contains("CK_CoursePrerequisites_NotSelf", script, StringComparison.Ordinal);
         Assert.Contains("CREATE UNIQUE INDEX", script, StringComparison.Ordinal);
     }

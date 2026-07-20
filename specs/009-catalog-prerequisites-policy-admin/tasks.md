@@ -126,3 +126,23 @@
 - [x] T100 [GATE] Record Registrar, product, Admin, data, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-009-release-approval.md.
 
 No task is complete and no implementation file has been created.
+
+## Owner-Approved 2026-07-20 Roadmap and Credit Policy Amendment
+
+These tasks are new work. They do not rewrite or reopen the historical task
+checkboxes above. Ahmed ELbamby's explicit 2026-07-20 instruction approves the
+amended demo behavior; implementation starts only in the dependency order
+below.
+
+- [ ] T101 [GATE] Record the 2026-07-20 owner-approved roadmap/exact-credit/overload amendment and rebaseline SPEC-002, SPEC-003, SPEC-006, SPEC-008, SPEC-010, SPEC-011, SPEC-014, SPEC-015, SPEC-016, and SPEC-017 dependencies in specs/009-catalog-prerequisites-policy-admin/dependency-baseline.md and checklists/approval.md.
+- [ ] T102 [US8] [OWNER-SPEC-009] Amend the catalogue and typed-policy DTO/endpoint contracts for `CurriculumCourse` roadmap fields, prerequisite editing, exact three-credit validation, and 18/19/21/22 plus CGPA 2.99/3.00 outcomes in specs/009-catalog-prerequisites-policy-admin/contracts/api.md and src/StudentRegistration.Contracts/Academics/CatalogueAdministrationContracts.cs.
+- [ ] T103 [P] [US8] [FR-11] [FR-12] [FR-13] Create failing exact-three-credit, term-1-root, term-2+-prerequisite, graph, and overload-boundary tests in tests/StudentRegistration.IntegrationTests/Specs/Spec009/CatalogueRoadmapAmendmentTests.cs and tests/StudentRegistration.ApplicationTests/Academics/CataloguePolicyAmendmentTests.cs.
+- [ ] T104 [P] [US8] [DEFECT-LIVE-ENDPOINTS] Create failing real-SQL handler tests proving every SPEC-009 Admin GET/PUT/POST endpoint returns durable data or a documented business result rather than unconditional `CATALOGUE_UNAVAILABLE`/`POLICY_UNAVAILABLE` in tests/StudentRegistration.IntegrationTests/Specs/Spec009/LiveCatalogueEndpointTests.cs.
+- [ ] T105 [US8] [FR-11] [FR-12] Enforce `Course.Credits == 3` and the roadmap prerequisite shape in src/StudentRegistration.Academics/Domain/Course.cs, src/StudentRegistration.Academics/Domain/CurriculumCourse.cs, src/StudentRegistration.Academics/Application/CataloguePublicationService.cs, and src/StudentRegistration.Academics/Application/PolicyAdministrationService.cs after T103 fails.
+- [ ] T106 [US8] [PERSISTENCE] Implement the catalogue/policy administration store, exact-three-credit SQL constraint, roadmap queries, transaction boundaries, and a new incremental EF migration in src/StudentRegistration.Infrastructure.SqlServer/Persistence, src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/CatalogueModelConfiguration.cs, and src/StudentRegistration.Infrastructure.SqlServer/Migrations after T103-T104 fail.
+- [ ] T107 [US8] [DEFECT-LIVE-ENDPOINTS] Wire the real owner services/stores into src/StudentRegistration.Academics/Endpoints/Spec009Endpoints.cs and src/StudentRegistration.Api/Composition/AcademicModuleRegistration.cs so valid calls no longer fall through to unconditional unavailable responses after T104 and T106.
+- [ ] T108 [US8] [ADM-05] Add accessible create/edit controls for subject, roadmap term/level/cohort, required status, and prerequisite selection to src/StudentRegistration.Client/Pages/CatalogueAdministrationPage.razor and call the existing draft mutation client instead of rendering a read-only course list.
+- [ ] T109 [US8] [DEFECT-DEMO-SEED] Seed a deterministic published three-credit roadmap and typed 18/19-21/22 policy into Development through src/StudentRegistration.Api/Development/DemoDatabaseInitializer.cs without embedding mutable demo data in migrations.
+- [ ] T110 [P] [US8] [ADM-05] Replace mock-only catalogue confidence with a live browser create/edit/validate/publish/reload journey in tests/StudentRegistration.E2ETests/Specs/Spec009/LiveCatalogueAdministrationPageFeatureTests.cs.
+- [ ] T111 [P] [US8] [FR-13] Add policy simulation and downstream-consumption integration coverage for normal 18, CGPA-gated approval-required 19-21, rejection above 21, and probation 12 in tests/StudentRegistration.IntegrationTests/Specs/Spec009/OverloadPolicyIntegrationTests.cs.
+- [ ] T112 [TRACE] [US8] Update roadmap/overload traceability, scope review, migration evidence, and release approval in docs/release-evidence/SPEC-009-traceability.md, docs/release-evidence/SPEC-009-scope-review.md, and docs/release-evidence/SPEC-009-release-approval.md after T101-T111 pass.

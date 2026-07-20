@@ -1,0 +1,55 @@
+.srs-surface-card {
+    display: grid;
+    gap: var(--srs-spacing-primitive-5);
+    min-inline-size: 0;
+    padding: clamp(var(--srs-spacing-primitive-5), 3vw, var(--srs-spacing-primitive-8));
+    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-component-panel-background);
+    border: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
+    border-radius: var(--srs-border-primitive-radius-large);
+    box-shadow: var(--srs-elevation-card);
+}
+
+.srs-surface-card__header,
+.srs-surface-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--srs-spacing-primitive-3);
+}
+
+.srs-surface-card__heading,
+.srs-surface-card__description {
+    margin: 0;
+}
+
+.srs-surface-card__heading {
+    font-size: var(--srs-typography-primitive-font-size-heading);
+    font-weight: 700;
+    line-height: var(--srs-typography-primitive-line-height-compact);
+    color: var(--srs-color-primitive-blue-900);
+}
+
+.srs-surface-card__description {
+    max-inline-size: var(--srs-sizing-content-readable);
+    margin-block-start: var(--srs-spacing-primitive-2);
+    color: var(--srs-color-semantic-text-secondary);
+}
+
+.srs-surface-card__content {
+    min-inline-size: 0;
+}
+
+.srs-surface-card__actions {
+    padding-block-start: var(--srs-spacing-primitive-4);
+    border-block-start: var(--srs-border-primitive-width) solid var(--srs-color-primitive-blue-100);
+}
+
+@media (forced-colors: active) {
+    .srs-surface-card,
+    .srs-surface-card__actions {
+        border-color: CanvasText;
+        box-shadow: none;
+    }
+}

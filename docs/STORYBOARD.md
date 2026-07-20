@@ -7,8 +7,9 @@ data scopes, and administrators managing complex master data. It must remain
 clear on mobile and desktop, work without color perception, support keyboard
 and assistive technology, and never hide the reason a submission is blocked.
 
-There are 27 reusable route-level screen templates: 5 public/authentication,
-8 student, 9 admin, 4 shared Lecturer/TA, and 1 system screen.
+There are 30 reusable route-level screen templates: 5 public/authentication,
+9 student, 10 admin, 5 shared Lecturer/TA, and 1 system screen. Ahmed ELbamby
+approved this unified-workflow storyboard amendment on 20 July 2026.
 
 Before implementation, each route requires the Page Design Record defined by
 SPEC-003: annotated wide/narrow wireframes, information hierarchy, components,
@@ -26,12 +27,15 @@ flowchart TD
   Activate["Create / activate student account"]
   StaffLogin["Shared staff login"]
   Dashboard["Student dashboard"]
+  Roadmap["Student roadmap"]
   Discover["Available subjects"]
   Details["Subject and group details"]
   Builder["Schedule builder"]
   Review["Review and submit"]
   Submit["Atomic submission"]
   Receipt["Receipt / timetable"]
+  Pending["Pending approval / seat held"]
+  Approval["Scoped staff or Admin approval"]
   Conflict{"Hard conflict?"}
   Alternatives{"Alternative exists?"}
   Manual["Red X + manual resolution"]
@@ -41,9 +45,14 @@ flowchart TD
   Landing --> StaffLogin
   Activate --> StudentLogin
   StudentLogin --> Dashboard
-  Dashboard --> Discover
+  Dashboard --> Roadmap
+  Roadmap -->|Term 1| Receipt
+  Roadmap -->|Term 2 onward| Discover
   Discover --> Details
-  Details --> Builder
+  Details --> Pending
+  Pending --> Approval
+  Approval -->|Approved| Builder
+  Approval -->|Rejected or expired| Roadmap
   Builder --> Conflict
   Conflict -->|No| Review
   Conflict -->|Yes| Alternatives
@@ -63,6 +72,19 @@ Every authenticated page shows:
 - User display name and server-authorized role context.
 - Session-expiry warning and sign-out.
 - Accessible help/reference ID for failures.
+
+Every authenticated Student, Admin, Lecturer, and Teaching Assistant page uses
+one composition contract: the same AppShell, role navigation, page header,
+cards, forms, tables and compact alternatives, status panels, confirmation
+dialogs, buttons, spacing, typography, focus, and responsive behavior. Only
+server-authorized role content and actions differ. Role navigation is complete
+and consistent within each workspace rather than being rebuilt per page.
+
+Where capacity applies, every role sees the same text-labelled order:
+`Total / Enrolled / Held / Available`. Pending approval is described as a held
+place, never as enrollment. Loading, stale, and unavailable capacity states use
+the shared status pattern and are never calculated authoritatively in the
+browser.
 
 Every data screen implements loading, empty, success, validation error,
 recoverable service error, unauthorized/session-expired, stale/concurrent
@@ -84,14 +106,15 @@ or presents a cached success.
 
 | ID / route | Story | Information and transitions |
 |---|---|---|
-| STU-01 /student | Dashboard shows GPA, earned credits, standing, holds, current term/window, and registration summary. | Open/upcoming/closed/no term/hold/profile issue. Primary action starts or resumes a plan. |
+| STU-01 /student | Dashboard shows GPA, earned credits, standing, holds, current term/window, enrollment ownership, current timetable, and registration summary. | First-term automatic enrollment has no manual selection action; term-two-and-later open/upcoming/closed/no-term/hold/profile states lead to the roadmap or current plan. |
 | STU-02 /student/subjects | Default view lists eligible, available offerings; search/filter and an unavailable-with-reason view are available. | Announces result count; empty filters have a reset action; every eligibility state has icon and text. |
-| STU-03 /student/subjects/{offeringId} | Subject details show credits, prerequisite result, Lecturer, TA, room, day/time, group capacity and state. | Open/nearly full/full/changed/unpublished/selected. Group cards have complete accessible names. |
-| STU-04 /student/schedule | Calendar and equivalent chronological list show selected groups, conflicts, and up to three alternatives. | Valid/recalculating/warning/hard conflict/stale/full/no solution. Red X is paired with Conflict text and details. |
-| STU-05 /student/review | Student reviews groups, credits, policy checks, terms, and final blocking reasons. | Submit is enabled only for a conflict-free, currently eligible plan; a disabled action always states why. |
+| STU-03 /student/subjects/{offeringId} | Subject details show three credits, prerequisite result, roadmap position, Lecturer, TA, room, day/time, and Total/Enrolled/Held/Available capacity. | Open/nearly full/full/changed/unpublished/selected plus pending approval/held, approved, rejected, and expired/released. Group cards have complete accessible names. |
+| STU-04 /student/schedule | Calendar and equivalent chronological list show selected groups, conflicts, approval status, capacity, and up to three alternatives. | Valid/recalculating/warning/hard conflict/stale/full/no solution; normal maximum 18; 19-21 request available only for server-reported CGPA >= 3.0 and remains pending until approved. |
+| STU-05 /student/review | Student reviews groups, credits, policy and approval checks, terms, and final blocking reasons. | Submit is enabled only for a conflict-free, currently eligible and approved plan; pending subject/overload approval holds capacity but remains blocked and a disabled action always states why. |
 | STU-06 /student/registration/result/{id} | Atomic result gives reference, term, groups, staff, rooms, timetable, and decision snapshot. | Success or rejection explicitly states that no partial registration occurred. |
 | STU-07 /student/registrations | Student sees current timetable and historical terms in calendar and table/list formats. | Empty/current/history/unavailable; printable semantic table. |
 | STU-08 /student/account | Read-only institutional identity plus password recovery, current-session sign-out, and sign-out-all actions. | Generic recovery confirmation, expired/used factor, stale session and password failure; sign-out-all requires confirmation and invalidates every replica-visible session. |
+| STU-09 /student/roadmap | A level-and-term roadmap shows every three-credit subject, prerequisite chain, completion, current availability, approval requirement, and next action. | First term is automatically enrolled with no manual choice; term two onward links eligible subjects to details; later-level unmet prerequisites, pending approval/held, approved, rejected, expired/released, and registered states remain explicit. |
 
 ## Admin screens
 
@@ -106,6 +129,7 @@ or presents a cached success.
 | ADM-07 /admin/resources | Admin manages versioned rooms and may view/import staff-owned availability plus published-schedule impact alerts. The POC exposes no Admin availability correction or override. | Imported/empty/unavailable/overlap/stale resource; table/list editor is an alternative to timetable grid. |
 | ADM-08 /admin/registrations | Admin monitors and inspects submissions, receipts, fill, failures, and reconciliation alerts. Registration correction, drop, withdrawal, and reconciliation repair commands are absent from the Admin UI in MVP. | Live/stale/degraded/collision/restricted record; paused-group alerts provide a support reference while repair remains an operations-service runbook action. |
 | ADM-09 /admin/audit | Admin searches immutable audit events and requests scoped operational exports. | Empty/large result/export queued/running/ready/expired/failed/restricted event; status and authorized download are separate states. |
+| ADM-10 /admin/approvals | Admin sees a bounded approval inbox for subject and 19-21-credit overload requests inside Admin scope, with Student/subject/group context and capacity effect. | Empty/paged/pending/approved/rejected/expired/released/stale/unauthorized; approve or reject requires a reason and confirmation, then shows an audit/reference result. |
 
 ## Shared Lecturer and Teaching Assistant screens
 
@@ -118,6 +142,7 @@ scope and available actions, not a client-selected role.
 | STF-02 /staff/timetable | Staff sees assigned subject/group, colleagues, rooms, days, times, and history. | Direct URLs to unassigned data return 403. Calendar has table/list equivalent. |
 | STF-03 /staff/groups/{groupId}/roster | Staff sees the minimum authorized roster and counts for an assigned group. | No unrelated students or groups; semantic table and accessible paging. |
 | STF-04 /staff/availability | Staff records available/unavailable time ranges before the configured deadline through the Scheduling-owned availability aggregate. | Draft/saved/overlap/deadline passed/stale edit/published-group impact warning. Availability changes never silently move a class; Admin cannot edit them in the POC; keyboard and text-range entry are supported. |
+| STF-05 /staff/approvals | Lecturer and TA see only subject and overload requests inside their server-derived teaching scope, using the same inbox/detail/confirmation composition as Admin. | Lecturer/TA scope, empty, pending, approved, rejected, expired/released, stale assignment/decision, and forbidden. Capacity always shows Total/Enrolled/Held/Available. |
 
 ## System screen
 
@@ -160,6 +185,8 @@ The conflict presentation contains:
 - Error summary links to fields; inline errors use programmatic association.
 - Schedule calendar always has equivalent chronological list/table.
 - Status changes use restrained live regions.
+- Pending approval, held capacity, approved, rejected, and expired/released
+  states always use text plus icon; capacity values have explicit labels.
 - Reflow at 400% zoom and usable layouts from 320 to 1920 CSS pixels.
 - Reduced-motion preference and accessible session timeout warning.
 - English-first, localization-ready resources and direction-safe layout;
@@ -174,6 +201,8 @@ The conflict presentation contains:
 - S2: 3-5 admin/registrar users create a term and publish a valid offering.
 - S5: at least 8 students identify, auto-resolve, and manually resolve conflicts.
 - S7: at least 3 Lecturers and 3 TAs find assignment/roster and submit availability.
+- S7: the same Lecturer/TA sample and at least 3 Admin users locate, inspect,
+  approve, and reject scoped subject/overload requests without data leakage.
 - S8: end-to-end UAT includes novice, keyboard-only, and screen-reader users.
 
 Initial target is above 80% task completion and below 15% task errors. Go-live

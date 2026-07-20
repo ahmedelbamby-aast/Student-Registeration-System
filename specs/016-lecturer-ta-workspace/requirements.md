@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13<br>
+**Status:** Approved for demo implementation by Ahmed ELbamby on 2026-07-13; assignment-scoped line-approval amendment approved 2026-07-20<br>
 **Owner:** Product Owner<br>
 **Reviewers:** Lecturer/TA representatives, Security, UX, QA<br>
 **Target:** Sprint 7<br>
@@ -11,6 +11,11 @@
 **Owner-approved demo amendment (2026-07-20):** Lecturer and Teaching
 Assistant remain separate account roles. The combined-role fixture is frozen;
 each enabled staff account has exactly one server-derived staff role.
+
+**Owner-approved registration amendment (2026-07-20):** Add the narrow
+`RegistrationApproval.DecideAssigned` capability for pending self-service
+lines whose selected group has the actor's current effective assignment. It is
+not capacity/policy/term administration and grants no bypass.
 
 ## Context
 
@@ -46,7 +51,8 @@ offering-planning dependency.
   availability aggregate ID and rowversion as an immutable offering-planning
   dependency, but no Admin availability
   mutation/correction/override command, permission, editable control,
-  notification workflow, or correction-audit flow exists.
+  notification workflow, or correction-audit flow exists. FR-11's narrow line
+  decision does not mutate capacity configuration or registration rules.
 - FR-8: If an accepted availability change conflicts with a published
   assignment, the same transaction MUST create or update a durable
   ScheduleImpactAlert containing term, staff, affected group, availability and
@@ -62,6 +68,21 @@ offering-planning dependency.
   version, current published assignments, and impact-alert state using server
   time inside one local SQL transaction. Availability update and required
   ScheduleImpactAlert write MUST commit or roll back together.
+- FR-11: Lecturer/TeachingAssistant with
+  `RegistrationApproval.DecideAssigned` MUST list/read only pending lines for
+  a selected group with their current effective GroupStaffAssignment.
+  Authorization precedes lookup and is revalidated in-transaction.
+- FR-12: Staff MAY approve/reject one assigned line using a reason, expected
+  submission/line versions, actor-scoped ClientRequestId, and antiforgery.
+  They cannot decide unassigned/ended lines, directly accept a whole plan,
+  change held capacity, or waive any server rule.
+- FR-13: Approval projections are limited to UniversityId, display name,
+  selected subject/group, requested credits, current CGPA, overload indicator,
+  governed eligibility summary, line/window state, and
+  capacity/enrolled/held/available counts. Full transcript, hold details,
+  contacts, grades, and holder identities are forbidden.
+- FR-14: Staff approval routes MUST use unified SPEC-003 roadmap, capacity,
+  approval status/timeline, decision, and route-state components.
 
 ## Non-Functional Requirements
 
@@ -133,6 +154,21 @@ And rosters contain only approved fields with safe audit metadata<br>
 And timetable/availability is fully keyboard operable with a list/table
 alternative.
 
+### AC-9: Assignment-scoped line decision (FR-11, FR-12, FR-13)
+Given a Lecturer/TA is currently assigned to Group A but not Group B<br>
+When they list and decide pending lines<br>
+Then Group A's line is available with only the approved minimal context and its
+versioned idempotent decision succeeds<br>
+And Group B/ended-assignment attempts are denied without data or version
+disclosure and no held capacity changes directly.
+
+### AC-10: Unified approval experience (FR-14)
+Given pending, approved, rejected, expired, stale, denied, offline, and service
+failure fixtures<br>
+When staff uses the approval routes<br>
+Then shared capacity/status/timeline/decision components are keyboard
+operable, accessible, responsive, and consistent with Student/Admin meaning.
+
 ## Edge Cases
 
 - EC-1: Duplicate assignment rows for the same active staff role -> display
@@ -194,6 +230,14 @@ Endpoints: GET /api/staff/assignments, GET /api/staff/timetable, GET
 returns 409 STALE_VERSION or AVAILABILITY_DEADLINE_PASSED when revalidation
 fails.
 
+Assignment-scoped registration approval adds GET
+`/api/staff/registration-approvals`, GET
+`/api/staff/registration-approvals/{submissionId}/lines/{lineId}`, and POST
+`/api/staff/registration-approvals/{submissionId}/lines/{lineId}/decision`.
+These consume canonical SPEC-014 DTOs and require
+`RegistrationApproval.DecideAssigned`; POST requires antiforgery, expected
+versions, reason, and ClientRequestId.
+
 Admin availability consumption uses SPEC-010's bounded read-only Admin view.
 Import means selecting the aggregate ID and rowversion as an immutable
 offering-planning dependency; it neither copies nor mutates the range set. No
@@ -218,7 +262,9 @@ through an endpoint or transaction that bypasses the aggregate root.
 ## Out of Scope
 
 - OS-1: Grade entry, attendance entry, or messaging.
-- OS-2: Staff capacity/policy/term administration.
+- OS-2: Staff capacity/policy/term administration other than the explicitly
+  approved, assignment-scoped registration line decision that changes no
+  capacity configuration or policy.
 - OS-3: Access to unrelated groups/students.
 - OS-4: Staff-driven automatic room/time changes and any Admin availability
   mutation/correction/override, permission, editable control, notification, or

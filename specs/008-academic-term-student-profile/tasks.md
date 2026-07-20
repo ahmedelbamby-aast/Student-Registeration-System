@@ -117,3 +117,10 @@
 - [x] T091 [GATE] Record Ahmed ELbamby's product, Registrar, Identity, QA, accessibility, data/concurrency, security, and operations review perspectives for the non-production SPEC-008 demo slice in docs/release-evidence/SPEC-008-release-approval.md, explicitly preserving pending SPEC-015/SPEC-017 contributors, Gate B-D, production data-source, and official AASTMT go-live approvals.
 
 Only the Gate A approval record (T007) was complete before execution; T001-T006 must be closed with current dependency/readiness evidence before T008 begins.
+
+## Phase 9 - Owner-approved 2026-07-20 program-term amendment
+
+- [ ] T092 [P] [ENTITY-StudentTermAcademicState] Add failing domain, contract, and real-SQL tests for positive ProgramTermOrdinal, first-term projection, Admin correction concurrency, and no earned-credit/browser inference under tests/StudentRegistration.IntegrationTests/Specs/Spec008 and tests/StudentRegistration.ContractTests/Specs/Spec008.
+- [ ] T093 [ENTITY-StudentTermAcademicState] Add ProgramTermOrdinal to src/StudentRegistration.Academics/Domain/StudentTermAcademicState.cs, owner DTOs/services, and src/StudentRegistration.Infrastructure.SqlServer/Persistence/Configurations/AcademicContextModelConfiguration.cs after T092 fails.
+- [ ] T094 [SEED] Create separate first-term and later-term synthetic academic fixtures in src/StudentRegistration.Academics/Application/DemoStudentProfileSeedContributor.cs without a universal blocking hold; retain explicit blocked-student fixtures for negative testing.
+- [ ] T095 [TRACE] Regenerate SPEC-008 persistence, authorization, traceability, and release evidence after SPEC-014 automatic-enrollment integration passes.

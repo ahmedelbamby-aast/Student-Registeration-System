@@ -2,6 +2,7 @@
 
 **Branch**: 008-academic-term-student-profile | **Date**: 2026-07-14 | **Spec**: [spec.md](spec.md)
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby; the
+program-term amendment was approved on 2026-07-20; the
 clarified narrative contract has standing approval as of 2026-07-14.
 Production institutional data-source approval remains separate.
 
@@ -75,13 +76,16 @@ business project is introduced.
    registration serialization. Prove the upstream protocol with a test
    consumer and a no-commit callback; leave real seat/enrollment conformance to
    dependent SPEC-014.
-5. Keep term and student Admin list/mutation handlers in Academics; publish
+5. Persist `ProgramTermOrdinal` on that same boundary so first-term automatic
+   enrollment and term-two self-registration use authoritative data without a
+   duplicate progression aggregate.
+6. Keep term and student Admin list/mutation handlers in Academics; publish
    bounded audit facts for SPEC-017 rather than duplicating writes.
-6. Contribute the complete existing Student/profile graph to the shared
+7. Contribute the complete existing Student/profile graph to the shared
    versioned non-production seed profile. Values are synthetic and logically
    deterministic by profile version/ordinal, re-seeding is idempotent, and no
    production record or unapproved demographic field is introduced.
-7. Page transcript attempts and provenance independently with the canonical
+8. Page transcript attempts and provenance independently with the canonical
    default 20/maximum 100 contract. Return all active holds together, cap them
    at 100, and fail the profile closed rather than returning a partial set.
    Limit term windows/version entries and profile operations to 20, bound

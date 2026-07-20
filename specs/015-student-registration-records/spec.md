@@ -2,9 +2,14 @@
 
 **Feature Branch**: 015-student-registration-records
 **Created**: 2026-07-12
-**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13
+**Status**: Approved for demo implementation by Ahmed ELbamby on 2026-07-13; pending-line and first-term record amendment approved 2026-07-20
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
+
+**Owner-approved amendment (2026-07-20):** Records now project SPEC-014
+first-term automatic origin plus self-service PendingApproval lines, held-seat
+capacity, line decisions, rejection, and window-close expiry. These remain
+read projections; SPEC-015 owns no hold, approval, or batch writer.
 
 ## Context
 
@@ -91,6 +96,22 @@ And printed/exported views meet accessibility checks with minimized PII<br>
 And historical records remain durable and readable throughout the approved
 retention lifecycle.
 
+### User Story 7 - Pending lines and automatic origin (FR-9, FR-10, FR-11) (P1)
+
+As a student, I need pending approval and first-term automatic registrations
+to be clearly distinguished so that I understand whether seats are held or
+subjects are enrolled.
+
+**Acceptance Scenario (AC-7)**
+
+Given a pending self-service record and an accepted first-term automatic
+record<br>
+When their detail views load<br>
+Then pending lines show decision/window/capacity counts without holder PII or
+an accepted receipt<br>
+And the automatic record identifies roadmap-root origin without fabricating an
+approval timeline.
+
 ## Edge Cases
 
 - EC-1: Result response lost -> idempotent lookup returns receipt.
@@ -122,6 +143,18 @@ retention lifecycle.
   meeting, policy-version, and server-time meaning after later edits.
 - FR-8: Drop/correction actions MUST be absent until approved policy/workflow
   is specified.
+- FR-9: Student history/detail MUST project PendingApproval, Accepted,
+  Rejected, and Expired submission states, line status/decision summaries,
+  requested credits, origin, window close, and capacity/enrolled/held/available
+  counts without holder identity.
+- FR-10: A first-term automatic accepted record MUST identify its automatic
+  origin and applicable CurriculumCourse roadmap roots; it uses the same
+  immutable receipt/history presentation and MUST NOT fabricate approval
+  events.
+- FR-11: STU-06/STU-07 and Admin inspection MUST compose the unified SPEC-003
+  roadmap, capacity, approval status/timeline, receipt, and standard route-
+  state components. Pending/rejected/expired records MUST never render as an
+  accepted timetable or receipt.
 
 ### Non-Functional Requirements
 
@@ -141,6 +174,8 @@ retention lifecycle.
 
 - **SC-1**: Every accepted registration has a durable, uniquely identifiable receipt.
 - **SC-2**: Rejected atomic submissions clearly state that no partial registration occurred.
+- **SC-3**: Pending approval, automatic enrollment, rejection, expiry, and
+  accepted history are distinguishable and expose no hold-owner PII.
 - **SC-3**: Current and historical records remain understandable after later catalogue changes.
 
 ## Assumptions

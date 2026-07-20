@@ -135,3 +135,14 @@
 
 Task completion is recorded only after each named artifact and its required
 expected-red or passing evidence exists.
+
+## Phase 8 - 2026-07-20 Pending-Line and Automatic-Origin Amendment
+
+- [ ] T065 [GATE] Rebaseline SPEC-015 against the approved SPEC-014 roadmap/held-seat/line-approval amendment and update contracts/traceability before runtime edits.
+- [ ] T066 [FR-9] Write projection, ownership, privacy, pagination, and API tests for PendingApproval/Accepted/Rejected/Expired history and detail, requested credits, line statuses/decisions, window close, and capacity/enrolled/held/available counts without holder PII.
+- [ ] T067 [FR-10] Write tests for first-term automatic origin, exact required roadmap-root receipt/history, idempotent record identity, and absence of fabricated approval events.
+- [ ] T068 [FR-11] Write component/E2E/accessibility/browser tests for unified roadmap, capacity, approval timeline/status, receipt, loading, empty, denied, stale, offline, and error components across student and Admin inspection.
+- [ ] T069 [FR-9-FR-11] Implement bounded read projections/endpoints and STU-06/STU-07/Admin inspection contributions only after T066-T068 fail; do not introduce a hold, decision, batch, or receipt writer.
+- [ ] T070 [AUTH] Prove Student self-scope, Admin named-student+term scope, ordinary staff denial, authorization-before-lookup, and no protected submission/line/version disclosure.
+- [ ] T071 [EVIDENCE] Refresh performance, retention, privacy, accessibility, browser, API/OpenAPI, and migration-read compatibility evidence for pending and automatic records.
+- [ ] T072 [GATE] Complete amendment traceability and Ahmed Elbamby's product/domain/QA/security/accessibility/data/operations review perspectives; reject the amended release while T065-T071 is unchecked.

@@ -3,6 +3,12 @@
 **Branch**: 011-eligibility-subject-discovery | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13, including the Policy SME review perspective.
 
+**Owner-approved progression amendment (2026-07-20):** Ahmed ELbamby's
+explicit instruction approves roadmap-aware term progression, term-1
+automatic enrollment, term-2-or-later self-registration, and the bounded
+19-21-credit approval-required state. Implementation remains gated on the new
+unchecked amendment tasks.
+
 ## Summary
 
 Deliver Eligibility and Subject Discovery inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
@@ -55,17 +61,23 @@ Registration.
    set for the authenticated student and authorized term.
 2. Evaluate the governed SPEC-002 window/standing/hold/prerequisite/load/
    repeat/capacity/conflict registry and create complete per-rule reasons;
-   missing required input fails closed. The demo rule set explicitly covers
-   window, standing, holds, prerequisites, course GPA/earned credits, 18-credit
-   normal target/maximum, 12-credit probation maximum, capacity, and exact
-   meeting conflict without advisor/exception workflows.
+   missing required input fails closed. Consume SPEC-009 `CurriculumCourse` as
+   the programme/cohort roadmap: matching-cohort term-1 roots are automatic
+   and self-registration begins at term 2. The rules cover 18-credit normal,
+   12-credit probation, per-subject approval for every term-2-or-later
+   self-registration, 19-21 credits only for CGPA at least 3.0, and rejection
+   above 21. Generic advisor and arbitrary exception workflows remain absent.
 3. Project current/projected/applicable load and complete dependency versions
    plus lifecycle-only group state, non-selectable reasons, and nested
-   meeting/staff/room/time/capacity/version details without treating
-   advisory capacity as a reservation.
+   meeting/staff/room/time/capacity/version details. Capacity includes total,
+   enrolled, held, and available counts without holder PII; pending approval
+   is distinct from enrollment and uses the SPEC-010/SPEC-014 bounded hold.
 4. Apply bounded server search/filter/sort/page only after eligibility
    evaluation and expose a dedicated complete detail endpoint.
 5. STU-02/STU-03 render stable reasons and non-color states from SPEC-003.
+6. Replace mock-only confidence with live SQL/browser fixtures covering a
+   published roadmap, automatic term-1 state, normal self-registration,
+   approval-required overload, held capacity, rejection, and window close.
 
 ## Execution and Gate Order
 

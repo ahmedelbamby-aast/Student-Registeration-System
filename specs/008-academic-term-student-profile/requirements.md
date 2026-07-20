@@ -2,7 +2,7 @@
 
 **Author:** Ahmed ELbamby<br>
 **Date:** 2026-07-12<br>
-**Status:** APPROVED<br>
+**Status:** APPROVED; program-term amendment approved by Ahmed ELbamby on 2026-07-20<br>
 **Owner:** Backend Lead<br>
 **Reviewers:** Registrar/Policy SME, Data, QA<br>
 **Target:** Sprint 1<br>
@@ -104,6 +104,11 @@ never open a window or change an academic decision.
   denied. Every endpoint records success, validation, authorization, conflict,
   unavailable, and unexpected-error outcomes. Feature field errors contain at
   most 20 keys, 5 messages/key, and 256 characters/message.
+- FR-12: `StudentTermAcademicState` MUST persist a server-authoritative positive
+  `ProgramTermOrdinal`. Program term one authorizes SPEC-014 automatic
+  enrollment and disables manual selection; program term two and later
+  authorizes self-registration. The value MUST NOT be inferred solely from
+  earned credits, transcript rows, cohort text, or browser state.
 
 ## Non-Functional Requirements
 

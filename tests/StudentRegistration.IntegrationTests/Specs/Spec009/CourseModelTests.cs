@@ -38,6 +38,8 @@ public sealed class CourseModelTests
         Assert.Throws<ArgumentException>(() => Create(title: " "));
         Assert.Throws<ArgumentOutOfRangeException>(() => Create(credits: 0m));
         Assert.Throws<ArgumentOutOfRangeException>(() => Create(credits: -1m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Create(credits: 2.5m));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Create(credits: 4m));
     }
 
     private static Course Create(

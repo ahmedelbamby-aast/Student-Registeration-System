@@ -6,129 +6,148 @@
     <a class="srs-skip-link" href="#@MainContentId">@SkipLinkLabel</a>
 
     <header class="srs-app-shell__header" role="banner">
-        @if (!string.IsNullOrWhiteSpace(BrandLogoSource))
-        {
-            <img class="srs-app-shell__logo"
-                 src="@BrandLogoSource"
-                 alt="@BrandLogoAccessibleName" />
-        }
+        <div class="srs-app-shell__container srs-app-shell__brand">
+            @if (!string.IsNullOrWhiteSpace(BrandLogoSource))
+            {
+                <img class="srs-app-shell__logo"
+                     src="@BrandLogoSource"
+                     alt="@BrandLogoAccessibleName" />
+            }
+
+            @if (Context is not null && !IsLoading && Status is null)
+            {
+                <p class="srs-app-shell__identity">@Context.DisplayName</p>
+            }
+        </div>
 
         @if (Context is not null && !IsLoading && Status is null)
         {
-            <p class="srs-app-shell__identity">@Context.DisplayName</p>
-            <dl class="srs-app-shell__context" aria-live="polite">
-                <div>
-                    <dt>@ServerDateTimeLabel</dt>
-                    <dd>
-                        <time data-context="server-time"
-                              datetime="@Context.ServerDateTime.ToString("O")">
-                            @Context.ServerDateTime.ToString("g", CultureInfo.CurrentCulture)
-                        </time>
-                        <span>@Context.TimeZone</span>
-                    </dd>
+            <div class="srs-app-shell__context-strip">
+                <div class="srs-app-shell__container">
+                    <dl class="srs-app-shell__context" aria-live="polite">
+                        <div>
+                            <dt>@ServerDateTimeLabel</dt>
+                            <dd>
+                                <time data-context="server-time"
+                                      datetime="@Context.ServerDateTime.ToString("O")">
+                                    @Context.ServerDateTime.ToString("g", CultureInfo.CurrentCulture)
+                                </time>
+                                <span>@Context.TimeZone</span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@TeachingTermLabel</dt>
+                            <dd data-context="teaching-term">
+                                @(Context.TeachingTerm ?? NoTeachingTermLabel)
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@RegistrationTermLabel</dt>
+                            <dd data-context="registration-term">
+                                @(Context.RegistrationTerm ?? NoRegistrationTermLabel)
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@RegistrationWindowLabel</dt>
+                            <dd data-context="registration-window"
+                                data-window-state="@WindowStateValue(Context.RegistrationWindowState)">
+                                <span data-context="registration-window-state">
+                                    @WindowStateValue(Context.RegistrationWindowState)
+                                </span>
+                                @if (Context.RegistrationWindow is { } window)
+                                {
+                                    <time datetime="@window.OpensAtUtc.ToString("O")">
+                                        @window.OpensAtUtc.ToString("g", CultureInfo.CurrentCulture)
+                                    </time>
+                                    <span aria-hidden="true">–</span>
+                                    <time datetime="@window.ClosesAtUtc.ToString("O")">
+                                        @window.ClosesAtUtc.ToString("g", CultureInfo.CurrentCulture)
+                                    </time>
+                                }
+                                else
+                                {
+                                    <span>@NoRegistrationWindowLabel</span>
+                                }
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@AuthorizedRolesLabel</dt>
+                            <dd>@string.Join(", ", Context.AuthorizedRoles)</dd>
+                        </div>
+                        <div>
+                            <dt>@ActiveRoleLabel</dt>
+                            <dd>@Context.ActiveRole</dd>
+                        </div>
+                        <div>
+                            <dt>@SessionLabel</dt>
+                            <dd>
+                                <span>@Context.SessionState</span>
+                                <time datetime="@Context.SessionExpiresAt.ToString("O")">
+                                    @Context.SessionExpiresAt.ToString("g", CultureInfo.CurrentCulture)
+                                </time>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@ServiceLabel</dt>
+                            <dd>@Context.ServiceState</dd>
+                        </div>
+                    </dl>
                 </div>
-                <div>
-                    <dt>@TeachingTermLabel</dt>
-                    <dd data-context="teaching-term">
-                        @(Context.TeachingTerm ?? NoTeachingTermLabel)
-                    </dd>
-                </div>
-                <div>
-                    <dt>@RegistrationTermLabel</dt>
-                    <dd data-context="registration-term">
-                        @(Context.RegistrationTerm ?? NoRegistrationTermLabel)
-                    </dd>
-                </div>
-                <div>
-                    <dt>@RegistrationWindowLabel</dt>
-                    <dd data-context="registration-window"
-                        data-window-state="@WindowStateValue(Context.RegistrationWindowState)">
-                        <span data-context="registration-window-state">
-                            @WindowStateValue(Context.RegistrationWindowState)
-                        </span>
-                        @if (Context.RegistrationWindow is { } window)
-                        {
-                            <time datetime="@window.OpensAtUtc.ToString("O")">
-                                @window.OpensAtUtc.ToString("g", CultureInfo.CurrentCulture)
-                            </time>
-                            <span aria-hidden="true">–</span>
-                            <time datetime="@window.ClosesAtUtc.ToString("O")">
-                                @window.ClosesAtUtc.ToString("g", CultureInfo.CurrentCulture)
-                            </time>
-                        }
-                        else
-                        {
-                            <span>@NoRegistrationWindowLabel</span>
-                        }
-                    </dd>
-                </div>
-                <div>
-                    <dt>@AuthorizedRolesLabel</dt>
-                    <dd>@string.Join(", ", Context.AuthorizedRoles)</dd>
-                </div>
-                <div>
-                    <dt>@ActiveRoleLabel</dt>
-                    <dd>@Context.ActiveRole</dd>
-                </div>
-                <div>
-                    <dt>@SessionLabel</dt>
-                    <dd>
-                        <span>@Context.SessionState</span>
-                        <time datetime="@Context.SessionExpiresAt.ToString("O")">
-                            @Context.SessionExpiresAt.ToString("g", CultureInfo.CurrentCulture)
-                        </time>
-                    </dd>
-                </div>
-                <div>
-                    <dt>@ServiceLabel</dt>
-                    <dd>@Context.ServiceState</dd>
-                </div>
-            </dl>
+            </div>
 
-            @Navigation
+            @if (Navigation is not null)
+            {
+                <div class="srs-app-shell__navigation">
+                    <div class="srs-app-shell__container">@Navigation</div>
+                </div>
+            }
         }
     </header>
 
     <main id="@MainContentId" tabindex="-1">
-        @if (IsLoading)
-        {
-            <section class="srs-app-shell__state srs-app-shell__state--loading"
-                     data-state="loading"
-                     role="status"
-                     aria-busy="true">
-                @LoadingLabel
-            </section>
-        }
-        else if (Status is not null)
-        {
-            <section class="srs-app-shell__state srs-app-shell__state--@StatusState"
-                     data-state="@StatusState"
-                     role="@(Status.Severity is UiStatusSeverity.Error ? "alert" : "status")">
-                <h1>@Status.Heading</h1>
-                <p>@Status.Message</p>
-                @if (!string.IsNullOrWhiteSpace(Status.ReferenceId))
-                {
-                    <p>@Status.ReferenceId</p>
-                }
-                @foreach (var action in Status.NextActions)
-                {
-                    <a href="@action.Target">@action.Label</a>
-                }
-            </section>
-        }
-        else if (Context is not null)
-        {
-            @ChildContent
-        }
+        <div class="srs-app-shell__container srs-app-shell__main">
+            @if (IsLoading)
+            {
+                <section class="srs-app-shell__state srs-app-shell__state--loading"
+                         data-state="loading"
+                         role="status"
+                         aria-busy="true">
+                    @LoadingLabel
+                </section>
+            }
+            else if (Status is not null)
+            {
+                <section class="srs-app-shell__state srs-app-shell__state--@StatusState"
+                         data-state="@StatusState"
+                         role="@(Status.Severity is UiStatusSeverity.Error ? "alert" : "status")">
+                    <h1>@Status.Heading</h1>
+                    <p>@Status.Message</p>
+                    @if (!string.IsNullOrWhiteSpace(Status.ReferenceId))
+                    {
+                        <p>@Status.ReferenceId</p>
+                    }
+                    @foreach (var action in Status.NextActions)
+                    {
+                        <a href="@action.Target">@action.Label</a>
+                    }
+                </section>
+            }
+            else if (Context is not null)
+            {
+                @ChildContent
+            }
+        </div>
     </main>
 
     <footer class="srs-app-shell__footer" role="contentinfo">
-        @if (Context is not null && !IsLoading && Status is null)
-        {
-            <a data-context="support" href="@Context.SupportReferencePath">
-                @SupportLinkLabel
-            </a>
-        }
+        <div class="srs-app-shell__container">
+            @if (Context is not null && !IsLoading && Status is null)
+            {
+                <a data-context="support" href="@Context.SupportReferencePath">
+                    @SupportLinkLabel
+                </a>
+            }
+        </div>
     </footer>
 </div>
 

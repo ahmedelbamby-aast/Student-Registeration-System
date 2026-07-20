@@ -119,6 +119,9 @@ public sealed class SectionGroup
         Capacity = capacity;
     }
 
+    public void Rename(string groupCode) =>
+        GroupCode = SchedulingDomainValue.Code(groupCode, nameof(groupCode));
+
     public void AllocateSeat()
     {
         if (!IsSelectable)

@@ -236,7 +236,7 @@
 
 ## Phase 7 - Scope and Release Evidence
 
-- [x] T117 [OS-1] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-1 remains excluded: Waitlist, temporary seat reservation, or queue.
+- [x] T117 [OS-1] Historical pre-amendment evidence: inspect source, contracts, migrations, routes, and tests and record that waitlist, temporary seat reservation, or queue was excluded under the earlier baseline. The 2026-07-20 amendment supersedes only the reservation portion with its bounded RegistrationSeatHold; waitlists, queues, and every unrelated reservation remain excluded and require new T124-T145 evidence.
 - [x] T118 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-2 remains excluded: Distributed/application-instance locks.
 - [x] T119 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-3 remains excluded: Partial schedule acceptance.
 - [x] T120 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-4 remains excluded: Capacity override above approved group capacity.
@@ -247,3 +247,32 @@
 All 123 tasks have passing named evidence. The recorded approval is limited to
 the bounded non-production SPEC-014 demo and is not production or institutional
 go-live authorization.
+
+## Phase 8 - 2026-07-20 Roadmap, Held-Seat, and Line-Approval Amendment
+
+The previous evidence remains historical for the earlier final-commit model.
+The owner-approved amendment below is not implemented until every new task is
+completed; unchecked tasks prevent a new completion/release claim.
+
+- [ ] T124 [GATE] Re-run cross-spec consistency and dependency analysis for the 2026-07-20 `registration-roadmap-line-approval/1.0` amendment across SPEC-001/002/003/005/006/008-018; update the SPEC-014 dependency baseline and verify owner approval, entity ownership, migration ownership, permission vocabulary, and route manifests before source changes.
+- [ ] T125 [FR-19] [FR-26] Define and test FirstTermAutoEnrollmentBatch/Item contracts, uniqueness, lease/version lifecycle, authoritative program-term resolution, CurriculumCourse required-root selection, deterministic group assignment, and safe per-student all-or-nothing failure in specification, domain, and real-SQL tests.
+- [ ] T126 [FR-19] [FR-26] Implement the durable idempotent first-term batch through the existing registration coordinator; prove term-one self-service denial, no prerequisite/approval/hold creation, exact roadmap enrollment, retry replay, two-worker claim safety, and Admin-visible safe failures.
+- [ ] T127 [FR-20] Add policy/application regression tests for stricter probation behavior, normal <=18, CGPA 2.99/3.00 overload boundaries at 19 and 21 credits, >21 rejection, and proof that approval never bypasses prerequisites, holds, standing, conflicts, publication, or capacity.
+- [ ] T128 [FR-21] [FR-23] Define and test RegistrationSubmissionLine, RegistrationSeatHold, RegistrationApprovalDecision, and PendingApproval/Expired submission lifecycles, including database keys, check constraints, rowversions, immutable decisions, and accepted/rejected/expired result shapes.
+- [ ] T129 [FR-4] [FR-8] [FR-21] Implement atomic all-line hold creation with a savepoint and conditional sorted SectionGroup updates using `EnrolledCount + HeldSeatCount < Capacity`; prove one failed line rolls back every hold and pending line.
+- [ ] T130 [FR-22] Add authorization tests and governed permissions `RegistrationApproval.DecideAll` and `RegistrationApproval.DecideAssigned`; prove Admin global scope, current GroupStaffAssignment Lecturer/TA scope, ended/unrelated/wrong-role/missing-permission denial, authorization-before-lookup, and no protected identifier/version disclosure.
+- [ ] T131 [FR-24] Add contract/integration tests for versioned, antiforgery-protected, actor+line scoped decision idempotency, same-payload replay, payload mismatch, duplicate/contradictory decision races, immutable actor/role/reason/assignment-scope/time/correlation audit, and audit-failure rollback.
+- [ ] T132 [FR-22] [FR-24] Implement staff/admin approval query/detail/decision endpoints and services only after T130-T131 fail; use bounded stable pagination and privacy-minimized approval context.
+- [ ] T133 [FR-23] Add deterministic real-SQL tests for last-line approval converting all holds to enrollments atomically, rejection releasing all holds, failed final revalidation releasing all holds with stable reason, no partial receipt, and occupied-seat count unchanged during conversion.
+- [ ] T134 [FR-23] [FR-24] Implement all-line finalization, rejection, and registration-window-close expiry through the shared StudentTerm/catalogue/policy/sorted-group lock order with one serial terminal transition.
+- [ ] T135 [FR-25] Update SPEC-010 SectionGroup capacity contracts/mapping to HeldSeatCount and add real-SQL tests for hold-vs-enrollment final-seat races, hold-vs-capacity-reduction races, approval-vs-expiry, group mutation, two-replica collision, and `0 <= enrolled + held <= capacity`.
+- [ ] T136 [FR-11] Extend reconciliation tests/worker to compare enrolled rows and active hold rows, pause on either mismatch, repair both counters through the service identity only, audit atomically, and resume only after the occupied-seat invariant passes.
+- [ ] T137 [FR-25] Add contract/application tests proving Student, Admin, Lecturer, and TeachingAssistant capacity projections expose capacity/enrolled/held/available consistently without holder identity or other hold-owner PII.
+- [ ] T138 [FR-27] Amend SPEC-003 route/component records and implement unified AcademicRoadmap, CapacitySummary, ApprovalStatus/Timeline, DecisionPanel, and standard state components used by Student, Lecturer, TeachingAssistant, and Admin pages.
+- [ ] T139 [FR-21-FR-27] Add component, E2E, keyboard, accessibility, responsive, offline, stale, denied, service-error, and browser tests for student pending lines/results, staff assignment-scoped queue/decision, Admin global queue/batch monitoring, first-term automatic status, and every enabled button/recovery action.
+- [ ] T140 [NFR-1] [NFR-3] Extend target/spike/two-replica load profiles and invariant queries to include self-service hold creation, approval, rejection, expiry, first-term batch work, standard allocation contention, and zero overbooking/partial conversion/orphan hold/duplicate decision outcomes.
+- [ ] T141 [FR-26] Add restart/failover tests for two first-term workers and pending approval expiry, proving durable claims, bounded leases, idempotent retry, no duplicated enrollment, and no lost/repeated hold release.
+- [ ] T142 [TRACE] Update ERD, entity ownership, persistence manifest, API/OpenAPI, concurrency matrix, routes, operations metrics, threat model, migration/rollback notes, and complete FR-19..FR-27/AC-14..AC-17/EC-11..EC-14 traceability.
+- [ ] T143 [MIGRATION] Create and verify the owner-approved incremental migration only after model tests fail, covering fresh/upgrade/idempotent/rollback/model-parity paths and no data-destructive reinterpretation of earlier accepted submissions.
+- [ ] T144 [EVIDENCE] Produce performance, concurrency, security, privacy, audit, accessibility, browser, first-term-batch, and capacity-visibility evidence for the amendment without overwriting the historical evidence baseline.
+- [ ] T145 [GATE] Record Ahmed Elbamby's separate product/domain/QA/security/accessibility/data-concurrency/operations review perspectives for the completed amendment and reject release while any T124-T144 task is unchecked.

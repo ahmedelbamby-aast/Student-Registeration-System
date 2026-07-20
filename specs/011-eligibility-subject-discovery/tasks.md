@@ -77,3 +77,22 @@
 - [x] T051 [GATE] Record product, Policy SME, UX, backend, QA, security, accessibility, and operations release approvals in docs/release-evidence/SPEC-011-release-approval.md; record pending SPEC-003 product-wide visual governance honestly without treating it as a blocker to the bounded SPEC-011 feature evidence.
 
 All 51 tasks are complete and backed by the linked automated or recorded evidence.
+
+## Owner-Approved 2026-07-20 Progression and Approval Amendment
+
+The historical 51-task baseline remains recorded above. The following tasks
+are new unchecked work approved by Ahmed ELbamby's explicit 2026-07-20
+instruction and depend on the amended SPEC-009/SPEC-010 contracts.
+
+- [ ] T052 [GATE] Record the 2026-07-20 progression/approval amendment and rebaseline SPEC-002, SPEC-003, SPEC-008, SPEC-009, SPEC-010, SPEC-014, SPEC-015, SPEC-016, and SPEC-017 in specs/011-eligibility-subject-discovery/dependency-baseline.md and checklists/approval.md.
+- [ ] T053 [US6] [OWNER-SPEC-011] Amend eligibility/group DTO and endpoint contracts for roadmap term, automatic-registration state, normal/approval-required/rejected load state, HeldCount, AvailableCount, and permitted next action in specs/011-eligibility-subject-discovery/contracts/api.md and src/StudentRegistration.Contracts/Registration/EligibilityContracts.cs.
+- [ ] T054 [P] [US6] [FR-9] [FR-10] [FR-11] Create failing service tests for term-1 automatic state, term-2+ prerequisite progression, CGPA 2.99/3.00, 18/19/21/22 credits, and held-capacity projection in tests/StudentRegistration.ApplicationTests/Registration/RoadmapEligibilityAmendmentTests.cs.
+- [ ] T055 [P] [US6] [DEFECT-LIVE-DATA] Create failing real-SQL discovery tests using the Development-equivalent published roadmap/offering seed rather than intercepted browser responses in tests/StudentRegistration.IntegrationTests/Registration/LiveRoadmapDiscoveryTests.cs.
+- [ ] T056 [US6] [FR-9] Update src/StudentRegistration.Infrastructure.SqlServer/Registration/RegistrationDiscoveryQueryAdapter.cs to consume CurriculumCourse Level and RecommendedTerm, resolve the matching cohort/term, and project the automatic/self-registration path after T054-T055 fail.
+- [ ] T057 [US6] [FR-10] Replace hard-coded normal-only load evaluation in src/StudentRegistration.Registration/Application/EligibilityService.cs with per-subject approval-held self-registration through 18 credits, the additional CGPA-at-least-3.0 gate for 19-21, above-21 rejection, and probation-12 rules after T054 fails.
+- [ ] T058 [US6] [FR-11] Extend src/StudentRegistration.Registration/Domain/GroupSummary.cs and src/StudentRegistration.Registration/Application/GroupSummaryProjection.cs with held/available counts and a privacy-safe pending-approval status after T054 fails.
+- [ ] T059 [US6] [STU-02] Render roadmap term, automatic registration, normal-load approval-held, overload approval-held, rejected status, and full capacity breakdown in src/StudentRegistration.Client/Pages/SubjectDiscoveryPage.razor and src/StudentRegistration.Client/Features/Registration/EligibilityPresentation.razor.
+- [ ] T060 [US6] [STU-03] Replace the unconditional "no seat was reserved" state with version-aware normal, pending-hold, approved, rejected, and window-closed guidance in src/StudentRegistration.Client/Pages/SubjectDetailsPage.razor.
+- [ ] T061 [P] [US6] [AUTHORIZATION] Prove term-1 deep links cannot create duplicate plans, term-2 actions are student-self scoped, and another student's held-seat identity is never returned in tests/StudentRegistration.AuthorizationTests/RoadmapApprovalDiscoveryScopeTests.cs.
+- [ ] T062 [P] [US6] [E2E] Add live browser journeys for automatic term-1 display, prerequisite-blocked term-2 subject, normal selection, CGPA-gated approval-required overload, and held-capacity refresh in tests/StudentRegistration.E2ETests/Specs/Spec011/LiveRoadmapDiscoveryFeatureTests.cs.
+- [ ] T063 [TRACE] [US6] Update progression/approval traceability, scope review, accessibility evidence, and release approval in docs/release-evidence/SPEC-011-traceability.md, docs/release-evidence/SPEC-011-scope-review.md, and docs/release-evidence/SPEC-011-release-approval.md after T052-T062 pass.

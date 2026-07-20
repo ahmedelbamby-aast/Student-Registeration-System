@@ -1,0 +1,55 @@
+<span class="srs-approval-status" data-approval-state="@StateName">
+    <StatusBadge Text="@Text"
+                 Icon="@Icon"
+                 Tone="@Tone"
+                 Announce="@Announce" />
+</span>
+
+@code {
+    public enum ApprovalState
+    {
+        NotRequested,
+        PendingApproval,
+        Approved,
+        Rejected,
+        ExpiredReleased,
+        Registered
+    }
+
+    [Parameter]
+    public ApprovalState State { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public bool Announce { get; set; }
+
+    private string StateName => State switch
+    {
+        ApprovalState.NotRequested => "not-requested",
+        ApprovalState.PendingApproval => "pending-approval",
+        ApprovalState.Approved => "approved",
+        ApprovalState.Rejected => "rejected",
+        ApprovalState.ExpiredReleased => "expired-released",
+        ApprovalState.Registered => "registered",
+        _ => throw new ArgumentOutOfRangeException(nameof(State))
+    };
+
+    private StatusBadge.BadgeTone Tone => State switch
+    {
+        ApprovalState.NotRequested => StatusBadge.BadgeTone.Neutral,
+        ApprovalState.PendingApproval => StatusBadge.BadgeTone.Pending,
+        ApprovalState.Approved => StatusBadge.BadgeTone.Success,
+        ApprovalState.Rejected => StatusBadge.BadgeTone.Danger,
+        ApprovalState.ExpiredReleased => StatusBadge.BadgeTone.Warning,
+        ApprovalState.Registered => StatusBadge.BadgeTone.Information,
+        _ => throw new ArgumentOutOfRangeException(nameof(State))
+    };
+
+    protected override void OnParametersSet() =>
+        ArgumentException.ThrowIfNullOrWhiteSpace(Text);
+}

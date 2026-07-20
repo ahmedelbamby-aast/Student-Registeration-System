@@ -2,7 +2,7 @@
 
 **Feature Branch**: 001-product-charter-rbac
 **Created**: 2026-07-12
-**Status**: Approved (Gate A demo implementation, 2026-07-13)
+**Status**: Approved (Gate A demo implementation, 2026-07-13; approval-workflow RBAC amendment approved 2026-07-20)
 **Owner**: Product Owner
 **Normative detail**: [requirements.md](requirements.md)
 
@@ -104,9 +104,17 @@ And the modular monolith meets SPEC-018 targets without distributed services.
   required-term, bounded University ID/name locator returning minimal fields,
   followed by named StudentId plus AcademicTermId scope for detail or
   correction.
+- FR-3A: Registration approval uses two exact capabilities. Admin MAY receive
+  `RegistrationApproval.DecideAll`. Lecturer and TeachingAssistant MAY receive
+  `RegistrationApproval.DecideAssigned`, which authorizes only subject lines
+  whose selected group has the actor's current effective assignment. Neither
+  role membership nor client route selection broadens this scope, and
+  authorization occurs before request existence or version disclosure.
 - FR-4: The system MUST support the end-to-end student flow from login through
   an atomic registration receipt.
-- FR-5: The system MUST expose role-scoped staff/admin workspaces.
+- FR-5: The system MUST expose role-scoped staff/admin workspaces, including
+  bounded approval inboxes that enforce the FR-3A capability and assignment
+  boundary.
 - FR-6: MVP scope and non-goals MUST match docs/PROJECT_PLAN.md.
 - FR-7: Every implementation story MUST trace to an approved spec and
   acceptance criterion.

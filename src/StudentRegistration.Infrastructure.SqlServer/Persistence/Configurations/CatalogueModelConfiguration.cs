@@ -176,7 +176,7 @@ public sealed class CatalogueModelConfiguration :
         builder.ToTable(
             "Courses",
             Schema,
-            table => table.HasCheckConstraint("CK_Courses_Credits", "[Credits] > 0"));
+            table => table.HasCheckConstraint("CK_Courses_Credits", "[Credits] = 3"));
         ConfigureGuidKey(builder);
         builder.Property(item => item.CatalogueVersionId).IsRequired();
         builder.Property(item => item.Code).HasMaxLength(50).IsRequired();

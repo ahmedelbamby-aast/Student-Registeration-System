@@ -9,6 +9,7 @@ public enum OfferingOutcome
     Found,
     NotFound,
     ValidationError,
+    Conflict,
 }
 
 public sealed record CreateOfferingGroup(string Code, int Capacity);
@@ -72,7 +73,10 @@ public sealed record OfferingMeetingSnapshot(
     TimeOnly EndLocal,
     string RoomCode,
     string Location,
-    IReadOnlyList<OfferingStaffSnapshot> Staff);
+    IReadOnlyList<OfferingStaffSnapshot> Staff)
+{
+    public Guid RoomId { get; init; }
+}
 
 public sealed record OfferingGroupSnapshot(
     Guid Id,
@@ -82,12 +86,28 @@ public sealed record OfferingGroupSnapshot(
     bool RegistrationPaused,
     string State,
     byte[] RowVersion,
-    IReadOnlyList<OfferingMeetingSnapshot> Meetings);
+    IReadOnlyList<OfferingMeetingSnapshot> Meetings)
+{
+    public int HeldSeatCount { get; init; }
+}
 
 public sealed record OfferingSnapshot(
     Guid Id,
     string State,
-    IReadOnlyList<OfferingGroupSnapshot> Groups);
+    IReadOnlyList<OfferingGroupSnapshot> Groups)
+{
+    public Guid TermId { get; init; }
+
+    public Guid CourseId { get; init; }
+
+    public string CourseCode { get; init; } = string.Empty;
+
+    public string CourseTitle { get; init; } = string.Empty;
+
+    public byte[] RowVersion { get; init; } = [];
+
+    public int GroupCount { get; init; }
+}
 
 public sealed record AdminOfferingQuery(
     Guid? TermId,
@@ -143,7 +163,7 @@ public sealed record OfferingResult(
     OfferingOutcome Outcome,
     OfferingSnapshot? Offering = null,
     string? ErrorCode = null,
-    byte[]? GroupRowVersion = null);
+    OfferingGroupSnapshot? Group = null);
 
 public sealed class OfferingService(IOfferingStore store)
 {
@@ -166,14 +186,41 @@ public sealed class OfferingService(IOfferingStore store)
             return new(OfferingOutcome.ValidationError, ErrorCode: "GROUP_REQUIRED");
         }
 
-        var offering = await store.CreateAsync(
-            new(
-                command.TermId,
-                command.CourseId,
-                command.Groups,
-                command.Reason),
-            cancellationToken);
-        return new(OfferingOutcome.Created, offering);
+        try
+        {
+            var offering = await store.CreateAsync(
+                new(
+                    command.TermId,
+                    command.CourseId,
+                    command.Groups,
+                    command.Reason),
+                cancellationToken);
+            return new(OfferingOutcome.Created, offering);
+        }
+        catch (OfferingStoreException exception)
+        {
+            return StoreFailure(exception);
+        }
+    }
+
+    public async Task<OfferingResult> GetAsync(
+        Guid offeringId,
+        CancellationToken cancellationToken = default)
+    {
+        var offering = await store.LoadAsync(offeringId, cancellationToken);
+        return offering is null
+            ? new(OfferingOutcome.NotFound, ErrorCode: "OFFERING_NOT_FOUND")
+            : new(OfferingOutcome.Found, offering);
+    }
+
+    public async Task<OfferingResult> GetGroupAsync(
+        Guid groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var group = await store.LoadGroupAsync(groupId, cancellationToken);
+        return group is null
+            ? new(OfferingOutcome.NotFound, ErrorCode: "GROUP_NOT_FOUND")
+            : new(OfferingOutcome.Found, Group: group);
     }
 
     public async Task<OfferingBundleValidationResult> ValidateForPublicationAsync(
@@ -266,20 +313,31 @@ public sealed class OfferingService(IOfferingStore store)
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
-        var version = await store.UpdateGroupAsync(
-            new(
-                command.GroupId,
-                command.ExpectedOfferingRowVersion,
-                command.ExpectedGroupRowVersion,
-                command.GroupCode,
-                command.Capacity,
-                command.RegistrationPaused,
-                command.Meetings,
-                command.StaffAssignments,
-                command.ActorId,
-                command.Reason),
-            cancellationToken);
-        return new(OfferingOutcome.Updated, GroupRowVersion: version);
+        try
+        {
+            var group = await store.UpdateGroupAsync(
+                new(
+                    command.GroupId,
+                    command.ExpectedOfferingRowVersion,
+                    command.ExpectedGroupRowVersion,
+                    command.GroupCode,
+                    command.Capacity,
+                    command.RegistrationPaused,
+                    command.Meetings,
+                    command.StaffAssignments,
+                    command.ActorId,
+                    command.Reason),
+                cancellationToken);
+            return new(OfferingOutcome.Updated, Group: group);
+        }
+        catch (OfferingStoreException exception)
+        {
+            return StoreFailure(exception);
+        }
+        catch (ArgumentException)
+        {
+            return new(OfferingOutcome.ValidationError, ErrorCode: "VALIDATION_ERROR");
+        }
     }
 
     public async Task<AdminOfferingListResult> ListAdminOfferingsAsync(
@@ -345,6 +403,13 @@ public sealed class OfferingService(IOfferingStore store)
         var page = await store.ListAsync(normalized, cancellationToken);
         return new(OfferingOutcome.Found, page);
     }
+
+    private static OfferingResult StoreFailure(OfferingStoreException exception) =>
+        new(
+            exception.Failure is OfferingStoreFailure.NotFound
+                ? OfferingOutcome.NotFound
+                : OfferingOutcome.Conflict,
+            ErrorCode: exception.Code);
 
     private static bool Is(string value, string expected) =>
         string.Equals(value, expected, StringComparison.OrdinalIgnoreCase);

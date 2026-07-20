@@ -1,41 +1,48 @@
 .srs-status-badge {
     align-items: center;
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-small);
+    border: var(--srs-border-primitive-width) solid transparent;
+    border-radius: 999px;
     display: inline-flex;
-    font-size: var(--srs-typography-primitive-font-size-small);
+    font-size: 0.8125rem;
     font-weight: var(--srs-typography-component-control-weight);
     gap: var(--srs-spacing-primitive-1);
-    padding: var(--srs-spacing-primitive-1) var(--srs-spacing-primitive-2);
+    padding: 0.1875rem var(--srs-spacing-primitive-3);
+    letter-spacing: 0.02em;
 }
 
 .srs-status-badge--neutral {
-    background: var(--srs-color-semantic-surface-muted);
-    color: var(--srs-color-semantic-text-primary);
+    background: var(--srs-color-primitive-gray-100);
+    color: var(--srs-color-primitive-gray-700);
+    border-color: var(--srs-color-primitive-gray-300);
 }
 
 .srs-status-badge--information {
     background: var(--srs-color-semantic-information-surface);
     color: var(--srs-color-semantic-information-text);
+    border-color: rgba(3,105,161,0.25);
 }
 
 .srs-status-badge--success {
     background: var(--srs-color-semantic-success-surface);
     color: var(--srs-color-semantic-success-text);
+    border-color: rgba(4,120,87,0.25);
 }
 
 .srs-status-badge--warning,
 .srs-status-badge--pending {
     background: var(--srs-color-semantic-warning-surface);
     color: var(--srs-color-semantic-warning-text);
+    border-color: rgba(180,83,9,0.25);
 }
 
 .srs-status-badge--danger {
     background: var(--srs-color-semantic-danger-surface);
     color: var(--srs-color-semantic-danger-text);
+    border-color: rgba(190,18,60,0.25);
 }
 
 .srs-status-badge--disabled {
     background: var(--srs-color-semantic-disabled-surface);
     color: var(--srs-color-semantic-disabled-text);
+    border-color: transparent;
 }

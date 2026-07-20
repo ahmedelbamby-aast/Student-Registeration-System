@@ -8,6 +8,12 @@
 **Target:** Sprint 2<br>
 **Dependencies:** SPEC-002, SPEC-003, SPEC-005, SPEC-006, SPEC-008, SPEC-018<br>
 
+**Owner-approved policy amendment (2026-07-20):** Ahmed ELbamby explicitly
+approved `CurriculumCourse` as the programme/cohort roadmap, exactly three
+credits for every demo subject, prerequisite-free recommended-term-1 roots,
+at least one prerequisite for every later roadmap subject, and the bounded
+19-21-credit CGPA/approval policy described below.
+
 ## Context
 
 The demo needs a small, believable curriculum without pretending to reproduce
@@ -38,12 +44,12 @@ controlled publication.
 - FR-4: Admin MUST manage typed effective-dated PolicySet/PolicyRule values.
   The initial simple demo PolicySet MUST cover registration-window state,
   prerequisites, course-specific GPA/earned-credit gates, academic standing,
-  a normal recommended target and hard maximum of 18 credits, a 12-credit hard
+  a normal recommended target and normal-path maximum of 18 credits, a 12-credit hard
   maximum when GPA is below 2.0, published group capacity, and timetable
   conflict. Each value MUST distinguish an official-source fact from an
   Ahmed-approved synthetic demo rule.
 - FR-5: Admin MUST simulate a policy decision against test student inputs
-  before publication, including the 18/19-credit normal boundary, 12/13-credit
+  before publication, including the 18/19-credit normal/approval boundary, 12/13-credit
   probation boundary, and any source-backed course GPA/prerequisite boundary.
 - FR-6: Published `CatalogueVersion` and `PolicySet` versions MUST be immutable
   and superseded. Drafts use Editing, Validated, Published, or Abandoned state;
@@ -61,6 +67,22 @@ controlled publication.
 - FR-10: Retryable import/publish commands MUST use an idempotency key; replay
   of the same key/payload returns its stored result and reuse with a different
   payload returns 409 IDEMPOTENCY_KEY_REUSED.
+- FR-11: `CurriculumCourse` MUST be the versioned programme/cohort roadmap. It
+  MUST identify programme, course, level, recommended term, required/elective
+  status, cohort scope, provenance, and the owning immutable catalogue
+  version. Downstream eligibility MUST consume this roadmap rather than infer
+  progression from course-code naming.
+- FR-12: Every demo `Course.Credits` value MUST equal exactly 3. A roadmap row
+  with recommended term 1 MUST reference a course with no prerequisite. Every
+  roadmap row with recommended term 2 or later MUST reference a course having
+  at least one valid prerequisite. Draft/import validation MUST reject any
+  other credit value, missing prerequisite, invalid term shape, or cycle before
+  publication.
+- FR-13: The effective typed policy MUST set 18 credits as the normal maximum,
+  require the downstream per-subject approval workflow for every term-2-or-
+  later self-registration plan, permit a 19, 20, or 21-credit plan only when
+  CGPA is at least 3.0, and reject any plan above 21 credits. CGPA below 2.0
+  remains capped at 12 credits.
 
 ## Non-Functional Requirements
 
@@ -90,7 +112,8 @@ credits, the normal demo target/maximum is 18 credits, and GPA below 2.0 has a
 When the admin simulates the Project I boundary plus normal 18/19-credit and
 probation 12/13-credit plans<br>
 Then 95 earned credits fails Project I, 18 and 12 pass their respective load
-boundaries, and 19 and 13 fail<br>
+boundaries, unapproved 19 and probation 13 fail, and the separate qualifying
+19-21 approval-required outcome remains distinguishable<br>
 And every result identifies the draft policy version, value classification,
 and source.
 
@@ -123,6 +146,24 @@ And simulations are deterministic<br>
 And publication is all-or-nothing<br>
 And each published change records actor, reason, source, and timestamp.
 
+### AC-8: Valid three-credit roadmap (FR-11, FR-12)
+Given a programme/cohort roadmap contains recommended-term-1 roots and later
+subjects<br>
+When catalogue validation runs<br>
+Then all subjects have exactly three credits<br>
+And term-1 roots have no prerequisites<br>
+And every term-2-or-later subject has at least one valid prerequisite<br>
+And an invalid credit, missing prerequisite, or cycle prevents publication.
+
+### AC-9: Bounded overload policy (FR-13)
+Given otherwise eligible students with CGPA 2.99 and 3.00 evaluate plans at
+18, 19, 21, and 22 credits<br>
+When policy simulation runs<br>
+Then 18 credits uses the normal path<br>
+And both normal and overload self-registration use per-subject approval<br>
+And 19-21 credits is permitted only for CGPA at least 3.0<br>
+And 22 credits is rejected for every student.
+
 ## Edge Cases
 
 - EC-1: Duplicate course code differs only by case/spacing -> normalize and
@@ -133,6 +174,9 @@ And each published change records actor, reason, source, and timestamp.
 - EC-4: Unknown rule type/config -> reject draft validation.
 - EC-5: Audit persistence fails during publish -> the policy/catalogue version
   and activation change roll back in the same local SQL transaction.
+- EC-6: Term-1 prerequisite or later-term missing prerequisite -> reject the
+  roadmap with the affected programme, cohort, subject, and term.
+- EC-7: Credits differ from exactly 3 -> reject before publication.
 
 ## API Contracts
 
@@ -241,8 +285,9 @@ IDEMPOTENCY_KEY_REUSED.
 | Field/example | Type | Constraints |
 |---|---|---|
 | Course.Code | string | normalized unique, not null |
-| Course.Credits | decimal | positive approved range |
+| Course.Credits | decimal | exactly 3 for every demo subject |
 | CoursePrerequisite | composite key | course != required course; acyclic graph |
+| CurriculumCourse | composite key | versioned programme/cohort roadmap; level and recommended term positive; term 1 has no prerequisite; term 2+ has at least one |
 | Catalogue field provenance | owned value | source URL/reference, access date, source kind, explicit synthetic field names |
 | PolicySet.Version | string | unique in scope; published immutable |
 | ImportRowError.SourceRow | integer | required when input row is known |
@@ -255,7 +300,8 @@ IDEMPOTENCY_KEY_REUSED.
 - OS-1: Live web scraping as a runtime/production catalogue source, or claiming
   the curated snapshot and synthetic gap values are the complete current
   official curriculum.
-- OS-2: Arbitrary policy scripting and advisor, overload, prerequisite-waiver,
-  or other exception workflows.
+- OS-2: Arbitrary policy scripting, generic advisor workflows,
+  prerequisite waivers, and overloads outside the owner-approved 19-21-credit
+  CGPA-at-least-3.0 per-subject approval workflow.
 - OS-3: Silent auto-correction of referential errors.
 - OS-4: Deleting historical course/policy records.

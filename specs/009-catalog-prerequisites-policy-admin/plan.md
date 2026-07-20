@@ -3,6 +3,11 @@
 **Branch**: 009-catalog-prerequisites-policy-admin | **Date**: 2026-07-13 | **Spec**: [spec.md](spec.md)
 **Status**: APPROVED for Gate A demo implementation by Ahmed ELbamby on 2026-07-13.
 
+**Owner-approved policy amendment (2026-07-20):** Ahmed ELbamby's explicit
+instruction approves the roadmap, exact-three-credit, prerequisite-shape, and
+bounded overload rules added to SPEC-009. Implementation remains gated on the
+new unchecked amendment tasks.
+
 ## Summary
 
 Deliver Catalogue, Prerequisites, and Policy Administration inside the modular monolith while keeping server-side academic and authorization decisions authoritative.
@@ -57,11 +62,19 @@ project or second catalogue writer is introduced.
    atomically writes the immutable version, activation change, idempotency
    result, and audit fact.
 4. PolicySet uses the same draft/preview/version discipline with typed rules,
-   never arbitrary executable expressions. The initial rule set proves window,
+   never arbitrary executable expressions. The rule set proves window,
    prerequisite, GPA/earned-credit, standing, 18-credit normal and 12-credit
-   probation limits, capacity, and conflict behavior without advisor or other
-   exception workflows.
-5. ADM-05 consumes only Academics owner APIs plus SPEC-017 audit/report
+   probation limits, capacity, and conflict behavior. A bounded 19-21-credit
+   path requires CGPA at least 3.0. Every term-2-or-later self-registration
+   plan uses downstream per-subject approval; plans above 21 fail. Generic
+   advisor and arbitrary exception workflows remain absent.
+5. `CurriculumCourse` is the programme/cohort roadmap. Validation enforces
+   exactly three credits, prerequisite-free term-1 roots, and at least one
+   valid prerequisite for every later subject.
+6. Replace validation-only/unavailable catalogue handlers with owner-service
+   and SQL persistence calls, expose an accessible subject/roadmap editor, and
+   seed Development with the approved published roadmap.
+7. ADM-05 consumes only Academics owner APIs plus SPEC-017 audit/report
    contributions.
 
 ## Execution and Gate Order
