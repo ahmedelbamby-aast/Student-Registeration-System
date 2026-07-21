@@ -47,6 +47,11 @@ else
                                      State="@_routeState"
                                      Announcement="RouteStatePanel.AnnouncementMode.Assertive"
                                      ReferenceLabel="Reference" />
+                    @if (_routeState is RouteUiState.Offline or RouteUiState.ServiceError or RouteUiState.Stale)
+                    {
+                        <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_loading"
+                                   OnClick="@(_ => LoadRoadmapAsync())">Retry roadmap</AppButton>
+                    }
                 }
                 else if (_roadmap is not null)
                 {
@@ -81,7 +86,14 @@ else
                                                         <p class="srs-roadmap__code">@subject.Code</p>
                                                         <h3>@subject.Title</h3>
                                                     </div>
-                                                    <span class="srs-roadmap__status">@StatusLabel(subject.Status)</span>
+                                                    @if (ApprovalStateFor(subject.Status) is { } approvalState)
+                                                    {
+                                                        <ApprovalStatusBadge State="@approvalState" Text="@StatusLabel(subject.Status)" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="srs-roadmap__status">@StatusLabel(subject.Status)</span>
+                                                    }
                                                 </header>
                                                 <p>@subject.Credits credits · @(subject.Required ? "Required" : "Elective")</p>
                                                 @if (subject.AutomaticRegistration)
@@ -127,8 +139,13 @@ else
 
     private string StateName => _loading ? "loading" : _status is null ? "success" : "error";
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadRoadmapAsync();
+
+    private async Task LoadRoadmapAsync()
     {
+        _loading = true;
+        _status = null;
+        _roadmap = null;
         try
         {
             var context = await AcademicApi.GetAppContextAsync();
@@ -166,7 +183,13 @@ else
 
     private void SetError(string code, string heading, string message, string? reference)
     {
-        _routeState = code == "FORBIDDEN" ? RouteUiState.Unauthorized : RouteUiState.ServiceError;
+        _routeState = code switch
+        {
+            "FORBIDDEN" => RouteUiState.Unauthorized,
+            "OFFLINE" => RouteUiState.Offline,
+            "STALE_VERSION" => RouteUiState.Stale,
+            _ => RouteUiState.ServiceError
+        };
         _status = new(
             code,
             heading,
@@ -182,7 +205,23 @@ else
         "in-progress" => LocalizedUiText.Get("In progress"),
         "completed" => LocalizedUiText.Get("Completed"),
         "available" => LocalizedUiText.Get("Available"),
+        "eligible" => LocalizedUiText.Get("Eligible for self-registration"),
+        "prerequisite-blocked" => LocalizedUiText.Get("Prerequisite blocked"),
+        "pending" or "held" => LocalizedUiText.Get("Pending approval — seat held"),
+        "approved" => LocalizedUiText.Get("Approved"),
+        "rejected" => LocalizedUiText.Get("Rejected"),
+        "expired" or "released" => LocalizedUiText.Get("Expired — seat released"),
         _ => LocalizedUiText.Get("Locked"),
+    };
+
+    private static ApprovalStatusBadge.ApprovalState? ApprovalStateFor(string status) => status switch
+    {
+        "pending" or "held" => ApprovalStatusBadge.ApprovalState.PendingApproval,
+        "approved" => ApprovalStatusBadge.ApprovalState.Approved,
+        "rejected" => ApprovalStatusBadge.ApprovalState.Rejected,
+        "expired" or "released" => ApprovalStatusBadge.ApprovalState.ExpiredReleased,
+        "registered" => ApprovalStatusBadge.ApprovalState.Registered,
+        _ => null
     };
 
     private static string ListOrNone(IReadOnlyList<string> values) =>

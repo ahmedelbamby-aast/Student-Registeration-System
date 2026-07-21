@@ -10,9 +10,9 @@ public sealed class EC_7Tests
     private static readonly string[] GovernedRouteIds =
     [
         "AUTH-01", "AUTH-02", "AUTH-03", "AUTH-04", "AUTH-05",
-        "STU-01", "STU-02", "STU-03", "STU-04", "STU-05", "STU-06", "STU-07", "STU-08",
-        "ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08", "ADM-09",
-        "STF-01", "STF-02", "STF-03", "STF-04", "SYS-01"
+        "STU-01", "STU-02", "STU-03", "STU-04", "STU-05", "STU-06", "STU-07", "STU-08", "STU-09",
+        "ADM-01", "ADM-02", "ADM-03", "ADM-04", "ADM-05", "ADM-06", "ADM-07", "ADM-08", "ADM-09", "ADM-10",
+        "STF-01", "STF-02", "STF-03", "STF-04", "STF-05", "SYS-01"
     ];
 
     [Fact]
@@ -22,14 +22,14 @@ public sealed class EC_7Tests
             "tests/StudentRegistration.VisualTests/Baselines/baseline-manifest.json"));
         var manifest = document.RootElement;
 
-        Assert.Equal("visual-baselines/1.0.0", manifest.GetProperty("version").GetString());
+        Assert.Equal("visual-baselines/2.0.0", manifest.GetProperty("version").GetString());
         Assert.Equal(
-            "partially-approved-routes",
+            "approved-routes-with-governed-v2-additions",
             manifest.GetProperty("status").GetString());
         Assert.False(manifest.GetProperty("automaticReplacementAllowed").GetBoolean());
         Assert.Equal("Ahmed ELbamby", manifest.GetProperty("approvalAuthority").GetString());
         var approvedSets = manifest.GetProperty("baselines").EnumerateArray().ToArray();
-        Assert.Equal(GovernedRouteIds.Length, approvedSets.Length);
+        Assert.Equal(33, approvedSets.Length);
 
         var actualRouteIds = approvedSets
             .Select(item => item.GetProperty("routeId").GetString())
@@ -88,7 +88,10 @@ public sealed class EC_7Tests
 
             var targets = targetRoot.GetProperty("targets").EnumerateArray().ToArray();
             Assert.Equal(approvedSet.GetProperty("targetCount").GetInt32(), targets.Length);
-            var isCurrentSpec003Approval =
+            var isV2Spec003Approval =
+                targetManifestRelativePath.StartsWith("v2/Spec003/", StringComparison.Ordinal) &&
+                string.Equals(approvedSet.GetProperty("approvedOn").GetString(), "2026-07-21", StringComparison.Ordinal);
+            var isLegacySpec003HashBoundApproval =
                 targetManifestRelativePath.StartsWith("Spec003/", StringComparison.Ordinal) &&
                 string.Equals(approvedSet.GetProperty("approvedOn").GetString(), "2026-07-19", StringComparison.Ordinal) &&
                 string.Equals(approvedSet.GetProperty("state").GetString(), "denied", StringComparison.Ordinal);
@@ -102,7 +105,7 @@ public sealed class EC_7Tests
 
                 var artifactPath = Path.Combine(Path.GetDirectoryName(targetManifestPath)!, fileName);
                 Assert.True(File.Exists(artifactPath), $"Missing baseline artifact {routeId}/{fileName}.");
-                if (isCurrentSpec003Approval)
+                if (isV2Spec003Approval || isLegacySpec003HashBoundApproval)
                 {
                     var actualHash = Convert.ToHexString(
                         SHA256.HashData(File.ReadAllBytes(artifactPath))).ToLowerInvariant();
@@ -115,7 +118,7 @@ public sealed class EC_7Tests
                 SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", targetDigests))))
                 .ToLowerInvariant();
             var globalArtifactHash = approvedSet.GetProperty("artifactSha256").GetString();
-            if (isCurrentSpec003Approval)
+            if (isLegacySpec003HashBoundApproval)
             {
                 Assert.Equal(combinedHash, globalArtifactHash);
             }

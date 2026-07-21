@@ -29,9 +29,36 @@ public sealed class RoadmapPageContractTests
             "Completed",
             "In progress",
             "Available",
+            "Eligible for self-registration",
+            "Prerequisite blocked",
+            "Pending approval — seat held",
+            "Approved",
+            "Rejected",
+            "Expired — seat released",
+            "Retry roadmap",
+            "RouteUiState.Offline",
+            "ApprovalStatusBadge",
             "Locked");
         Assert.DoesNotContain("StudentNavigation", source, StringComparison.Ordinal);
         Assert.DoesNotContain("<Navigation>", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Stu_09_and_related_student_pages_freeze_registration_ownership_and_equivalent_views()
+    {
+        var dashboard = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StudentDashboardPage.razor");
+        var records = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/RegistrationHistoryPage.razor");
+        var roadmap = RepositoryFiles.Read("src/StudentRegistration.Client/Pages/StudentRoadmapPage.razor");
+
+        foreach (var source in new[] { dashboard, records, roadmap })
+        {
+            RepositoryFiles.ContainsAll(source,
+                "Required first-term subjects are registered automatically",
+                "Self-service registration starts in term 2");
+        }
+        RepositoryFiles.ContainsAll(dashboard, "no manual selection is required", "Open current timetable");
+        RepositoryFiles.ContainsAll(records, "no manual selection is required", "equivalent views");
+        RepositoryFiles.ContainsAll(roadmap, "Automatic registration", "Missing prerequisites");
     }
 
     [Fact]

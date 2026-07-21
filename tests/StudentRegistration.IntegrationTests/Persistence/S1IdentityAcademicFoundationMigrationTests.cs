@@ -76,7 +76,7 @@ public sealed class S1IdentityAcademicFoundationMigrationTests
                 StringComparison.Ordinal));
 
         Assert.NotNull(designReference);
-        Assert.Equal("10.0.9", (string?)designReference.Attribute("Version"));
+        Assert.Equal("10.0.10", (string?)designReference.Attribute("Version"));
         Assert.Equal("all", (string?)designReference.Attribute("PrivateAssets"));
         Assert.Contains(
             "runtime",

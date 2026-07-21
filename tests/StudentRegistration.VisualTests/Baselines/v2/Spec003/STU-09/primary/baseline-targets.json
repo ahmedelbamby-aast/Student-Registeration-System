@@ -11,6 +11,7 @@
   "approvedBy": "Ahmed ELbamby",
   "approvedOn": "2026-07-21",
   "approvalSource": "Explicit user approval in the current Codex task turn for all demo visual candidates and the unified design.",
+  "approvalReason": "two-pixel Firefox antialias rendering update approved 2026-07-21",
   "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
   "targets": [
     {
@@ -166,8 +167,9 @@
       "tokenVersion": "design-token-set/2.0.0",
       "fixtureVersion": "frontend-fixture/2.0",
       "file": "firefox-1920-primary.png",
-      "sha256": "065a3ac12384e05b6b70650d3cc6eb3cbd93852240448f9cb9e6c8d0b3b60a6f",
-      "artifactSha256": "065a3ac12384e05b6b70650d3cc6eb3cbd93852240448f9cb9e6c8d0b3b60a6f"
+      "sha256": "82db624b8fce45b0918cbf61a398e67165d374417513f6d91b84a4ae009ab26e",
+      "artifactSha256": "82db624b8fce45b0918cbf61a398e67165d374417513f6d91b84a4ae009ab26e",
+      "approvalReason": "two-pixel Firefox antialias rendering update approved 2026-07-21"
     },
     {
       "browser": "webkit",

@@ -191,6 +191,7 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                     <section class="srs-dashboard-registration-action"
                              aria-labelledby="registration-action-heading">
                         <h2 id="registration-action-heading">@LocalizedUiText.Get("Online registration")</h2>
+                        <p><strong>@LocalizedUiText.Get("First-term registration:")</strong> @LocalizedUiText.Get("Required first-term subjects are registered automatically; no manual selection is required. Self-service registration starts in term 2.")</p>
                         @if (RegistrationEnabled)
                         {
                             <a class="srs-dashboard-primary-action"

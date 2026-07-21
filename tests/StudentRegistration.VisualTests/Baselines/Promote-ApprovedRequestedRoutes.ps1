@@ -13,6 +13,8 @@ $routes = @('ADM-10', 'STF-05', 'STU-09')
 $states = @('primary', 'error')
 $viewports = @(375, 768, 1280, 1920)
 $approvalSource = 'Explicit user approval in the current Codex task turn for all demo visual candidates and the unified design.'
+$firefoxAntialiasReason = 'two-pixel Firefox antialias rendering update approved 2026-07-21'
+$roadmapRecoveryReason = 'approved final Student roadmap state/recovery update 2026-07-21'
 
 $browserMetadata = @{
     chrome = @{
@@ -57,7 +59,14 @@ foreach ($route in $routes) {
 
                 $file = "$browser-$viewport-$state.png"
                 $destination = Join-Path $targetDirectory $file
-                Copy-Item -LiteralPath $source -Destination $destination -Force
+                $isApprovedFirefoxUpdate = $route -eq 'STU-09' -and $state -eq 'primary' -and
+                    $browser -eq 'firefox' -and $viewport -eq 1920 -and
+                    (Test-Path -LiteralPath $destination)
+                $isApprovedRoadmapRecoveryUpdate = $route -eq 'STU-09' -and $state -eq 'error' -and
+                    (Test-Path -LiteralPath $destination)
+                if (-not $isApprovedFirefoxUpdate -and -not $isApprovedRoadmapRecoveryUpdate) {
+                    Copy-Item -LiteralPath $source -Destination $destination -Force
+                }
                 $hash = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
                 $metadata = $browserMetadata[$browser]
                 $targets += [ordered]@{
@@ -72,6 +81,12 @@ foreach ($route in $routes) {
                     file = $file
                     sha256 = $hash
                     artifactSha256 = $hash
+                }
+                if ($isApprovedFirefoxUpdate) {
+                    $targets[-1].approvalReason = $firefoxAntialiasReason
+                }
+                elseif ($isApprovedRoadmapRecoveryUpdate) {
+                    $targets[-1].approvalReason = $roadmapRecoveryReason
                 }
             }
         }
@@ -89,6 +104,7 @@ foreach ($route in $routes) {
             approvedBy = $ApprovedBy
             approvedOn = $ApprovedOn
             approvalSource = $approvalSource
+            approvalReason = if ($route -eq 'STU-09' -and $state -eq 'primary') { $firefoxAntialiasReason } elseif ($route -eq 'STU-09' -and $state -eq 'error') { $roadmapRecoveryReason } else { 'approved unified-design candidate set' }
             osImage = 'Microsoft Windows 11 Pro 10.0.26200 x64'
             targets = $targets
         }
@@ -111,6 +127,7 @@ foreach ($route in $routes) {
             approvedBy = $ApprovedBy
             approvedOn = $ApprovedOn
             approvalSource = $approvalSource
+            approvalReason = if ($route -eq 'STU-09' -and $state -eq 'primary') { $firefoxAntialiasReason } elseif ($route -eq 'STU-09' -and $state -eq 'error') { $roadmapRecoveryReason } else { 'approved unified-design candidate set' }
             targetManifest = "v2/Spec003/$route/$state/baseline-targets.json"
             targetCount = 16
         }

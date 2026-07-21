@@ -130,12 +130,12 @@ implementation owner is hash-pinned in
 | ADM-07 | `/admin/resources` — ResourceAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-08 | `/admin/registrations` — RegistrationAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-09 | `/admin/audit` — AuditAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
-| ADM-10 | `/admin/approvals` — ApprovalAdministrationPage | contract, component, E2E, accessibility, visual | PARTIAL — shared component covers empty/loading/error, pending overload, held capacity, role denial, and stale decision; paged/terminal browser and approved visual matrix remain T294 |
+| ADM-10 | `/admin/approvals` — ApprovalAdministrationPage | contract, component, E2E, accessibility, visual | PASS — shared composition covers paged pending/overload, held capacity, terminal removal, denial, stale focus recovery, and double-action suppression; complete cross-browser visual expansion remains the separate T301 gate |
 | STF-01 | `/staff` — StaffDashboardPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-02 | `/staff/timetable` — StaffTimetablePage | contract, component, E2E, accessibility, visual | PASS |
 | STF-03 | `/staff/groups/{groupId}/roster` — StaffRosterPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-04 | `/staff/availability` — StaffAvailabilityPage | contract, component, E2E, accessibility, visual | PASS |
-| STF-05 | `/staff/approvals` — StaffApprovalInboxPage | contract, component, E2E, accessibility, visual | PARTIAL — Lecturer/TA scopes cover empty/loading/error, pending overload, held capacity, role denial, and stale decision; terminal/stale-assignment browser and approved visual matrix remain T297 |
+| STF-05 | `/staff/approvals` — StaffApprovalInboxPage | contract, component, E2E, accessibility, visual | PASS — Lecturer/TA scopes cover paged pending/overload, held capacity, terminal removal, denial, stale focus recovery, and double-action suppression; complete cross-browser visual expansion remains the separate T301 gate |
 | SYS-01 | `/status/{code}` — SystemStatusPage | contract, component, E2E, accessibility, visual | PASS |
 
 ## Release rejection

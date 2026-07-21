@@ -71,6 +71,7 @@
                                                AvailableLabel="@(LocalizedUiText.Get("Available"))" Available="@row.Line.Capacity.AvailableSeatCount" />
                             <label for="@($"reason-{row.Line.LineId:D}")">@LocalizedUiText.Get("Decision reason")</label>
                             <textarea id="@($"reason-{row.Line.LineId:D}")"
+                                      @ref="_decisionFocusTarget"
                                       data-testid="@($"approval-reason-{row.Line.LineId:D}")"
                                       value="@Reason(row.Line.LineId)"
                                       @oninput="eventArgs => SetReason(row.Line.LineId, eventArgs.Value?.ToString())"
@@ -105,6 +106,7 @@
     private bool _contextLoading = true;
     private bool _queueLoading;
     private bool _deciding;
+    private ElementReference _decisionFocusTarget;
 
     private WorkspaceKind Workspace => IsAdmin ? WorkspaceKind.Admin : WorkspaceKind.Staff;
     private string RouteId => IsAdmin ? "ADM-10" : "STF-05";
@@ -180,7 +182,15 @@
             _reasons.Remove(row.Line.LineId);
             await LoadQueueAsync();
         }
-        finally { _deciding = false; }
+        finally
+        {
+            _deciding = false;
+            if (_lineErrorId == row.Line.LineId)
+            {
+                await InvokeAsync(StateHasChanged);
+                await _decisionFocusTarget.FocusAsync();
+            }
+        }
     }
 
     private Task ApproveAsync(RegistrationApprovalQueueRowDto row) => DecideAsync(row, "approve");

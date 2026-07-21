@@ -161,9 +161,9 @@ public sealed class RequestedUnifiedRouteCandidateVisualTests(VisualRegressionFi
             Assert.True(File.Exists(approvedPath), $"Approved v2 visual is missing: {approvedPath}");
             var approved = File.ReadAllBytes(approvedPath);
             var expectedArtifactHash = Convert.ToHexString(SHA256.HashData(approved));
-            var expectedPixelHash = await PixelHashAsync(page, approved);
-            var actualPixelHash = await PixelHashAsync(page, candidate);
-            if (!string.Equals(expectedPixelHash, actualPixelHash, StringComparison.Ordinal))
+            var actualArtifactHash = Convert.ToHexString(SHA256.HashData(candidate));
+
+            if (!string.Equals(expectedArtifactHash, actualArtifactHash, StringComparison.Ordinal))
             {
                 var diagnosticDirectory = System.IO.Path.Combine(
                     System.IO.Path.GetTempPath(),
@@ -177,8 +177,8 @@ public sealed class RequestedUnifiedRouteCandidateVisualTests(VisualRegressionFi
                 await File.WriteAllBytesAsync(diagnosticPath, candidate);
                 throw new XunitException(
                     $"Approved v2 visual mismatch for {routeId} {browser} {width}px. " +
-                    $"Approved artifact {expectedArtifactHash}; expected pixels {expectedPixelHash}; " +
-                    $"actual pixels {actualPixelHash}; diagnostic: {diagnosticPath}");
+                    $"Expected artifact {expectedArtifactHash}; actual artifact {actualArtifactHash}; " +
+                    $"diagnostic: {diagnosticPath}");
             }
         }
     }
@@ -215,26 +215,6 @@ public sealed class RequestedUnifiedRouteCandidateVisualTests(VisualRegressionFi
 
     private static bool IsValidCandidate(string path) =>
         File.Exists(path) && new FileInfo(path).Length > 0;
-
-    private static Task<string> PixelHashAsync(IPage page, byte[] png) =>
-        page.EvaluateAsync<string>(
-            """
-            async encoded => {
-                const image = new Image();
-                image.src = `data:image/png;base64,${encoded}`;
-                await image.decode();
-                const canvas = document.createElement('canvas');
-                canvas.width = image.naturalWidth;
-                canvas.height = image.naturalHeight;
-                const context = canvas.getContext('2d', { willReadFrequently: true });
-                context.drawImage(image, 0, 0);
-                const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-                const hash = await crypto.subtle.digest('SHA-256', pixels);
-                return Array.from(new Uint8Array(hash), byte =>
-                    byte.toString(16).padStart(2, '0')).join('');
-            }
-            """,
-            Convert.ToBase64String(png));
 
     private static async Task<string> SafeBodyAsync(IPage page)
     {

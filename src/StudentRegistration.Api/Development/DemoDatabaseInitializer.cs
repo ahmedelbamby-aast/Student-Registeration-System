@@ -1,12 +1,14 @@
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using StudentRegistration.Academics.Application;
 using StudentRegistration.Academics.Domain;
 using StudentRegistration.IdentityAccess.Application;
 using StudentRegistration.IdentityAccess.Application.Ports;
+using StudentRegistration.IdentityAccess.Domain;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
 
 namespace StudentRegistration.Api.Development;
@@ -23,6 +25,8 @@ public sealed class DemoDatabaseInitializer
     private const int DefaultStudentCount = 25;
     private const string ConnectionStringName = "StudentRegistration";
     private const string DemoTermCode = "DEMO-2026-FALL";
+    private const string PrimaryStudentUniversityId = "AI2600001";
+    private const string PrimaryStudentLoginPassword = "DemoLogin@2026!!";
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
     private readonly StudentRegistrationDbContext _dbContext;
@@ -30,6 +34,7 @@ public sealed class DemoDatabaseInitializer
     private readonly DemoStudentProfileSeedContributor _academicContributor;
     private readonly IProvisionedCredentialHandoff _credentialHandoff;
     private readonly TimeProvider _timeProvider;
+    private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
     private readonly DevelopmentManualTestDataSeeder? _manualTestDataSeeder;
 
     public DemoDatabaseInitializer(
@@ -40,6 +45,7 @@ public sealed class DemoDatabaseInitializer
         DemoStudentProfileSeedContributor academicContributor,
         IProvisionedCredentialHandoff credentialHandoff,
         TimeProvider timeProvider,
+        IPasswordHasher<ApplicationUser> passwordHasher,
         DevelopmentManualTestDataSeeder? manualTestDataSeeder = null)
     {
         _environment = environment ?? throw new ArgumentNullException(nameof(environment));
@@ -52,6 +58,7 @@ public sealed class DemoDatabaseInitializer
         _credentialHandoff = credentialHandoff
             ?? throw new ArgumentNullException(nameof(credentialHandoff));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
         _manualTestDataSeeder = manualTestDataSeeder;
     }
 
@@ -81,6 +88,9 @@ public sealed class DemoDatabaseInitializer
                                 "Development",
                                 settings.StudentCount,
                                 cancellationToken)
+                            .ConfigureAwait(false);
+
+                        await RestorePrimaryStudentDemoLoginAsync(cancellationToken)
                             .ConfigureAwait(false);
 
                         var termId = await EnsureCanonicalAcademicContextAsync(
@@ -159,6 +169,38 @@ public sealed class DemoDatabaseInitializer
                     CancellationToken.None)
                 .ConfigureAwait(false);
         }
+    }
+
+    private async Task RestorePrimaryStudentDemoLoginAsync(
+        CancellationToken cancellationToken)
+    {
+        var user = await _dbContext.Set<ApplicationUser>()
+            .SingleOrDefaultAsync(
+                item => item.UniversityId == PrimaryStudentUniversityId,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (user is null)
+        {
+            return;
+        }
+
+        var isActivated = await _dbContext.Set<StudentActivation>()
+            .AnyAsync(
+                item => item.ApplicationUserId == user.Id && item.ActivatedAtUtc != null,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (!isActivated)
+        {
+            return;
+        }
+
+        var passwordHash = _passwordHasher.HashPassword(
+            user,
+            PrimaryStudentLoginPassword);
+        user.ReplacePasswordHash(
+            passwordHash,
+            Convert.ToHexString(RandomNumberGenerator.GetBytes(32)));
+        await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private BootstrapSettings ValidateTargetAndSettings()

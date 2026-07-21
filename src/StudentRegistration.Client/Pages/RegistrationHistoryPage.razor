@@ -2,6 +2,7 @@
 @using System.Globalization
 @using System.Net
 @using StudentRegistration.Client.Components.Data
+@using StudentRegistration.Client.Components.Display
 @using StudentRegistration.Client.Components.Layout
 @using StudentRegistration.Client.Components.Navigation
 @using StudentRegistration.Client.Components.Scheduling
@@ -66,6 +67,14 @@ else
             <div><p>@LocalizedUiText.Get("Student registration")</p><h1>@LocalizedUiText.Get("Registrations")</h1><p>@LocalizedUiText.Get("Server-authored current and archived records.")</p></div>
             <AppButton Variant="AppButtonVariant.Secondary" OnClick="PrintAsync">@LocalizedUiText.Get("Print history")</AppButton>
         </header>
+
+        <SurfaceCard HeadingId="registration-ownership-heading"
+                     Heading="@(LocalizedUiText.Get("How subjects are registered"))"
+                     Description="@(LocalizedUiText.Get("Required first-term subjects are registered automatically; no manual selection is required. Self-service registration starts in term 2."))">
+            <ChildContent>
+                <p>@LocalizedUiText.Get("The timetable and list below are equivalent views of the authoritative registration record.")</p>
+            </ChildContent>
+        </SurfaceCard>
 
         @if (_state is "service-error" or "unauthorized")
         {

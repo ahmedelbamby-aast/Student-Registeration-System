@@ -11,6 +11,7 @@
   "approvedBy": "Ahmed ELbamby",
   "approvedOn": "2026-07-21",
   "approvalSource": "Explicit user approval in the current Codex task turn for all demo visual candidates and the unified design.",
+  "approvalReason": "approved unified-design candidate set",
   "osImage": "Microsoft Windows 11 Pro 10.0.26200 x64",
   "targets": [
     {

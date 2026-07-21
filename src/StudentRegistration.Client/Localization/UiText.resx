@@ -4571,4 +4571,18 @@
   <data name="Room results, compact view" xml:space="preserve">
     <value>Room results, compact view</value>
   </data>
+  <data name="Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Current held-seat capacity." xml:space="preserve"><value>Current held-seat capacity.</value></data>
+  <data name="Current server-authoritative capacity." xml:space="preserve"><value>Current server-authoritative capacity.</value></data>
+  <data name="Eligible for self-registration" xml:space="preserve"><value>Eligible for self-registration</value></data>
+  <data name="Expired — seat released" xml:space="preserve"><value>Expired — seat released</value></data>
+  <data name="First-term registration:" xml:space="preserve"><value>First-term registration:</value></data>
+  <data name="How subjects are registered" xml:space="preserve"><value>How subjects are registered</value></data>
+  <data name="No seats are currently available." xml:space="preserve"><value>No seats are currently available.</value></data>
+  <data name="Pending approval — seat held" xml:space="preserve"><value>Pending approval — seat held</value></data>
+  <data name="Prerequisite blocked" xml:space="preserve"><value>Prerequisite blocked</value></data>
+  <data name="Publishing registration window" xml:space="preserve"><value>Publishing registration window</value></data>
+  <data name="Required first-term subjects are registered automatically; no manual selection is required. Self-service registration starts in term 2." xml:space="preserve"><value>Required first-term subjects are registered automatically; no manual selection is required. Self-service registration starts in term 2.</value></data>
+  <data name="The timetable and list below are equivalent views of the authoritative registration record." xml:space="preserve"><value>The timetable and list below are equivalent views of the authoritative registration record.</value></data>
+  <data name="This group is full." xml:space="preserve"><value>This group is full.</value></data>
 </root>

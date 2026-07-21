@@ -23,17 +23,17 @@ public sealed class ApprovedStackTests
         Assert.Equal("Microsoft.NET.Sdk.BlazorWebAssembly", client.Root?.Attribute("Sdk")?.Value);
         Assert.Equal("net10.0", TargetFramework(client));
         Assert.Equal(
-            "10.0.9",
+            "10.0.10",
             PackageVersion(client, "Microsoft.AspNetCore.Components.WebAssembly"));
 
         var infrastructure = ReadProject(
             "src/StudentRegistration.Infrastructure.SqlServer/StudentRegistration.Infrastructure.SqlServer.csproj");
         Assert.Equal("net10.0", TargetFramework(infrastructure));
         Assert.Equal(
-            "10.0.9",
+            "10.0.10",
             PackageVersion(infrastructure, "Microsoft.EntityFrameworkCore.SqlServer"));
         Assert.Equal(
-            "10.0.9",
+            "10.0.10",
             PackageVersion(infrastructure, "Microsoft.EntityFrameworkCore.Design"));
         var designTooling = infrastructure.Descendants("PackageReference")
             .Single(reference => string.Equals(

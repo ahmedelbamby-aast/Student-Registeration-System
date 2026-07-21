@@ -34,7 +34,7 @@ public sealed class RegistrationApprovalPageComponentTests
     {
         var component = RepositoryFiles.Read("src/StudentRegistration.Client/Components/Approvals/ApprovalWorkspace.razor");
         RepositoryFiles.ContainsAll(component,
-            "Disabled=\"@_deciding\"", "_deciding = true", "finally { _deciding = false; }",
+            "Disabled=\"@_deciding\"", "_deciding = true", "finally", "_deciding = false;",
             "row.SubmissionVersion", "row.Line.RowVersion", "Guid.NewGuid()",
             "ListAsync(IsAdmin)", "HasExpectedRole", "Lecturer", "TeachingAssistant");
         Assert.DoesNotContain("role selector", component, StringComparison.OrdinalIgnoreCase);

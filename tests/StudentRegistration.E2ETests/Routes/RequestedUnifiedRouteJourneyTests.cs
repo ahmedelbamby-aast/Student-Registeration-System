@@ -48,7 +48,7 @@ public sealed class RequestedUnifiedRouteJourneyTests(Spec008BrowserFixture fixt
 
     internal static string Context(string role) => $$"""
         {"serverTimeUtc":"2026-07-21T09:30:00Z","timeZoneId":"Africa/Cairo",
-        "teachingTerm":null,"registrationTerm":null,"registrationWindowState":"open","registrationWindow":null,
+        "teachingTerm":null,"registrationTerm":null,"registrationWindowState":"none","registrationWindow":null,
         "serviceState":"available","displayName":"{{role}} Demo","authorizedRoles":["{{role}}"],
         "activeRole":"{{role}}","sessionState":"active","expiresAtUtc":"2026-07-21T11:30:00Z",
         "supportReferencePath":"/status/support"}

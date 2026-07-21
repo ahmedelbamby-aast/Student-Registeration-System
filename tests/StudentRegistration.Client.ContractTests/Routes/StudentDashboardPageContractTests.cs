@@ -73,12 +73,12 @@ public sealed class StudentDashboardPageContractTests
             destinations.GetProperty("registrations").GetString());
         Assert.Equal("/student/account", destinations.GetProperty("account").GetString());
         Assert.Equal(
-            "unavailable",
+            "available",
             root.GetProperty("downstreamTimetable").GetProperty("regionState").GetString());
-        Assert.True(
-            root.GetProperty("downstreamTimetable")
-                .GetProperty("mustNotClaimLiveSuccess")
-                .GetBoolean());
+        Assert.Equal(
+            "/student/registrations#current-registration",
+            root.GetProperty("downstreamTimetable").GetProperty("destination").GetString());
+        Assert.True(root.GetProperty("downstreamTimetable").GetProperty("serverAuthoritative").GetBoolean());
     }
 
     [Fact]
