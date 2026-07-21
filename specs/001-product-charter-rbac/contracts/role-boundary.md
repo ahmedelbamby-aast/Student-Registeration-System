@@ -22,9 +22,9 @@ server-derived effective role set determines the allowed contexts.
 - **Direct-route denial:** navigating to another role's URL or changing client
   state grants nothing; the API authenticates, authorizes, and scopes every
   protected request.
-- **Dual-role outcome:** a user with effective Lecturer and TeachingAssistant
-  roles may select either existing context, but the active context exposes only
-  that role's permissions and scope.
+- **Invalid multi-role outcome:** a staff identity with more than one effective
+  role is denied safely. Admin, Lecturer, and TeachingAssistant accounts each
+  have exactly one server-derived role and there is no context-selection flow.
 - **No-role outcome:** an authenticated staff identity with no supported
   effective role is denied with a privacy-safe support path.
 - An Admin has no implicit superuser bypass. Every sensitive capability needs

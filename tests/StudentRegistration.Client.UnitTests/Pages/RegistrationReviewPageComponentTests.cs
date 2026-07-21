@@ -3,6 +3,10 @@ namespace StudentRegistration.Client.UnitTests.Pages;
 public sealed class RegistrationReviewPageComponentTests
 {
     [Fact]
+    public void Stu_05_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        StudentPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("RegistrationReviewPage", "STU-05");
+
+    [Fact]
     public void Stu_05_covers_validation_dialog_focus_pending_and_single_submit_rules() =>
         Spec003RouteComponentAssertions.AssertRoute(
             "STU-05", "T169", "RegistrationReviewPage",

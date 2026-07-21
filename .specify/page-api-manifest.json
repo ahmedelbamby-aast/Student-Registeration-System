@@ -14,8 +14,7 @@
     ],
     "AUTH-04": [
       "GET /api/public/context",
-      "POST /api/auth/staff/login",
-      "PUT /api/auth/session/context"
+      "POST /api/auth/staff/login"
     ],
     "AUTH-05": [
       "POST /api/auth/recovery/request",
@@ -57,7 +56,6 @@
     ],
     "STU-08": [
       "GET /api/auth/session",
-      "PUT /api/auth/session/context",
       "POST /api/auth/password/change",
       "POST /api/auth/sessions/revoke-all",
       "POST /api/auth/logout"
@@ -140,7 +138,6 @@
     ],
     "STF-01": [
       "GET /api/context",
-      "PUT /api/auth/session/context",
       "GET /api/staff/assignments",
       "GET /api/staff/timetable"
     ],

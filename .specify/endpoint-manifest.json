@@ -10,7 +10,6 @@
     { "method": "POST", "path": "/api/auth/password/change", "owner": "007" },
     { "method": "POST", "path": "/api/auth/sessions/revoke-all", "owner": "007" },
     { "method": "GET", "path": "/api/auth/session", "owner": "007" },
-    { "method": "PUT", "path": "/api/auth/session/context", "owner": "007" },
     { "method": "GET", "path": "/api/admin/users", "owner": "007" },
     { "method": "POST", "path": "/api/admin/users/imports", "owner": "007" },
     { "method": "GET", "path": "/api/admin/users/imports/{importId}", "owner": "007" },

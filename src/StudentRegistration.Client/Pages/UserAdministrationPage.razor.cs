@@ -47,7 +47,7 @@ public partial class UserAdministrationPage : ComponentBase
     [Inject]
     private AcademicApiClient AcademicApi { get; set; } = null!;
 
-    private ElementReference _statusChangeButton;
+    private AppButton? _statusChangeButton;
     private IReadOnlyList<IdentityUserSummaryDto> _users = [];
     private IdentityUserSummaryDto? _selectedUser;
     private HashSet<string> _selectedRoles = new(StringComparer.Ordinal);
@@ -277,7 +277,7 @@ public partial class UserAdministrationPage : ComponentBase
 
     private async Task RestoreStatusFocusAsync()
     {
-        await _statusChangeButton.FocusAsync();
+        if (_statusChangeButton is not null) await _statusChangeButton.FocusAsync();
     }
 
     private void ToggleRole(string role, ChangeEventArgs args)

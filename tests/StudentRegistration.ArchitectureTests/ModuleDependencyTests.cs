@@ -184,10 +184,20 @@ public sealed class ModuleDependencyTests
                         source,
                         $@"StudentRegistration\.{Regex.Escape(provider)}\.(?<surface>[A-Za-z0-9_.]+)"))
                     {
-                        Assert.StartsWith(
+                        var surface = match.Groups["surface"].Value;
+                        var isPort = surface.StartsWith(
                             "Application.Ports",
-                            match.Groups["surface"].Value,
                             StringComparison.Ordinal);
+                        var isSharedIdentityPolicy =
+                            string.Equals(provider, "IdentityAccess", StringComparison.Ordinal)
+                            && string.Equals(
+                                surface,
+                                "Application.Authorization",
+                                StringComparison.Ordinal);
+
+                        Assert.True(
+                            isPort || isSharedIdentityPolicy,
+                            $"{consumer} must consume {provider} only through Application.Ports or the shared IdentityAccess authorization policy surface; found {surface}.");
                     }
                 }
             }

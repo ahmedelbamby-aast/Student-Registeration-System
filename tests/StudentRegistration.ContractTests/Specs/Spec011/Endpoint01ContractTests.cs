@@ -26,7 +26,7 @@ public sealed class Endpoint01ContractTests
         Spec011ContractAssertions.HasExactProperties(
             Spec011ContractAssertions.ContractType("GroupSummaryDto"),
             "GroupId", "GroupCode", "State", "Selectable", "Capacity",
-            "EnrolledCount", "SeatsRemaining", "NonSelectableReasons",
+            "EnrolledCount", "HeldSeatCount", "SeatsRemaining", "NonSelectableReasons",
             "Meetings", "RowVersion");
         var offering = Spec011ContractAssertions.ContractType(
             "OfferingEligibilityDto");

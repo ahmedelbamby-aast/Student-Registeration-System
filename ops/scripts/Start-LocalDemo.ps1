@@ -14,7 +14,8 @@ param(
     [switch]$SkipBuild,
     [switch]$PrepareOnly,
     [switch]$ResetDatabase,
-    [switch]$TrustHttpsCertificate
+    [switch]$TrustHttpsCertificate,
+    [switch]$PerformanceRuntime
 )
 
 Set-StrictMode -Version Latest
@@ -23,9 +24,13 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $solution = Join-Path $repositoryRoot 'StudentRegistration.slnx'
 $apiProject = Join-Path $repositoryRoot 'src\StudentRegistration.Api\StudentRegistration.Api.csproj'
+$clientProject = Join-Path $repositoryRoot 'src\StudentRegistration.Client\StudentRegistration.Client.csproj'
 $sqlProject = Join-Path $repositoryRoot 'src\StudentRegistration.Infrastructure.SqlServer\StudentRegistration.Infrastructure.SqlServer.csproj'
 $composeFile = Join-Path $repositoryRoot 'infra\docker\compose.development.yml'
 $certificatePath = Join-Path $repositoryRoot '.local\secrets\data-protection.pfx'
+$performancePublishPath = Join-Path $repositoryRoot '.local\performance-app'
+$performanceClientPublishPath = Join-Path $repositoryRoot '.local\performance-client'
+$performanceArtifactsPath = Join-Path $repositoryRoot '.local\performance-build'
 
 function Invoke-Checked {
     param(
@@ -258,16 +263,50 @@ try {
     Write-Host "SQL Server: localhost:$SqlPort (healthy)"
     Write-Host "Web application: $Url"
     Write-Host "Health check: $($Url.TrimEnd('/'))/api/health"
-    Write-Host 'Press Ctrl+C to stop the web application; the SQL volume is preserved.'
 
     if ($PrepareOnly) {
+        Write-Host 'Preparation-only mode complete; the web application was not started.'
         return
     }
 
-    Invoke-Checked dotnet @(
-        'run', '--project', $apiProject,
-        '--configuration', 'Release',
-        '--no-build', '--no-launch-profile')
+    if ($PerformanceRuntime) {
+        # Preparation and deterministic seeding intentionally run in Development.
+        # Publish and switch only the long-lived web process so performance
+        # checks exercise precompressed static assets and omit WASM debugging.
+        Write-Host 'Publishing the optimized local performance build...'
+        Invoke-Checked dotnet @(
+            'publish', $apiProject,
+            '--configuration', 'Release',
+            '--artifacts-path', $performanceArtifactsPath,
+            '--output', $performancePublishPath)
+        Invoke-Checked dotnet @(
+            'publish', $clientProject,
+            '--configuration', 'Release',
+            '--artifacts-path', $performanceArtifactsPath,
+            '--output', $performanceClientPublishPath)
+        Copy-Item `
+            -Path (Join-Path $performanceClientPublishPath 'wwwroot\*') `
+            -Destination (Join-Path $performancePublishPath 'wwwroot') `
+            -Recurse `
+            -Force
+        $env:ASPNETCORE_ENVIRONMENT = 'Testing'
+        $env:DOTNET_ENVIRONMENT = 'Testing'
+        Write-Host 'Starting the web application with the optimized local performance profile.'
+    }
+
+    Write-Host 'Press Ctrl+C to stop the web application; the SQL volume is preserved.'
+
+    if ($PerformanceRuntime) {
+        Invoke-Checked dotnet @(
+            (Join-Path $performancePublishPath 'StudentRegistration.Api.dll'),
+            '--contentRoot', $performancePublishPath)
+    }
+    else {
+        Invoke-Checked dotnet @(
+            'run', '--project', $apiProject,
+            '--configuration', 'Release',
+            '--no-build', '--no-launch-profile')
+    }
 }
 finally {
     Pop-Location

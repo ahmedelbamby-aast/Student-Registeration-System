@@ -56,7 +56,7 @@
                 {
                     <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
                 }
-                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
+                <AppButton OnClick="LoadAsync">@LocalizedUiText.Get("Retry")</AppButton>
             </section>
         }
 
@@ -66,7 +66,7 @@
                 <h2>@LocalizedUiText.Get("Concurrent offering change requires review")</h2>
                 <p class="srs-scheduling-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
-                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh and review")</button>
+                <AppButton OnClick="LoadAsync">@LocalizedUiText.Get("Refresh and review")</AppButton>
             </section>
         }
 
@@ -116,7 +116,7 @@
                            minlength="3"
                            maxlength="50"
                            @bind="_query" />
-                    <button type="submit" disabled="@_pending">@LocalizedUiText.Get("Search")</button>
+                    <AppButton Type="submit" Disabled="@_pending">@LocalizedUiText.Get("Search")</AppButton>
                 </form>
             </div>
 
@@ -149,17 +149,39 @@
                                     <td>@offering.GroupCount</td>
                                     <td><code>@offering.RowVersion</code></td>
                                     <td>
-                                        <button type="button"
-                                                disabled="@_pending"
-                                                @onclick="() => SelectOfferingAsync(offering.Id)">
+                                        <AppButton Variant="AppButtonVariant.Quiet"
+                                                   Disabled="@_pending"
+                                                   OnClick="@(_ => SelectOfferingAsync(offering.Id))">
                                             @LocalizedUiText.Get("Review")
-                                        </button>
+                                        </AppButton>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
+                <section class="srs-scheduling-admin__semantic-alternative"
+                         data-testid="offering-result-list"
+                         aria-label="@(LocalizedUiText.Get("Offering results, compact view"))">
+                    <ul>
+                        @foreach (var offering in _offerings)
+                        {
+                            <li>
+                                <h3>@offering.CourseCode — @offering.CourseTitle</h3>
+                                <dl>
+                                    <div><dt>@LocalizedUiText.Get("State")</dt><dd>@offering.State</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Groups")</dt><dd>@offering.GroupCount</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Version")</dt><dd><code>@offering.RowVersion</code></dd></div>
+                                </dl>
+                                <AppButton Variant="AppButtonVariant.Quiet"
+                                           Disabled="@_pending"
+                                           OnClick="@(_ => SelectOfferingAsync(offering.Id))">
+                                    @LocalizedUiText.Get("Review")
+                                </AppButton>
+                            </li>
+                        }
+                    </ul>
+                </section>
             }
         </section>
 
@@ -183,7 +205,7 @@
                     <input id="offering-create-capacity" type="number" min="0" @bind="_createCapacity" />
                 </label>
             </div>
-            <button type="button" disabled="@_pending" @onclick="CreateOfferingAsync">@LocalizedUiText.Get("Create offering")</button>
+            <AppButton Disabled="@_pending" OnClick="CreateOfferingAsync">@LocalizedUiText.Get("Create offering")</AppButton>
         </section>
 
         @if (_selectedOffering is not null)
@@ -221,9 +243,9 @@
                         </label>
                         <label for="offering-change-reason">@LocalizedUiText.Get("Change reason")</label>
                         <input id="offering-change-reason" maxlength="256" @bind="_changeReason" />
-                        <button type="button" disabled="@_pending" @onclick="SaveGroupAsync">
+                        <AppButton Disabled="@_pending" OnClick="SaveGroupAsync">
                             @LocalizedUiText.Get("Save group")
-                        </button>
+                        </AppButton>
 
                         <h4>@LocalizedUiText.Get("Complete activity bundle")</h4>
                         <div class="srs-scheduling-admin__table-region" role="region" aria-label="@(LocalizedUiText.Get("Group activities"))" tabindex="0">
@@ -257,18 +279,42 @@
                                 </tbody>
                             </table>
                         </div>
+                        <section class="srs-scheduling-admin__semantic-alternative"
+                                 data-testid="offering-activity-list"
+                                 aria-label="@(LocalizedUiText.Get("Group activities, compact view"))">
+                            <ol>
+                                @foreach (var meeting in _selectedGroup.Meetings)
+                                {
+                                    <li>
+                                        <h5>@ActivityLabel(meeting.ActivityType)</h5>
+                                        <dl>
+                                            <div>
+                                                <dt>@LocalizedUiText.Get("Staff")</dt>
+                                                <dd>
+                                                    @foreach (var staff in StaffFor(meeting.Id))
+                                                    {
+                                                        <span>@staff.Name (@staff.Role)</span>
+                                                    }
+                                                </dd>
+                                            </div>
+                                            <div><dt>@LocalizedUiText.Get("Room and location")</dt><dd>@meeting.RoomCode — @meeting.Location</dd></div>
+                                            <div><dt>@LocalizedUiText.Get("Day and term-local time")</dt><dd>@meeting.DayOfWeek, @meeting.StartLocal.ToString("HH:mm")–@meeting.EndLocal.ToString("HH:mm")</dd></div>
+                                        </dl>
+                                    </li>
+                                }
+                            </ol>
+                        </section>
                     </article>
                 }
 
                 <div class="srs-scheduling-admin__actions">
-                    <button type="button" disabled="@_pending" @onclick="ValidateOfferingAsync">
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_pending" OnClick="ValidateOfferingAsync">
                         @LocalizedUiText.Get("Validate offering")
-                    </button>
-                    <button type="button"
-                            disabled="@(_pending || _validation is null || !_validation.Valid)"
-                            @onclick="OpenPublishDialog">
+                    </AppButton>
+                    <AppButton Disabled="@(_pending || _validation is null || !_validation.Valid)"
+                               OnClick="@(_ => OpenPublishDialog())">
                         @LocalizedUiText.Get("Publish offering")
-                    </button>
+                    </AppButton>
                 </div>
             </section>
         }
@@ -284,12 +330,12 @@
                 <p>@LocalizedUiText.Get("The server will lock and revalidate all submitted dependency versions.")</p>
                 <label for="offering-publish-reason">@LocalizedUiText.Get("Publication reason")</label>
                 <input id="offering-publish-reason" maxlength="256" @bind="_publishReason" />
-                <button type="button" disabled="@_pending" @onclick="PublishOfferingAsync">
+                <AppButton Disabled="@_pending" OnClick="PublishOfferingAsync">
                     @LocalizedUiText.Get("Confirm publish")
-                </button>
-                <button type="button" disabled="@_pending" @onclick="ClosePublishDialog">
+                </AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_pending" OnClick="@(_ => ClosePublishDialog())">
                     @LocalizedUiText.Get("Cancel")
-                </button>
+                </AppButton>
             </section>
         </div>
     }

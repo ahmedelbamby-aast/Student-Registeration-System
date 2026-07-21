@@ -68,7 +68,7 @@
                     <p>@LocalizedUiText.Get("Reference") <strong>@_referenceId</strong></p>
                 }
                 <div class="srs-catalogue__actions">
-                    <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
+                    <AppButton OnClick="LoadAsync">@LocalizedUiText.Get("Retry")</AppButton>
                     <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
                 </div>
             </section>
@@ -99,9 +99,9 @@
                     {
                         <p>@LocalizedUiText.Get("Current version") <code>@_currentVersion</code></p>
                     }
-                    <button type="button" @onclick="RefreshAndRevalidateAsync">
+                    <AppButton OnClick="RefreshAndRevalidateAsync">
                         @LocalizedUiText.Get("Refresh and revalidate")
-                    </button>
+                    </AppButton>
                 </section>
             }
 
@@ -173,6 +173,24 @@
                         </tbody>
                     </table>
                 </div>
+                <section class="srs-catalogue__semantic-alternative"
+                         data-testid="catalogue-version-list"
+                         aria-label="@(LocalizedUiText.Get("Catalogue versions, compact view"))">
+                    <ul>
+                        @foreach (var version in _versions)
+                        {
+                            <li>
+                                <h3>@version.Version</h3>
+                                <dl>
+                                    <div><dt>@LocalizedUiText.Get("Scope")</dt><dd>@version.Scope</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Lifecycle")</dt><dd>@version.State</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Source")</dt><dd>@version.Source</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Published")</dt><dd>@version.PublishedAtUtc.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.CurrentCulture)</dd></div>
+                                </dl>
+                            </li>
+                        }
+                    </ul>
+                </section>
             </section>
 
             <div class="srs-catalogue__workspace">
@@ -227,9 +245,9 @@
                             </label>
                         </div>
                         <p><strong>@LocalizedUiText.Get("Exactly 3 credits")</strong></p>
-                        <button type="submit" disabled="@(_draft is null || _isSavingSubject)">
+                        <AppButton Type="submit" Disabled="@(_draft is null || _isSavingSubject)" IsLoading="@_isSavingSubject">
                             @(_isSavingSubject ? LocalizedUiText.Get("Saving subject…") : LocalizedUiText.Get("Save subject and roadmap"))
-                        </button>
+                        </AppButton>
                     </form>
 
                     <div class="srs-catalogue__course-list" aria-label="@(LocalizedUiText.Get("Curated courses"))">
@@ -291,9 +309,9 @@
                                 </span>
                             </label>
                         </div>
-                        <button type="submit" disabled="@_isImporting">
+                        <AppButton Type="submit" Disabled="@_isImporting" IsLoading="@_isImporting">
                             @(_isImporting ? LocalizedUiText.Get("Creating import…") : LocalizedUiText.Get("Create import"))
-                        </button>
+                        </AppButton>
                         @if (_currentImport is not null)
                         {
                             <p>
@@ -304,17 +322,17 @@
                     </form>
 
                     <div class="srs-catalogue__actions">
-                        <button type="button"
-                                disabled="@(_isValidating || _draft is null)"
-                                @onclick="ValidateCatalogueAsync">
+                        <AppButton Variant="AppButtonVariant.Secondary"
+                                   Disabled="@(_isValidating || _draft is null)"
+                                   IsLoading="@_isValidating"
+                                   OnClick="ValidateCatalogueAsync">
                             @(_isValidating ? LocalizedUiText.Get("Validating…") : LocalizedUiText.Get("Validate catalogue"))
-                        </button>
-                        <button type="button"
-                                @ref="_publishTrigger"
-                                disabled="@(_previewToken is null || _isPublishing)"
-                                @onclick="OpenPublishConfirmation">
+                        </AppButton>
+                        <AppButton @ref="_publishTrigger"
+                                   Disabled="@(_previewToken is null || _isPublishing)"
+                                   OnClick="@(_ => OpenPublishConfirmation())">
                             @LocalizedUiText.Get("Publish catalogue")
-                        </button>
+                        </AppButton>
                     </div>
                 </section>
 
@@ -354,9 +372,9 @@
                                 @FieldError("probation-max-credits")
                             </label>
                         </div>
-                        <button type="submit" disabled="@(_isSavingPolicy || _policy is null)">
+                        <AppButton Type="submit" Disabled="@(_isSavingPolicy || _policy is null)" IsLoading="@_isSavingPolicy">
                             @(_isSavingPolicy ? LocalizedUiText.Get("Saving…") : LocalizedUiText.Get("Save policy draft"))
-                        </button>
+                        </AppButton>
                     </form>
 
                     <section class="srs-catalogue__subpanel" aria-labelledby="simulation-heading">
@@ -374,11 +392,12 @@
                                        @bind="_simulationCourses" />
                             </label>
                         </div>
-                        <button type="button"
-                                disabled="@(_isSimulating || _policy is null)"
-                                @onclick="SimulatePolicyAsync">
+                        <AppButton Variant="AppButtonVariant.Secondary"
+                                   Disabled="@(_isSimulating || _policy is null)"
+                                   IsLoading="@_isSimulating"
+                                   OnClick="SimulatePolicyAsync">
                             @(_isSimulating ? LocalizedUiText.Get("Simulating…") : LocalizedUiText.Get("Simulate policy"))
-                        </button>
+                        </AppButton>
                         <p>@LocalizedUiText.Get("Simulation does not publish or save changes.")</p>
                         @if (_simulation is not null)
                         {
@@ -486,7 +505,7 @@
     private bool _isLoadingContext = true;
     private ElementReference _validationSummary;
     private ElementReference _stateHeading;
-    private ElementReference _publishTrigger;
+    private AppButton? _publishTrigger;
     private string _state = LoadingState;
     private string _reasonCode = "SERVICE_UNAVAILABLE";
     private string _safeMessage = LocalizedUiText.Get("Catalogue administration could not be loaded.");
@@ -936,7 +955,7 @@
         }
     }
 
-    private Task RestorePublishFocusAsync() => _publishTrigger.FocusAsync().AsTask();
+    private Task RestorePublishFocusAsync() => _publishTrigger?.FocusAsync().AsTask() ?? Task.CompletedTask;
 
     private void ApplyPolicyEditor()
     {

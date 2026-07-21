@@ -10,6 +10,12 @@ new version, reruns contrast/focus/component checks, and requires approval.
 Components consume CSS custom properties generated from the canonical JSON;
 they do not introduce ungoverned visual literals.
 
+The immutable v1 source is archived at
+`src/StudentRegistration.Client/wwwroot/design/archive/design-tokens.v1.0.0.json`
+with SHA-256
+`4f5da90c9ed10c769bee5b0f895ed714ccef230f0d735d8c8f25a407f8a9865d`.
+It is retained as historical evidence and is never projected into runtime CSS.
+
 ## Version 2.0 approved visual direction
 
 Ahmed ELbamby approved this neutral modern-academic light palette on

@@ -1,4 +1,5 @@
 <div class="srs-capacity-breakdown"
+     data-capacity-state="@StateName"
      role="status"
      aria-label="@AccessibleName"
      aria-live="polite"
@@ -6,24 +7,36 @@
     <dl class="srs-capacity-breakdown__values">
         <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--total">
             <dt>@TotalLabel</dt>
-            <dd>@Total</dd>
+            <dd>@DisplayValue(Total)</dd>
         </div>
         <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--enrolled">
             <dt>@EnrolledLabel</dt>
-            <dd>@Enrolled</dd>
+            <dd>@DisplayValue(Enrolled)</dd>
         </div>
         <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--held">
             <dt>@HeldLabel</dt>
-            <dd>@Held</dd>
+            <dd>@DisplayValue(Held)</dd>
         </div>
         <div class="srs-capacity-breakdown__value srs-capacity-breakdown__value--available">
             <dt>@AvailableLabel</dt>
-            <dd>@Available</dd>
+            <dd>@DisplayValue(Available)</dd>
         </div>
     </dl>
+    @if (!string.IsNullOrWhiteSpace(StateMessage))
+    {
+        <p class="srs-capacity-breakdown__state">@StateMessage</p>
+    }
 </div>
 
 @code {
+    public enum CapacityState { Loading, Current, Full, Stale, Unavailable }
+
+    [Parameter]
+    public CapacityState State { get; set; } = CapacityState.Current;
+
+    [Parameter]
+    public string? StateMessage { get; set; }
+
     [Parameter, EditorRequired]
     public string AccessibleName { get; set; } = string.Empty;
 
@@ -51,6 +64,11 @@
     [Parameter]
     public int Available { get; set; }
 
+    private string StateName => State.ToString().ToLowerInvariant();
+
+    private string DisplayValue(int value) =>
+        State is CapacityState.Loading or CapacityState.Unavailable ? "—" : value.ToString();
+
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(AccessibleName);
@@ -67,6 +85,11 @@
         if (Enrolled + Held + Available != Total)
         {
             throw new ArgumentException(nameof(Total));
+        }
+
+        if (State is CapacityState.Full && Available != 0)
+        {
+            throw new ArgumentException(nameof(Available));
         }
     }
 }

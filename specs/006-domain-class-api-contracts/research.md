@@ -58,7 +58,7 @@ interface AppContextDto {
   displayName: string;
   authorizedRoles: string[];
   activeRole: string | null;
-  sessionState: "active" | "expiring" | "role-selection-required";
+  sessionState: "active" | "expiring";
   expiresAtUtc: string;
   supportReferencePath: string;
 }

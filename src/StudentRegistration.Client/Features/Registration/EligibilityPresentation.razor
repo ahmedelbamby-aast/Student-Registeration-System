@@ -108,6 +108,8 @@
                     </header>
                     <p>@LocalizedUiText.Get("Lifecycle state:") <strong>@group.State</strong></p>
                     <CapacityBreakdown AccessibleName="@($"Group {group.GroupCode} capacity")"
+                                       State="@(group.SeatsRemaining == 0 ? CapacityBreakdown.CapacityState.Full : CapacityBreakdown.CapacityState.Current)"
+                                       StateMessage="@(group.SeatsRemaining == 0 ? LocalizedUiText.Get("This group is full.") : LocalizedUiText.Get("Current server-authoritative capacity."))"
                                        TotalLabel="@(LocalizedUiText.Get("Total"))"
                                        Total="@group.Capacity"
                                        EnrolledLabel="@(LocalizedUiText.Get("Enrolled"))"

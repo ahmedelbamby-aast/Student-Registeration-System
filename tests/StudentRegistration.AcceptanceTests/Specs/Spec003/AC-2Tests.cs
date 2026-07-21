@@ -63,9 +63,9 @@ public sealed class AC_2Tests
         var components = componentManifest.RootElement.GetProperty("components")
             .EnumerateArray()
             .ToArray();
-        Assert.Equal(28, components.Length);
+        Assert.Equal(27, components.Length);
         Assert.Equal(
-            28,
+            27,
             components.Select(component => component.GetProperty("name").GetString())
                 .Distinct(StringComparer.Ordinal)
                 .Count());
@@ -142,7 +142,8 @@ public sealed class AC_2Tests
         RepositoryFiles.ContainsAll(
             appShellStyles,
             ".srs-app-shell__logo",
-            "height: auto");
+            "inline-size:auto",
+            "object-fit:contain");
 
         var css = RepositoryFiles.Read(
             "src/StudentRegistration.Client/wwwroot/css/design-tokens.css");

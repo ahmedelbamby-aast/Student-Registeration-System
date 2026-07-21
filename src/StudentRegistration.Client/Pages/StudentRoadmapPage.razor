@@ -119,8 +119,8 @@ else
 
     private static UiStatus LoadingStatus => new(
         "ROADMAP_LOADING",
-        "Loading academic roadmap",
-        "Reading the authoritative published roadmap and your transcript status.",
+        LocalizedUiText.Get("Loading academic roadmap"),
+        LocalizedUiText.Get("Reading the authoritative published roadmap and your transcript status."),
         UiStatusSeverity.Information,
         [],
         null);
@@ -135,7 +135,7 @@ else
             if (!context.IsSuccess || context.Value is null ||
                 !RegistrationPageSupport.IsStudentContext(context.Value))
             {
-                SetError("FORBIDDEN", "Roadmap access denied", "Sign in with a Student account.", context.Error?.CorrelationId);
+                SetError("FORBIDDEN", LocalizedUiText.Get("Roadmap access denied"), LocalizedUiText.Get("Sign in with a Student account."), context.Error?.CorrelationId);
                 return;
             }
 
@@ -145,8 +145,8 @@ else
             {
                 SetError(
                     result.Error?.Code ?? "ROADMAP_UNAVAILABLE",
-                    result.StatusCode is HttpStatusCode.NotFound ? "Roadmap not available" : "Roadmap service unavailable",
-                    result.Error?.Message ?? "The published programme roadmap could not be loaded.",
+                    result.StatusCode is HttpStatusCode.NotFound ? LocalizedUiText.Get("Roadmap not available") : LocalizedUiText.Get("Roadmap service unavailable"),
+                    result.Error?.Message ?? LocalizedUiText.Get("The published programme roadmap could not be loaded."),
                     result.Error?.CorrelationId);
                 return;
             }
@@ -156,7 +156,7 @@ else
         }
         catch (HttpRequestException)
         {
-            SetError("OFFLINE", "Roadmap is offline", "The browser cannot reach the roadmap service.", null);
+            SetError("OFFLINE", LocalizedUiText.Get("Roadmap is offline"), LocalizedUiText.Get("The browser cannot reach the roadmap service."), null);
         }
         finally
         {
@@ -172,19 +172,19 @@ else
             heading,
             message,
             UiStatusSeverity.Error,
-            [new("student-home", "Return to dashboard", "/student")],
+            [new("student-home", LocalizedUiText.Get("Return to dashboard"), "/student")],
             reference);
     }
 
     private static string StatusLabel(string status) => status switch
     {
-        "registered" => "Registered",
-        "in-progress" => "In progress",
-        "completed" => "Completed",
-        "available" => "Available",
-        _ => "Locked",
+        "registered" => LocalizedUiText.Get("Registered"),
+        "in-progress" => LocalizedUiText.Get("In progress"),
+        "completed" => LocalizedUiText.Get("Completed"),
+        "available" => LocalizedUiText.Get("Available"),
+        _ => LocalizedUiText.Get("Locked"),
     };
 
     private static string ListOrNone(IReadOnlyList<string> values) =>
-        values.Count == 0 ? "None" : string.Join(", ", values);
+        values.Count == 0 ? LocalizedUiText.Get("None") : string.Join(", ", values);
 }

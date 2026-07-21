@@ -67,13 +67,13 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                                 @LocalizedUiText.Get("Review the server-authoritative academic and registration status before continuing.")
                             </p>
                         </div>
-                        <button type="button"
-                                class="srs-dashboard-refresh"
-                                data-testid="student-dashboard-refresh"
-                                disabled="@_isRefreshing"
-                                @onclick="RefreshDashboardAsync">
+                        <AppButton Variant="AppButtonVariant.Secondary"
+                                   data-testid="student-dashboard-refresh"
+                                   Disabled="@_isRefreshing"
+                                   IsLoading="@_isRefreshing"
+                                   OnClick="RefreshDashboardAsync">
                             @(_isRefreshing ? LocalizedUiText.Get("Refreshing dashboard…") : LocalizedUiText.Get("Refresh dashboard"))
-                        </button>
+                        </AppButton>
                     </header>
 
                     <p class="srs-student-dashboard__status"
@@ -200,14 +200,12 @@ else if (UseAuthenticatedShell && _shellContext is not null)
                         else
                         {
                             <p id="registration-action-reason">@RegistrationActionReason</p>
-                            <button type="button"
-                                    class="srs-dashboard-primary-action"
-                                    data-testid="registration-primary-action"
-                                    disabled
-                                    aria-disabled="true"
-                                    aria-describedby="@RegistrationActionDescriptionId">
+                            <AppButton data-testid="registration-primary-action"
+                                       Disabled="true"
+                                       aria-disabled="true"
+                                       DescribedBy="@RegistrationActionDescriptionId">
                                 @LocalizedUiText.Get("Start registration")
-                            </button>
+                            </AppButton>
                         }
                         @* The exact future SPEC-015 transition remains documented but is
                            not rendered until the contributor can authorize it:
@@ -411,12 +409,12 @@ else
             <p>@LocalizedUiText.Get("Reference") <strong>@_referenceId</strong></p>
         }
         <div class="srs-dashboard-failure__actions">
-            <button type="button"
-                    data-testid="student-dashboard-refresh"
-                    disabled="@_isRefreshing"
-                    @onclick="RefreshDashboardAsync">
+            <AppButton data-testid="student-dashboard-refresh"
+                       Disabled="@_isRefreshing"
+                       IsLoading="@_isRefreshing"
+                       OnClick="RefreshDashboardAsync">
                 @(_isRefreshing ? LocalizedUiText.Get("Refreshing dashboard…") : LocalizedUiText.Get("Refresh dashboard"))
-            </button>
+            </AppButton>
             <a href="/student/login">@LocalizedUiText.Get("Sign in again")</a>
         </div>
     </text>;
@@ -617,7 +615,6 @@ else
         context.DisplayName,
         context.AuthorizedRoles,
         context.ActiveRole,
-        context.SessionState is SessionState.RoleSelectionRequired,
         SessionStateToken(context.SessionState),
         new DateTimeOffset(context.ExpiresAtUtc),
         ServiceStateToken(context.ServiceState),
@@ -627,7 +624,6 @@ else
     {
         SessionState.Active => "active",
         SessionState.Expiring => "expiring",
-        SessionState.RoleSelectionRequired => "role-selection-required",
         _ => "unknown"
     };
 

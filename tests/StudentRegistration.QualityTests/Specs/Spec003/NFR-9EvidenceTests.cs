@@ -7,7 +7,7 @@ namespace StudentRegistration.QualityTests.Specs.Spec003;
 public sealed class NFR_9EvidenceTests
 {
     [Fact]
-    public void All_27_routes_have_approved_four_browser_by_four_viewport_hash_bound_baselines()
+    public void All_30_routes_have_approved_four_browser_by_four_viewport_hash_bound_baselines()
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(
             "tests/StudentRegistration.VisualTests/Baselines/baseline-manifest.json"));
@@ -15,7 +15,7 @@ public sealed class NFR_9EvidenceTests
             ? "routes"
             : "baselines";
         var routes = document.RootElement.GetProperty(collectionName).EnumerateArray().ToArray();
-        Assert.Equal(27, routes.Select(route => route.GetProperty("routeId").GetString()).Distinct().Count());
+        Assert.Equal(30, routes.Select(route => route.GetProperty("routeId").GetString()).Distinct().Count());
         foreach (var route in routes)
         {
             Assert.Equal([375, 768, 1280, 1920],

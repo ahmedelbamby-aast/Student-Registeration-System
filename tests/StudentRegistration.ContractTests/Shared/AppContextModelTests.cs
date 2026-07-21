@@ -136,21 +136,15 @@ public sealed class AppContextModelTests
             authorizedRoles: ["Student"],
             activeRole: "Student",
             sessionState: SessionState.Active);
-        var selectionRequired = CreateContext(
-            authorizedRoles: ["Lecturer", "TeachingAssistant"],
-            activeRole: null,
-            sessionState: SessionState.RoleSelectionRequired);
-
         Assert.Equal("Student", active.ActiveRole);
-        Assert.Null(selectionRequired.ActiveRole);
         Assert.Throws<ArgumentException>(() => CreateContext(
-            authorizedRoles: ["Student"],
-            activeRole: null,
+            authorizedRoles: ["Lecturer", "TeachingAssistant"],
+            activeRole: "Lecturer",
             sessionState: SessionState.Active));
         Assert.Throws<ArgumentException>(() => CreateContext(
             authorizedRoles: ["Student"],
             activeRole: null,
-            sessionState: SessionState.RoleSelectionRequired));
+            sessionState: SessionState.Active));
         Assert.Throws<ArgumentException>(() => CreateContext(
             authorizedRoles: ["Student"],
             activeRole: "Admin",
@@ -178,9 +172,9 @@ public sealed class AppContextModelTests
             teachingTerm: CreateTerm(TermState.Teaching),
             registrationTerm: CreateTerm(TermState.RegistrationOpen),
             registrationWindowState: RegistrationWindowState.Open,
-            authorizedRoles: ["Student", "TeachingAssistant"],
-            activeRole: null,
-            sessionState: SessionState.RoleSelectionRequired);
+            authorizedRoles: ["Student"],
+            activeRole: "Student",
+            sessionState: SessionState.Active);
 
         using var document = JsonDocument.Parse(JsonSerializer.Serialize(context, options));
         var root = document.RootElement;
@@ -201,9 +195,7 @@ public sealed class AppContextModelTests
             "open",
             root.GetProperty("registrationWindow").GetProperty("state").GetString());
         Assert.Equal("available", root.GetProperty("serviceState").GetString());
-        Assert.Equal(
-            "role-selection-required",
-            root.GetProperty("sessionState").GetString());
+        Assert.Equal("active", root.GetProperty("sessionState").GetString());
         Assert.Equal("/support/reference", root.GetProperty("supportReferencePath").GetString());
         Assert.False(root.TryGetProperty("rowVersionInternal", out _));
         Assert.False(root.TryGetProperty("navigation", out _));

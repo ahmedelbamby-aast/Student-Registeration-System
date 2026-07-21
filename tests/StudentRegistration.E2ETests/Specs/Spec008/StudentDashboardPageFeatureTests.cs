@@ -68,11 +68,15 @@ public sealed class StudentDashboardPageFeatureTests(Spec008BrowserFixture fixtu
                 new() { Name = "Resume registration", Exact = true })
                 .CountAsync());
         Assert.True(await page.Locator(
-            "[data-testid='current-timetable-unavailable'][data-contributor-state='unavailable']")
+            "[data-testid='current-timetable-summary'][data-contributor-state='available']")
             .IsVisibleAsync());
         Assert.True(await page.GetByText(
-            "Current timetable is unavailable until SPEC-015 is delivered.",
+            "Review your registered subjects, meeting times, rooms, and teaching staff in the authoritative registration record.",
             new() { Exact = true }).IsVisibleAsync());
+        Assert.Equal(
+            "/student/registrations#current-registration",
+            await page.GetByRole(AriaRole.Link, new() { Name = "Open current timetable", Exact = true })
+                .GetAttributeAsync("href"));
     }
 
     [Fact]

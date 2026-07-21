@@ -71,7 +71,7 @@ built and executed successfully for the current commit.
 | AC-10 | [AC_10Tests](../../tests/StudentRegistration.AcceptanceTests/Specs/Spec007/AC-10Tests.cs); [AdminUserLifecycleStorePersistenceTests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/AdminUserLifecycleStorePersistenceTests.cs) | Acceptance mapping plus real-SQL lifecycle atomicity. |
 | EC-1 | [EC_1Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-1Tests.cs) | Already-activated identity behavior. |
 | EC-2 | [EC_2Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-2Tests.cs) | Disabled/locked generic denial behavior. |
-| EC-3 | [EC_3Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-3Tests.cs) | Dual-role context selection behavior. |
+| EC-3 | [EC_3Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-3Tests.cs) | Invalid multi-role staff configuration fails closed without context selection. |
 | EC-4 | [EC_4Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-4Tests.cs) | Expired-session and plan-revalidation contract behavior. |
 | EC-5 | [EC_5Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-5Tests.cs) | Repeated generic recovery behavior. |
 | EC-6 | [EC_6Tests](../../tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-6Tests.cs) | Lost activation-response replay behavior. |

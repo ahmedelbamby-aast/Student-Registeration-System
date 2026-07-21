@@ -34,9 +34,9 @@ downstream contributor versions remain `not-pinned`.
     "Lecturer",
     "Teaching Assistant"
   ],
-  "purpose": "Show one active server-authorized role context, permit an explicit server-validated context switch, and show only that context's assignments, deadlines, and warnings.",
+  "purpose": "Show one active server-authorized staff role and only that role's assignments, deadlines, and warnings.",
   "informationHierarchy": [
-    "Authenticated AppShell active-role context and authorized context switch",
+    "Authenticated AppShell single active-role context",
     "Assignment summary",
     "Deadlines and warnings",
     "Assigned group actions",
@@ -63,7 +63,6 @@ downstream contributor versions remain `not-pinned`.
   ],
   "dataContracts": [
     "GET /api/context",
-    "PUT /api/auth/session/context",
     "GET /api/staff/assignments",
     "GET /api/staff/timetable"
   ],
@@ -146,9 +145,9 @@ downstream contributor versions remain `not-pinned`.
       "fixtureVersion": "frontend-fixture/1.0",
       "expectedContent": [
         "Trigger: submitted form failure",
-        "Submitted context-switch validation summary",
-        "Only still-authorized roles returned by the server are offered after rejection",
-        "No privilege union, client-added claim, or retained rejected context",
+        "Invalid role configuration summary",
+        "No role picker or alternate context is offered after rejection",
+        "No privilege union or client-added claim",
         "Preserve the owner-contract reason code exactly"
       ],
       "expectedFocusTarget": "Validation summary",

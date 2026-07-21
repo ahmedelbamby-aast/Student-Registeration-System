@@ -302,50 +302,6 @@
         ]
       }
     },
-    "/api/auth/session/context": {
-      "put": {
-        "tags": [
-          "Spec007Endpoints"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SelectRoleContextRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "StudentRegistration.Identity": []
-          }
-        ]
-      }
-    },
     "/api/admin/users": {
       "get": {
         "tags": [
@@ -2865,17 +2821,6 @@
           }
         }
       },
-      "SelectRoleContextRequest": {
-        "required": [
-          "role"
-        ],
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string"
-          }
-        }
-      },
       "ServiceState": {
         "enum": [
           "available",
@@ -2920,8 +2865,7 @@
       "SessionState": {
         "enum": [
           "active",
-          "expiring",
-          "role-selection-required"
+          "expiring"
         ]
       },
       "StaffLoginRequest": {

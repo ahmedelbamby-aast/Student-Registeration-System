@@ -12,7 +12,7 @@ public sealed class StaffDashboardPageContractTests
 
         RepositoryFiles.ContainsAll(page,
             "@page \"/staff\"", "data-route-id=\"STF-01\"",
-            "GetAppContextAsync", "GetAssignmentsAsync", "ROLE_CONTEXT_INVALID",
+            "GetAppContextAsync", "GetAssignmentsAsync", "FORBIDDEN",
             "AuthenticatedPage", "WorkspaceKind.Staff", "Open assigned roster", "Open availability");
         RepositoryFiles.ContainsAll(client,
             "GetAssignmentsAsync", "\"/api/staff/assignments\"");

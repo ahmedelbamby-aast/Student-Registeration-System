@@ -6,6 +6,35 @@ namespace StudentRegistration.QualityTests.Specs.Spec003;
 public sealed class NFR_6EvidenceTests
 {
     [Fact]
+    public void Real_composed_host_records_the_exact_demo_waiver_without_weakening_the_budget()
+    {
+        using var document = JsonDocument.Parse(RepositoryFiles.Read(
+            "docs/release-evidence/SPEC-003-NFR-6-live-results.json"));
+        var root = document.RootElement;
+
+        Assert.Equal("WAIVED-DEMO", root.GetProperty("result").GetString());
+        Assert.True(root.GetProperty("publishedReleaseHostVerified").GetBoolean());
+        Assert.True(root.GetProperty("brotliCompressionVerified").GetBoolean());
+        Assert.Equal(2_500, root.GetProperty("lcpP75BudgetMilliseconds").GetInt32());
+        Assert.False(root.GetProperty("productionGoLiveApproved").GetBoolean());
+
+        var routes = root.GetProperty("routes").EnumerateArray().ToArray();
+        Assert.Equal(["STU-02", "STU-04", "STU-05"],
+            routes.Select(route => route.GetProperty("routeId").GetString()!).ToArray());
+        Assert.All(routes, route => Assert.Equal(4,
+            route.GetProperty("lcpSamplesMilliseconds").GetArrayLength()));
+        Assert.False(routes[0].GetProperty("thresholdPassed").GetBoolean());
+        Assert.True(routes[1].GetProperty("thresholdPassed").GetBoolean());
+        Assert.True(routes[2].GetProperty("thresholdPassed").GetBoolean());
+
+        var waiver = root.GetProperty("waiver");
+        Assert.Equal("Ahmed ELbamby", waiver.GetProperty("approvedBy").GetString());
+        Assert.Equal("2026-07-21", waiver.GetProperty("approvedOn").GetString());
+        Assert.Contains("threshold remains unchanged", waiver.GetProperty("reason").GetString(),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Release_profile_cold_cache_lcp_evidence_is_pass_or_explicit_demo_waiver()
     {
         using var document = JsonDocument.Parse(RepositoryFiles.Read(

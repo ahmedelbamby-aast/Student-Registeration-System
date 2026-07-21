@@ -13,7 +13,7 @@ public enum SessionLifecycleOutcome
     ChallengeInvalid,
     CurrentPasswordInvalid,
     PasswordRejected,
-    RoleNotAvailable,
+    InvalidRoleConfiguration,
     AuthenticationFailed
 }
 
@@ -337,9 +337,13 @@ public sealed class SessionLifecycleService
         var sessionSecurityStamp = user.SecurityStamp;
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var roles = await _store.GetEffectiveRolesAsync(user.Id, utcNow, cancellationToken);
-        var selectedRole = activeRole is not null && roles.Contains(activeRole, StringComparer.Ordinal)
-            ? activeRole
-            : roles.Count == 1 ? roles[0] : null;
+        if (roles.Count != 1 ||
+            (activeRole is not null && !string.Equals(activeRole, roles[0], StringComparison.Ordinal)))
+        {
+            return AuthenticationResult.Failure(AuthenticationOutcome.InvalidRoleConfiguration);
+        }
+
+        var selectedRole = roles[0];
         return AuthenticationResult.Success(
             user.Id,
             user.UserName,
@@ -347,38 +351,6 @@ public sealed class SessionLifecycleService
             roles,
             selectedRole,
             utcNow.Add(SessionLifetime));
-    }
-
-    public async Task<SessionLifecycleResult> SelectRoleContextAsync(
-        Guid applicationUserId,
-        string requestedRole,
-        CancellationToken cancellationToken = default)
-    {
-        var user = await _store.FindByIdAsync(applicationUserId, cancellationToken);
-        if (user is null || !user.IsEnabled)
-        {
-            return new SessionLifecycleResult(SessionLifecycleOutcome.AuthenticationFailed);
-        }
-
-        var sessionSecurityStamp = user.SecurityStamp;
-        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
-        var roles = await _store.GetEffectiveRolesAsync(
-            user.Id,
-            utcNow,
-            cancellationToken);
-        if (!roles.Contains(requestedRole, StringComparer.Ordinal))
-        {
-            return new SessionLifecycleResult(SessionLifecycleOutcome.RoleNotAvailable);
-        }
-
-        return SessionLifecycleResult.Completed(
-            AuthenticationResult.Success(
-                user.Id,
-                user.UserName,
-                sessionSecurityStamp,
-                roles,
-                requestedRole,
-                utcNow.Add(SessionLifetime)));
     }
 
     private static string HashOpaque(string value) =>

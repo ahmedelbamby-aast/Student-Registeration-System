@@ -23,7 +23,7 @@
                         type="button"
                         aria-label="@MenuButtonLabel"
                         aria-controls="workspace-navigation"
-                        aria-expanded="@_mobileNavigationOpen"
+                        aria-expanded="@(_mobileNavigationOpen ? "true" : "false")"
                         @onclick="ToggleNavigationAsync">
                     <span aria-hidden="true">☰</span>
                     <span>@MenuButtonLabel</span>
@@ -41,9 +41,11 @@
 
         <aside id="workspace-navigation"
                class="srs-app-shell__sidebar"
+               tabindex="-1"
+               @ref="_navigation"
                aria-label="@WorkspaceNavigationLabel"
                data-open="@_mobileNavigationOpen">
-            <nav class="srs-app-shell__navigation" aria-label="@WorkspaceNavigationLabel" @ref="_navigation">
+            <nav class="srs-app-shell__navigation" aria-label="@WorkspaceNavigationLabel">
                 @if (Navigation is not null)
                 {
                     @Navigation

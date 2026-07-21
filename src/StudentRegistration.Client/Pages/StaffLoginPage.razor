@@ -101,12 +101,6 @@
 
     private Task HandleSessionAsync(SessionDto session)
     {
-        if (string.Equals(session.SessionState, "role-selection-required", StringComparison.Ordinal))
-        {
-            ApplyUnsupportedRoleConfiguration();
-            return Task.CompletedTask;
-        }
-
         if (!string.IsNullOrWhiteSpace(session.ActiveRole) &&
             session.Roles.Count == 1 &&
             session.Roles.Contains(session.ActiveRole, StringComparer.Ordinal) &&
@@ -116,7 +110,7 @@
             return Task.CompletedTask;
         }
 
-        ApplyFailure(null);
+        ApplyUnsupportedRoleConfiguration();
         return Task.CompletedTask;
     }
 

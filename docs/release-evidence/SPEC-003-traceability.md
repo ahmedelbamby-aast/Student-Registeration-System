@@ -43,7 +43,7 @@ clause it maps to is actually satisfied.
 | NFR-5 | six-profile route matrices and semantic overflow alternatives, `SPEC-003-NFR-5.md` | PASS |
 | NFR-6 | Release published-host cold-cache LCP/API/compression harness and `SPEC-003-NFR-6-results.json` | WAIVED-DEMO — measured p75 exceeds 2,500ms; Ahmed-approved non-production exception, production go-live withheld |
 | NFR-7 | Four-engine POC manifest, exact-build verification, and current-stable Firefox smoke | PASS |
-| NFR-8 | `SPEC-003-NFR-8.md`; representative human cohort required | BLOCKED — HUMAN PARTICIPANTS NOT PROVIDED |
+| NFR-8 | `SPEC-003-NFR-8.md`, `SPEC-003-NFR-8-results.json`; representative human cohort protocol retained | WAIVED-DEMO — Ahmed-approved non-production exception; no human result claimed and production withheld |
 | NFR-9 | 27-route, 432-artifact versioned baseline manifest; 467/467 visual assembly | PASS |
 | NFR-10 | Resource-backed UI, culture audit, direction-safe CSS and full-source quality gate | PASS — 5/5 focused gate |
 
@@ -65,7 +65,7 @@ The primary executable files are under
 | AC-9 | `AC-9Tests.cs`, NFR-1/2/5 evidence and accessibility matrices | PASS |
 | AC-10 | `AC-10Tests.cs`, NFR-7/NFR-9 evidence | PASS |
 | AC-11 | `AC-11Tests.cs`, stale-response component/E2E suites | PASS |
-| AC-12 | `AC-12Tests.cs`, NFR-8 and NFR-10 evidence | BLOCKED — NFR-8 HUMAN COHORT |
+| AC-12 | `AC-12Tests.cs`, NFR-8 and NFR-10 evidence | WAIVED-DEMO — explicit machine-checked owner disposition; production cohort still required |
 | AC-13 | `AC-13Tests.cs`, NFR-6 Release measurement | WAIVED-DEMO — evidence is complete; the 2,500ms threshold is not passed and the demo waiver is explicit |
 | AC-14 | `AC-14Tests.cs`, AUTH-01 and STU-01 route suites | PASS |
 | AC-15 | `AC-15Tests.cs`, STU-06/STU-07/STU-08 route suites | PASS |
@@ -96,7 +96,7 @@ All primary executable files are under
 |---|---|---|
 | SC-1 | 27 Page Design Records and complete route-to-test matrix below | PASS |
 | SC-2 | NFR-1 through NFR-5 executable WCAG evidence | PASS |
-| SC-3 | NFR-8 controlled usability cohort | BLOCKED — REPRESENTATIVE HUMANS REQUIRED |
+| SC-3 | NFR-8 controlled usability cohort and demo-waiver record | WAIVED-DEMO — representative humans remain required before production |
 
 ## Route-to-test matrix
 
@@ -130,19 +130,19 @@ implementation owner is hash-pinned in
 | ADM-07 | `/admin/resources` — ResourceAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-08 | `/admin/registrations` — RegistrationAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
 | ADM-09 | `/admin/audit` — AuditAdministrationPage | contract, component, E2E, accessibility, visual | PASS |
-| ADM-10 | `/admin/approvals` — ApprovalAdministrationPage | contract, component, E2E, accessibility, visual | PENDING — T294 |
+| ADM-10 | `/admin/approvals` — ApprovalAdministrationPage | contract, component, E2E, accessibility, visual | PARTIAL — shared component covers empty/loading/error, pending overload, held capacity, role denial, and stale decision; paged/terminal browser and approved visual matrix remain T294 |
 | STF-01 | `/staff` — StaffDashboardPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-02 | `/staff/timetable` — StaffTimetablePage | contract, component, E2E, accessibility, visual | PASS |
 | STF-03 | `/staff/groups/{groupId}/roster` — StaffRosterPage | contract, component, E2E, accessibility, visual | PASS |
 | STF-04 | `/staff/availability` — StaffAvailabilityPage | contract, component, E2E, accessibility, visual | PASS |
-| STF-05 | `/staff/approvals` — StaffApprovalInboxPage | contract, component, E2E, accessibility, visual | PENDING — T297 |
+| STF-05 | `/staff/approvals` — StaffApprovalInboxPage | contract, component, E2E, accessibility, visual | PARTIAL — Lecturer/TA scopes cover empty/loading/error, pending overload, held capacity, role denial, and stale decision; terminal/stale-assignment browser and approved visual matrix remain T297 |
 | SYS-01 | `/status/{code}` — SystemStatusPage | contract, component, E2E, accessibility, visual | PASS |
 
 ## Release rejection
 
-This matrix currently rejects release because NFR-8/AC-12/SC-3 lack the
-specified representative human-participant evidence. Automated browser
+This matrix approves only the non-production demo because NFR-8/AC-12/SC-3
+carry Ahmed's explicit `WAIVED-DEMO` disposition. Automated browser
 personas and Ahmed ELbamby's execution approval are valuable but do not become
 eight student, three Admin, three Lecturer, and three TA participants. The
 NFR-6 row is an explicit approved demo waiver, not a threshold pass. All
-automatable rows have completed; the human cohort is the sole remaining gate.
+automatable rows have completed; the human cohort remains a production gate.

@@ -22,7 +22,9 @@ public sealed class NFR_4EvidenceTests(Spec015SqlEvidenceFixture fixture)
                 "20260713060000_Registration",
                 "20260713070000_StaffAdminOperations",
                 "20260717120000_Spec017ExportFilter",
-                "20260717222551_Spec018RegistrationReadPerformance"
+                "20260717222551_Spec018RegistrationReadPerformance",
+                "20260720182228_Spec009CourseCreditsExactlyThree",
+                "20260720185102_Spec014ApprovalSeatHoldsAndFirstTermAutomation"
             ],
             applied);
 

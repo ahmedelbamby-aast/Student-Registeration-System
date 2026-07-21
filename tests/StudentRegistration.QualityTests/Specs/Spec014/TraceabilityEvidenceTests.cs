@@ -196,6 +196,7 @@ public sealed class TraceabilityEvidenceTests
         var ledger = RepositoryFiles.Read(TaskLedgerPath);
         var taskLines = ledger.Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Where(line => Regex.IsMatch(line, @"^- \[[ xX]\] T\d{3}\b"))
+            .Where(line => int.Parse(Regex.Match(line, @"T(?<number>\d{3})").Groups["number"].Value) <= 123)
             .ToArray();
 
         Assert.Equal(123, taskLines.Length);

@@ -47,7 +47,7 @@ downstream contributor versions remain `not-pinned`.
     "375": "The 320 order is retained; the effective maximum and policy/source reason stay before groups. Capacity and staffing may use labelled pairs only when they fit; incomplete groups keep full text and no selectable control.",
     "768": "Compact navigation precedes subject/eligibility and effective-credit summaries plus a two-column GroupCard grid. Each card remains internally ordered capacity, complete staffing, location/time, status/reason, then action.",
     "1024": "Persistent navigation, a bounded subject/credit summary rail, and main group grid are allowed. No load reason, staffing, room, interval, capacity, or eligibility reason moves into a hover-only disclosure.",
-    "1280": "The group grid may use three bounded columns. The default 18 and effective 12/18 maximum remain visible above it; CapacityIndicator and staff/activity rows stay readable and Continue stays attached to one complete selectable bundle.",
+    "1280": "The group grid may use three bounded columns. The default 18 and effective 12/18 maximum remain visible above it; CapacityBreakdown and staff/activity rows stay readable and Continue stays attached to one complete selectable bundle.",
     "1920": "A centered maximum-width shell preserves the 1280 card sizing and DOM/focus order. Surplus width increases gutters only; cards never hide credit, policy, staffing, meeting, or capacity details or gain client-only selection state."
   },
   "components": [
@@ -55,7 +55,7 @@ downstream contributor versions remain `not-pinned`.
     "RoleNavigation",
     "EntityCard",
     "GroupCard",
-    "CapacityIndicator",
+    "CapacityBreakdown",
     "StatusBadge",
     "Alert",
     "Button",
@@ -322,7 +322,7 @@ downstream contributor versions remain `not-pinned`.
 | 375 | The 320 order is retained; the effective maximum and policy/source reason stay before groups. Capacity and staffing may use labelled pairs only when they fit; incomplete groups keep full text and no selectable control. |
 | 768 | Compact navigation precedes subject/eligibility and effective-credit summaries plus a two-column GroupCard grid. Each card remains internally ordered capacity, complete staffing, location/time, status/reason, then action. |
 | 1024 | Persistent navigation, a bounded subject/credit summary rail, and main group grid are allowed. No load reason, staffing, room, interval, capacity, or eligibility reason moves into a hover-only disclosure. |
-| 1280 | The group grid may use three bounded columns. The default 18 and effective 12/18 maximum remain visible above it; CapacityIndicator and staff/activity rows stay readable and Continue stays attached to one complete selectable bundle. |
+| 1280 | The group grid may use three bounded columns. The default 18 and effective 12/18 maximum remain visible above it; CapacityBreakdown and staff/activity rows stay readable and Continue stays attached to one complete selectable bundle. |
 | 1920 | A centered maximum-width shell preserves the 1280 card sizing and DOM/focus order. Surplus width increases gutters only; cards never hide credit, policy, staffing, meeting, or capacity details or gain client-only selection state. |
 
 ## Minimum journey and test traceability

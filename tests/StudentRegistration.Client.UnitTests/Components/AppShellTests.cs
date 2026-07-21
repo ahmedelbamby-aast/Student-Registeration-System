@@ -157,7 +157,6 @@ public sealed class AppShellTests
             "Ahmed Student",
             ["Student"],
             "Student",
-            false,
             "Active",
             new DateTimeOffset(2026, 7, 13, 12, 30, 0, TimeSpan.FromHours(3)),
             "Available",

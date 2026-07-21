@@ -56,15 +56,6 @@ public sealed class IdentityApiClient
             request,
             cancellationToken);
 
-    public Task<IdentityApiResult<SessionDto>> SelectRoleContextAsync(
-        SelectRoleContextRequest request,
-        CancellationToken cancellationToken = default) =>
-        SendAsync<SelectRoleContextRequest, SessionDto>(
-            HttpMethod.Put,
-            "api/auth/session/context",
-            request,
-            cancellationToken);
-
     public Task<IdentityApiResult> RequestRecoveryAsync(
         RecoveryRequest request,
         CancellationToken cancellationToken = default) =>

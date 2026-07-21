@@ -35,10 +35,19 @@
     private string? _reference;
     private bool _loading = true;
     private bool _requesting;
-    private UiStatus? ShellStatus => _shellContext is null && !_loading
+    private UiStatus? ShellStatus => !_loading &&
+        (_shellContext is null || _state is "unauthorized" or "session-expired")
         ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
-            [new("return-home", LocalizedUiText.Get("Return to authorized home"), "/")], _reference)
+            [new("return-home", LocalizedUiText.Get("Return to authorized home"), AuthorizedHome)], _reference)
         : null;
+
+    private string AuthorizedHome => _context?.ActiveRole switch
+    {
+        "Admin" => "/admin",
+        "Lecturer" or "TeachingAssistant" => "/staff",
+        "Student" => "/student",
+        _ => "/"
+    };
 
     private string ContractState => _state switch
     {
@@ -164,13 +173,6 @@
             {
                 ApplyFailure(HttpStatusCode.Forbidden,
                 new("FORBIDDEN", LocalizedUiText.Get("An active staff context is required."), "STF-01-AUTH"));
-                return;
-            }
-
-            if (_context.SessionState is SessionState.RoleSelectionRequired)
-            {
-                ApplyFailure(HttpStatusCode.Forbidden,
-                    new("ROLE_CONTEXT_INVALID", LocalizedUiText.Get("This account does not have one valid active staff role."), "STF-01-ROLE"));
                 return;
             }
 

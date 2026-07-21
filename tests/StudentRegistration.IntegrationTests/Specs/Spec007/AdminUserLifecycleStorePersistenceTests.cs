@@ -232,7 +232,7 @@ public sealed class AdminUserLifecycleStorePersistenceTests
                 new IdentitySeedStore(setup),
                 hasher,
                 new FixedTimeProvider(new DateTimeOffset(ProvisionedAtUtc)));
-            Assert.Equal(5, (await seed.SeedAsync("Testing", 1)).Count);
+            Assert.Equal(4, (await seed.SeedAsync("Testing", 1)).Count);
             var firstAdmin = await setup.Set<ApplicationUser>()
                 .AsNoTracking()
                 .SingleAsync(user => user.NormalizedUserName == "ADM-0001");

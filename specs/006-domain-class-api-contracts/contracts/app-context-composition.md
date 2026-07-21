@@ -19,10 +19,9 @@ complete server response and treats a safe error as an unavailable context.
 `GET /api/context` requires successful SPEC-007 and SPEC-008 contributions.
 The server intersects role candidates with its authorization rules and emits
 only the server-authorized role set. A client-supplied role never grants
-authorization. `activeRole` is a member of that set for an active or expiring
-session. When multiple roles require a choice, the session state is
-`role-selection-required` and `activeRole is null`; choosing a role requires a
-separate server-validated identity workflow owned by SPEC-007.
+authorization. The set contains exactly one role for an active or expiring
+session, and `activeRole` equals it. Zero or multiple roles are an invalid
+configuration that fails closed in the SPEC-007 identity workflow.
 
 The response includes authoritative UTC server time, timezone ID, teaching and
 registration terms, registration-window state, the matched window's ID, UTC

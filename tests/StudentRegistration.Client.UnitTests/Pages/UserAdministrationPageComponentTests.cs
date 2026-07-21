@@ -5,6 +5,10 @@ namespace StudentRegistration.Client.UnitTests.Pages;
 public sealed class UserAdministrationPageComponentTests
 {
     [Fact]
+    public void Adm_03_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        AdminPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("UserAdministrationPage", "ADM-03");
+
+    [Fact]
     public void Adm_03_has_complete_states_focus_restoration_and_duplicate_command_guards()
     {
         var page = RepositoryFiles.Read(

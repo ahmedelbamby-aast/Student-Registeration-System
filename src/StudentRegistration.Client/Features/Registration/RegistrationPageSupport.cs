@@ -21,7 +21,6 @@ public static class RegistrationPageSupport
         context.DisplayName,
         context.AuthorizedRoles,
         context.ActiveRole,
-        context.SessionState is SessionState.RoleSelectionRequired,
         SessionStateToken(context.SessionState),
         new DateTimeOffset(context.ExpiresAtUtc),
         ServiceStateToken(context.ServiceState),
@@ -76,7 +75,6 @@ public static class RegistrationPageSupport
     {
         SessionState.Active => "active",
         SessionState.Expiring => "expiring",
-        SessionState.RoleSelectionRequired => "role-selection-required",
         _ => "unknown"
     };
 

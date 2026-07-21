@@ -62,9 +62,9 @@ query execution.
 ### GET /api/staff/assignments
 
 Returns 200 with a bounded array of `StaffAssignmentDto`, ordered by subject
-code, group code, and group ID. A dual-role staff member receives only the
-currently selected server-issued Lecturer or TeachingAssistant context; roles
-are never unioned, and duplicate rows for one group collapse to one group card.
+code, group code, and group ID. Lecturer and TeachingAssistant use separate
+single-role accounts; a combined-role account fails authentication and roles
+are never unioned. Duplicate rows for one group collapse to one group card.
 Each group includes only current assigned details, role partners,
 room/meeting data, capacity, and active roster count. No broad group search is
 performed. No assignments returns 200 with an empty array.

@@ -78,11 +78,9 @@ else if (_shellContext is not null)
                         }
                         @if (_state is ServiceErrorState or OfflineState)
                         {
-                            <button type="button"
-                                    disabled="@_requestLoading"
-                                    @onclick="LoadPlanAsync">
+                            <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LoadPlanAsync">
                                 @LocalizedUiText.Get("Retry schedule builder")
-                            </button>
+                            </AppButton>
                         }
                         <a href="@_shellContext.SupportReferencePath">@LocalizedUiText.Get("Open safe support path")</a>
                     </section>
@@ -159,11 +157,11 @@ else if (_shellContext is not null)
                                             <a href="@SafeRoute($"/student/subjects/{group.OfferingId:D}")">
                                                 @LocalizedUiText.Get("Change") @group.CourseCode @LocalizedUiText.Get("group") @group.GroupCode
                                             </a>
-                                            <button type="button"
-                                                    disabled="@_requestLoading"
-                                                    @onclick="() => RemoveGroupAsync(group.GroupId)">
+                                            <AppButton Variant="AppButtonVariant.Quiet"
+                                                       Disabled="@_requestLoading"
+                                                       OnClick="@(_ => RemoveGroupAsync(group.GroupId))">
                                                 @LocalizedUiText.Get("Remove") @group.CourseCode @LocalizedUiText.Get("group") @group.GroupCode
-                                            </button>
+                                            </AppButton>
                                         </article>
                                     </li>
                                 }
@@ -238,11 +236,11 @@ else if (_shellContext is not null)
                                             {
                                                 @if (action.Action == "remove-group")
                                                 {
-                                                    <button type="button"
-                                                            disabled="@_requestLoading"
-                                                            @onclick="() => RemoveGroupAsync(action.TargetGroupId)">
+                                                    <AppButton Variant="AppButtonVariant.Quiet"
+                                                               Disabled="@_requestLoading"
+                                                               OnClick="@(_ => RemoveGroupAsync(action.TargetGroupId))">
                                                         @action.Label
-                                                    </button>
+                                                    </AppButton>
                                                 }
                                                 else
                                                 {
@@ -278,12 +276,11 @@ else if (_shellContext is not null)
                         </section>
 
                         <div>
-                            <button type="button"
-                                    aria-describedby="@(_plan.ReviewBlocked ? "review-blocked-reason" : null)"
-                                    disabled="@(_plan.ReviewBlocked || _requestLoading)"
-                                    @onclick="ContinueAsync">
+                            <AppButton DescribedBy="@(_plan.ReviewBlocked ? "review-blocked-reason" : null)"
+                                       Disabled="@(_plan.ReviewBlocked || _requestLoading)"
+                                       OnClick="ContinueAsync">
                                 @LocalizedUiText.Get("Continue to review")
-                            </button>
+                            </AppButton>
                             @if (_plan.ReviewBlocked)
                             {
                                 <p id="review-blocked-reason">

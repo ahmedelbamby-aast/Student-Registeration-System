@@ -4,6 +4,19 @@
                  Tone="@Tone"
                  Announce="@Announce" />
 </span>
+@if (CurrentCredits is not null)
+{
+    <span class="srs-approval-status__credit-load" data-credit-load="@(IsOverload ? "overload" : "normal")">
+        @if (IsOverload)
+        {
+            @($"Overload request: {CurrentCredits} credits of maximum {MaximumCredits}. Current CGPA: {CurrentCgpa:0.00}; required CGPA: {RequiredCgpa:0.00}. Approval is required and is not implied.")
+        }
+        else
+        {
+            @($"{NormalCreditLimit}-credit normal registration limit. Current total: {CurrentCredits} credits.")
+        }
+    </span>
+}
 
 @code {
     public enum ApprovalState
@@ -28,6 +41,14 @@
     [Parameter]
     public bool Announce { get; set; }
 
+    [Parameter] public int? CurrentCredits { get; set; }
+    [Parameter] public int NormalCreditLimit { get; set; } = 18;
+    [Parameter] public int MaximumCredits { get; set; } = 21;
+    [Parameter] public decimal? CurrentCgpa { get; set; }
+    [Parameter] public decimal RequiredCgpa { get; set; } = 3.00m;
+
+    private bool IsOverload => CurrentCredits > NormalCreditLimit;
+
     private string StateName => State switch
     {
         ApprovalState.NotRequested => "not-requested",
@@ -50,6 +71,17 @@
         _ => throw new ArgumentOutOfRangeException(nameof(State))
     };
 
-    protected override void OnParametersSet() =>
+    protected override void OnParametersSet()
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(Text);
+        if (NormalCreditLimit < 0 || MaximumCredits < NormalCreditLimit ||
+            CurrentCredits is < 0 || CurrentCredits > MaximumCredits || RequiredCgpa < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(CurrentCredits));
+        }
+        if (IsOverload && CurrentCgpa is null)
+        {
+            throw new ArgumentException(nameof(CurrentCgpa));
+        }
+    }
 }

@@ -16,7 +16,7 @@ public sealed class RolePolicyContractTests
             "Shared staff entry",
             "server-derived",
             "Direct-route denial",
-            "Dual-role outcome",
+            "Invalid multi-role outcome",
             "No-role outcome");
     }
 }

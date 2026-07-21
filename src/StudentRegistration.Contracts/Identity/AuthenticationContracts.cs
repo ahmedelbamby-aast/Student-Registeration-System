@@ -21,5 +21,3 @@ public sealed record RecoveryRequest(string UniversityIdOrUserName);
 public sealed record RecoveryCompleteRequest(string ChallengeToken, string NewPassword);
 
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
-
-public sealed record SelectRoleContextRequest(string Role);

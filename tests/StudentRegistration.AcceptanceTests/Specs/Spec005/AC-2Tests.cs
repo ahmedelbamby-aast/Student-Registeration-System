@@ -25,7 +25,7 @@ public sealed class AC_2Tests(Spec005SqlAcceptanceDatabase database)
         RepositoryFiles.ContainsAll(
             allocator,
             "ReduceCapacityAsync",
-            "[EnrolledCount] <= {newCapacity}",
+            "[EnrolledCount] + [HeldSeatCount] <= {newCapacity}",
             "UPDLOCK, HOLDLOCK");
         RepositoryFiles.ContainsAll(
             integration,

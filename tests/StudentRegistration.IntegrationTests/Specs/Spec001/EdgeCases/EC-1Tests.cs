@@ -5,7 +5,7 @@ namespace StudentRegistration.IntegrationTests.Specs.Spec001.EdgeCases;
 public sealed class EC_1Tests
 {
     [Fact]
-    public async Task Dual_lecturer_and_ta_identity_offers_only_effective_contexts()
+    public async Task Combined_lecturer_and_ta_identity_fails_closed()
     {
         var fixture = new IdentityServiceTestFixture();
         fixture.AddStaff(
@@ -17,9 +17,8 @@ public sealed class EC_1Tests
             "dual.context",
             "correct horse battery staple");
 
-        Assert.True(result.Succeeded);
-        Assert.True(result.RoleSelectionRequired);
+        Assert.False(result.Succeeded);
         Assert.Null(result.ActiveRole);
-        Assert.Equal(["Lecturer", "TeachingAssistant"], result.AuthorizedRoles);
+        Assert.Empty(result.AuthorizedRoles);
     }
 }

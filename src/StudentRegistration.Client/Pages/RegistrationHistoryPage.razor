@@ -64,7 +64,7 @@ else
         data-route-id="STU-07" data-state="@_state" data-contract-state="@ContractState">
         <header class="srs-registration-history__intro">
             <div><p>@LocalizedUiText.Get("Student registration")</p><h1>@LocalizedUiText.Get("Registrations")</h1><p>@LocalizedUiText.Get("Server-authored current and archived records.")</p></div>
-            <button type="button" @onclick="PrintAsync">@LocalizedUiText.Get("Print history")</button>
+            <AppButton Variant="AppButtonVariant.Secondary" OnClick="PrintAsync">@LocalizedUiText.Get("Print history")</AppButton>
         </header>
 
         @if (_state is "service-error" or "unauthorized")
@@ -73,7 +73,7 @@ else
                 <h2>@(_state == "unauthorized" ? LocalizedUiText.Get("Access denied") : LocalizedUiText.Get("Registration history is unavailable"))</h2>
                 <p><strong>@_reasonCode</strong></p><p>@_message</p>
                 @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") <span>@_reference</span></p> }
-                @if (_state == "service-error") { <button type="button" disabled="@_requesting" @onclick="() => LoadRecordsAsync(1)">@LocalizedUiText.Get("Retry registration records")</button> }
+                @if (_state == "service-error") { <AppButton Disabled="@_requesting" IsLoading="@_requesting" OnClick="@(_ => LoadRecordsAsync(1))">@LocalizedUiText.Get("Retry registration records")</AppButton> }
                 <a href="@(_shellContext?.SupportReferencePath ?? "/student")">@LocalizedUiText.Get("Open safe support path")</a>
             </section>
         }
@@ -129,9 +129,18 @@ else
                 <ol class="srs-registration-history__cards" aria-label="@(LocalizedUiText.Get("Registration records compact view"))">
                     @foreach (var record in _history.Items)
                     {
-                        <li><h3>@LocalizedUiText.Get("Registration record")</h3><p>@LocalizedUiText.Get("Reference:") @(record.Reference ?? "Not issued")</p><p>@record.Term.DisplayName @ArchivedLabel(record) · @FormatDate(record.SubmittedAtUtc)</p>
-                            <p>@record.GroupCount @LocalizedUiText.Get("groups ·") @record.TotalCredits.ToString("0.##", CultureInfo.CurrentCulture) @LocalizedUiText.Get("credits")</p>
-                            <a href="/student/registration/result/@record.SubmissionId.ToString("D")">@LocalizedUiText.Get("View result")</a></li>
+                        <li data-submission-id="@record.SubmissionId">
+                            <h3>@LocalizedUiText.Get("Registration record")</h3>
+                            <dl>
+                                <div><dt>@LocalizedUiText.Get("Reference")</dt><dd>@(record.Reference ?? LocalizedUiText.Get("Not issued"))</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Term")</dt><dd>@record.Term.DisplayName @ArchivedLabel(record)</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Submitted")</dt><dd>@FormatDate(record.SubmittedAtUtc)</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Status")</dt><dd>@record.Status</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Groups")</dt><dd>@record.GroupCount</dd></div>
+                                <div><dt>@LocalizedUiText.Get("Credits")</dt><dd>@record.TotalCredits.ToString("0.##", CultureInfo.CurrentCulture)</dd></div>
+                            </dl>
+                            <a href="/student/registration/result/@record.SubmissionId.ToString("D")">@LocalizedUiText.Get("View result")</a>
+                        </li>
                     }
                 </ol>
                 @if (TotalPages > 1)

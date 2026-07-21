@@ -2,7 +2,7 @@
   "version": "2.0.4",
   "specs": {
     "001": [
-      { "name": "Role and authorization boundaries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-5"], "deliveryPath": "specs/001-product-charter-rbac/contracts/rbac-matrix.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs", "testFocus": "student/staff entry separation, server-derived claims, direct-route denials, dual-role and no-role contexts without pre-implementing SPEC-007" },
+      { "name": "Role and authorization boundaries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-5"], "deliveryPath": "specs/001-product-charter-rbac/contracts/rbac-matrix.md", "testPath": "tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs", "testFocus": "student/staff entry separation, server-derived single-role claims, invalid multi-role and no-role fail-closed behavior, and direct-route denials without pre-implementing SPEC-007" },
       { "name": "MVP journey and traceability governance", "requirements": ["FR-4", "FR-6", "FR-7"], "deliveryPath": "docs/release-evidence/SPEC-001-charter-traceability.md", "testPath": "tests/StudentRegistration.AcceptanceTests/Specs/Spec001/CharterJourneyTests.cs", "testFocus": "student atomic journey, role workspaces, approved scope admission and FR/AC traceability" }
     ],
     "002": [
@@ -101,7 +101,7 @@
       { "name": "No unapproved record actions", "requirements": ["FR-8"], "deliveryPath": "src/StudentRegistration.Registration/Application/RegistrationRecordActionPolicy.cs", "testPath": "tests/StudentRegistration.AuthorizationTests/RegistrationRecordActionPolicyTests.cs", "testFocus": "drop, withdrawal and correction actions and endpoints remain absent" }
     ],
     "016": [
-      { "name": "Assignment-scoped workspace queries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-4", "FR-5", "FR-7"], "deliveryPath": "src/StudentRegistration.StaffAdministration/Application/StaffWorkspaceQueries.cs", "testPath": "tests/StudentRegistration.AuthorizationTests/StaffWorkspaceScopeTests.cs", "testFocus": "Lecturer/TA assignment scope, exact roster DTO, bounded Page, dual role and direct-object denial" },
+      { "name": "Assignment-scoped workspace queries", "requirements": ["FR-1", "FR-2", "FR-3", "FR-4", "FR-5", "FR-7"], "deliveryPath": "src/StudentRegistration.StaffAdministration/Application/StaffWorkspaceQueries.cs", "testPath": "tests/StudentRegistration.AuthorizationTests/StaffWorkspaceScopeTests.cs", "testFocus": "separate Lecturer/TA assignment scopes, exact roster DTO, bounded Page, invalid multi-role fail-closed behavior, and direct-object denial" },
       { "name": "Versioned availability aggregate", "requirements": ["FR-6", "FR-9", "FR-10"], "deliveryPath": "src/StudentRegistration.StaffAdministration/Application/StaffAvailabilityFacade.cs", "testPath": "tests/StudentRegistration.IntegrationTests/Staff/StaffAvailabilityConcurrencyTests.cs", "testFocus": "consume SPEC-010 Scheduling aggregate for complete range replacement, rowversion, overlap, deadline and concurrent one-winner behavior" },
       { "name": "Published schedule impact", "requirements": ["FR-8"], "deliveryPath": "src/StudentRegistration.StaffAdministration/Application/ScheduleImpactQuery.cs", "testPath": "tests/StudentRegistration.IntegrationTests/Staff/AvailabilityPublicationRaceTests.cs", "testFocus": "durable Scheduling-owned affected-group alert, revalidation state and no silent class move" }
     ],

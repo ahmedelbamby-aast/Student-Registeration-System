@@ -44,7 +44,7 @@ public static class IdentityRouteStateMapper
         }
 
         var normalized = serviceState.Trim().ToLowerInvariant();
-        if (!serverAccepted && normalized is "success" or "role-selection-required")
+        if (!serverAccepted && normalized is "success")
         {
             return Result(
                 pageDesignRecordId,
@@ -68,13 +68,6 @@ public static class IdentityRouteStateMapper
                 normalized,
                 reasonCode,
                 null),
-            "role-selection-required" when pageDesignRecordId == StaffLoginRecord => Result(
-                pageDesignRecordId,
-                RouteUiState.Success,
-                normalized,
-                reasonCode,
-                "select-returned-role",
-                requiresRoleSelection: true),
             "expired" or "session-expired" => Result(
                 pageDesignRecordId,
                 RouteUiState.SessionExpired,
@@ -137,15 +130,13 @@ public static class IdentityRouteStateMapper
         RouteUiState uiState,
         string serviceState,
         string? reasonCode,
-        string? nextAction,
-        bool requiresRoleSelection = false) =>
+        string? nextAction) =>
         new(
             pageDesignRecordId,
             uiState,
             serviceState,
             string.IsNullOrWhiteSpace(reasonCode) ? null : reasonCode,
-            nextAction,
-            requiresRoleSelection);
+            nextAction);
 }
 
 public sealed record IdentityRouteStateResult(
@@ -153,5 +144,4 @@ public sealed record IdentityRouteStateResult(
     RouteUiState UiState,
     string ServiceState,
     string? ReasonCode,
-    string? NextAction,
-    bool RequiresRoleSelection);
+    string? NextAction);

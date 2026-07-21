@@ -38,10 +38,12 @@
     private bool _loading = true;
     private bool _requesting;
     private bool _hasLoadedRoster;
-    private UiStatus? ShellStatus => _shellContext is null && !_loading
+    private UiStatus? ShellStatus => !_loading &&
+        (_shellContext is null || _state is "unauthorized" or "session-expired")
         ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
-            [new("staff-home", LocalizedUiText.Get("Return to Staff home"), "/staff")], _reference)
+            [new("staff-home", LocalizedUiText.Get("Return to authorized home"), AuthorizedHome)], _reference)
         : null;
+    private string AuthorizedHome => _shellContext?.ActiveRole == "Admin" ? "/admin" : "/staff";
 
     private string ContractState => _state switch
     {

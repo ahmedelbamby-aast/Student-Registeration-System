@@ -44,21 +44,17 @@ public sealed class AppContextCompositionContractTests
     }
 
     [Fact]
-    public void Active_role_is_server_filtered_and_null_only_during_required_selection()
+    public void Active_role_requires_exactly_one_server_authorized_role()
     {
         var contract = ReadContract();
         RepositoryFiles.ContainsAll(
             contract,
             "server-authorized role set",
-            "client-supplied role never grants authorization",
-            "role-selection-required",
-            "activeRole is null");
+            "client-supplied role never grants authorization");
 
-        var selection = CreateContext(
+        Assert.Throws<ArgumentException>(() => CreateContext(
             authorizedRoles: ["Lecturer", "TeachingAssistant"],
-            activeRole: null,
-            sessionState: SessionState.RoleSelectionRequired);
-        Assert.Null(selection.ActiveRole);
+            activeRole: "Lecturer"));
         Assert.Throws<ArgumentException>(() => CreateContext(
             authorizedRoles: ["Student"],
             activeRole: "Admin"));

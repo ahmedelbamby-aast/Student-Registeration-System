@@ -21,11 +21,11 @@ exists. Pending submission disables the command and presents one result.
 
 ## Staff role boundary
 
-The staff form asks for identity credentials only. The server returns
-server-authorized roles. A single role becomes the active role directly; when
-SPEC-007 explicitly returns `role-selection-required`, the authenticated
-context-selection design may show only those authorized roles. A query string,
-hidden field, browser storage value, or staff login role dropdown can never
+The staff form asks for identity credentials only. The server returns exactly
+one server-authorized role and makes it active directly. An account with zero
+or multiple roles fails closed as `INVALID_ROLE_CONFIGURATION`; no authenticated
+context-selection interface exists. A query string, hidden field, browser
+storage value, or staff login role dropdown can never
 grant or change authorization.
 
 ## Navigation and focus

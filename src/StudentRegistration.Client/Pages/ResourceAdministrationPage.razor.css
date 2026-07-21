@@ -1,85 +1,11 @@
-.srs-scheduling-admin {
-    display: grid;
-    gap: 1.5rem;
-    margin-inline: auto;
-    max-width: 90rem;
-    padding: 1.25rem;
-}
-
-.srs-scheduling-admin__header,
-.srs-scheduling-admin__section-heading,
-.srs-scheduling-admin__actions {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-}
-
-.srs-scheduling-admin section {
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-surface);
-    padding: 1rem;
-}
-
-.srs-scheduling-admin__table-region {
-    overflow-x: auto;
-}
-
-.srs-scheduling-admin table {
-    border-collapse: collapse;
-    min-width: 46rem;
-    width: 100%;
-}
-
-.srs-scheduling-admin th,
-.srs-scheduling-admin td {
-    border-bottom: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    padding: .75rem;
-    text-align: start;
-}
-
-.srs-scheduling-admin__form-grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-    margin-block: 1rem;
-}
-
-.srs-scheduling-admin label {
-    display: grid;
-    gap: .35rem;
-}
-
-.srs-scheduling-admin input,
-.srs-scheduling-admin select,
-.srs-scheduling-admin textarea,
-.srs-scheduling-admin button,
-.srs-scheduling-admin a {
-    min-height: 2.75rem;
-}
-
-.srs-scheduling-admin__cards {
-    display: grid;
-    gap: 1rem;
-    list-style: none;
-    padding: 0;
-}
-
-.srs-scheduling-admin__cards > li {
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-control);
-    padding: 1rem;
-}
-
-@media (max-width: 48rem) {
-    .srs-scheduling-admin {
-        padding: 1rem;
-    }
-
-    .srs-scheduling-admin__header,
-    .srs-scheduling-admin__section-heading {
-        align-items: stretch;
-        flex-direction: column;
-    }
-}
+.srs-scheduling-admin { display: grid; gap: var(--srs-spacing-primitive-5); min-inline-size: 0; }
+.srs-scheduling-admin__actions, .srs-scheduling-admin__section-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--srs-spacing-primitive-3); }
+.srs-scheduling-admin__table-region { max-inline-size: 100%; overflow-x: auto; }
+.srs-scheduling-admin__semantic-alternative { display: none; }
+.srs-scheduling-admin__semantic-alternative ul { display: grid; gap: var(--srs-spacing-primitive-3); padding: 0; list-style: none; }
+.srs-scheduling-admin__semantic-alternative dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--srs-spacing-primitive-3); }
+.srs-scheduling-admin__semantic-alternative dd { margin: var(--srs-spacing-primitive-1) 0 0; overflow-wrap: anywhere; }
+.srs-scheduling-admin__form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--srs-spacing-primitive-4); }
+.srs-scheduling-admin label { display: grid; gap: var(--srs-spacing-primitive-2); }
+.srs-scheduling-admin__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: var(--srs-spacing-primitive-4); padding: 0; list-style: none; }
+@media (max-width: 47.99rem) { .srs-scheduling-admin__table-region { display: none; } .srs-scheduling-admin__semantic-alternative { display: block; } .srs-scheduling-admin__semantic-alternative dl { grid-template-columns: minmax(0, 1fr); } .srs-scheduling-admin__actions { align-items: stretch; flex-direction: column; } }

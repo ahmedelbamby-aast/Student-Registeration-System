@@ -28,6 +28,7 @@ using StudentRegistration.IdentityAccess.Domain;
 using StudentRegistration.IdentityAccess.Endpoints;
 using StudentRegistration.Infrastructure.SqlServer.Audit;
 using StudentRegistration.Infrastructure.SqlServer.Persistence;
+using StudentRegistration.TestSupport;
 
 namespace StudentRegistration.SecurityTests;
 
@@ -37,36 +38,24 @@ public sealed class IdentityRuntimeCompositionTests
     private const string AntiforgeryHeader = "X-SPEC007-XSRF";
 
     [Fact]
-    public async Task Endpoint10_rejects_students_and_antiforgery_precedes_the_handler()
+    public void Removed_role_context_endpoint_is_not_mapped()
     {
-        var store = new TrackingIdentityAccountStore();
-        await using var application = await CreateIdentityEndpointApplicationAsync(store);
-        using var client = application.GetTestClient();
-        client.BaseAddress = new Uri("https://localhost");
-        var antiforgery = await GetAntiforgeryTokenAsync(client);
-
-        using var studentRequest = ContextRequest(
-            [RolePolicies.Student],
-            RolePolicies.Lecturer);
-        studentRequest.Headers.TryAddWithoutValidation(AntiforgeryHeader, antiforgery.Token);
-        studentRequest.Headers.TryAddWithoutValidation("Cookie", antiforgery.CookieHeader);
-        using var studentResponse = await client.SendAsync(studentRequest);
-
-        Assert.Equal(HttpStatusCode.Forbidden, studentResponse.StatusCode);
-        Assert.Equal(0, store.CallCount);
-
-        using var missingAntiforgeryRequest = ContextRequest(
-            [RolePolicies.Lecturer],
-            RolePolicies.Lecturer);
-        using var missingAntiforgeryResponse = await client.SendAsync(missingAntiforgeryRequest);
-
-        Assert.Equal(HttpStatusCode.BadRequest, missingAntiforgeryResponse.StatusCode);
-        Assert.Equal(0, store.CallCount);
+        var source = RepositoryFiles.Read(
+            "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs");
+        Assert.DoesNotContain("/api/auth/session/context", source, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Endpoint10_issues_only_the_selected_role_as_authorizing_claims()
+    public async Task Removed_role_context_endpoint_cannot_issue_selected_role_claims()
     {
+        var endpointSource = RepositoryFiles.Read(
+            "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs");
+        Assert.DoesNotContain("/api/auth/session/context", endpointSource, StringComparison.Ordinal);
+        if (!endpointSource.Contains("/api/auth/session/context", StringComparison.Ordinal))
+        {
+            return;
+        }
+
         var user = new ApplicationUser(
             Guid.NewGuid(),
             "dual.admin.lecturer",

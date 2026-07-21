@@ -37,8 +37,8 @@
                        disabled="@IsBusy"
                        @bind="_search"
                        @bind:event="oninput" />
-                <button type="submit" disabled="@IsBusy">@LocalizedUiText.Get("Search")</button>
-                <button type="button" disabled="@IsBusy" @onclick="ClearSearchAsync">@LocalizedUiText.Get("Clear")</button>
+                <AppButton Type="submit" Disabled="@IsBusy">@LocalizedUiText.Get("Search")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@IsBusy" OnClick="ClearSearchAsync">@LocalizedUiText.Get("Clear")</AppButton>
             </form>
 
             <div class="srs-admin-users__table-region"
@@ -76,12 +76,12 @@
                                     <td>@(user.Enabled ? LocalizedUiText.Get("Enabled") : LocalizedUiText.Get("Disabled"))</td>
                                     <td>@DisplayRoles(user.Roles)</td>
                                     <td>
-                                        <button type="button"
-                                                disabled="@IsBusy"
-                                                aria-pressed="@(user.Id == _selectedUser?.Id ? "true" : "false")"
-                                                @onclick="() => SelectUser(user)">
+                                        <AppButton Variant="AppButtonVariant.Quiet"
+                                                   Disabled="@IsBusy"
+                                                   aria-pressed="@(user.Id == _selectedUser?.Id ? "true" : "false")"
+                                                   OnClick="@(_ => SelectUser(user))">
                                             @LocalizedUiText.Get("Review")
-                                        </button>
+                                        </AppButton>
                                     </td>
                                 </tr>
                             }
@@ -100,26 +100,26 @@
                             <span>@user.LoginIdentifier</span>
                             <span>@(user.Enabled ? LocalizedUiText.Get("Enabled") : LocalizedUiText.Get("Disabled"))</span>
                             <span>@DisplayRoles(user.Roles)</span>
-                            <button type="button" disabled="@IsBusy" @onclick="() => SelectUser(user)">
+                            <AppButton Variant="AppButtonVariant.Quiet" Disabled="@IsBusy" OnClick="@(_ => SelectUser(user))">
                                 @LocalizedUiText.Get("Review")
-                            </button>
+                            </AppButton>
                         </li>
                     }
                 </ul>
             }
 
             <nav class="srs-admin-users__pagination" aria-label="@(LocalizedUiText.Get("User result pages"))">
-                <button type="button"
-                        disabled="@(IsBusy || _currentPage <= 1)"
-                        @onclick="() => ChangePageAsync(_currentPage - 1)">
+                <AppButton Variant="AppButtonVariant.Secondary"
+                           Disabled="@(IsBusy || _currentPage <= 1)"
+                           OnClick="@(_ => ChangePageAsync(_currentPage - 1))">
                     @LocalizedUiText.Get("Previous")
-                </button>
+                </AppButton>
                 <span aria-live="polite">@LocalizedUiText.Get("Page") @_currentPage @LocalizedUiText.Get("of") @TotalPages</span>
-                <button type="button"
-                        disabled="@(IsBusy || _currentPage >= TotalPages)"
-                        @onclick="() => ChangePageAsync(_currentPage + 1)">
+                <AppButton Variant="AppButtonVariant.Secondary"
+                           Disabled="@(IsBusy || _currentPage >= TotalPages)"
+                           OnClick="@(_ => ChangePageAsync(_currentPage + 1))">
                     @LocalizedUiText.Get("Next")
-                </button>
+                </AppButton>
             </nav>
         </section>
 
@@ -145,12 +145,12 @@
                               disabled="@IsBusy"
                               @bind="_statusReason"
                               @bind:event="oninput"></textarea>
-                    <button @ref="_statusChangeButton"
-                            type="button"
-                            disabled="@IsBusy"
-                            @onclick="OpenStatusConfirmation">
+                    <AppButton @ref="_statusChangeButton"
+                               Variant="AppButtonVariant.Danger"
+                               Disabled="@IsBusy"
+                               OnClick="@(_ => OpenStatusConfirmation())">
                         @(_selectedUser.Enabled ? LocalizedUiText.Get("Disable account") : LocalizedUiText.Get("Enable account"))
-                    </button>
+                    </AppButton>
                 </div>
 
                 @if (!IsStudentIdentity)
@@ -180,13 +180,13 @@
                                   disabled="@IsBusy"
                                   @bind="_roleReason"
                                   @bind:event="oninput"></textarea>
-                        <button type="submit" disabled="@IsBusy">@LocalizedUiText.Get("Replace roles")</button>
+                        <AppButton Type="submit" Disabled="@IsBusy">@LocalizedUiText.Get("Replace roles")</AppButton>
                     </form>
                 }
 
-                <button type="button" disabled="@IsBusy" @onclick="RefreshSelectedUserAsync">
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@IsBusy" OnClick="RefreshSelectedUserAsync">
                     @LocalizedUiText.Get("Refresh selected user")
-                </button>
+                </AppButton>
             </section>
         }
 
@@ -214,9 +214,9 @@
                           @bind="_importRowsJson"
                           @bind:event="oninput"></textarea>
 
-                <button type="button" disabled="@IsBusy" @onclick="PreviewImport">
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@IsBusy" OnClick="@(_ => PreviewImport())">
                     @LocalizedUiText.Get("Preview rows")
-                </button>
+                </AppButton>
             </div>
 
             @if (_importPreview.Count > 0)
@@ -230,9 +230,9 @@
                             <li>@row.ExternalReference — @row.DisplayName — @row.Kind</li>
                         }
                     </ul>
-                    <button type="button" disabled="@IsBusy" @onclick="CreateImportAsync">
+                    <AppButton Disabled="@IsBusy" OnClick="CreateImportAsync">
                         @LocalizedUiText.Get("Submit import for validation")
-                    </button>
+                    </AppButton>
                 </div>
             }
 
@@ -255,14 +255,14 @@
                         </table>
                     }
                     <div class="srs-admin-users__actions">
-                        <button type="button" disabled="@IsBusy" @onclick="RefreshImportAsync">
+                        <AppButton Variant="AppButtonVariant.Secondary" Disabled="@IsBusy" OnClick="RefreshImportAsync">
                             @LocalizedUiText.Get("Refresh import status")
-                        </button>
+                        </AppButton>
                         @if (CanPublishImport)
                         {
-                            <button type="button" disabled="@IsBusy" @onclick="PublishImportAsync">
+                            <AppButton Disabled="@IsBusy" OnClick="PublishImportAsync">
                                 @LocalizedUiText.Get("Publish all rows")
-                            </button>
+                            </AppButton>
                         }
                     </div>
                 </section>

@@ -93,12 +93,12 @@
                     </ChildContent>
                     <Actions>
                         <div class="srs-public-gateway__card-actions">
-                            <a class="srs-public-gateway__primary-link"
-                               data-testid="student-login-link"
-                               href="/student/login">@LocalizedUiText.Get("Student login")</a>
-                            <a class="srs-public-gateway__secondary-link"
-                               data-testid="student-activation-link"
-                               href="/student/activate">@LocalizedUiText.Get("Student activation")</a>
+                            <AppLink Variant="AppLinkVariant.Button"
+                                     data-testid="student-login-link"
+                                     Href="/student/login">@LocalizedUiText.Get("Student login")</AppLink>
+                            <AppLink Variant="AppLinkVariant.Button"
+                                     data-testid="student-activation-link"
+                                     Href="/student/activate">@LocalizedUiText.Get("Student activation")</AppLink>
                         </div>
                     </Actions>
                 </EntityCard>
@@ -111,9 +111,9 @@
                     </ChildContent>
                     <Actions>
                         <div class="srs-public-gateway__card-actions">
-                            <a class="srs-public-gateway__primary-link"
-                               data-testid="staff-login-link"
-                               href="/staff/login">@LocalizedUiText.Get("Staff login")</a>
+                            <AppLink Variant="AppLinkVariant.Button"
+                                     data-testid="staff-login-link"
+                                     Href="/staff/login">@LocalizedUiText.Get("Staff login")</AppLink>
                         </div>
                     </Actions>
                 </EntityCard>
@@ -158,7 +158,7 @@
     </ChildContent>
     <FooterContent>
         <p>@LocalizedUiText.Get("Arab Academy for Science, Technology and Maritime Transport")</p>
-        <a href="/status/support">@LocalizedUiText.Get("System status and support")</a>
+        <AppLink Href="/status/support">@LocalizedUiText.Get("System status and support")</AppLink>
     </FooterContent>
 </PublicPageShell>
 
@@ -269,13 +269,13 @@
             </p>
         }
         <div class="srs-public-context__actions">
-            <button type="button"
-                    data-testid="public-context-retry"
-                    disabled="@_isRetrying"
-                    @onclick="RetryPublicContextAsync">
-                @(_isRetrying ? "Retrying…" : LocalizedUiText.Get("Retry public context"))
-            </button>
-            <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
+            <AppButton data-testid="public-context-retry"
+                       Disabled="@_isRetrying"
+                       IsLoading="@_isRetrying"
+                       OnClick="RetryPublicContextAsync">
+                @(_isRetrying ? LocalizedUiText.Get("Retrying…") : LocalizedUiText.Get("Retry public context"))
+            </AppButton>
+            <AppLink Href="/status/support">@LocalizedUiText.Get("Open safe support path")</AppLink>
         </div>
     </div>;
 

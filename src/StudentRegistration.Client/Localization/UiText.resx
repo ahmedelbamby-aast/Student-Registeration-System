@@ -709,9 +709,6 @@
   <data name="Current timetable" xml:space="preserve">
     <value>Current timetable</value>
   </data>
-  <data name="Current timetable is unavailable until SPEC-015 is delivered." xml:space="preserve">
-    <value>Current timetable is unavailable until SPEC-015 is delivered.</value>
-  </data>
   <data name="Current version" xml:space="preserve">
     <value>Current version</value>
   </data>
@@ -2326,6 +2323,9 @@
   </data>
   <data name="Submitted" xml:space="preserve">
     <value>Submitted</value>
+  </data>
+  <data name="Submitting academic correction" xml:space="preserve">
+    <value>Submitting academic correction</value>
   </data>
   <data name="Submitting one recovery request." xml:space="preserve">
     <value>Submitting one recovery request.</value>
@@ -4282,5 +4282,293 @@
   </data>
   <data name="The export status could not reach the service." xml:space="preserve">
     <value>The export status could not reach the service.</value>
+  </data>
+  <data name="Academic roadmap" xml:space="preserve">
+    <value>Academic roadmap</value>
+  </data>
+  <data name="Account security" xml:space="preserve">
+    <value>Account security</value>
+  </data>
+  <data name="Add or update a roadmap subject" xml:space="preserve">
+    <value>Add or update a roadmap subject</value>
+  </data>
+  <data name="Add or update a three-credit roadmap subject" xml:space="preserve">
+    <value>Add or update a three-credit roadmap subject</value>
+  </data>
+  <data name="Approval queue unavailable" xml:space="preserve">
+    <value>Approval queue unavailable</value>
+  </data>
+  <data name="Approve subject" xml:space="preserve">
+    <value>Approve subject</value>
+  </data>
+  <data name="available of" xml:space="preserve">
+    <value>available of</value>
+  </data>
+  <data name="Build and validate your server-stored plan before review." xml:space="preserve">
+    <value>Build and validate your server-stored plan before review.</value>
+  </data>
+  <data name="Capacity:" xml:space="preserve">
+    <value>Capacity:</value>
+  </data>
+  <data name="Catalogue editing remains available. Policy editing and simulation are disabled until the policy owner API is available." xml:space="preserve">
+    <value>Catalogue editing remains available. Policy editing and simulation are disabled until the policy owner API is available.</value>
+  </data>
+  <data name="CGPA-qualified overload" xml:space="preserve">
+    <value>CGPA-qualified overload</value>
+  </data>
+  <data name="Changing password" xml:space="preserve">
+    <value>Changing password</value>
+  </data>
+  <data name="Confirm every selection and blocking reason before submitting the authoritative plan." xml:space="preserve">
+    <value>Confirm every selection and blocking reason before submitting the authoritative plan.</value>
+  </data>
+  <data name="Create and validate import evidence before publishing." xml:space="preserve">
+    <value>Create and validate import evidence before publishing.</value>
+  </data>
+  <data name="Create import evidence before validating the catalogue." xml:space="preserve">
+    <value>Create import evidence before validating the catalogue.</value>
+  </data>
+  <data name="Current CGPA" xml:space="preserve">
+    <value>Current CGPA</value>
+  </data>
+  <data name="Decision reason" xml:space="preserve">
+    <value>Decision reason</value>
+  </data>
+  <data name="Each staff account must have exactly one role: Admin, Lecturer, or Teaching Assistant. Contact an administrator to correct this account." xml:space="preserve">
+    <value>Each staff account must have exactly one role: Admin, Lecturer, or Teaching Assistant. Contact an administrator to correct this account.</value>
+  </data>
+  <data name="Enrolled" xml:space="preserve">
+    <value>Enrolled</value>
+  </data>
+  <data name="enrolled," xml:space="preserve">
+    <value>enrolled,</value>
+  </data>
+  <data name="Enter a reason before making this decision." xml:space="preserve">
+    <value>Enter a reason before making this decision.</value>
+  </data>
+  <data name="Enter the authoritative source access date before saving the subject." xml:space="preserve">
+    <value>Enter the authoritative source access date before saving the subject.</value>
+  </data>
+  <data name="Every subject is exactly 3 credits. First-term subjects cannot have prerequisites." xml:space="preserve">
+    <value>Every subject is exactly 3 credits. First-term subjects cannot have prerequisites.</value>
+  </data>
+  <data name="Exactly 3 credits" xml:space="preserve">
+    <value>Exactly 3 credits</value>
+  </data>
+  <data name="First-term subjects cannot have prerequisites." xml:space="preserve">
+    <value>First-term subjects cannot have prerequisites.</value>
+  </data>
+  <data name="Held" xml:space="preserve">
+    <value>Held</value>
+  </data>
+  <data name="held," xml:space="preserve">
+    <value>held,</value>
+  </data>
+  <data name="Identity administration" xml:space="preserve">
+    <value>Identity administration</value>
+  </data>
+  <data name="Level" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="Loading academic roadmap" xml:space="preserve">
+    <value>Loading academic roadmap</value>
+  </data>
+  <data name="Loading pending decisions" xml:space="preserve">
+    <value>Loading pending decisions</value>
+  </data>
+  <data name="Loading pending subject decisions…" xml:space="preserve">
+    <value>Loading pending subject decisions…</value>
+  </data>
+  <data name="Loading the authorized approval queue" xml:space="preserve">
+    <value>Loading the authorized approval queue</value>
+  </data>
+  <data name="Maintain your complete availability range set before the server-controlled editing deadline." xml:space="preserve">
+    <value>Maintain your complete availability range set before the server-controlled editing deadline.</value>
+  </data>
+  <data name="No pending decisions" xml:space="preserve">
+    <value>No pending decisions</value>
+  </data>
+  <data name="Open current timetable" xml:space="preserve">
+    <value>Open current timetable</value>
+  </data>
+  <data name="Open the editable manual-testing catalogue draft" xml:space="preserve">
+    <value>Open the editable manual-testing catalogue draft</value>
+  </data>
+  <data name="Pending approval" xml:space="preserve">
+    <value>Pending approval</value>
+  </data>
+  <data name="pending subject decisions" xml:space="preserve">
+    <value>pending subject decisions</value>
+  </data>
+  <data name="Policy service unavailable" xml:space="preserve">
+    <value>Policy service unavailable</value>
+  </data>
+  <data name="Prerequisites" xml:space="preserve">
+    <value>Prerequisites</value>
+  </data>
+  <data name="Programme planning" xml:space="preserve">
+    <value>Programme planning</value>
+  </data>
+  <data name="Recommended term" xml:space="preserve">
+    <value>Recommended term</value>
+  </data>
+  <data name="Refresh and try again." xml:space="preserve">
+    <value>Refresh and try again.</value>
+  </data>
+  <data name="Refresh later when students submit registration plans." xml:space="preserve">
+    <value>Refresh later when students submit registration plans.</value>
+  </data>
+  <data name="Refresh queue" xml:space="preserve">
+    <value>Refresh queue</value>
+  </data>
+  <data name="Registration approvals" xml:space="preserve">
+    <value>Registration approvals</value>
+  </data>
+  <data name="Registration approvals | Student Registration" xml:space="preserve">
+    <value>Registration approvals | Student Registration</value>
+  </data>
+  <data name="Reject plan" xml:space="preserve">
+    <value>Reject plan</value>
+  </data>
+  <data name="Requested total" xml:space="preserve">
+    <value>Requested total</value>
+  </data>
+  <data name="Required subject" xml:space="preserve">
+    <value>Required subject</value>
+  </data>
+  <data name="Review each requested subject. A plan is registered only after every subject is approved; one rejection releases all held seats." xml:space="preserve">
+    <value>Review each requested subject. A plan is registered only after every subject is approved; one rejection releases all held seats.</value>
+  </data>
+  <data name="Review eligibility, groups, teaching assignments, meetings, and current capacity." xml:space="preserve">
+    <value>Review eligibility, groups, teaching assignments, meetings, and current capacity.</value>
+  </data>
+  <data name="Review registration approvals" xml:space="preserve">
+    <value>Review registration approvals</value>
+  </data>
+  <data name="Review the authoritative outcome of your registration request." xml:space="preserve">
+    <value>Review the authoritative outcome of your registration request.</value>
+  </data>
+  <data name="Review the curated programme catalogue, validate prerequisite rules, and publish only after server confirmation." xml:space="preserve">
+    <value>Review the curated programme catalogue, validate prerequisite rules, and publish only after server confirmation.</value>
+  </data>
+  <data name="Review the meetings assigned to your current staff role in equivalent calendar and chronological views." xml:space="preserve">
+    <value>Review the meetings assigned to your current staff role in equivalent calendar and chronological views.</value>
+  </data>
+  <data name="Review your authorized assignments and open the tools available to your current staff role." xml:space="preserve">
+    <value>Review your authorized assignments and open the tools available to your current staff role.</value>
+  </data>
+  <data name="Review your current academic context, registration status, and next actions." xml:space="preserve">
+    <value>Review your current academic context, registration status, and next actions.</value>
+  </data>
+  <data name="Review your institutional identity, password, and active sessions." xml:space="preserve">
+    <value>Review your institutional identity, password, and active sessions.</value>
+  </data>
+  <data name="Review your registered subjects, meeting times, rooms, and teaching staff in the authoritative registration record." xml:space="preserve">
+    <value>Review your registered subjects, meeting times, rooms, and teaching staff in the authoritative registration record.</value>
+  </data>
+  <data name="Save subject and roadmap" xml:space="preserve">
+    <value>Save subject and roadmap</value>
+  </data>
+  <data name="Saving subject…" xml:space="preserve">
+    <value>Saving subject…</value>
+  </data>
+  <data name="Seat-hold decisions" xml:space="preserve">
+    <value>Seat-hold decisions</value>
+  </data>
+  <data name="See every subject in its recommended term, prerequisite path, and current registration status." xml:space="preserve">
+    <value>See every subject in its recommended term, prerequisite path, and current registration status.</value>
+  </data>
+  <data name="Staff account configuration unavailable" xml:space="preserve">
+    <value>Staff account configuration unavailable</value>
+  </data>
+  <data name="Subject and roadmap saved. Validate before publishing." xml:space="preserve">
+    <value>Subject and roadmap saved. Validate before publishing.</value>
+  </data>
+  <data name="Subject code" xml:space="preserve">
+    <value>Subject code</value>
+  </data>
+  <data name="Subject code, title, level, and recommended term are required." xml:space="preserve">
+    <value>Subject code, title, level, and recommended term are required.</value>
+  </data>
+  <data name="Subject credits" xml:space="preserve">
+    <value>Subject credits</value>
+  </data>
+  <data name="Subject title" xml:space="preserve">
+    <value>Subject title</value>
+  </data>
+  <data name="The active role cannot access this approval queue." xml:space="preserve">
+    <value>The active role cannot access this approval queue.</value>
+  </data>
+  <data name="The approval queue could not be loaded." xml:space="preserve">
+    <value>The approval queue could not be loaded.</value>
+  </data>
+  <data name="The browser cannot reach the approval service." xml:space="preserve">
+    <value>The browser cannot reach the approval service.</value>
+  </data>
+  <data name="There are no subject seat holds in your authorized scope." xml:space="preserve">
+    <value>There are no subject seat holds in your authorized scope.</value>
+  </data>
+  <data name="This account does not have one valid active staff role." xml:space="preserve">
+    <value>This account does not have one valid active staff role.</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="UTC" xml:space="preserve">
+    <value>UTC</value>
+  </data>
+  <data name="View the minimum student information authorized for this assigned group." xml:space="preserve">
+    <value>View the minimum student information authorized for this assigned group.</value>
+  </data>
+  <data name="Window closes" xml:space="preserve">
+    <value>Window closes</value>
+  </data>
+  <data name="In progress" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="Locked" xml:space="preserve">
+    <value>Locked</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Reading the authoritative published roadmap and your transcript status." xml:space="preserve">
+    <value>Reading the authoritative published roadmap and your transcript status.</value>
+  </data>
+  <data name="Registered" xml:space="preserve">
+    <value>Registered</value>
+  </data>
+  <data name="Roadmap access denied" xml:space="preserve">
+    <value>Roadmap access denied</value>
+  </data>
+  <data name="Roadmap is offline" xml:space="preserve">
+    <value>Roadmap is offline</value>
+  </data>
+  <data name="Roadmap not available" xml:space="preserve">
+    <value>Roadmap not available</value>
+  </data>
+  <data name="Roadmap service unavailable" xml:space="preserve">
+    <value>Roadmap service unavailable</value>
+  </data>
+  <data name="Sign in with a Student account." xml:space="preserve">
+    <value>Sign in with a Student account.</value>
+  </data>
+  <data name="The browser cannot reach the roadmap service." xml:space="preserve">
+    <value>The browser cannot reach the roadmap service.</value>
+  </data>
+  <data name="The published programme roadmap could not be loaded." xml:space="preserve">
+    <value>The published programme roadmap could not be loaded.</value>
+  </data>
+  <data name="Catalogue versions, compact view" xml:space="preserve">
+    <value>Catalogue versions, compact view</value>
+  </data>
+  <data name="Group activities, compact view" xml:space="preserve">
+    <value>Group activities, compact view</value>
+  </data>
+  <data name="Offering results, compact view" xml:space="preserve">
+    <value>Offering results, compact view</value>
+  </data>
+  <data name="Room results, compact view" xml:space="preserve">
+    <value>Room results, compact view</value>
   </data>
 </root>

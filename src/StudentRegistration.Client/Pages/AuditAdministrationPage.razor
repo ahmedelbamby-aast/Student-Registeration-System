@@ -40,7 +40,7 @@
                 {
                     <p>@LocalizedUiText.Get("Reference:") @_correlationId</p>
                 }
-                <button type="button" @onclick="SearchAsync">@LocalizedUiText.Get("Retry")</button>
+                <AppButton OnClick="SearchAsync">@LocalizedUiText.Get("Retry")</AppButton>
             </section>
         }
         else if (_events.Count == 0)
@@ -75,8 +75,8 @@
                     @LocalizedUiText.Get("Page size")
                     <input type="number" name="pageSize" min="1" max="100" @bind="_pageSize" />
                 </label>
-                <button type="submit" disabled="@_busy">@LocalizedUiText.Get("Search audit")</button>
-                <button type="button" disabled="@_busy" @onclick="ClearFiltersAsync">@LocalizedUiText.Get("Clear filters")</button>
+                <AppButton Type="submit" Disabled="@_busy">@LocalizedUiText.Get("Search audit")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_busy" OnClick="ClearFiltersAsync">@LocalizedUiText.Get("Clear filters")</AppButton>
             </form>
         </section>
 
@@ -112,7 +112,7 @@
                                         <td>@auditEvent.Action</td>
                                         <td>@auditEvent.EntityType @auditEvent.EntityId</td>
                                         <td><code>@auditEvent.CorrelationId</code></td>
-                                        <td><button type="button" @onclick="() => SelectEvent(auditEvent)">@LocalizedUiText.Get("Open event detail")</button></td>
+                                        <td><AppButton Variant="AppButtonVariant.Quiet" OnClick="@(_ => SelectEvent(auditEvent))">@LocalizedUiText.Get("Open event detail")</AppButton></td>
                                     </tr>
                                 }
                             }
@@ -139,9 +139,9 @@
                 </div>
 
                 <nav class="srs-audit-admin__pagination" aria-label="@(LocalizedUiText.Get("Audit result pages"))">
-                    <button type="button" disabled="@(_busy || _page <= 1)" @onclick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</button>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_busy || _page <= 1)" OnClick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</AppButton>
                     <span>@LocalizedUiText.Format("Page {0} of {1}", _page, TotalPages)</span>
-                    <button type="button" disabled="@(_busy || _page >= TotalPages)" @onclick="NextPageAsync">@LocalizedUiText.Get("Next page")</button>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_busy || _page >= TotalPages)" OnClick="NextPageAsync">@LocalizedUiText.Get("Next page")</AppButton>
                 </nav>
             </section>
 
@@ -189,10 +189,10 @@
                 <div><dt>@LocalizedUiText.Get("Expiry")</dt><dd>@(_exportJob?.ExpiresAtUtc is { } expiry ? FormatDate(expiry) : LocalizedUiText.Get("Not loaded"))</dd></div>
             </dl>
             <div class="srs-audit-admin__actions">
-                <button type="button" disabled="@(_exportBusy || _busy || _exportJob is not null)" @onclick="RequestExportAsync">@LocalizedUiText.Get("Request export")</button>
-                <button type="button" disabled="@(_exportBusy || _exportJob is null || IsTerminalExport)" @onclick="RefreshExportAsync">@LocalizedUiText.Get("Refresh export status")</button>
-                <button type="button" disabled="@(_exportBusy || !CanDownload)" @onclick="DownloadExport">@LocalizedUiText.Get("Download ready export")</button>
-                <button type="button" disabled="@(_exportBusy || !IsTerminalExport)" @onclick="RequestExportAsync">@LocalizedUiText.Get("Request a new export")</button>
+                <AppButton Disabled="@(_exportBusy || _busy || _exportJob is not null)" OnClick="RequestExportAsync">@LocalizedUiText.Get("Request export")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_exportBusy || _exportJob is null || IsTerminalExport)" OnClick="RefreshExportAsync">@LocalizedUiText.Get("Refresh export status")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_exportBusy || !CanDownload)" OnClick="@(_ => DownloadExport())">@LocalizedUiText.Get("Download ready export")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_exportBusy || !IsTerminalExport)" OnClick="RequestExportAsync">@LocalizedUiText.Get("Request a new export")</AppButton>
             </div>
             <p class="srs-audit-admin__authorization-note">@LocalizedUiText.Get("Only the server can authorize a scoped download. A ready status never broadens the current actor or row permissions.")</p>
         </section>

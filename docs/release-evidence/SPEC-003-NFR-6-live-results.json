@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "spec003-live-lcp-evidence/1.1",
+  "recordedAtUtc": "2026-07-20T23:57:14.3619485Z",
+  "result": "WAIVED-DEMO",
+  "origin": "https://localhost:7078",
+  "browser": "Google Chrome Stable",
+  "runtimeProfile": "Testing security profile with published Release client",
+  "publishedReleaseHostVerified": true,
+  "brotliCompressionVerified": true,
+  "samplesPerRoute": 4,
+  "lcpP75BudgetMilliseconds": 2500,
+  "productionGoLiveApproved": false,
+  "routes": [
+    {
+      "routeId": "STU-02",
+      "path": "/student/subjects",
+      "lcpSamplesMilliseconds": [5652, 5428, 5616, 5464],
+      "lcpP75Milliseconds": 5616,
+      "apiSampleCount": 8,
+      "apiP95Milliseconds": 498.8,
+      "thresholdPassed": false
+    },
+    {
+      "routeId": "STU-04",
+      "path": "/student/schedule",
+      "lcpSamplesMilliseconds": [404, 408, 404, 416],
+      "lcpP75Milliseconds": 408,
+      "apiSampleCount": 8,
+      "apiP95Milliseconds": 264.6,
+      "thresholdPassed": true
+    },
+    {
+      "routeId": "STU-05",
+      "path": "/student/review",
+      "lcpSamplesMilliseconds": [412, 400, 400, 404],
+      "lcpP75Milliseconds": 404,
+      "apiSampleCount": 8,
+      "apiP95Milliseconds": 104.9,
+      "thresholdPassed": true
+    }
+  ],
+  "waiver": {
+    "approvedBy": "Ahmed ELbamby",
+    "approvedOn": "2026-07-21",
+    "reason": "Non-production demo approval accepts the remaining STU-02 cold-start overage. The threshold remains unchanged and production remains withheld."
+  }
+}

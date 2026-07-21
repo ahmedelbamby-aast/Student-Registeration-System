@@ -37,4 +37,33 @@ public sealed class ApprovalStatusBadgeTests
         ApprovalStatusBadge.ApprovalState.Registered => "registered",
         _ => throw new ArgumentOutOfRangeException(nameof(state))
     };
+
+    [Theory]
+    [InlineData(18, null, "normal", "18-credit normal registration limit", "Current total: 18 credits")]
+    [InlineData(19, 3.00, "overload", "19 credits of maximum 21", "Current CGPA: 3.00; required CGPA: 3.00")]
+    [InlineData(21, 3.25, "overload", "21 credits of maximum 21", "Approval is required and is not implied")]
+    public void Presents_normal_and_overload_limits_with_exact_non_implying_values(
+        int credits,
+        double? cgpa,
+        string expectedKind,
+        string firstExpectedText,
+        string secondExpectedText)
+    {
+        using var context = new BunitContext();
+        var cut = context.Render<ApprovalStatusBadge>(parameters =>
+        {
+            parameters.Add(component => component.State, ApprovalStatusBadge.ApprovalState.PendingApproval)
+                .Add(component => component.Text, "Pending approval")
+                .Add(component => component.CurrentCredits, credits);
+            if (cgpa is not null)
+            {
+                parameters.Add(component => component.CurrentCgpa, (decimal)cgpa.Value);
+            }
+        });
+
+        var load = cut.Find("[data-credit-load]");
+        Assert.Equal(expectedKind, load.GetAttribute("data-credit-load"));
+        Assert.Contains(firstExpectedText, load.TextContent, StringComparison.Ordinal);
+        Assert.Contains(secondExpectedText, load.TextContent, StringComparison.Ordinal);
+    }
 }

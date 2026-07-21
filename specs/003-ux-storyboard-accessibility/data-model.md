@@ -9,7 +9,7 @@
 
 | View/design model | Required data |
 |---|---|
-| FrontendAppContextView | Server time/timezone, teaching term, registration term/window, display name, authorized roles, nullable active role only during role-selection-required, session state/expiry, service state, supportReferencePath |
+| FrontendAppContextView | Server time/timezone, teaching term, registration term/window, display name, exactly one authorized active role, session state/expiry, service state, supportReferencePath |
 | UiStatus | Stable code, heading, message, severity, next actions, reference ID |
 | ConflictView | Subjects/groups, every overlap slot, alternatives, resolution links |
 | PageDesignRecord | Route, design owner, single implementation owner, contributors, layout/component/state/interaction/responsive/accessibility/test contract and approval version |

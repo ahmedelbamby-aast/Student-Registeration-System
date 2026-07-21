@@ -122,10 +122,10 @@ public sealed class NFR_4EvidenceTests
             RolePolicies.AcademicProfilesManage,
             RolePolicies.PermissionsForRole(RolePolicies.Admin));
         Assert.Equal(
-            [RolePolicies.ContextRead],
+            [RolePolicies.ContextRead, RolePolicies.RegistrationApprovalDecideAssigned],
             RolePolicies.PermissionsForRole(RolePolicies.Lecturer));
         Assert.Equal(
-            [RolePolicies.ContextRead],
+            [RolePolicies.ContextRead, RolePolicies.RegistrationApprovalDecideAssigned],
             RolePolicies.PermissionsForRole(RolePolicies.TeachingAssistant));
 
         Assert.True((await authorization.AuthorizeAsync(

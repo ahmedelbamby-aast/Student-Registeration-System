@@ -38,10 +38,7 @@ public enum SessionState
     Active,
 
     [JsonStringEnumMemberName("expiring")]
-    Expiring,
-
-    [JsonStringEnumMemberName("role-selection-required")]
-    RoleSelectionRequired
+    Expiring
 }
 
 public sealed record AppContextDto
@@ -185,23 +182,12 @@ public sealed record AppContextDto
         SessionState sessionState,
         IReadOnlyCollection<string> authorizedRoles)
     {
-        if (sessionState is SessionState.RoleSelectionRequired)
-        {
-            if (activeRole is not null || authorizedRoles.Count < 2)
-            {
-                throw new ArgumentException(
-                    "Role selection requires multiple authorized roles and no active role.",
-                    nameof(activeRole));
-            }
-
-            return null;
-        }
-
         var selectedRole = Required(activeRole, nameof(activeRole));
-        if (!authorizedRoles.Contains(selectedRole, StringComparer.Ordinal))
+        if (authorizedRoles.Count != 1 ||
+            !string.Equals(authorizedRoles.Single(), selectedRole, StringComparison.Ordinal))
         {
             throw new ArgumentException(
-                "The active role must be one of the authorized roles.",
+                "A session must have exactly one authorized role and that role must be active.",
                 nameof(activeRole));
         }
 

@@ -103,9 +103,10 @@
     "account": "/student/account"
   },
   "downstreamTimetable": {
-    "regionState": "unavailable",
-    "message": "Current timetable is unavailable until SPEC-015 is delivered.",
-    "mustNotClaimLiveSuccess": true
+    "regionState": "available",
+    "message": "Review your registered subjects, meeting times, rooms, and teaching staff in the authoritative registration record.",
+    "destination": "/student/registrations#current-registration",
+    "serverAuthoritative": true
   },
   "testIds": [
     "STU-01-CONTRACT-T148",

@@ -22,7 +22,6 @@ public sealed class FrontendAppContextViewModelTests
             "Ahmed Student",
             ["Student"],
             "Student",
-            roleSelectionRequired: false,
             "active",
             Now.AddHours(1),
             "available",
@@ -45,7 +44,7 @@ public sealed class FrontendAppContextViewModelTests
     }
 
     [Fact]
-    public void Rejects_a_missing_active_role_when_role_selection_is_not_required()
+    public void Rejects_a_missing_active_role()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
             new FrontendAppContextView(
@@ -58,7 +57,6 @@ public sealed class FrontendAppContextViewModelTests
                 "Ahmed Student",
                 ["Student"],
                 activeRole: null,
-                roleSelectionRequired: false,
                 "active",
                 Now.AddHours(1),
                 "available",
@@ -80,7 +78,6 @@ public sealed class FrontendAppContextViewModelTests
             "Ahmed Student",
             ["Student"],
             "Student",
-            roleSelectionRequired: false,
             "active",
             Now.AddHours(1),
             "available",
@@ -110,7 +107,6 @@ public sealed class FrontendAppContextViewModelTests
                 "Ahmed Student",
                 ["Student"],
                 "Student",
-                roleSelectionRequired: false,
                 "active",
                 Now.AddHours(1),
                 "available",

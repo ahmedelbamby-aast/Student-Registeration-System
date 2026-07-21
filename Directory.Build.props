@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Isolated agent/test outputs can be placed below a project when
+         BaseOutputPath is relative. Never treat those generated trees as
+         source/content or recursively copy them into later builds/publishes. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);artifacts\**;artifacts/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

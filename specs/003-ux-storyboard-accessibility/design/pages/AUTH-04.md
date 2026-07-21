@@ -43,11 +43,11 @@ downstream contributor versions remain `not-pinned`.
     "Recovery and back links"
   ],
   "responsiveWireframes": {
-    "320": "The shared Staff login heading, password-only explanation, and public status precede one form. Staff identifier, Password, show/hide, and Sign in stack; recovery and gateway links follow. Only after role-selection-required, returned roles stack as 44 CSS px choices; no pre-auth picker or second-factor control exists.",
-    "375": "The 320 order is retained with full-width Sign in. Disabled/no-role text wraps beside recovery/support; a post-auth role-selection-required panel shows only server-returned Admin, Lecturer, or Teaching Assistant choices.",
+    "320": "The shared Staff login heading, password-only explanation, and public status precede one form. Staff identifier, Password, show/hide, and Sign in stack; recovery and gateway links follow. Invalid zero-role or multi-role configuration is shown as a safe error; no role picker exists.",
+    "375": "The 320 order is retained with full-width Sign in. Disabled or invalid-role text wraps beside recovery and support; no authenticated role-choice panel is rendered.",
     "768": "A bounded staff form is the main column with privacy-safe guidance. No pre-auth selector exists; the conditional authenticated role panel follows the result and never appears beside credentials as a claimed role.",
     "1024": "Form and guidance may use two columns while validation stays before fields. A single role routes directly; conditional returned-role choices remain one labelled region followed by session rotation.",
-    "1280": "The form remains bounded with recovery/support below the result. Conditional role choices stay attached to role-selection-required and route only after PUT /api/auth/session/context succeeds.",
+    "1280": "The form remains bounded with recovery/support below the result. Exactly one server-issued role routes directly; invalid role configuration remains on the page.",
     "1920": "The centered 1280 composition gains whitespace only. Additional space never creates pre-auth role cards, OTP/QR/MFA/2FA controls, unioned roles, or client-derived destinations."
   },
   "components": [
@@ -62,20 +62,19 @@ downstream contributor versions remain `not-pinned`.
   ],
   "dataContracts": [
     "GET /api/public/context",
-    "POST /api/auth/staff/login",
-    "PUT /api/auth/session/context"
+    "POST /api/auth/staff/login"
   ],
   "actions": [
     "Submit POST /api/auth/staff/login",
     "Toggle password visibility",
-    "When SessionDto is role-selection-required, select one server-returned role through PUT /api/auth/session/context",
+    "Reject SessionDto unless it contains exactly one server-authorized active role",
     "Open recovery",
     "Return to gateway",
     "Retry GET /api/public/context"
   ],
   "navigationTransitions": [
     "Single server role routes directly: Admin -> ADM-01; Lecturer or Teaching Assistant -> STF-01",
-    "role-selection-required -> choose exactly one returned role -> PUT /api/auth/session/context -> ADM-01 or STF-01",
+    "zero or multiple roles -> INVALID_ROLE_CONFIGURATION -> remain on AUTH-04",
     "Recovery -> AUTH-05",
     "Gateway -> AUTH-01",
     "Safe status -> SYS-01"
@@ -121,9 +120,9 @@ downstream contributor versions remain `not-pinned`.
       "fixtureVersion": "frontend-fixture/1.0",
       "expectedContent": [
         "Server-accepted password-only Staff authentication",
-        "Single server role routes directly, or SessionDto explicitly returns role-selection-required",
-        "Conditional choice contains only server-returned Admin, Lecturer, or Teaching Assistant roles",
-        "PUT /api/auth/session/context rotates the session for exactly one role before routing to ADM-01 or STF-01",
+        "Exactly one server role routes directly",
+        "Zero or multiple roles return INVALID_ROLE_CONFIGURATION",
+        "No alternate-role endpoint or role-choice control exists",
         "No pre-auth role picker, role union, client-granted role, MFA, or 2FA",
         "Success only when serverAccepted is true",
         "Password-only demo login with no second factor"
@@ -132,7 +131,7 @@ downstream contributor versions remain `not-pinned`.
       "liveRegion": "polite",
       "nextActions": [
         "Follow the single server-authorized destination",
-        "If role-selection-required, choose exactly one returned role and wait for PUT /api/auth/session/context before routing"
+        "For INVALID_ROLE_CONFIGURATION, contact support to correct the account"
       ],
       "testIds": [
         "AUTH-04-COMP-STATE-SUCCESS"
@@ -269,8 +268,7 @@ downstream contributor versions remain `not-pinned`.
     "Password field",
     "Show or hide password button",
     "Sign in button",
-    "When and only when role-selection-required: authenticated context-selection heading",
-    "Server-returned Admin, Lecturer, or Teaching Assistant role buttons in returned order",
+    "Invalid role configuration feedback with safe support guidance",
     "Recovery link",
     "Return to gateway link",
     "Safe support/reference link supplied by the server"
@@ -297,11 +295,11 @@ downstream contributor versions remain `not-pinned`.
 
 | Width | Normative layout and action placement |
 |---:|---|
-| 320 | The shared Staff login heading, password-only explanation, and public status precede one form. Staff identifier, Password, show/hide, and Sign in stack; recovery and gateway links follow. Only after role-selection-required, returned roles stack as 44 CSS px choices; no pre-auth picker or second-factor control exists. |
-| 375 | The 320 order is retained with full-width Sign in. Disabled/no-role text wraps beside recovery/support; a post-auth role-selection-required panel shows only server-returned Admin, Lecturer, or Teaching Assistant choices. |
+| 320 | The shared Staff login heading, password-only explanation, and public status precede one form. Invalid zero-role or multi-role configuration shows a safe support error; no role picker exists. |
+| 375 | The 320 order is retained with full-width Sign in. Disabled or invalid-role text wraps beside recovery and support. |
 | 768 | A bounded staff form is the main column with privacy-safe guidance. No pre-auth selector exists; the conditional authenticated role panel follows the result and never appears beside credentials as a claimed role. |
 | 1024 | Form and guidance may use two columns while validation stays before fields. A single role routes directly; conditional returned-role choices remain one labelled region followed by session rotation. |
-| 1280 | The form remains bounded with recovery/support below the result. Conditional role choices stay attached to role-selection-required and route only after PUT /api/auth/session/context succeeds. |
+| 1280 | The form remains bounded with recovery/support below the result. Exactly one server-issued role routes directly. |
 | 1920 | The centered 1280 composition gains whitespace only. Additional space never creates pre-auth role cards, OTP/QR/MFA/2FA controls, unioned roles, or client-derived destinations. |
 
 ## Minimum journey and test traceability
@@ -311,7 +309,7 @@ Required and forbidden content is normative; a forbidden item fails the route te
 
 | Fixture | State | Required expected content | Forbidden content or action | Next action | Component test | E2E test |
 |---|---|---|---|---|---|---|
-| `AUTH-04-admin-lecturer-ta-routing-v1` (Admin/Lecturer/TA routing) | success | a single server role routes directly; role-selection-required exposes only returned Admin, Lecturer, or Teaching Assistant roles, PUT rotates the session for exactly one choice, then routes ADM-01 or STF-01 | pre-auth role picker, client-derived role, role union, unreturned role, route before successful PUT, OTP, MFA, or 2FA | Follow the single role destination or select one returned role and wait for session rotation | `AUTH-04-COMP-STATE-SUCCESS` | `AUTH-04-E2E-PRIMARY` |
+| `AUTH-04-admin-lecturer-ta-routing-v1` (Admin/Lecturer/TA routing) | success | exactly one Admin, Lecturer, or TeachingAssistant role routes directly; zero or multiple roles fail with INVALID_ROLE_CONFIGURATION | any role picker, client-derived role, role union, OTP, MFA, or 2FA | Follow the single-role destination or contact support for invalid account configuration | `AUTH-04-COMP-STATE-SUCCESS` | `AUTH-04-E2E-PRIMARY` |
 | `AUTH-04-invalid-v1` (invalid) | validation-error | generic invalid message, summary focus, cleared password, and recovery | account existence, password echo, protected data, or authenticated navigation | Review credentials and resubmit | `AUTH-04-COMP-STATE-VALIDATION-ERROR` | `AUTH-04-E2E-FAILURE` |
 | `AUTH-04-disabled-v1` (disabled) | validation-error | disabled safe reason plus recovery or support | dashboard route, excess role detail, or automatic retry | Open recovery or safe support | `AUTH-04-COMP-STATE-VALIDATION-ERROR` | `AUTH-04-E2E-FAILURE` |
 | `AUTH-04-no-role-v1` (no-role) | validation-error | no-authorized-role outcome and support/reference action | fallback role, client role chooser, or staff workspace access | Return to gateway or open support | `AUTH-04-COMP-STATE-VALIDATION-ERROR` | `AUTH-04-E2E-FAILURE` |

@@ -27,7 +27,7 @@ public sealed class NFR_3EvidenceTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(21, protectedOperations.Length);
+        Assert.Equal(20, protectedOperations.Length);
         Assert.Equal(
             new[]
             {

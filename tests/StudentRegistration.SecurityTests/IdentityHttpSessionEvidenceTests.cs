@@ -37,7 +37,6 @@ public sealed class IdentityHttpSessionEvidenceTests
     [InlineData(6, "anonymous")]
     [InlineData(7, "student")]
     [InlineData(8, "student")]
-    [InlineData(10, "staff")]
     [InlineData(12, "admin")]
     [InlineData(14, "admin")]
     [InlineData(15, "admin")]
@@ -233,45 +232,6 @@ public sealed class IdentityHttpSessionEvidenceTests
         await AssertSessionStatusAsync(client, issuedCookie, HttpStatusCode.Unauthorized);
     }
 
-    [Fact]
-    public async Task Role_removal_after_selection_cannot_issue_a_privileged_cookie_bound_to_the_new_stamp()
-    {
-        await using var fixture = await RuntimeFixture.CreateAsync(replicaCount: 1);
-        using var client = fixture.ReplicaOne.GetTestClient();
-        client.BaseAddress = new Uri("https://localhost");
-        fixture.Store.SetEffectiveRoles([RolePolicies.Lecturer]);
-        var authenticationCookie = await SignInAsync(client, "staff");
-        var antiforgery = await AntiforgeryAsync(client, authenticationCookie);
-        var selectedStamp = fixture.Store.User.SecurityStamp;
-        var gate = fixture.Store.PauseNextRoleRead();
-
-        using var request = JsonRequest(
-            HttpMethod.Put,
-            "/api/auth/session/context",
-            new SelectRoleContextRequest(RolePolicies.Lecturer));
-        request.Headers.TryAddWithoutValidation(
-            IdentitySecurityRegistration.AntiforgeryRequestHeaderName,
-            antiforgery.RequestToken);
-        request.Headers.TryAddWithoutValidation(
-            "Cookie",
-            string.Join("; ", authenticationCookie, antiforgery.CookieHeader));
-        var responseTask = client.SendAsync(request);
-
-        await gate.WaitUntilPausedAsync();
-        fixture.Store.SetEffectiveRoles([], rotateSecurityStamp: true);
-        gate.Release();
-
-        using var response = await responseTask;
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var session = await response.Content.ReadFromJsonAsync<SessionDto>();
-        Assert.Equal(RolePolicies.Lecturer, session?.ActiveRole);
-        Assert.NotEqual(selectedStamp, fixture.Store.User.SecurityStamp);
-        var issuedCookie = CookiePair(
-            response,
-            IdentitySecurityRegistration.AuthenticationCookieName);
-        await AssertSessionStatusAsync(client, issuedCookie, HttpStatusCode.Unauthorized);
-    }
-
     private static HttpRequestMessage MutationRequest(int endpoint, Guid userId)
     {
         var importId = Guid.Parse("10000000-0000-0000-0000-000000000014");
@@ -309,10 +269,6 @@ public sealed class IdentityHttpSessionEvidenceTests
             8 => new HttpRequestMessage(
                 HttpMethod.Post,
                 "/api/auth/sessions/revoke-all"),
-            10 => JsonRequest(
-                HttpMethod.Put,
-                "/api/auth/session/context",
-                new SelectRoleContextRequest(RolePolicies.Lecturer)),
             12 => JsonRequest(
                 HttpMethod.Post,
                 "/api/admin/users/imports",

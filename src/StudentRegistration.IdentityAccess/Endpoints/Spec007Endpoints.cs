@@ -74,12 +74,6 @@ public static class Spec007Endpoints
             .RequireAuthorization()
             .Produces<SessionDto>(StatusCodes.Status200OK);
 
-        endpoints.MapPut("/api/auth/session/context", SelectRoleContextAsync)
-            .RequireAuthorization(RolePolicies.StaffContext)
-            .WithMetadata(new RequireAntiforgeryTokenAttribute(true))
-            .Produces<SessionDto>(StatusCodes.Status200OK)
-            .Produces<ApiError>(StatusCodes.Status400BadRequest);
-
         endpoints.MapGet("/api/admin/users", ListUsersAsync)
             .RequireAuthorization(RolePolicies.IdentityManagement)
             .Produces<Page<IdentityUserSummaryDto>>(StatusCodes.Status200OK)
@@ -283,31 +277,6 @@ public static class Spec007Endpoints
         return session.Succeeded ? Results.Ok(ToDto(session)) : Results.Unauthorized();
     }
 
-    private static async Task<IResult> SelectRoleContextAsync(
-        SelectRoleContextRequest request,
-        [FromServices] SessionLifecycleService service,
-        HttpContext context,
-        CancellationToken cancellationToken)
-    {
-        if (!TryGetUserId(context.User, out var userId))
-        {
-            return Results.Unauthorized();
-        }
-
-        var result = await service.SelectRoleContextAsync(
-            userId,
-            request.Role,
-            cancellationToken);
-        if (result.Outcome != SessionLifecycleOutcome.Completed || result.Session is null)
-        {
-            return Error(context, StatusCodes.Status400BadRequest, "ROLE_NOT_AVAILABLE");
-        }
-
-        return await SignInOrFailAsync(
-            result.Session,
-            context);
-    }
-
     private static async Task<IResult> ListUsersAsync(
         [FromQuery] string? search,
         [FromQuery] int? page,
@@ -487,9 +456,7 @@ public static class Spec007Endpoints
             result.DisplayName ?? string.Empty,
             result.AuthorizedRoles,
             result.ActiveRole,
-            result.RoleSelectionRequired
-                ? "role-selection-required"
-                : "active",
+            "active",
             result.ExpiresAtUtc ?? DateTime.UnixEpoch);
 
     private static IResult AdminResult<T>(

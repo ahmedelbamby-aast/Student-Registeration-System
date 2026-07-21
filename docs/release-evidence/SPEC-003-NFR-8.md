@@ -1,27 +1,30 @@
 # SPEC-003 NFR-8 Controlled Usability Evidence
 
-**Evidence version:** 1.1.0
+**Evidence version:** 1.2.0
 
-**Status:** BLOCKED — REQUIRED HUMAN PARTICIPANT COHORT NOT PROVIDED
+**Status:** WAIVED-DEMO — REQUIRED HUMAN PARTICIPANT COHORT NOT PERFORMED
 
 **Protocol owner and demo approval authority:** Ahmed ELbamby
 
-**Human evidence approval:** WITHHELD
+**Demo waiver approval:** APPROVED by Ahmed Elbamby on 2026-07-21
 
 **Scope:** Non-production design-capability demo; not official AASTMT UAT
 
 ## Fail-closed result
 
-NFR-8 is not passed. T266 remains open because no qualifying human-participant
+NFR-8's production threshold is not passed because no qualifying human-participant
 sessions are recorded in this artifact. The 17 automated persona sessions
 listed below are browser-test scenarios, not 17 unique representative humans.
 They cannot be counted as participants, used to calculate the human completion
 rate, or substituted for observed human usability findings.
 
-Ahmed ELbamby is the project's sole developer and human approval authority,
-but that governance role does not replace the representative participant cohort
-explicitly required by NFR-8. Approval of the automated work or permission to
-continue the demo therefore does not close this manual evidence gate.
+Ahmed ELbamby is the project's sole developer and human approval authority. On
+2026-07-21 he explicitly approved all remaining evidence for this demo. That
+decision records a `WAIVED-DEMO` disposition and closes the non-production demo
+gate without pretending that automated personas are human participants. The
+representative cohort remains mandatory before production or institutional
+go-live. The machine-readable disposition is in
+`SPEC-003-NFR-8-results.json`.
 
 ## Required human cohort
 
@@ -76,16 +79,17 @@ Edge, Firefox, and Playwright WebKit builds are recorded in
 not Safari. Fixtures are synthetic and versioned, and no institutional student
 data is used.
 
-## Missing observations and activation condition
+## Missing observations and production activation condition
 
 No qualifying human session, first-run completion result, assistance record,
 completion percentage, or human-discovered defect disposition is currently
 recorded. The completion percentage is therefore **not calculable**, not zero
 and not passed.
 
-T266, NFR-8, AC-12, SC-3, and the SPEC-003 release gate remain blocked until
+Production NFR-8, AC-12, SC-3, and the production release gate remain blocked until
 the complete minimum cohort above is observed and recorded, the completion
 rate is at least 90%, every critical or major core-flow usability defect is
 resolved, and Ahmed ELbamby approves the resulting human evidence. Automated
 browser, axe, keyboard, focus, responsive, and persona evidence may support
-that decision but cannot satisfy the missing-human condition.
+that decision but cannot satisfy the missing-human condition. For the explicitly
+approved non-production demo only, the result is `WAIVED-DEMO`.

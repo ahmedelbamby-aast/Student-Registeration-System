@@ -8,7 +8,7 @@ public enum AuthenticationOutcome
     PasswordRejected,
     RecoveryAccepted,
     ChallengeInvalid,
-    RoleNotAvailable
+    InvalidRoleConfiguration
 }
 
 public sealed record AuthenticationResult(
@@ -21,9 +21,6 @@ public sealed record AuthenticationResult(
     DateTime? ExpiresAtUtc)
 {
     public bool Succeeded => Outcome == AuthenticationOutcome.AuthenticationSucceeded;
-
-    public bool RoleSelectionRequired =>
-        Succeeded && AuthorizedRoles.Count > 1 && ActiveRole is null;
 
     public static AuthenticationResult AuthenticationFailed() =>
         Failure(AuthenticationOutcome.AuthenticationFailed);
@@ -45,6 +42,14 @@ public sealed record AuthenticationResult(
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         ArgumentException.ThrowIfNullOrWhiteSpace(securityStamp);
         ArgumentNullException.ThrowIfNull(authorizedRoles);
+        if (authorizedRoles.Count != 1 ||
+            string.IsNullOrWhiteSpace(activeRole) ||
+            !string.Equals(authorizedRoles[0], activeRole, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "A successful session requires exactly one authorized role and that role must be active.",
+                nameof(authorizedRoles));
+        }
 
         return new(
             AuthenticationOutcome.AuthenticationSucceeded,

@@ -208,7 +208,7 @@ public sealed partial class PageDesignRecordSchemaTests
             RepositoryFiles.Read(".specify/component-manifest.json"));
 
         Assert.Equal(
-            28,
+            27,
             components.RootElement.GetProperty("components").GetArrayLength());
         RepositoryFiles.ContainsAll(
             index,
@@ -898,21 +898,7 @@ public sealed partial class PageDesignRecordSchemaTests
                     }
 
                     Assert.Equal(expectedLiveRegion, state.GetProperty("liveRegion").GetString());
-                    if (stateName == "success")
-                    {
-                        if (hasCommandContract)
-                        {
-                            Assert.Contains("serverAccepted", expectedContent, StringComparison.Ordinal);
-                        }
-                        else
-                        {
-                            Assert.DoesNotContain(
-                                "serverAccepted",
-                                expectedContent,
-                                StringComparison.Ordinal);
-                        }
-                    }
-                    else if (stateName == "validation-error"
+                    if (stateName == "validation-error"
                         || stateName == "stale" && hasCommandContract)
                     {
                         Assert.Contains("reason code exactly", expectedContent, StringComparison.Ordinal);

@@ -55,13 +55,13 @@ public sealed class Spec008SqlServerTestDatabaseBootstrapperTests
         Assert.True(fixture.IsReady);
         Assert.NotNull(fixture.ConnectionString);
         Assert.False(string.IsNullOrWhiteSpace(fixture.LogicalFingerprint));
-        Assert.Equal(10, bootstrapper.Credentials.Count);
+        Assert.Equal(9, bootstrapper.Credentials.Count);
         Assert.All(bootstrapper.Credentials, AssertTransientCredential);
 
         await using (var connection = new SqlConnection(fixture.ConnectionString))
         {
             await connection.OpenAsync();
-            Assert.Equal(10, await ScalarIntAsync(
+            Assert.Equal(9, await ScalarIntAsync(
                 connection,
                 "SELECT COUNT(*) FROM [auth].[ApplicationUsers];"));
             Assert.Equal(6, await ScalarIntAsync(
@@ -90,7 +90,7 @@ public sealed class Spec008SqlServerTestDatabaseBootstrapperTests
                 "SELECT COUNT(*) FROM [__EFMigrationsHistory];") > 0);
 
             var passwordHashes = await ReadPasswordHashesAsync(connection);
-            Assert.Equal(10, passwordHashes.Count);
+            Assert.Equal(9, passwordHashes.Count);
             Assert.All(passwordHashes, hash => Assert.False(string.IsNullOrWhiteSpace(hash)));
             Assert.DoesNotContain(
                 bootstrapper.Credentials,
@@ -139,8 +139,8 @@ public sealed class Spec008SqlServerTestDatabaseBootstrapperTests
 
         Assert.NotEqual(first.DatabaseName, second.DatabaseName);
         Assert.Equal(first.LogicalFingerprint, second.LogicalFingerprint);
-        Assert.Equal(7, firstBootstrapper.Credentials.Count);
-        Assert.Equal(7, secondBootstrapper.Credentials.Count);
+        Assert.Equal(6, firstBootstrapper.Credentials.Count);
+        Assert.Equal(6, secondBootstrapper.Credentials.Count);
         Assert.Equal(
             firstBootstrapper.Credentials.Select(credential => credential.LoginIdentifier),
             secondBootstrapper.Credentials.Select(credential => credential.LoginIdentifier));

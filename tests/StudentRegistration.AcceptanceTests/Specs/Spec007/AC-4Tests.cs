@@ -14,11 +14,10 @@ public sealed class AC_4Tests
             "/api/auth/recovery/request",
             "/api/auth/recovery/complete",
             "/api/auth/password/change",
-            "/api/auth/sessions/revoke-all",
-            "/api/auth/session/context");
+            "/api/auth/sessions/revoke-all");
 
         Assert.True(
-            source.Split("RequireAntiforgery", StringSplitOptions.None).Length - 1 >= 9,
+            source.Split("RequireAntiforgery", StringSplitOptions.None).Length - 1 >= 8,
             "Every state-changing identity route must carry antiforgery metadata.");
     }
 }

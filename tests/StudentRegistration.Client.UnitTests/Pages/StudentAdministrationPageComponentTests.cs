@@ -12,6 +12,10 @@ public sealed class StudentAdministrationPageComponentTests
         "src/StudentRegistration.Client/Pages/StudentAdministrationPage.razor";
 
     [Fact]
+    public void Adm_04_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        AdminPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("StudentAdministrationPage", "ADM-04");
+
+    [Fact]
     public void Loading_state_has_a_stable_heading_polite_status_and_no_false_results()
     {
         using var context = new BunitContext();
@@ -93,7 +97,8 @@ public sealed class StudentAdministrationPageComponentTests
             "ExpectedStudentRowVersion",
             "ExpectedStudentTermStateRowVersion",
             "_isSubmittingCorrection",
-            "disabled=\"@_isSubmittingCorrection\"",
+            "Disabled=\"@_isSubmittingCorrection\"",
+            "IsLoading=\"@_isSubmittingCorrection\"",
             "if (_isSubmittingCorrection)",
             "CorrectAdminStudentAcademicProfileAsync");
         Assert.DoesNotContain("Task.Run", source, StringComparison.Ordinal);

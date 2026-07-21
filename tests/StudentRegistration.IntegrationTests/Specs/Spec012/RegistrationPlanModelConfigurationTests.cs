@@ -354,12 +354,12 @@ public sealed class RegistrationPlanModelConfigurationTests
                  '2026-07-13T00:00:00', '2026-07-13T00:00:00');
             INSERT INTO [academics].[StudentTermAcademicStates]
                 ([Id], [StudentId], [TermId], [GpaAtStart], [EarnedCreditsAtStart],
-                 [StandingAtStart], [Source], [SourceReference], [DataVersion], [DataAsOfUtc])
+                 [ProgramTermOrdinal], [StandingAtStart], [Source], [SourceReference], [DataVersion], [DataAsOfUtc])
             VALUES
                 ('12000000-0000-0000-0000-000000000043',
                  '12000000-0000-0000-0000-000000000003',
                  '12000000-0000-0000-0000-000000000004', 3.2, 96,
-                 N'Active', N'demo', N'SRC-DATA-SCIENCE', N'1',
+                 1, N'Active', N'demo', N'SRC-DATA-SCIENCE', N'1',
                  '2026-07-13T00:00:00');
             INSERT INTO [academics].[CatalogueDrafts]
                 ([Id], [ScopeCode], [BasedOnVersionId], [CanonicalContentHash],

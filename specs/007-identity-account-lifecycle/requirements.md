@@ -205,8 +205,8 @@ attempts change nothing.
 - EC-1: University ID already activated -> direct to login/recovery, no second
   account.
 - EC-2: Disabled/locked account -> safe generic denial and audit.
-- EC-3: User has Lecturer and TA claims -> explicit authorized context switch,
-  never privilege union beyond claims.
+- EC-3: User has Lecturer and TA assignments -> authentication fails closed as
+  invalid configuration; roles are never unioned.
 - EC-4: Session expires during plan edit -> reauthenticate then revalidate plan.
 - EC-5: Repeated recovery request -> rate limit while returning generic result.
 - EC-6: Activation commits but its response is lost -> retry returns the
@@ -225,14 +225,13 @@ interface ActivateStudentRequest {
 interface SessionDto {
   displayName: string;
   roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
-  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant" | null;
-  sessionState: "active" | "expiring" | "role-selection-required";
+  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant";
+  sessionState: "active" | "expiring";
   expiresAtUtc: string;
 }
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
 interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
-interface SelectRoleContextRequest { role: "Admin" | "Lecturer" | "TeachingAssistant"; }
 interface IdentityImportBatchDto {
   id: string;
   source: string;
@@ -272,8 +271,7 @@ Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
 POST /api/auth/staff/login, POST /api/auth/logout, POST
 /api/auth/recovery/request, POST
 /api/auth/recovery/complete, POST /api/auth/password/change, POST
-/api/auth/sessions/revoke-all, GET /api/auth/session, and PUT
-/api/auth/session/context; plus GET /api/admin/users, POST
+/api/auth/sessions/revoke-all and GET /api/auth/session; plus GET /api/admin/users, POST
 /api/admin/users/imports, GET /api/admin/users/imports/{importId}, POST
 /api/admin/users/imports/{importId}/publish, PATCH
 /api/admin/users/{userId}/status, and PUT /api/admin/users/{userId}/roles.

@@ -72,7 +72,7 @@ else
     private bool _requestLoading;
     private bool _showConfirmation;
     private bool _processing;
-    private ElementReference _reviewTrigger;
+    private AppButton? _reviewTrigger;
     private ElementReference _stateHeading;
     private bool _focusStateHeading;
 
@@ -127,9 +127,9 @@ else
                 }
                 @if (_state is ServiceErrorState or OfflineState)
                 {
-                    <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
+                    <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LoadPlanAsync">
                         @LocalizedUiText.Get("Retry registration review")
-                    </button>
+                    </AppButton>
                 }
                 <a href="@(_shellContext?.SupportReferencePath ?? "/student")">@LocalizedUiText.Get("Open safe support path")</a>
             </section>
@@ -151,9 +151,9 @@ else
                     <h2 @ref="_stateHeading" tabindex="-1">@FailureHeading</h2>
                     <p><strong>@_reasonCode</strong></p>
                     <p>@_safeMessage</p>
-                    <button type="button" disabled="@_requestLoading" @onclick="LoadPlanAsync">
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LoadPlanAsync">
                         @LocalizedUiText.Get("Refresh and review")
-                    </button>
+                    </AppButton>
                 </section>
             }
 
@@ -162,9 +162,9 @@ else
                 <section role="status" aria-live="polite" aria-busy="true">
                     <h2>@LocalizedUiText.Get("Registration is still processing")</h2>
                     <p>@LocalizedUiText.Get("No result is assumed until the server returns one authoritative outcome.")</p>
-                    <button type="button" disabled="@_requestLoading" @onclick="LookupResultAsync">
+                    <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LookupResultAsync">
                         @LocalizedUiText.Get("Retry result lookup")
-                    </button>
+                    </AppButton>
                 </section>
             }
 
@@ -234,14 +234,12 @@ else
 
             <div class="srs-registration-review__actions">
                 <a class="srs-registration-review__action" href="/student/schedule">@LocalizedUiText.Get("Edit plan")</a>
-                <button @ref="_reviewTrigger"
-                        class="srs-registration-review__action"
-                        type="button"
-                        aria-describedby="@(HasBlockers ? "registration-blockers review-disabled-reason" : null)"
-                        disabled="@(HasBlockers || _requestLoading || _processing)"
-                        @onclick="ReviewAsync">
+                <AppButton @ref="_reviewTrigger"
+                           DescribedBy="@(HasBlockers ? "registration-blockers review-disabled-reason" : null)"
+                           Disabled="@(HasBlockers || _requestLoading || _processing)"
+                           OnClick="ReviewAsync">
                     @LocalizedUiText.Get("Review and submit")
-                </button>
+                </AppButton>
                 @if (HasBlockers)
                 {
                     <p id="review-disabled-reason">@LocalizedUiText.Get("Resolve every blocker before submission.")</p>
@@ -476,5 +474,5 @@ else
 
     private Task RestoreReviewFocusAsync() => _state is StaleState or ValidationErrorState
         ? Task.CompletedTask
-        : _reviewTrigger.FocusAsync().AsTask();
+        : _reviewTrigger?.FocusAsync().AsTask() ?? Task.CompletedTask;
 }

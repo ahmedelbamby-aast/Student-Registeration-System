@@ -76,11 +76,9 @@ else if (_shellContext is not null)
                         }
                         @if (_state is ServiceErrorState or OfflineState or StaleState)
                         {
-                            <button type="button"
-                                    disabled="@_requestLoading"
-                                    @onclick="LoadDetailsAsync">
+                            <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LoadDetailsAsync">
                                 @LocalizedUiText.Get("Retry subject details")
-                            </button>
+                            </AppButton>
                         }
                         <a href="/student/subjects">@LocalizedUiText.Get("Return to discovery")</a>
                     </section>
@@ -97,11 +95,9 @@ else if (_shellContext is not null)
                             <p>
                                 @LocalizedUiText.Get("This is the latest server result. No seat was reserved and no plan change was made.")
                             </p>
-                            <button type="button"
-                                    disabled="@_requestLoading"
-                                    @onclick="LoadDetailsAsync">
+                            <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="LoadDetailsAsync">
                                 @LocalizedUiText.Get("Refresh subject details")
-                            </button>
+                            </AppButton>
                             <a href="/student/subjects">@LocalizedUiText.Get("Choose another subject")</a>
                         </section>
                     }

@@ -113,9 +113,9 @@
                 }
                 @if (_state is "service-error" or "offline")
                 {
-                    <button type="button" disabled="@_requesting" @onclick="RefreshMetricsAsync">
+                    <AppButton Disabled="@_requesting" OnClick="RefreshMetricsAsync">
                         @LocalizedUiText.Get("Retry metrics")
-                    </button>
+                    </AppButton>
                 }
                 <a href="/">@LocalizedUiText.Get("Return to authorized home")</a>
             </section>

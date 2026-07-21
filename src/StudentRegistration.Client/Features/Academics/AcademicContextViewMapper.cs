@@ -23,7 +23,6 @@ public static class AcademicContextViewMapper
             context.DisplayName,
             context.AuthorizedRoles,
             context.ActiveRole,
-            context.SessionState is SessionState.RoleSelectionRequired,
             SessionStateValue(context.SessionState),
             new DateTimeOffset(context.ExpiresAtUtc),
             ServiceStateValue(context.ServiceState),
@@ -34,7 +33,6 @@ public static class AcademicContextViewMapper
     {
         SessionState.Active => "Active",
         SessionState.Expiring => "Expiring",
-        SessionState.RoleSelectionRequired => "Role selection required",
         _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
     };
 

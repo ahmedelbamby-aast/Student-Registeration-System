@@ -17,7 +17,6 @@ public sealed class StaffLoginPageFeatureTests
             "Staff username",
             "Password",
             "AllowSecretReveal=\"true\"",
-            "role-selection-required",
             "INVALID_ROLE_CONFIGURATION",
             "session.Roles.Count == 1",
             "NavigateTo(\"/admin\")",
@@ -25,6 +24,7 @@ public sealed class StaffLoginPageFeatureTests
         Assert.DoesNotContain("localStorage", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("name=\"role\"", page, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("SelectRoleContext", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("role-selection-required", page, StringComparison.Ordinal);
         Assert.DoesNotContain("Continue as", page, StringComparison.Ordinal);
         Assert.DoesNotContain("one-time code", page, StringComparison.OrdinalIgnoreCase);
     }

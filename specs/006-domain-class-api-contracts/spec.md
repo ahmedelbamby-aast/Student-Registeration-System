@@ -129,8 +129,7 @@ authoritative academic context<br>
 When GET /api/context succeeds<br>
 Then the response contains every FR-10 field and only authorized role contexts<br>
 And serviceState and supportReferencePath are always present<br>
-And activeRole is null only for an explicitly modeled dual-role
-role-selection-required state<br>
+And activeRole equals the session's single authorized role<br>
 And a missing required contributor returns a safe unavailable error rather
 than a partial or browser-derived context.
 
@@ -183,8 +182,8 @@ than a partial or browser-derived context.
   computed state, UTC opening/closing instants, and row version; authenticated display name,
   authorized roles, the active authorized role context, session state and
   expiry, service state, and canonical `supportReferencePath`. `activeRole` MAY
-  be null only while a dual-role user is in the explicitly modeled
-  `role-selection-required` session state. SPEC-007 supplies session/user/role
+  equal the single authorized role; zero or multiple roles fail closed.
+  SPEC-007 supplies session/user/role
   values; SPEC-008 supplies time/term/window values and owns GET /api/context
   and GET /api/public/context handlers. Missing required contributors MUST fail
   safely with no partial success body; the browser MUST NOT synthesize a

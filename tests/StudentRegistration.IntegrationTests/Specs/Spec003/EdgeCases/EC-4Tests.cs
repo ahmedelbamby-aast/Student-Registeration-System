@@ -13,8 +13,8 @@ public sealed class EC_4Tests
             "specs/003-ux-storyboard-accessibility/design/tokens/contract.md");
         var groupCardStyles = RepositoryFiles.Read(
             "src/StudentRegistration.Client/Components/Registration/GroupCard.razor.css");
-        var capacityIndicator = RepositoryFiles.Read(
-            "src/StudentRegistration.Client/Components/Registration/CapacityIndicator.razor");
+        var capacityBreakdown = RepositoryFiles.Read(
+            "src/StudentRegistration.Client/Components/Registration/CapacityBreakdown.razor");
 
         RepositoryFiles.ContainsAll(
             tokenProjection,
@@ -25,16 +25,19 @@ public sealed class EC_4Tests
             tokenContract,
             "reduced-motion equivalents",
             "no required information carried only by animation");
-        Assert.Contains(
-            "transition: border-color var(--srs-motion-duration-feedback)",
-            groupCardStyles,
-            StringComparison.Ordinal);
         RepositoryFiles.ContainsAll(
-            capacityIndicator,
+            groupCardStyles,
+            "transition:",
+            "border-color var(--srs-motion-duration-feedback)",
+            "box-shadow var(--srs-motion-duration-feedback)",
+            "transform var(--srs-motion-duration-feedback)");
+        RepositoryFiles.ContainsAll(
+            capacityBreakdown,
             "role=\"status\"",
             "aria-live=\"polite\"",
-            "@Occupied",
             "@Total",
-            "@Remaining");
+            "@Enrolled",
+            "@Held",
+            "@Available");
     }
 }

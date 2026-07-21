@@ -29,7 +29,6 @@ they do not decide roles, eligibility, capacity, conflicts, or command success.
 | Pagination | `src/StudentRegistration.Client/Components/Data/Pagination.razor` | T103 | labelled navigation and native buttons/links; current page announced |
 | GroupCard | `src/StudentRegistration.Client/Components/Registration/GroupCard.razor` | T105 | named group option with explicit selected/disabled reason |
 | CapacityBreakdown | `src/StudentRegistration.Client/Components/Registration/CapacityBreakdown.razor` | T287 | fixed Total, Enrolled, Held, Available order and freshness state |
-| CapacityIndicator (deprecated) | `src/StudentRegistration.Client/Components/Registration/CapacityIndicator.razor` | T281 | compatibility only until every route uses CapacityBreakdown |
 | ScheduleCalendar | `src/StudentRegistration.Client/Components/Scheduling/ScheduleCalendar.razor` | T109 | labelled schedule grid with keyboard-reachable entries, never sole representation |
 | ScheduleList | `src/StudentRegistration.Client/Components/Scheduling/ScheduleList.razor` | T111 | chronological headings/list semantically equivalent to calendar |
 | ConflictPanel | `src/StudentRegistration.Client/Components/Scheduling/ConflictPanel.razor` | T113 | blocking heading, Red X plus text, overlaps, alternatives, resolution links |

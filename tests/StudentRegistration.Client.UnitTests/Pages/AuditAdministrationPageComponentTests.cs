@@ -11,6 +11,10 @@ namespace StudentRegistration.Client.UnitTests.Pages;
 public sealed class AuditAdministrationPageComponentTests
 {
     [Fact]
+    public void Adm_09_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        AdminPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("AuditAdministrationPage", "ADM-09");
+
+    [Fact]
     public void Adm_09_renders_bounded_filters_and_keeps_export_actions_disabled_until_server_binding()
     {
         using var context = new BunitContext();

@@ -36,7 +36,6 @@ public sealed class AC_4Tests
             staffLogin,
             "@page \"/staff/login\"",
             "StaffLoginRequest",
-            "role-selection-required",
             "INVALID_ROLE_CONFIGURATION");
         Assert.DoesNotContain("<select", staffLogin, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("name=\"role\"", staffLogin, StringComparison.OrdinalIgnoreCase);
@@ -47,9 +46,8 @@ public sealed class AC_4Tests
         RepositoryFiles.ContainsAll(
             endpoints,
             "MapPost(\"/api/auth/student/login\"",
-            "MapPost(\"/api/auth/staff/login\"",
-            "MapPut(\"/api/auth/session/context\"",
-            ".RequireAuthorization(RolePolicies.StaffContext)");
+            "MapPost(\"/api/auth/staff/login\"");
+        Assert.DoesNotContain("/api/auth/session/context", endpoints, StringComparison.Ordinal);
 
         foreach (var routeId in new[] { "AUTH-02", "AUTH-03", "AUTH-04", "AUTH-05" })
         {
@@ -74,6 +72,6 @@ public sealed class AC_4Tests
             "context.Render<AccountRecoveryPage>()",
             "Multiple_role_staff_configuration_is_rejected_without_a_context_picker",
             "INVALID_ROLE_CONFIGURATION",
-            "Assert.Empty(page.FindAll(\"[data-state=role-selection-required]\"))");
+            "Assert.Empty(page.FindAll(\"[data-testid=staff-role-picker]\"))");
     }
 }

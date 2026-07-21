@@ -12,6 +12,10 @@ public sealed class TermAdministrationPageComponentTests
         "src/StudentRegistration.Client/Pages/TermAdministrationPage.razor";
 
     [Fact]
+    public void Adm_02_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        AdminPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("TermAdministrationPage", "ADM-02");
+
+    [Fact]
     public void Loading_state_has_the_stable_main_heading_and_polite_status_contract()
     {
         using var context = new BunitContext();
@@ -123,9 +127,9 @@ public sealed class TermAdministrationPageComponentTests
             "if (_isCreating)",
             "if (_isSaving)",
             "if (_isPublishing)",
-            "disabled=\"@_isCreating\"",
-            "disabled=\"@_isSaving\"",
-            "disabled=\"@_isPublishing\"",
+            "Disabled=\"@_isCreating\"",
+            "Disabled=\"@_isSaving\"",
+            "IsLoading=\"@_isPublishing\"",
             "CreateAdminTermAsync",
             "UpdateAdminTermAsync",
             "PublishAdminRegistrationWindowAsync");

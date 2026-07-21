@@ -18,11 +18,11 @@ public sealed class IdentityRouteStateTests
             "AUTH-04",
             "AUTH-05",
             "STU-08",
-            "role-selection-required",
             "expired",
             "locked",
             "validation");
         Assert.DoesNotContain("ClaimsPrincipal", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("role-selection-required", source, StringComparison.Ordinal);
         Assert.DoesNotContain("localStorage", source, StringComparison.OrdinalIgnoreCase);
     }
 }

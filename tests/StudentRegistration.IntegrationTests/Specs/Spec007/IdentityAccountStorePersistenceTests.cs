@@ -45,7 +45,7 @@ public sealed class IdentityAccountStorePersistenceTests
             var firstCredentialHandoff = await seedContributor.SeedAsync(
                 "Testing",
                 studentCount: 1);
-            Assert.Equal(5, firstCredentialHandoff.Count);
+            Assert.Equal(4, firstCredentialHandoff.Count);
 
             var firstUsers = await setup.Set<ApplicationUser>()
                 .AsNoTracking()
@@ -78,9 +78,9 @@ public sealed class IdentityAccountStorePersistenceTests
             Assert.All(
                 firstHashes,
                 pair => Assert.Equal(pair.Value, secondHashes[pair.Key]));
-            Assert.Equal(4, await setup.Set<Staff>().CountAsync());
+            Assert.Equal(3, await setup.Set<Staff>().CountAsync());
             Assert.Single(await setup.Set<StudentActivation>().ToArrayAsync());
-            Assert.Equal(6, await setup.Set<RoleAssignment>().CountAsync());
+            Assert.Equal(4, await setup.Set<RoleAssignment>().CountAsync());
 
             var user = firstUsers.Values.Single(candidate => candidate.UniversityId == "AI2600001");
             var userId = user.Id;

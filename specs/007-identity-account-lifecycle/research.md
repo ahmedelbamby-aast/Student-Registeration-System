@@ -36,8 +36,8 @@ interface ActivateStudentRequest {
 interface SessionDto {
   displayName: string;
   roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
-  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant" | null;
-  sessionState: "active" | "expiring" | "role-selection-required";
+  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant";
+  sessionState: "active" | "expiring";
   expiresAtUtc: string;
 }
 ```

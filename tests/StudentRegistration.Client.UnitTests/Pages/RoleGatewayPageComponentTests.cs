@@ -45,11 +45,11 @@ public sealed class RoleGatewayPageComponentTests
             source,
             "AUTH-01-COMP-STATE-SUCCESS",
             "data-testid=\"student-login-link\"",
-            "href=\"/student/login\"",
+            "Href=\"/student/login\"",
             "data-testid=\"student-activation-link\"",
-            "href=\"/student/activate\"",
+            "Href=\"/student/activate\"",
             "data-testid=\"staff-login-link\"",
-            "href=\"/staff/login\"");
+            "Href=\"/staff/login\"");
         Assert.DoesNotContain("<EditForm", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("<form", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("DateTime.Now", source, StringComparison.Ordinal);
@@ -86,7 +86,7 @@ public sealed class RoleGatewayPageComponentTests
             source,
             "data-testid=\"public-context-retry\"",
             "_isRetrying",
-            "disabled=\"@_isRetrying\"",
+            "Disabled=\"@_isRetrying\"",
             "if (_isRetrying)",
             "GetPublicContextAsync");
         Assert.DoesNotContain("Task.Run", source, StringComparison.Ordinal);

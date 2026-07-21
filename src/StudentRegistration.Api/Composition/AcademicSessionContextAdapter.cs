@@ -57,7 +57,8 @@ public sealed class AcademicSessionContextAdapter(
             result.UserId != applicationUserId ||
             string.IsNullOrWhiteSpace(result.DisplayName) ||
             result.ExpiresAtUtc is null ||
-            result.AuthorizedRoles.Count == 0)
+            result.AuthorizedRoles.Count != 1 ||
+            !string.Equals(result.AuthorizedRoles[0], result.ActiveRole, StringComparison.Ordinal))
         {
             return null;
         }
@@ -66,7 +67,7 @@ public sealed class AcademicSessionContextAdapter(
             result.DisplayName,
             result.AuthorizedRoles,
             result.ActiveRole,
-            result.RoleSelectionRequired ? "role-selection-required" : "active",
+            "active",
             result.ExpiresAtUtc.Value);
 
         return new AppContextDto(
@@ -89,7 +90,6 @@ public sealed class AcademicSessionContextAdapter(
     {
         "active" => SessionState.Active,
         "expiring" => SessionState.Expiring,
-        "role-selection-required" => SessionState.RoleSelectionRequired,
         _ => throw new InvalidOperationException("The identity session state is unsupported.")
     };
 }

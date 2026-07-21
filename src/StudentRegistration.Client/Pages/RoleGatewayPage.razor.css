@@ -3,7 +3,6 @@
     grid-template-rows: none;
     gap: var(--srs-spacing-primitive-8);
     min-block-size: 0;
-    background: transparent;
 }
 
 .srs-public-gateway__intro {

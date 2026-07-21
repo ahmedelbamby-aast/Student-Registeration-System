@@ -11,6 +11,15 @@ Every sample reached the canonical `data-state="success"` element for its
 route. The complete machine record is in
 [`SPEC-003-NFR-6-results.json`](SPEC-003-NFR-6-results.json).
 
+A second no-interception run against the real API, migrated local SQL database,
+and activated Student account is recorded in
+[`SPEC-003-NFR-6-live-results.json`](SPEC-003-NFR-6-live-results.json). It used
+the new `Start-LocalDemo.ps1 -PerformanceRuntime` published host. STU-04 and
+STU-05 passed at 408 ms and 404 ms p75; STU-02 improved to 5,616 ms but still
+exceeds 2,500 ms. Live API p95 values were 498.8 ms, 264.6 ms, and 104.9 ms
+respectively. Ahmed approved that remaining non-production demo overage on
+2026-07-21; the production threshold was not weakened.
+
 ## Measured result
 
 | Route | Four cold-cache LCP samples (ms) | p75 (ms) | Threshold (ms) |

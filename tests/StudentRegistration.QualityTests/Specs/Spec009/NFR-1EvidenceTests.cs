@@ -36,7 +36,7 @@ public sealed class NFR_1EvidenceTests
                 3m,
                 true,
                 index,
-                [],
+                index == 1 ? [] : [$"Q{index - 1:00000}"],
                 MinimumGpa: null,
                 MinimumEarnedCredits: null,
                 index % 2 == 0 ? official : synthetic))

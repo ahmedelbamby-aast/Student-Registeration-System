@@ -17,7 +17,6 @@ public sealed class FrontendAppContextView
         string displayName,
         IReadOnlyList<string> authorizedRoles,
         string? activeRole,
-        bool roleSelectionRequired,
         string sessionState,
         DateTimeOffset sessionExpiresAt,
         string serviceState,
@@ -53,17 +52,17 @@ public sealed class FrontendAppContextView
             registrationWindowState,
             registrationWindow);
 
-        if (authorizedRoles.Count == 0 || authorizedRoles.Any(string.IsNullOrWhiteSpace))
+        if (authorizedRoles.Count != 1 || authorizedRoles.Any(string.IsNullOrWhiteSpace))
         {
             throw new ArgumentException(
-                "At least one nonblank authorized role is required.",
+                "Exactly one nonblank authorized role is required.",
                 nameof(authorizedRoles));
         }
 
-        if (!roleSelectionRequired && string.IsNullOrWhiteSpace(activeRole))
+        if (string.IsNullOrWhiteSpace(activeRole))
         {
             throw new ArgumentException(
-                "An active role is required unless the server requires role selection.",
+                "An active role is required.",
                 nameof(activeRole));
         }
 
@@ -91,7 +90,6 @@ public sealed class FrontendAppContextView
         DisplayName = displayName;
         AuthorizedRoles = authorizedRoles.ToArray();
         ActiveRole = activeRole;
-        RoleSelectionRequired = roleSelectionRequired;
         SessionState = sessionState;
         SessionExpiresAt = sessionExpiresAt;
         ServiceState = serviceState;
@@ -115,8 +113,6 @@ public sealed class FrontendAppContextView
     public IReadOnlyList<string> AuthorizedRoles { get; }
 
     public string? ActiveRole { get; }
-
-    public bool RoleSelectionRequired { get; }
 
     public string SessionState { get; }
 

@@ -30,7 +30,7 @@ dotnet test tests/StudentRegistration.QualityTests/StudentRegistration.QualityTe
 - Maximum duration: 30 seconds
 - Configuration: Release
 
-Quality test normalized-LF SHA-256: `A9838F34EB0336E947F1092DFFE6B62F8CEF82324803F4964AC7080E37645FE5`
+Quality test normalized-LF SHA-256: `CED83105E0B0622E390DF4FB6F8273937016D7C96D89912434F6AE289AAF468F`
 
 The executable assertion compares the measured elapsed time directly with the
 30-second gate. No prose timing estimate substitutes for the stopwatch result.

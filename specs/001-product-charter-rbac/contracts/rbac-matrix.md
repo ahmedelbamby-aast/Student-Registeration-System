@@ -21,7 +21,7 @@ them further and may never widen them from browser input.
 
 | Situation | Server outcome |
 |---|---|
-| Dual Lecturer and TeachingAssistant | Offer only both effective contexts; require explicit selection of one existing context; do not union them into a wider active scope |
+| Combined Lecturer and TeachingAssistant assignment | Reject authentication as invalid role configuration; require separate single-role accounts |
 | No supported staff role | deny staff workspace access with a safe no-role message and support reference |
 | Direct route or client role change | deny the unauthorized API request; route state never grants a role or permission |
 | Missing permission or resource scope | deny without disclosing protected resource existence |

@@ -23,8 +23,8 @@ public sealed class AppShellContextTests
             "University ID",
             "Admin, Lecturer, or Teaching Assistant",
             "no client role picker",
-            "server-authorized roles",
-            "role-selection-required",
+            "one server-authorized role",
+            "INVALID_ROLE_CONFIGURATION",
             "no 2FA");
     }
 
@@ -47,7 +47,7 @@ public sealed class AppShellContextTests
             "session expiry",
             "Service state",
             "supportReferencePath",
-            "role-selection-required",
+            "Exactly one role",
             "server-authoritative",
             "session-expired",
             "offline");

@@ -13,14 +13,13 @@ interface ActivateStudentRequest {
 interface SessionDto {
   displayName: string;
   roles: Array<"Student" | "Admin" | "Lecturer" | "TeachingAssistant">;
-  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant" | null;
-  sessionState: "active" | "expiring" | "role-selection-required";
+  activeRole: "Student" | "Admin" | "Lecturer" | "TeachingAssistant";
+  sessionState: "active" | "expiring";
   expiresAtUtc: string;
 }
 interface RecoveryRequest { universityIdOrUserName: string; }
 interface RecoveryCompleteRequest { challengeToken: string; newPassword: string; }
 interface ChangePasswordRequest { currentPassword: string; newPassword: string; }
-interface SelectRoleContextRequest { role: "Admin" | "Lecturer" | "TeachingAssistant"; }
 interface IdentityImportBatchDto {
   id: string;
   source: string;
@@ -60,8 +59,7 @@ Endpoints: POST /api/auth/student/login, POST /api/auth/student/activate,
 POST /api/auth/staff/login, POST /api/auth/logout, POST
 /api/auth/recovery/request, POST
 /api/auth/recovery/complete, POST /api/auth/password/change, POST
-/api/auth/sessions/revoke-all, GET /api/auth/session, and PUT
-/api/auth/session/context; plus GET /api/admin/users, POST
+/api/auth/sessions/revoke-all and GET /api/auth/session; plus GET /api/admin/users, POST
 /api/admin/users/imports, GET /api/admin/users/imports/{importId}, POST
 /api/admin/users/imports/{importId}/publish, PATCH
 /api/admin/users/{userId}/status, and PUT /api/admin/users/{userId}/roles.
@@ -99,8 +97,8 @@ or version evaluation.
 - Request: `StaffLoginRequest`; there is no role or second-factor field.
 - Responses: `200 SessionDto`; `400 VALIDATION_FAILED`; generic
   `401 AUTHENTICATION_FAILED`; `429 RATE_LIMITED`.
-- Roles and role-selection-required state are derived only after server-side
-  password, enabled/lockout, staff-link, and effective-assignment checks.
+- Exactly one role is derived after server-side password, enabled/lockout,
+  staff-link, and effective-assignment checks; zero or multiple roles fail closed.
 
 ### POST /api/auth/logout
 
@@ -149,14 +147,11 @@ or version evaluation.
 - The DTO is reconstructed from current shared user/role state and never
   exposes a password hash, security stamp, recovery value, or EF entity.
 
-### PUT /api/auth/session/context
+### Retired role-context mutation
 
-- Authorization: authenticated staff; valid antiforgery token required.
-- Request: `SelectRoleContextRequest`.
-- Responses: `200 SessionDto`; `400 ROLE_NOT_AVAILABLE`; `401`; `403` for a
-  student or unsupported staff context.
-- The selected role must be a currently effective server-returned assignment;
-  success rotates the cookie and cannot add or union claims.
+No role-context mutation endpoint exists. Every valid account has exactly one
+server-derived role. Zero or multiple roles fail closed as
+`INVALID_ROLE_CONFIGURATION` and cannot issue or rotate an authenticated cookie.
 
 ### GET /api/admin/users
 
@@ -244,13 +239,8 @@ or version evaluation.
 - Password change, recovery completion, and revoke-all atomically rotate the
   shared security stamp. Earlier cookies are rejected by every replica.
   Correctness never depends on sticky sessions and in-memory-only security state.
-- Session-context selection accepts only a role already present in the
-  effective server role set and rotates the cookie; it cannot add claims.
-- When a multi-role staff member has not selected an active context, protected
-  navigation returns the canonical `role-selection-required` service state.
-  In that state `SessionDto.activeRole` is null; it is non-null when
-  `sessionState` is `active` or `expiring`. A selected role must be present in
-  `roles`.
+- Session issuance requires exactly one effective role. `SessionDto.activeRole`
+  equals that role for `active` or `expiring`; zero or multiple roles fail closed.
 - DEC-01 and DEC-02 are resolved for the demo-only local credential model;
   DEC-13 remains a production approval gate.
 - Admin lists default to 20 and reject page sizes above 100. Import creation

@@ -16,8 +16,8 @@ not calculate current time/term, infer roles, or cache authorization truth.
 | Registration term | Nullable registration-term label/identifier, which may differ from teaching term; absence is rendered explicitly |
 | registration window | Explicit server-derived `none`, `upcoming`, `open`, or `closed` state plus nullable canonical nested summary; times render only when the summary exists and the client never calculates openness |
 | Display name | Authenticated user heading/menu context, safely encoded |
-| Authorized roles | Navigation options already authorized by the server |
-| Active role | Current server-issued context; nullable only during `role-selection-required` |
+| Authorized roles | Exactly one role authorized by the server for this account |
+| Active role | The same non-null single server-issued role |
 | Session state | Active, expiring, or session-expired presentation |
 | session expiry | Absolute server expiry with accessible warning; browser timer is display-only |
 | Service state | Available, degraded, maintenance, or safe unknown state |

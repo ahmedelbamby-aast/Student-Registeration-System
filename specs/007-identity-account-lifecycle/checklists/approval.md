@@ -19,6 +19,6 @@ separate and fail closed.
 
 Ahmed ELbamby approved the bounded Identity-owned effective-role permission
 allow-list and its exact-claim enforcement for this non-production demo.
-Contract, authorization, and real sign-in/context-switch tests passed before
+Contract, authorization, and real single-role sign-in tests passed before
 the amendment was recorded. This does not authorize production identity
 integration, production grants, Gate B-D, or official AASTMT go-live.

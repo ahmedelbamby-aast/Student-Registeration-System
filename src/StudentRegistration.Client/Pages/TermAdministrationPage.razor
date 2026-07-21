@@ -77,11 +77,9 @@
                 <p>@_safeMessage</p>
                 @ReferenceContent()
                 <div class="srs-term-admin__actions">
-                    <button type="button"
-                            disabled="@_isLoadingTerms"
-                            @onclick="RetryTermsAsync">
+                    <AppButton Disabled="@_isLoadingTerms" IsLoading="@_isLoadingTerms" OnClick="RetryTermsAsync">
                         @(_isLoadingTerms ? LocalizedUiText.Get("Retrying…") : LocalizedUiText.Get("Retry term list"))
-                    </button>
+                    </AppButton>
                     <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
                 </div>
             </section>
@@ -110,11 +108,9 @@
                     <p class="srs-term-admin__code">@_reasonCode</p>
                     <p>@_safeMessage</p>
                     @ReferenceContent()
-                    <button type="button"
-                            disabled="@_isLoadingTerms"
-                            @onclick="RetryTermsAsync">
+                    <AppButton Disabled="@_isLoadingTerms" OnClick="RetryTermsAsync">
                         @LocalizedUiText.Get("Retry term list")
-                    </button>
+                    </AppButton>
                 </section>
             }
 
@@ -155,11 +151,9 @@
                             </ul>
                         }
                     </div>
-                    <button type="button"
-                            data-testid="refresh-stale-term"
-                            @onclick="AdoptRefetchedVersions">
+                    <AppButton data-testid="refresh-stale-term" OnClick="@(_ => AdoptRefetchedVersions())">
                         @LocalizedUiText.Get("Use current versions and review draft")
-                    </button>
+                    </AppButton>
                 </section>
             }
 
@@ -217,13 +211,13 @@
                            placeholder="@(LocalizedUiText.Get("At least 3 characters"))"
                            @bind="_searchQuery"
                            @bind:event="oninput" />
-                    <button type="submit" disabled="@_isLoadingTerms">@LocalizedUiText.Get("Search")</button>
-                    <button type="button" disabled="@_isLoadingTerms" @onclick="ClearSearchAsync">
+                    <AppButton Type="submit" Disabled="@_isLoadingTerms">@LocalizedUiText.Get("Search")</AppButton>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_isLoadingTerms" OnClick="ClearSearchAsync">
                         @LocalizedUiText.Get("Clear")
-                    </button>
-                    <button type="button" disabled="@AnyCommandPending" @onclick="StartNewTerm">
+                    </AppButton>
+                    <AppButton Disabled="@AnyCommandPending" OnClick="@(_ => StartNewTerm())">
                         @LocalizedUiText.Get("Create another term")
-                    </button>
+                    </AppButton>
                 </form>
             </section>
 
@@ -292,13 +286,13 @@
                                             </td>
                                             <td><code>@term.RowVersion</code></td>
                                             <td>
-                                                <button type="button"
-                                                        aria-label="Review @term.DisplayName"
-                                                        aria-pressed="@(term.Id == _selectedTerm?.Id ? "true" : "false")"
-                                                        disabled="@AnyCommandPending"
-                                                        @onclick="() => SelectTerm(term)">
+                                                <AppButton Variant="AppButtonVariant.Quiet"
+                                                           AccessibleLabel="@($"Review {term.DisplayName}")"
+                                                           aria-pressed="@(term.Id == _selectedTerm?.Id ? "true" : "false")"
+                                                           Disabled="@AnyCommandPending"
+                                                           OnClick="@(_ => SelectTerm(term))">
                                                     @LocalizedUiText.Get("Review")
-                                                </button>
+                                                </AppButton>
                                             </td>
                                         </tr>
                                     }
@@ -342,12 +336,12 @@
                                                 }
                                             </ul>
                                         }
-                                        <button type="button"
-                                                aria-label="Review @term.DisplayName"
-                                                disabled="@AnyCommandPending"
-                                                @onclick="() => SelectTerm(term)">
+                                        <AppButton Variant="AppButtonVariant.Quiet"
+                                                   AccessibleLabel="@($"Review {term.DisplayName}")"
+                                                   Disabled="@AnyCommandPending"
+                                                   OnClick="@(_ => SelectTerm(term))">
                                             @LocalizedUiText.Get("Review")
-                                        </button>
+                                        </AppButton>
                                     </li>
                                 }
                             }
@@ -355,17 +349,17 @@
                     </section>
 
                     <nav class="srs-term-admin__pagination" aria-label="@(LocalizedUiText.Get("Academic term pages"))">
-                        <button type="button"
-                                disabled="@(_isLoadingTerms || _currentPage <= 1)"
-                                @onclick="() => ChangePageAsync(_currentPage - 1)">
+                        <AppButton Variant="AppButtonVariant.Secondary"
+                                   Disabled="@(_isLoadingTerms || _currentPage <= 1)"
+                                   OnClick="@(_ => ChangePageAsync(_currentPage - 1))">
                             @LocalizedUiText.Get("Previous")
-                        </button>
+                        </AppButton>
                         <span aria-live="polite">@LocalizedUiText.Get("Page") @_currentPage @LocalizedUiText.Get("of") @TotalPages</span>
-                        <button type="button"
-                                disabled="@(_isLoadingTerms || _currentPage >= TotalPages)"
-                                @onclick="() => ChangePageAsync(_currentPage + 1)">
+                        <AppButton Variant="AppButtonVariant.Secondary"
+                                   Disabled="@(_isLoadingTerms || _currentPage >= TotalPages)"
+                                   OnClick="@(_ => ChangePageAsync(_currentPage + 1))">
                             @LocalizedUiText.Get("Next")
-                        </button>
+                        </AppButton>
                     </nav>
                 </section>
 
@@ -525,23 +519,22 @@
                                             </div>
                                             @if (!window.HasImmutablePublishedValues)
                                             {
-                                                <button type="button"
-                                                        class="srs-term-admin__secondary-button"
-                                                        disabled="@AnyCommandPending"
-                                                        @onclick="() => RemoveWindow(window.ClientKey)">
+                                                <AppButton Variant="AppButtonVariant.Quiet"
+                                                           Disabled="@AnyCommandPending"
+                                                           OnClick="@(_ => RemoveWindow(window.ClientKey))">
                                                     @LocalizedUiText.Get("Remove window")
-                                                </button>
+                                                </AppButton>
                                             }
                                         </section>
                                     }
                                 }
 
-                                <button type="button"
-                                        data-testid="add-registration-window"
-                                        disabled="@(AnyCommandPending || _editor.Windows.Count >= 20)"
-                                        @onclick="AddWindow">
+                                <AppButton Variant="AppButtonVariant.Secondary"
+                                           data-testid="add-registration-window"
+                                           Disabled="@(AnyCommandPending || _editor.Windows.Count >= 20)"
+                                           OnClick="@(_ => AddWindow())">
                                     @LocalizedUiText.Get("Add registration window")
-                                </button>
+                                </AppButton>
                             </fieldset>
 
                             <div class="srs-term-admin__field-grid">
@@ -571,19 +564,21 @@
                             <div class="srs-term-admin__editor-actions">
                                 @if (_isCreateMode)
                                 {
-                                    <button type="submit"
-                                            data-testid="create-term-submit"
-                                            disabled="@_isCreating">
+                                    <AppButton Type="submit"
+                                               data-testid="create-term-submit"
+                                               Disabled="@_isCreating"
+                                               IsLoading="@_isCreating">
                                         @(_isCreating ? LocalizedUiText.Get("Creating term…") : LocalizedUiText.Get("Create term"))
-                                    </button>
+                                    </AppButton>
                                 }
                                 else
                                 {
-                                    <button type="submit"
-                                            data-testid="save-term-submit"
-                                            disabled="@_isSaving">
+                                    <AppButton Type="submit"
+                                               data-testid="save-term-submit"
+                                               Disabled="@_isSaving"
+                                               IsLoading="@_isSaving">
                                         @(_isSaving ? LocalizedUiText.Get("Saving changes…") : LocalizedUiText.Get("Save changes"))
-                                    </button>
+                                    </AppButton>
 
                                     @if (PublishableWindows.Count > 0)
                                     {
@@ -594,13 +589,13 @@
                                                 <option value="@window.Id">@PublishWindowLabel(window)</option>
                                             }
                                         </select>
-                                        <button @ref="_publishTrigger"
-                                                type="button"
-                                                data-testid="publish-registration-window"
-                                                disabled="@_isPublishing"
-                                                @onclick="OpenPublishConfirmation">
+                                        <AppButton @ref="_publishTrigger"
+                                                   data-testid="publish-registration-window"
+                                                   IsLoading="@_isPublishing"
+                                                   LoadingAnnouncement="@(LocalizedUiText.Get("Publishing registration window"))"
+                                                   OnClick="@(_ => OpenPublishConfirmation())">
                                             @(_isPublishing ? LocalizedUiText.Get("Publishing registration window…") : LocalizedUiText.Get("Publish registration window"))
-                                        </button>
+                                        </AppButton>
                                     }
                                 }
                             </div>
@@ -672,7 +667,7 @@
 
     private ElementReference _validationSummary;
     private ElementReference _stateHeading;
-    private ElementReference _publishTrigger;
+    private AppButton? _publishTrigger;
     private string _state = LoadingState;
     private bool _isLoadingTerms;
     private bool _hasLoadedTerms;
@@ -1111,7 +1106,10 @@
 
     private void ClosePublishConfirmation() => _showPublishConfirmation = false;
 
-    private async Task RestorePublishFocusAsync() => await _publishTrigger.FocusAsync();
+    private async Task RestorePublishFocusAsync()
+    {
+        if (_publishTrigger is not null) await _publishTrigger.FocusAsync();
+    }
 
     private async Task PublishWindowAsync()
     {

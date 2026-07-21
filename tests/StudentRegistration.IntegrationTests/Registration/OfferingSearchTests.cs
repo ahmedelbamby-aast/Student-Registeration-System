@@ -318,7 +318,9 @@ public sealed class OfferingSearchTests
             Assert.Single((await Service(normalLimit).EvaluateTermAsync(
                 normalLimit.ApplicationUserId,
                 normalLimit.TermId)).Items).Reasons,
-            reason => reason.Code == "LOAD_ABOVE_NORMAL_MAXIMUM");
+            reason => reason.Code == "LOAD_ALLOWED"
+                && reason.Passed
+                && reason.Message.Contains("subject to approval", StringComparison.Ordinal));
 
         var probationLimit = new Spec011ScenarioBuilder
         {

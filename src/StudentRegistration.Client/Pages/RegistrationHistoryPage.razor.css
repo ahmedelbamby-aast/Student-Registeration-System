@@ -20,6 +20,17 @@
     list-style: none;
 }
 
+.srs-registration-history__cards dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--srs-spacing-primitive-3);
+}
+
+.srs-registration-history__cards dd {
+    margin: var(--srs-spacing-primitive-1) 0 0;
+    overflow-wrap: anywhere;
+}
+
 .srs-registration-history__schedule {
     display: grid;
     gap: var(--srs-spacing-primitive-5);
@@ -44,6 +55,10 @@
     .srs-registration-history__cards {
         display: grid;
         gap: var(--srs-spacing-primitive-4);
+    }
+
+    .srs-registration-history__cards dl {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

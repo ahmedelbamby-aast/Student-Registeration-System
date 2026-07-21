@@ -151,8 +151,8 @@ public sealed class ExecutableIdentityJourneys
         var handler = new RecordingHandler(_ => Json(new SessionDto(
             "Invalid multi-role staff",
             ["Lecturer", "TeachingAssistant"],
-            null,
-            "role-selection-required",
+            "Lecturer",
+            "active",
             DateTime.UtcNow.AddHours(1))));
         using var context = CreateContext(handler);
         var page = context.Render<StaffLoginPage>();
@@ -163,7 +163,7 @@ public sealed class ExecutableIdentityJourneys
 
         page.WaitForAssertion(() => Assert.NotNull(
             page.Find("[data-code=INVALID_ROLE_CONFIGURATION]")));
-        Assert.Empty(page.FindAll("[data-state=role-selection-required]"));
+        Assert.Empty(page.FindAll("[data-testid=staff-role-picker]"));
         Assert.False(context.Services.GetRequiredService<NavigationManager>().Uri.EndsWith(
             "/staff",
             StringComparison.Ordinal));

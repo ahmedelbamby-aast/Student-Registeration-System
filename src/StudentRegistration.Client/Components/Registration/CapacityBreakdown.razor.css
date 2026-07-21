@@ -41,6 +41,22 @@
     background: var(--srs-color-semantic-success-surface);
 }
 
+.srs-capacity-breakdown__state {
+    margin: var(--srs-spacing-primitive-2) 0 0;
+    color: var(--srs-color-semantic-text-secondary);
+    font-size: var(--srs-typography-primitive-font-size-supporting);
+}
+
+.srs-capacity-breakdown[data-capacity-state="full"] .srs-capacity-breakdown__value--available {
+    color: var(--srs-color-semantic-danger-text);
+    background: var(--srs-color-semantic-danger-surface);
+}
+
+.srs-capacity-breakdown[data-capacity-state="stale"] {
+    border-inline-start: var(--srs-border-primitive-width-strong) solid var(--srs-color-semantic-warning-text);
+    padding-inline-start: var(--srs-spacing-primitive-3);
+}
+
 @media (max-width: 39.999rem) {
     .srs-capacity-breakdown__values {
         grid-template-columns: repeat(2, minmax(0, 1fr));

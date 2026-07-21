@@ -58,7 +58,7 @@ downstream contributor versions remain `not-pinned`.
     "ScheduleList",
     "ConflictPanel",
     "GroupCard",
-    "CapacityIndicator",
+    "CapacityBreakdown",
     "StatusBadge",
     "Alert",
     "Button",

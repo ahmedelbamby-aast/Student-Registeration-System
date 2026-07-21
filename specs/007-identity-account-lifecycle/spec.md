@@ -166,8 +166,8 @@ or final-enabled-Admin removal attempts change nothing.
 - EC-1: University ID already activated -> direct to login/recovery, no second
   account.
 - EC-2: Disabled/locked account -> safe generic denial and audit.
-- EC-3: User has Lecturer and TA claims -> explicit authorized context switch,
-  never privilege union beyond claims.
+- EC-3: User has Lecturer and TA assignments -> authentication fails closed as
+  invalid configuration; roles are never unioned.
 - EC-4: Session expires during plan edit -> reauthenticate then revalidate plan.
 - EC-5: Repeated recovery request -> rate limit while returning generic result.
 - EC-6: Activation commits but its response is lost -> retry returns the

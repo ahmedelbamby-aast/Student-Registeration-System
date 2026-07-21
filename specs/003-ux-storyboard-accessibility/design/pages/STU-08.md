@@ -63,14 +63,12 @@ downstream contributor versions remain `not-pinned`.
   ],
   "dataContracts": [
     "GET /api/auth/session",
-    "PUT /api/auth/session/context",
     "POST /api/auth/password/change",
     "POST /api/auth/sessions/revoke-all",
     "POST /api/auth/logout"
   ],
   "actions": [
     "Refresh GET /api/auth/session",
-    "Switch only a server-authorized active context through PUT /api/auth/session/context",
     "Submit POST /api/auth/password/change",
     "Open and confirm POST /api/auth/sessions/revoke-all",
     "Submit POST /api/auth/logout",

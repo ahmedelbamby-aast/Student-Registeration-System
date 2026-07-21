@@ -57,7 +57,7 @@ downstream contributor versions remain `not-pinned`.
     "DataTable",
     "Pagination",
     "GroupCard",
-    "CapacityIndicator",
+    "CapacityBreakdown",
     "FormField",
     "ValidationSummary",
     "StatusBadge",

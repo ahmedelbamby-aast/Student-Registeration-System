@@ -137,7 +137,7 @@ else
                 @if (!string.IsNullOrWhiteSpace(_reference)) { <p>@LocalizedUiText.Get("Reference:") @_reference</p> }
                 @if (_state is "service-error" or "stale")
                 {
-                    <button type="button" disabled="@_retrying" @onclick="RetryAsync">@LocalizedUiText.Get("Retry result lookup")</button>
+                    <AppButton Disabled="@_retrying" IsLoading="@_retrying" OnClick="RetryAsync">@LocalizedUiText.Get("Retry result lookup")</AppButton>
                 }
                 <a href="@(_shellContext?.SupportReferencePath ?? "/student")">@LocalizedUiText.Get("Open safe support path")</a>
             </section>

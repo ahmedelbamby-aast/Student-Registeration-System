@@ -17,7 +17,6 @@ public sealed class IdentityEndpointAuthorizationMatrixTests
         ("POST", "/api/auth/password/change"),
         ("POST", "/api/auth/sessions/revoke-all"),
         ("GET", "/api/auth/session"),
-        ("PUT", "/api/auth/session/context"),
         ("GET", "/api/admin/users"),
         ("POST", "/api/admin/users/imports"),
         ("GET", "/api/admin/users/imports/{importId}"),
@@ -73,7 +72,7 @@ public sealed class IdentityEndpointAuthorizationMatrixTests
                 $"Expected the negative principal to be denied for {method} {route}.");
         }
 
-        Assert.Equal(11, ProtectedEndpoints.Length);
+        Assert.Equal(10, ProtectedEndpoints.Length);
     }
 
     private static (ClaimsPrincipal Positive, ClaimsPrincipal Negative) PrincipalsFor(

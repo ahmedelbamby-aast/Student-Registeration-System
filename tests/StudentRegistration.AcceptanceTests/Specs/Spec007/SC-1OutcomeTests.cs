@@ -9,7 +9,7 @@ public sealed class SC_1OutcomeTests
             "src/StudentRegistration.IdentityAccess/Application/AuthenticationResult.cs",
             "AuthorizedRoles",
             "ActiveRole",
-            "RoleSelectionRequired");
+            "exactly one authorized role");
         Assert.DoesNotContain("ClaimsPrincipal", source, StringComparison.Ordinal);
     }
 }

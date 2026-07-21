@@ -236,7 +236,7 @@
 
 ## Phase 7 - Scope and Release Evidence
 
-- [x] T117 [OS-1] Historical pre-amendment evidence: inspect source, contracts, migrations, routes, and tests and record that waitlist, temporary seat reservation, or queue was excluded under the earlier baseline. The 2026-07-20 amendment supersedes only the reservation portion with its bounded RegistrationSeatHold; waitlists, queues, and every unrelated reservation remain excluded and require new T124-T145 evidence.
+- [x] T117 [OS-1] Historical pre-amendment evidence: inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that waitlist, temporary seat reservation, or queue was excluded under the earlier baseline. The 2026-07-20 amendment supersedes only the reservation portion with its bounded RegistrationSeatHold; waitlists, queues, and every unrelated reservation remain excluded and require new T124-T145 evidence.
 - [x] T118 [OS-2] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-2 remains excluded: Distributed/application-instance locks.
 - [x] T119 [OS-3] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-3 remains excluded: Partial schedule acceptance.
 - [x] T120 [OS-4] Inspect source, contracts, migrations, routes, and tests and record in docs/release-evidence/SPEC-014-scope-review.md that OS-4 remains excluded: Capacity override above approved group capacity.

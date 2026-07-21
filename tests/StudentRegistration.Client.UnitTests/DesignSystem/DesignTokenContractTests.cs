@@ -20,8 +20,26 @@ public sealed class DesignTokenContractTests
         "aae2399dfbee27fe1b5a506f08645f4076fb6efacfc36eb0b87996517111a502";
     private const string TokenJsonPath =
         "src/StudentRegistration.Client/wwwroot/design/design-tokens.json";
+    private const string ArchivedV1TokenJsonPath =
+        "src/StudentRegistration.Client/wwwroot/design/archive/design-tokens.v1.0.0.json";
     private const string TokenCssPath =
         "src/StudentRegistration.Client/wwwroot/css/design-tokens.css";
+
+    [Fact]
+    public void Version_one_token_source_is_archived_immutably_and_not_used_as_the_runtime_projection()
+    {
+        var archivedBytes = File.ReadAllBytes(RepositoryFiles.PathTo(ArchivedV1TokenJsonPath));
+        Assert.Equal(
+            "4f5da90c9ed10c769bee5b0f895ed714ccef230f0d735d8c8f25a407f8a9865d",
+            Convert.ToHexString(SHA256.HashData(archivedBytes)).ToLowerInvariant());
+        Assert.NotEqual(
+            File.ReadAllText(RepositoryFiles.PathTo(ArchivedV1TokenJsonPath)),
+            RepositoryFiles.Read(TokenJsonPath));
+        RepositoryFiles.ContainsAll(
+            RepositoryFiles.Read(TokenContractPath),
+            ArchivedV1TokenJsonPath,
+            "4f5da90c9ed10c769bee5b0f895ed714ccef230f0d735d8c8f25a407f8a9865d");
+    }
 
     [Fact]
     public void Contract_is_versioned_three_layer_neutral_and_blocks_inferred_brand_values()

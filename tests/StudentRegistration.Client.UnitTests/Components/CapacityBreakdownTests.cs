@@ -55,4 +55,34 @@ public sealed class CapacityBreakdownTests
             .Add(component => component.AvailableLabel, "Available")
             .Add(component => component.Available, available)));
     }
+
+    [Theory]
+    [InlineData(CapacityBreakdown.CapacityState.Loading, "loading", "—")]
+    [InlineData(CapacityBreakdown.CapacityState.Current, "current", "30")]
+    [InlineData(CapacityBreakdown.CapacityState.Full, "full", "30")]
+    [InlineData(CapacityBreakdown.CapacityState.Stale, "stale", "30")]
+    [InlineData(CapacityBreakdown.CapacityState.Unavailable, "unavailable", "—")]
+    public void Exposes_each_shared_capacity_state_with_fixed_textual_order(
+        CapacityBreakdown.CapacityState state,
+        string expectedState,
+        string expectedTotal)
+    {
+        using var context = new BunitContext();
+        var available = state is CapacityBreakdown.CapacityState.Full ? 0 : 5;
+        var enrolled = state is CapacityBreakdown.CapacityState.Full ? 27 : 22;
+        var cut = context.Render<CapacityBreakdown>(parameters => parameters
+            .Add(component => component.State, state)
+            .Add(component => component.StateMessage, $"{expectedState} capacity")
+            .Add(component => component.AccessibleName, "Group capacity")
+            .Add(component => component.TotalLabel, "Total").Add(component => component.Total, 30)
+            .Add(component => component.EnrolledLabel, "Enrolled").Add(component => component.Enrolled, enrolled)
+            .Add(component => component.HeldLabel, "Held").Add(component => component.Held, 3)
+            .Add(component => component.AvailableLabel, "Available").Add(component => component.Available, available));
+
+        Assert.Equal(expectedState, cut.Find("[data-capacity-state]").GetAttribute("data-capacity-state"));
+        Assert.Equal(["Total", "Enrolled", "Held", "Available"],
+            cut.FindAll("dt").Select(element => element.TextContent.Trim()).ToArray());
+        Assert.Equal(expectedTotal, cut.Find("dd").TextContent.Trim());
+        Assert.Contains($"{expectedState} capacity", cut.Markup, StringComparison.Ordinal);
+    }
 }

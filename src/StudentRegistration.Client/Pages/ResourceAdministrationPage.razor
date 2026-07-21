@@ -56,7 +56,7 @@
                 {
                     <p>@LocalizedUiText.Get("Reference:") @_referenceId</p>
                 }
-                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Retry")</button>
+                <AppButton OnClick="LoadAsync">@LocalizedUiText.Get("Retry")</AppButton>
             </section>
         }
 
@@ -66,7 +66,7 @@
                 <h2>@LocalizedUiText.Get("Concurrent resource change requires review")</h2>
                 <p class="srs-scheduling-admin__code">@_reasonCode</p>
                 <p>@_safeMessage</p>
-                <button type="button" @onclick="LoadAsync">@LocalizedUiText.Get("Refresh and review")</button>
+                <AppButton OnClick="LoadAsync">@LocalizedUiText.Get("Refresh and review")</AppButton>
             </section>
         }
 
@@ -131,17 +131,40 @@
                                     <td>@room.State</td>
                                     <td><code>@room.RowVersion</code></td>
                                     <td>
-                                        <button type="button"
-                                                disabled="@_pending"
-                                                @onclick="() => SelectRoom(room)">
+                                        <AppButton Variant="AppButtonVariant.Quiet"
+                                                   Disabled="@_pending"
+                                                   OnClick="@(_ => SelectRoom(room))">
                                             @LocalizedUiText.Get("Review room")
-                                        </button>
+                                        </AppButton>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
+                <section class="srs-scheduling-admin__semantic-alternative"
+                         data-testid="room-result-list"
+                         aria-label="@(LocalizedUiText.Get("Room results, compact view"))">
+                    <ul>
+                        @foreach (var room in _rooms)
+                        {
+                            <li>
+                                <h3>@room.Code</h3>
+                                <dl>
+                                    <div><dt>@LocalizedUiText.Get("Location")</dt><dd>@room.Location</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Capacity")</dt><dd>@room.Capacity</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("State")</dt><dd>@room.State</dd></div>
+                                    <div><dt>@LocalizedUiText.Get("Version")</dt><dd><code>@room.RowVersion</code></dd></div>
+                                </dl>
+                                <AppButton Variant="AppButtonVariant.Quiet"
+                                           Disabled="@_pending"
+                                           OnClick="@(_ => SelectRoom(room))">
+                                    @LocalizedUiText.Get("Review room")
+                                </AppButton>
+                            </li>
+                        }
+                    </ul>
+                </section>
             }
 
             <div class="srs-scheduling-admin__form-grid">
@@ -170,14 +193,14 @@
                 </label>
             </div>
             <div class="srs-scheduling-admin__actions">
-                <button type="button" disabled="@_pending" @onclick="CreateRoomAsync">
+                <AppButton Disabled="@_pending" OnClick="CreateRoomAsync">
                     @LocalizedUiText.Get("Create room")
-                </button>
-                <button type="button"
-                        disabled="@(_pending || _selectedRoom is null)"
-                        @onclick="SaveRoomAsync">
+                </AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary"
+                           Disabled="@(_pending || _selectedRoom is null)"
+                           OnClick="SaveRoomAsync">
                     @LocalizedUiText.Get("Save room")
-                </button>
+                </AppButton>
             </div>
         </section>
 
@@ -199,7 +222,7 @@
                        name="termId"
                        value="@TermId?.ToString("D")"
                        required />
-                <button type="submit">@LocalizedUiText.Get("Load Staff availability")</button>
+                <AppButton Type="submit">@LocalizedUiText.Get("Load Staff availability")</AppButton>
             </form>
 
             <div data-testid="staff-availability-declarations">
@@ -230,10 +253,10 @@
                                         </li>
                                     }
                                 </ul>
-                                <button type="button"
-                                        @onclick="() => UsePlanningDependency(availability)">
+                                <AppButton Variant="AppButtonVariant.Quiet"
+                                           OnClick="@(_ => UsePlanningDependency(availability))">
                                     @LocalizedUiText.Get("Use as planning dependency")
-                                </button>
+                                </AppButton>
                             </li>
                         }
                     </ul>
@@ -282,16 +305,15 @@
                                 </p>
                             }
                             <div class="srs-scheduling-admin__actions">
-                                <button type="button"
-                                        disabled="@(_pending || alert.State == "Resolved")"
-                                        @onclick="() => RevalidateAlertAsync(alert)">
+                                <AppButton Variant="AppButtonVariant.Secondary"
+                                           Disabled="@(_pending || alert.State == "Resolved")"
+                                           OnClick="@(_ => RevalidateAlertAsync(alert))">
                                     @LocalizedUiText.Get("Revalidate impact")
-                                </button>
-                                <button type="button"
-                                        disabled="@(_pending || alert.State != "Revalidated" || alert.LastValidation?.Valid != true)"
-                                        @onclick="() => SelectAlertForResolution(alert)">
+                                </AppButton>
+                                <AppButton Disabled="@(_pending || alert.State != "Revalidated" || alert.LastValidation?.Valid != true)"
+                                           OnClick="@(_ => SelectAlertForResolution(alert))">
                                     @LocalizedUiText.Get("Prepare resolution")
-                                </button>
+                                </AppButton>
                             </div>
                         </li>
                     }
@@ -307,11 +329,10 @@
                               maxlength="256"
                               @bind="_resolutionReason"
                               @bind:event="oninput"></textarea>
-                    <button type="button"
-                            disabled="@(_pending || string.IsNullOrWhiteSpace(_resolutionReason))"
-                            @onclick="ResolveAlertAsync">
+                    <AppButton Disabled="@(_pending || string.IsNullOrWhiteSpace(_resolutionReason))"
+                               OnClick="ResolveAlertAsync">
                         @LocalizedUiText.Get("Resolve impact")
-                    </button>
+                    </AppButton>
                 </section>
             }
         </section>

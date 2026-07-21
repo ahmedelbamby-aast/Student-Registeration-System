@@ -33,16 +33,18 @@ public sealed class AdminDashboardPageVisualTests
         var css = RepositoryFiles.Read(cssPath);
         RepositoryFiles.ContainsAll(
             page,
+            "<AuthenticatedPage",
+            "Workspace=\"WorkspaceKind.Admin\"",
+            "Density=\"UiDensity.Compact\"",
             "srs-admin-dashboard__metrics",
             "srs-admin-dashboard__warnings",
             "srs-admin-dashboard__modules");
         RepositoryFiles.ContainsAll(
             css,
-            "inline-size: min(",
-            "margin-inline: auto",
-            "grid-template-columns: repeat(4",
-            "grid-template-columns: repeat(3",
-            "grid-template-columns: repeat(2",
+            "min-inline-size: 0",
+            "grid-template-columns: repeat(auto-fit",
+            "minmax(min(100%, 16rem), 1fr)",
+            "@media (max-width: 47.99rem)",
             "grid-template-columns: minmax(0, 1fr)");
         Assert.DoesNotContain("inline-size: 1920px", css, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("min-inline-size: 1024px", css, StringComparison.OrdinalIgnoreCase);

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "spec003-usability-evidence/1.2",
+  "recordedOn": "2026-07-21",
+  "result": "WAIVED-DEMO",
+  "scope": "non-production design-capability demo",
+  "productionGoLiveApproved": false,
+  "humanCohortPerformed": false,
+  "requiredUniqueParticipants": 17,
+  "recordedUniqueParticipants": 0,
+  "completionRateCalculated": false,
+  "automatedPersonaScenarios": 17,
+  "automatedAccessibilityGatePassed": true,
+  "automatedPersonaEvidenceIsHumanEvidence": false,
+  "waiver": {
+    "approvedBy": "Ahmed ELbamby",
+    "approvedOn": "2026-07-21",
+    "reason": "Repository owner explicitly approved all remaining demo evidence. Representative human UAT is waived only for this non-production demo and remains required before production or institutional go-live."
+  }
+}

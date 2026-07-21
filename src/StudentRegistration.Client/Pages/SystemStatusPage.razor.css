@@ -1,34 +1,29 @@
 .srs-system-status {
     display: grid;
     place-items: center;
-    padding-block: clamp(1rem, 4vw, 3rem);
-    color: var(--srs-color-semantic-text-primary);
-    background: var(--srs-color-semantic-surface-default);
+    min-inline-size: 0;
 }
 
 .srs-system-status__panel {
     inline-size: min(100%, 46rem);
     display: grid;
     gap: var(--srs-spacing-primitive-5);
-    padding: clamp(1rem, 4vw, 2rem);
-    border: var(--srs-border-primitive-width) solid var(--srs-color-semantic-border);
-    border-radius: var(--srs-border-primitive-radius-medium);
-    background: var(--srs-color-component-panel-background);
+    min-inline-size: 0;
+}
+
+.srs-system-status__health,
+.srs-system-status__health div {
+    display: grid;
 }
 
 .srs-system-status__health {
-    display: grid;
     gap: var(--srs-spacing-primitive-3);
     margin: 0;
 }
 
 .srs-system-status__health div {
-    display: grid;
     gap: var(--srs-spacing-primitive-1);
-}
-
-.srs-system-status__health dt {
-    font-weight: var(--srs-typography-component-control-weight);
+    min-inline-size: 0;
 }
 
 .srs-system-status__health dd {

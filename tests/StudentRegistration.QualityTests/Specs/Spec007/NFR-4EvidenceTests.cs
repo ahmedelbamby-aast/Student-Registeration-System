@@ -18,7 +18,6 @@ public sealed class NFR_4EvidenceTests
         new("Endpoint07", "POST", "/api/auth/password/change", "Protected: Authenticated"),
         new("Endpoint08", "POST", "/api/auth/sessions/revoke-all", "Protected: Authenticated"),
         new("Endpoint09", "GET", "/api/auth/session", "Protected: Authenticated"),
-        new("Endpoint10", "PUT", "/api/auth/session/context", "Protected: StaffContext"),
         new("Endpoint11", "GET", "/api/admin/users", "Protected: IdentityManagement"),
         new("Endpoint12", "POST", "/api/admin/users/imports", "Protected: IdentityManagement"),
         new("Endpoint13", "GET", "/api/admin/users/imports/{importId}", "Protected: IdentityManagement"),
@@ -37,9 +36,9 @@ public sealed class NFR_4EvidenceTests
         var evidence = RepositoryFiles.Read(EvidencePath);
         var rows = ParseRows(evidence);
 
-        Assert.Equal(16, rows.Length);
-        Assert.Equal(16, rows.Select(row => row.Id).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(11, rows.Count(row => row.Surface.StartsWith("Protected:", StringComparison.Ordinal)));
+        Assert.Equal(15, rows.Length);
+        Assert.Equal(15, rows.Select(row => row.Id).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(10, rows.Count(row => row.Surface.StartsWith("Protected:", StringComparison.Ordinal)));
         Assert.Equal(5, rows.Count(row => row.Surface == "Anonymous lifecycle"));
 
         foreach (var expected in Endpoints)
@@ -89,7 +88,6 @@ public sealed class NFR_4EvidenceTests
         RepositoryFiles.ContainsAll(
             normalizedEvidence,
             "complete at the compiled endpoint-metadata plus executed policy layer",
-            "Direct TestServer handler-level positive/negative authorization is evidenced for Endpoint10 only",
             "does not treat this document's wording as proof");
         Assert.DoesNotContain("**Result: PASS.**", evidence, StringComparison.Ordinal);
     }
@@ -106,8 +104,7 @@ public sealed class NFR_4EvidenceTests
             "AuthorizationPolicy.CombineAsync",
             "Assert.True",
             "Assert.False",
-            "Assert.Equal(11, ProtectedEndpoints.Length)",
-            "RolePolicies.StaffContext",
+            "Assert.Equal(10, ProtectedEndpoints.Length)",
             "RolePolicies.IdentityManagement");
 
         foreach (var endpoint in Endpoints.Where(endpoint => endpoint.IsProtected))
@@ -118,14 +115,9 @@ public sealed class NFR_4EvidenceTests
                 StringComparison.Ordinal);
         }
 
-        var httpEvidence = RepositoryFiles.Read(
-            "tests/StudentRegistration.SecurityTests/IdentityRuntimeCompositionTests.cs");
-        RepositoryFiles.ContainsAll(
-            httpEvidence,
-            "Endpoint10_rejects_students_and_antiforgery_precedes_the_handler",
-            "Endpoint10_issues_only_the_selected_role_as_authorizing_claims",
-            "HttpStatusCode.Forbidden",
-            "HttpStatusCode.OK");
+        var endpointSource = RepositoryFiles.Read(
+            "src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs");
+        Assert.DoesNotContain("/api/auth/session/context", endpointSource, StringComparison.Ordinal);
     }
 
     private static MatrixRow[] ParseRows(string markdown)

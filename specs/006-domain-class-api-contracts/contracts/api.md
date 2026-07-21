@@ -47,7 +47,7 @@ interface AppContextDto {
   displayName: string;
   authorizedRoles: string[];
   activeRole: string | null;
-  sessionState: "active" | "expiring" | "role-selection-required";
+  sessionState: "active" | "expiring";
   expiresAtUtc: string;
   supportReferencePath: string;
 }
@@ -66,9 +66,9 @@ interface PublicContextDto {
 and at most 256 characters per message. Owners fail closed instead of
 returning an unbounded diagnostic payload.
 
-`activeRole` is non-null for `active` and `expiring`. It is null only when
-the authenticated user has multiple authorized roles and `sessionState` is
-`role-selection-required`; no client-selected value grants authorization.
+`activeRole` is non-null for `active` and `expiring` and equals the session's
+single authorized role. Zero or multiple authorized roles fail closed; no
+client-selected value grants authorization.
 
 A term field is null only when the authoritative academic-term contributor
 successfully reports that no applicable term exists. A missing or failed

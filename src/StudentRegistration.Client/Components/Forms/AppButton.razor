@@ -1,4 +1,5 @@
-<button @attributes="AdditionalAttributes"
+<button @ref="_button"
+        @attributes="AdditionalAttributes"
         class="@CssClass"
         type="@Type"
         disabled="@IsUnavailable"
@@ -14,6 +15,8 @@
 </button>
 
 @code {
+    private ElementReference _button;
+
     [Parameter]
     public string Type { get; set; } = "button";
 
@@ -48,6 +51,8 @@
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     private bool IsUnavailable => Disabled || IsLoading;
+
+    public ValueTask FocusAsync() => _button.FocusAsync();
 
     private string CssClass =>
         $"srs-button srs-button--{Variant.ToString().ToLowerInvariant()}{(IsLoading ? " is-loading" : string.Empty)}{(HasError ? " has-error" : string.Empty)}";

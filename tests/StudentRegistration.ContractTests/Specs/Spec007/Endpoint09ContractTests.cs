@@ -41,8 +41,9 @@ public sealed class Endpoint09ContractTests
     {
         RepositoryFiles.ContainsAll(
             Spec007ContractAssertions.ApiContract(),
-            "`SessionDto.activeRole` is null",
-            "selected role must be present in",
+            "Session issuance requires exactly one effective role",
+            "`SessionDto.activeRole`",
+            "zero or multiple roles fail closed",
             "no public security-stamp");
     }
 }

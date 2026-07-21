@@ -76,7 +76,7 @@ pending their owning dependency or release gate.
 
 ## Phase 4 - Requirement Tests and Bounded Delivery
 
-- [x] T019 [FR-1] [FR-2] [FR-3] [FR-5] [WORKSTREAM-ROLE-AND-AUTHORIZATION-BOUNDARIES] Create the future failing consolidated role-boundary checks in tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs. Test focus: student/staff entry separation, server-derived claims, direct-route denials, dual-role and no-role contexts without pre-implementing SPEC-007.
+- [x] T019 [FR-1] [FR-2] [FR-3] [FR-5] [WORKSTREAM-ROLE-AND-AUTHORIZATION-BOUNDARIES] Create consolidated role-boundary checks in tests/StudentRegistration.SpecificationTests/Spec001/RolePolicyContractTests.cs. Test focus: student/staff entry separation, server-derived claims, direct-route denials, invalid combined-role accounts, and no-role contexts.
 - [x] T020 [FR-1] [WORKSTREAM-ROLE-AND-AUTHORIZATION-BOUNDARIES] Publish the four-role boundary at specs/001-product-charter-rbac/contracts/role-boundary.md only after T019 fails for the expected reason (depends on T019); SPEC-007 alone writes runtime authorization source.
 - [x] T021 [FR-2] [WORKSTREAM-ROLE-AND-AUTHORIZATION-BOUNDARIES] Create the future failing student-versus-shared-staff entry contract checks in tests/StudentRegistration.SpecificationTests/Specs/Spec001/EntryPointBoundaryTests.cs.
 - [x] T022 [FR-2] [WORKSTREAM-ROLE-AND-AUTHORIZATION-BOUNDARIES] Publish the distinct student/shared-staff entry boundary at specs/001-product-charter-rbac/contracts/entry-point-boundary.md only after T021 fails for the expected reason (depends on T021).

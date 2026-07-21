@@ -55,7 +55,7 @@ role assignments, authorization policies, and staff/student login behavior.
 ## Feature Design
 
 - Maintain one normative role/permission matrix for Student, Admin, Lecturer,
-  and TeachingAssistant, including dual-role and no-supported-role outcomes.
+  and TeachingAssistant, including invalid combined-role and no-supported-role outcomes.
 - Keep Admin authorization capability-based: `AcademicTerms.Manage` and
   `AcademicProfiles.Manage` are independent named grants, with no implicit
   superuser or permission-inference behavior. Bound academic-profile location

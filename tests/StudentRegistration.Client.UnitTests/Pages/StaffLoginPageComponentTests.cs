@@ -12,13 +12,13 @@ public sealed class StaffLoginPageComponentTests
             "if (IsSubmitting || !Validate())",
             "password-only login",
             "LoginStaffAsync",
-            "role-selection-required",
             "INVALID_ROLE_CONFIGURATION",
             "session.Roles.Count == 1",
             "ApplyUnsupportedRoleConfiguration");
 
         Assert.DoesNotContain("<select", source, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("SelectRoleContextAsync", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("role-selection-required", source, StringComparison.Ordinal);
         Assert.DoesNotContain("Choose an authorized staff context", source, StringComparison.Ordinal);
         Assert.DoesNotContain("OTP", source, StringComparison.OrdinalIgnoreCase);
     }

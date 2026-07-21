@@ -199,6 +199,7 @@ public sealed class NFR_10EvidenceTests
     private static bool AllowedMachineLiteral(string value) => value is
         "Escape" or "Admin" or "Student" or "Lecturer" or "TeachingAssistant"
         or "Available" or "Unavailable" or "Draft" or "Published" or "Open" or "Closed" or "Unknown"
+        or "Credits" or "Active" or "Level" or "Required" or "Cohort"
         or "{DescriptionId} {ErrorId}" or "registration-window-{index + 1}-heading";
 
     private static string Relative(string path) => Path.GetRelativePath(

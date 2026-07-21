@@ -12,7 +12,7 @@ public sealed class NFR_5EvidenceTests
         var records = Directory.EnumerateFiles(designDirectory, "*.md")
             .Where(path => !path.EndsWith("identity-boundary.md", StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Assert.Equal(27, records.Length);
+        Assert.Equal(30, records.Length);
         foreach (var record in records)
         {
             RepositoryFiles.ContainsAll(File.ReadAllText(record),

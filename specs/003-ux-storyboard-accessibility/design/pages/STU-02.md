@@ -55,7 +55,7 @@ downstream contributor versions remain `not-pinned`.
     "SearchFilter",
     "EntityCard",
     "GroupCard",
-    "CapacityIndicator",
+    "CapacityBreakdown",
     "StatusBadge",
     "Alert",
     "StatePanel",

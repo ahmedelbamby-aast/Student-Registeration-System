@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 using StudentRegistration.Contracts;
 using StudentRegistration.Contracts.Operations;
@@ -8,6 +7,8 @@ namespace StudentRegistration.Client.Features.Operations;
 public sealed class OperationsApiClient(HttpClient httpClient)
 {
     public const string HealthPath = "/api/health";
+    private static readonly JsonSerializerOptions JsonOptions =
+        new(JsonSerializerDefaults.Web);
 
     public async Task<OperationsApiResult<HealthSummary>> GetHealthAsync(
         CancellationToken cancellationToken = default)
@@ -16,13 +17,22 @@ public sealed class OperationsApiClient(HttpClient httpClient)
             HealthPath,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken);
+        string payload;
+        try
+        {
+            payload = await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or ObjectDisposedException)
+        {
+            return OperationsApiResult<HealthSummary>.Failure(null);
+        }
+
         if (response.IsSuccessStatusCode ||
             response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
         {
             try
             {
-                var summary = await response.Content.ReadFromJsonAsync<HealthSummary>(
-                    cancellationToken: cancellationToken);
+                var summary = JsonSerializer.Deserialize<HealthSummary>(payload, JsonOptions);
                 if (summary is not null)
                 {
                     return OperationsApiResult<HealthSummary>.Success(summary);
@@ -37,13 +47,18 @@ public sealed class OperationsApiClient(HttpClient httpClient)
             catch (JsonException)
             {
             }
+            catch (ArgumentException)
+            {
+                // A structured API error is not a health summary. Continue to
+                // the error-contract parser below instead of surfacing a
+                // constructor validation exception to the status page.
+            }
         }
 
         ApiError? error = null;
         try
         {
-            error = await response.Content.ReadFromJsonAsync<ApiError>(
-                cancellationToken: cancellationToken);
+            error = JsonSerializer.Deserialize<ApiError>(payload, JsonOptions);
         }
         catch (HttpRequestException)
         {
@@ -52,6 +67,9 @@ public sealed class OperationsApiClient(HttpClient httpClient)
         {
         }
         catch (JsonException)
+        {
+        }
+        catch (ArgumentException)
         {
         }
 

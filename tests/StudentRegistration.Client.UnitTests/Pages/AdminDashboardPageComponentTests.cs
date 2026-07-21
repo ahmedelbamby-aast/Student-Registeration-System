@@ -5,6 +5,10 @@ namespace StudentRegistration.Client.UnitTests.Pages;
 public sealed class AdminDashboardPageComponentTests
 {
     [Fact]
+    public void Adm_01_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        AdminPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("AdminDashboardPage", "ADM-01");
+
+    [Fact]
     public void Adm_01_declares_all_reviewed_states_and_refresh_controls_without_zero_fill()
     {
         const string path = "src/StudentRegistration.Client/Pages/AdminDashboardPage.razor";

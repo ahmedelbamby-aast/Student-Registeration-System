@@ -48,9 +48,24 @@ internal static class RequestedRouteAccessibilityEvidence
         await page.Locator($"[data-route-id='{routeId}']").WaitForAsync();
         await AxeAccessibilityFixture.AssertNoSeriousAxeViolationsAsync(page);
         Assert.True(await page.EvaluateAsync<bool>("() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1"));
+
+        if (width < 1024)
+        {
+            var menu = page.GetByRole(AriaRole.Button, new() { Name = "Menu", Exact = true });
+            Assert.True(await menu.IsVisibleAsync());
+            Assert.Equal("false", await menu.GetAttributeAsync("aria-expanded"));
+            await menu.ClickAsync();
+            Assert.Equal("true", await menu.GetAttributeAsync("aria-expanded"));
+            var drawer = page.Locator("#workspace-navigation");
+            Assert.True(await drawer.EvaluateAsync<bool>("element => element.hasAttribute('data-open')"));
+            Assert.True(await drawer.EvaluateAsync<bool>("element => document.activeElement === element"));
+            await page.Keyboard.PressAsync("Escape");
+            Assert.Equal("false", await menu.GetAttributeAsync("aria-expanded"));
+            Assert.True(await menu.EvaluateAsync<bool>("element => document.activeElement === element"));
+        }
     }
 
-    private static string Context(string role) => $$"""{"serverTimeUtc":"2026-07-21T09:30:00Z","timeZoneId":"Africa/Cairo","teachingTerm":null,"registrationTerm":null,"registrationWindowState":"open","registrationWindow":null,"serviceState":"available","displayName":"{{role}} Demo","authorizedRoles":["{{role}}"],"activeRole":"{{role}}","sessionState":"active","expiresAtUtc":"2026-07-21T11:30:00Z","supportReferencePath":"/status/support"}""";
+    private static string Context(string role) => $$"""{"serverTimeUtc":"2026-07-21T09:30:00Z","timeZoneId":"Africa/Cairo","teachingTerm":null,"registrationTerm":null,"registrationWindowState":"none","registrationWindow":null,"serviceState":"available","displayName":"{{role}} Demo","authorizedRoles":["{{role}}"],"activeRole":"{{role}}","sessionState":"active","expiresAtUtc":"2026-07-21T11:30:00Z","supportReferencePath":"/status/support"}""";
     private const string Roadmap = """{"programCode":"AI-DS","cohort":"2026","catalogueVersion":"v2","terms":[{"recommendedTerm":1,"level":1,"subjects":[]}]}""";
     private const string EmptyQueue = """{"items":[],"page":1,"pageSize":20,"totalCount":0}""";
     private const string Error = """{"code":"SERVICE_UNAVAILABLE","message":"The owner service is unavailable.","correlationId":"A11Y-SAFE-REF"}""";

@@ -22,7 +22,7 @@
   reason/source, and field-error bounds are exact and fail closed.
 - [x] `Context.Read`, `AcademicProfile.ReadOwn`, `AcademicTerms.Manage`, and
   `AcademicProfiles.Manage` are independent permission policies. Login and
-  context switching derive claims only from the effective server role, and
+  single-role session issuance derives claims only from the effective server role, and
   role-only/wrong-role/cross-substitution tests pass.
 - [x] SPEC-006 remains the sole shared AppContext/window DTO writer. The
   nullable SPEC-003 frontend projection and AppShell render server-derived

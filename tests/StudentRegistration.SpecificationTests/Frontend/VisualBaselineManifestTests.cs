@@ -15,7 +15,7 @@ public sealed class VisualBaselineManifestTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(ManifestPath));
         var root = document.RootElement;
 
-        Assert.Equal("visual-baselines/1.0.0", root.GetProperty("version").GetString());
+        Assert.Equal("visual-baselines/2.0.0", root.GetProperty("version").GetString());
         Assert.False(root.GetProperty("automaticReplacementAllowed").GetBoolean());
         Assert.Equal("Ahmed ELbamby", root.GetProperty("approvalAuthority").GetString());
         Assert.Equal(
@@ -43,7 +43,9 @@ public sealed class VisualBaselineManifestTests
         using var document = JsonDocument.Parse(RepositoryFiles.Read(ManifestPath));
         var root = document.RootElement;
 
-        Assert.Equal("partially-approved-routes", root.GetProperty("status").GetString());
+        Assert.Equal(
+            "approved-routes-with-governed-v2-additions",
+            root.GetProperty("status").GetString());
         var baselines = root.GetProperty("baselines").EnumerateArray()
             .Where(item => item.GetProperty("targetManifest").GetString()!
                 .StartsWith("Spec008/", StringComparison.Ordinal))
@@ -105,7 +107,7 @@ public sealed class VisualBaselineManifestTests
     }
 
     [Fact]
-    public void Registry_requires_two_complete_cross_browser_states_for_all_30_routes()
+    public void Registry_covers_all_routes_and_governs_both_v2_states_for_the_three_new_routes()
     {
         using var routes = JsonDocument.Parse(RepositoryFiles.Read(".specify/route-manifest.json"));
         using var baselines = JsonDocument.Parse(RepositoryFiles.Read(ManifestPath));
@@ -120,13 +122,17 @@ public sealed class VisualBaselineManifestTests
             .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray());
 
         var governedTargetCount = 0;
+        string[] v2Routes = ["ADM-10", "STF-05", "STU-09"];
         foreach (var routeId in routeIds)
         {
             var routeEntries = entries.Where(entry =>
                 entry.GetProperty("routeId").GetString() == routeId).ToArray();
-            Assert.Equal(2, routeEntries.Select(entry => entry.GetProperty("state").GetString())
+            var expectedStateCount = v2Routes.Contains(routeId, StringComparer.Ordinal) ? 2 : 1;
+            Assert.Equal(expectedStateCount, routeEntries.Select(entry =>
+                    entry.GetProperty("state").GetString())
                 .Distinct(StringComparer.Ordinal).Count());
-            Assert.Equal(32, routeEntries.Sum(entry => entry.GetProperty("targetCount").GetInt32()));
+            Assert.Equal(expectedStateCount * 16, routeEntries.Sum(entry =>
+                entry.GetProperty("targetCount").GetInt32()));
             governedTargetCount += routeEntries.Sum(entry => entry.GetProperty("targetCount").GetInt32());
 
             foreach (var entry in routeEntries)
@@ -137,6 +143,46 @@ public sealed class VisualBaselineManifestTests
             }
         }
 
-        Assert.Equal(960, governedTargetCount);
+        Assert.Equal(528, governedTargetCount);
+
+        var v2Entries = entries.Where(entry => entry.TryGetProperty(
+                "baselineGeneration", out var generation) && generation.GetString() == "v2")
+            .ToArray();
+        Assert.Equal(6, v2Entries.Length);
+        Assert.All(v2Routes, routeId => Assert.Equal(
+            ["error", "primary"],
+            v2Entries.Where(entry => entry.GetProperty("routeId").GetString() == routeId)
+                .Select(entry => entry.GetProperty("state").GetString()!)
+                .Order(StringComparer.Ordinal)
+                .ToArray()));
+
+        foreach (var entry in v2Entries)
+        {
+            Assert.Equal("Ahmed ELbamby", entry.GetProperty("approvedBy").GetString());
+            Assert.Equal("2026-07-21", entry.GetProperty("approvedOn").GetString());
+            Assert.Contains("current Codex task turn", entry.GetProperty("approvalSource").GetString());
+            Assert.Equal("design-token-set/2.0.0", entry.GetProperty("tokenVersion").GetString());
+            Assert.Equal("frontend-fixture/2.0", entry.GetProperty("fixtureVersion").GetString());
+
+            var relativeManifest = entry.GetProperty("targetManifest").GetString()!;
+            var manifestPath = RepositoryFiles.PathTo(
+                $"tests/StudentRegistration.VisualTests/Baselines/{relativeManifest}");
+            Assert.Equal(
+                Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(manifestPath))).ToLowerInvariant(),
+                entry.GetProperty("artifactSha256").GetString());
+
+            using var routeManifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var targetRoot = Path.GetDirectoryName(manifestPath)!;
+            var targets = routeManifest.RootElement.GetProperty("targets").EnumerateArray().ToArray();
+            Assert.Equal(16, targets.Length);
+            foreach (var target in targets)
+            {
+                var imagePath = Path.Combine(targetRoot, target.GetProperty("file").GetString()!);
+                Assert.True(File.Exists(imagePath));
+                Assert.Equal(
+                    Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(imagePath))).ToLowerInvariant(),
+                    target.GetProperty("artifactSha256").GetString());
+            }
+        }
     }
 }

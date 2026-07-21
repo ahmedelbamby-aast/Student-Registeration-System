@@ -116,9 +116,9 @@ public sealed class JsonContractPolicyTests
                 "CQoLDA=="),
             ServiceState.Available,
             "Ahmed Student",
-            ["Lecturer", "TeachingAssistant"],
-            activeRole: null,
-            SessionState.RoleSelectionRequired,
+            ["Lecturer"],
+            activeRole: "Lecturer",
+            SessionState.Active,
             new DateTime(2026, 7, 13, 10, 30, 0, DateTimeKind.Utc),
             "/support/reference");
 
@@ -133,7 +133,7 @@ public sealed class JsonContractPolicyTests
         Assert.Equal(RegistrationWindowState.Open, clientContext.RegistrationWindowState);
         Assert.Equal("window-fall-all", clientContext.RegistrationWindow!.Id);
         Assert.Equal(ServiceState.Available, clientContext.ServiceState);
-        Assert.Equal(SessionState.RoleSelectionRequired, clientContext.SessionState);
+        Assert.Equal(SessionState.Active, clientContext.SessionState);
     }
 
     private static JsonSerializerOptions ResolveOptions()

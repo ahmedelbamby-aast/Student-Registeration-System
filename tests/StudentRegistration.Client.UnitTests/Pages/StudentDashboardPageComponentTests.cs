@@ -12,6 +12,10 @@ public sealed class StudentDashboardPageComponentTests
         "src/StudentRegistration.Client/Pages/StudentDashboardPage.razor";
 
     [Fact]
+    public void Stu_01_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        StudentPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("StudentDashboardPage", "STU-01");
+
+    [Fact]
     public void Loading_state_keeps_stable_landmarks_named_progress_and_heading_focus_target()
     {
         using var context = new BunitContext();
@@ -94,8 +98,8 @@ public sealed class StudentDashboardPageComponentTests
             "data-testid=\"registration-blockers\"",
             "REGISTRATION_HOLD",
             "PROFILE_NOT_READY",
-            "aria-describedby",
-            "disabled",
+            "DescribedBy",
+            "Disabled",
             "BlocksRegistration");
         Assert.True(
             source.IndexOf(
@@ -122,7 +126,7 @@ public sealed class StudentDashboardPageComponentTests
             "aria-live=\"assertive\"",
             "data-testid=\"student-dashboard-refresh\"",
             "_isRefreshing",
-            "disabled=\"@_isRefreshing\"",
+            "Disabled=\"@_isRefreshing\"",
             "if (_isRefreshing)",
             "GetAppContextAsync",
             "GetStudentAcademicContextAsync");

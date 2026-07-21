@@ -81,7 +81,7 @@
                     <p>@_safeMessage</p>
                     @ReferenceContent()
                     <div class="srs-student-admin__actions">
-                        <button type="button" @onclick="RetryAsync">@LocalizedUiText.Get("Retry")</button>
+                        <AppButton OnClick="RetryAsync">@LocalizedUiText.Get("Retry")</AppButton>
                         <a href="/status/support">@LocalizedUiText.Get("Open safe support path")</a>
                     </div>
                 </section>
@@ -95,7 +95,7 @@
                          aria-labelledby="student-admin-offline-heading">
                     <h2 id="student-admin-offline-heading">@LocalizedUiText.Get("Student administration is offline")</h2>
                     <p>@LocalizedUiText.Get("No change was queued. Check the connection and retry when online.")</p>
-                    <button type="button" @onclick="RetryAsync">@LocalizedUiText.Get("Retry when online")</button>
+                    <AppButton OnClick="RetryAsync">@LocalizedUiText.Get("Retry when online")</AppButton>
                 </section>
             }
 
@@ -118,14 +118,14 @@
                                maxlength="50"
                                autocomplete="off"
                                aria-describedby="student-search-help" />
-                        <button type="submit" disabled="@_isSearching">
+                        <AppButton Type="submit" Disabled="@_isSearching" IsLoading="@_isSearching">
                             @(_isSearching ? LocalizedUiText.Get("Searching…") : LocalizedUiText.Get("Search Students"))
-                        </button>
+                        </AppButton>
                         @if (!_hasSearched || _students.Count > 0)
                         {
-                            <button type="button" class="srs-student-admin__button--quiet" @onclick="ClearSearch">
+                            <AppButton Variant="AppButtonVariant.Quiet" OnClick="@(_ => ClearSearch())">
                                 @LocalizedUiText.Get("Clear Student search")
-                            </button>
+                            </AppButton>
                         }
                     </div>
                     <p id="student-search-help" class="srs-student-admin__hint">
@@ -158,7 +158,7 @@
                          aria-labelledby="student-admin-empty-heading">
                     <h2 id="student-admin-empty-heading">@LocalizedUiText.Get("No matching Students")</h2>
                     <p>@LocalizedUiText.Get("No records matched “")@_lastSubmittedQuery@LocalizedUiText.Get("” in the current server-selected term.")</p>
-                    <button type="button" @onclick="ClearSearch">@LocalizedUiText.Get("Clear Student search")</button>
+                    <AppButton Variant="AppButtonVariant.Secondary" OnClick="@(_ => ClearSearch())">@LocalizedUiText.Get("Clear Student search")</AppButton>
                 </section>
             }
 
@@ -201,12 +201,12 @@
                                         <td>@student.Standing</td>
                                         <td>@student.DataVersion</td>
                                         <td>
-                                            <button type="button"
-                                                    data-testid="@($"open-student-{student.StudentId}")"
-                                                    disabled="@_isLoadingStudent"
-                                                    @onclick="() => OpenStudentAsync(student)">
+                                            <AppButton Variant="AppButtonVariant.Quiet"
+                                                       data-testid="@($"open-student-{student.StudentId}")"
+                                                       Disabled="@_isLoadingStudent"
+                                                       OnClick="@(_ => OpenStudentAsync(student))">
                                                 @LocalizedUiText.Get("Open academic record")
-                                            </button>
+                                            </AppButton>
                                         </td>
                                     </tr>
                                 }
@@ -225,12 +225,12 @@
                                     <div><dt>@LocalizedUiText.Get("Standing")</dt><dd>@student.Standing</dd></div>
                                     <div><dt>@LocalizedUiText.Get("Profile version")</dt><dd>@student.DataVersion</dd></div>
                                 </dl>
-                                <button type="button"
-                                        data-testid="@($"open-student-card-{student.StudentId}")"
-                                        disabled="@_isLoadingStudent"
-                                        @onclick="() => OpenStudentAsync(student)">
+                                <AppButton Variant="AppButtonVariant.Quiet"
+                                           data-testid="@($"open-student-card-{student.StudentId}")"
+                                           Disabled="@_isLoadingStudent"
+                                           OnClick="@(_ => OpenStudentAsync(student))">
                                     @LocalizedUiText.Get("Open academic record")
-                                </button>
+                                </AppButton>
                             </li>
                         }
                     </ul>
@@ -274,12 +274,11 @@
                             <h2 id="selected-student-heading">@LocalizedUiText.Get("Student") @_selectedStudent.UniversityId</h2>
                             <p>@LocalizedUiText.Get("Read-only until the explicit correction command is opened.")</p>
                         </div>
-                        <button type="button"
-                                @ref="_correctionTrigger"
-                                data-testid="open-academic-correction"
-                                @onclick="OpenCorrectionAsync">
+                        <AppButton @ref="_correctionTrigger"
+                                   data-testid="open-academic-correction"
+                                   OnClick="OpenCorrectionAsync">
                             @LocalizedUiText.Get("Open academic correction")
-                        </button>
+                        </AppButton>
                     </div>
 
                     @if (!string.IsNullOrWhiteSpace(_successAnnouncement))
@@ -523,9 +522,9 @@
                     {
                         <p>@LocalizedUiText.Get("Current server version:") <strong>@_currentVersion</strong></p>
                     }
-                    <button type="button" @onclick="RefreshStudentContextAsync">
+                    <AppButton Variant="AppButtonVariant.Secondary" OnClick="RefreshStudentContextAsync">
                         @LocalizedUiText.Get("Refresh Student context")
-                    </button>
+                    </AppButton>
                 </section>
             }
             </div>
@@ -634,18 +633,18 @@
             </dl>
 
             <div class="srs-student-admin__dialog-actions">
-                <button type="button"
-                        @ref="_cancelCorrectionButton"
-                        disabled="@_isSubmittingCorrection"
-                        @onclick="CancelCorrectionAsync">
+                <AppButton @ref="_cancelCorrectionButton"
+                           Variant="AppButtonVariant.Secondary"
+                           Disabled="@_isSubmittingCorrection"
+                           OnClick="CancelCorrectionAsync">
                     @LocalizedUiText.Get("Cancel")
-                </button>
-                <button type="button"
-                        @ref="_submitCorrectionButton"
-                        disabled="@_isSubmittingCorrection"
-                        @onclick="SubmitCorrectionAsync">
+                </AppButton>
+                <AppButton @ref="_submitCorrectionButton"
+                           IsLoading="@_isSubmittingCorrection"
+                           LoadingAnnouncement="@(LocalizedUiText.Get("Submitting academic correction"))"
+                           OnClick="SubmitCorrectionAsync">
                     @(_isSubmittingCorrection ? LocalizedUiText.Get("Submitting…") : LocalizedUiText.Get("Submit academic correction"))
-                </button>
+                </AppButton>
             </div>
         </div>
         <span class="srs-student-admin__focus-sentinel"
@@ -699,11 +698,11 @@
     private List<string> _correctionErrors = [];
 
     private ElementReference _stateHeading;
-    private ElementReference _correctionTrigger;
+    private AppButton? _correctionTrigger;
     private ElementReference _correctionReasonInput;
     private ElementReference _correctionValidationSummary;
-    private ElementReference _cancelCorrectionButton;
-    private ElementReference _submitCorrectionButton;
+    private AppButton? _cancelCorrectionButton;
+    private AppButton? _submitCorrectionButton;
 
     private string Reason => _correction.Reason;
 
@@ -1043,7 +1042,7 @@
             _successAnnouncement = LocalizedUiText.Get("Correction saved after server validation.");
             _showCorrectionDialog = false;
             ClearFailure();
-            await _correctionTrigger.FocusAsync();
+            if (_correctionTrigger is not null) await _correctionTrigger.FocusAsync();
         }
         catch (HttpRequestException)
         {
@@ -1172,7 +1171,7 @@
             _state = SuccessState;
         }
 
-        await _correctionTrigger.FocusAsync();
+        if (_correctionTrigger is not null) await _correctionTrigger.FocusAsync();
     }
 
     private async Task HandleDialogKeyDown(KeyboardEventArgs args)
@@ -1190,11 +1189,11 @@
     {
         if (_isSubmittingCorrection)
         {
-            await _cancelCorrectionButton.FocusAsync();
+            if (_cancelCorrectionButton is not null) await _cancelCorrectionButton.FocusAsync();
             return;
         }
 
-        await _submitCorrectionButton.FocusAsync();
+        if (_submitCorrectionButton is not null) await _submitCorrectionButton.FocusAsync();
     }
 
     private void ApplyFailure(HttpStatusCode statusCode, ApiError? error)

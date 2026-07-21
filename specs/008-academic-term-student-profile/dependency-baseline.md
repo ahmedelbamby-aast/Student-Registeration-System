@@ -172,11 +172,9 @@ downstream-feature approval.
 - SPEC-007 supplies the session fields `displayName`, server-derived effective
   roles, `activeRole`, `sessionState`, and `expiresAtUtc`. The only role tokens
   are `Student`, `Admin`, `Lecturer`, and `TeachingAssistant`.
-- `activeRole` is a member of the effective server role set for an active or
-  expiring session. It is null only for
-  `role-selection-required`. A staff context switch may select only an
-  effective Admin/Lecturer/TeachingAssistant role, rotates the cookie, and
-  never unions or adds claims. A Student remains in the self-scoped Student
+- `activeRole` equals the single effective server role for an active or
+  expiring session. Zero or multiple roles fail closed as invalid account
+  configuration; no alternate-role mutation exists. A Student remains in the self-scoped Student
   context.
 - `GET /api/context` requires `Context.Read`. Student profile reads require
   `AcademicProfile.ReadOwn` plus a resource check that compares the

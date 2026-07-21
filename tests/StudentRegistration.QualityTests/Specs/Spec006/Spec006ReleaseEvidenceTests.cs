@@ -12,9 +12,9 @@ public sealed class Spec006ReleaseEvidenceTests
     public void Nfr1_has_deterministic_semantic_OpenApi_and_ci_evidence()
     {
         using var document = OpenApi();
-        Assert.Equal(27, document.RootElement.GetProperty("paths").EnumerateObject().Count());
+        Assert.Equal(26, document.RootElement.GetProperty("paths").EnumerateObject().Count());
         Assert.True(document.RootElement.GetProperty("components")
-            .GetProperty("schemas").EnumerateObject().Count() >= 55);
+            .GetProperty("schemas").EnumerateObject().Count() >= 54);
         RepositoryFiles.ContainsAll(
             RepositoryFiles.Read(".github/scripts/Verify-OpenApi.ps1"),
             "OpenApiBaselineTests",
@@ -34,7 +34,7 @@ public sealed class Spec006ReleaseEvidenceTests
             .EnumerateObject()
             .SelectMany(path => path.Value.EnumerateObject())
             .ToArray();
-        Assert.Equal(28, operations.Length);
+        Assert.Equal(27, operations.Length);
         Assert.All(
             operations,
             operation => Assert.NotEmpty(

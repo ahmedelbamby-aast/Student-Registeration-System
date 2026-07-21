@@ -1,10 +1,13 @@
 @page "/student/account"
+@using StudentRegistration.Client.Features.Academics
+@using StudentRegistration.Client.Features.Registration
+@inject AcademicApiClient AcademicApi
 @inject IdentityApiClient IdentityApi
 @inject NavigationManager Navigation
 
 <PageTitle>@LocalizedUiText.Get("Student account")</PageTitle>
 
-<AuthenticatedPage Context="null"
+<AuthenticatedPage Context="@_shellContext"
                    IsLoading="@_isLoading"
                    Workspace="WorkspaceKind.Student"
                    CurrentRouteId="STU-08"
@@ -127,6 +130,7 @@
     private string? _feedbackState;
     private string? _correlationId;
     private bool _feedbackIsError;
+    private FrontendAppContextView? _shellContext;
     private bool _isLoading = true;
     private bool _isChangingPassword;
     private bool _isRevoking;
@@ -146,6 +150,15 @@
         _isLoading = true;
         try
         {
+            var context = await AcademicApi.GetAppContextAsync();
+            if (!context.IsSuccess || context.Value is null ||
+                !RegistrationPageSupport.IsStudentContext(context.Value))
+            {
+                ApplyFailure(context.Error);
+                return;
+            }
+
+            _shellContext = RegistrationPageSupport.ToShellContext(context.Value);
             var result = await IdentityApi.GetSessionAsync();
             if (result.IsSuccess &&
                 result.Value is not null &&

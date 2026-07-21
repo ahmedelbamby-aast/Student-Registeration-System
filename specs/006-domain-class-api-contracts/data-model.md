@@ -54,7 +54,7 @@
   Nullable `PublicContextDto` term labels use the same rule.
 - `PublicContextDto` remains exactly six fields and never exposes a matched
   window ID, opening/closing interval, or row version.
-- `activeRole` is null only for a dual-role `role-selection-required` state;
+- `activeRole` is always the one authorized role; zero or multiple roles fail closed;
   `serviceState` and canonical `supportReferencePath` are always present.
 - Each endpoint contract records success, validation,
   authentication/authorization, conflict/concurrency, and unexpected-error

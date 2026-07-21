@@ -43,7 +43,7 @@
                 {
                     <p>@LocalizedUiText.Get("Reference:") @_correlationId</p>
                 }
-                <button type="button" @onclick="RefreshMonitoringAsync">@LocalizedUiText.Get("Retry")</button>
+                <AppButton OnClick="RefreshMonitoringAsync">@LocalizedUiText.Get("Retry")</AppButton>
             </section>
         }
         else if (_searched && _records.Count == 0)
@@ -72,7 +72,7 @@
                 <div><dt>@LocalizedUiText.Get("Failures")</dt><dd>@MetricValue("http.request.unexpected_errors")</dd></div>
                 <div><dt>@LocalizedUiText.Get("Collisions")</dt><dd>@MetricValue("registration.capacity_conflicts", "registration.counter_mismatches")</dd></div>
             </dl>
-            <button type="button" disabled="@_busy" @onclick="RefreshMonitoringAsync">@LocalizedUiText.Get("Refresh monitoring data")</button>
+            <AppButton Disabled="@_busy" OnClick="RefreshMonitoringAsync">@LocalizedUiText.Get("Refresh monitoring data")</AppButton>
         </section>
 
         <section class="srs-registration-monitor__filters" aria-labelledby="registration-filter-heading">
@@ -95,8 +95,8 @@
                         <option value="rejected">@LocalizedUiText.Get("Rejected")</option>
                     </select>
                 </label>
-                <button type="submit" disabled="@_busy">@LocalizedUiText.Get("Filter registrations")</button>
-                <button type="button" disabled="@_busy" @onclick="ClearFiltersAsync">@LocalizedUiText.Get("Clear registration filters")</button>
+                <AppButton Type="submit" Disabled="@_busy">@LocalizedUiText.Get("Filter registrations")</AppButton>
+                <AppButton Variant="AppButtonVariant.Secondary" Disabled="@_busy" OnClick="ClearFiltersAsync">@LocalizedUiText.Get("Clear registration filters")</AppButton>
             </form>
         </section>
 
@@ -130,7 +130,7 @@
                                         <td>@(_matchedStudent?.UniversityId ?? _studentQuery)</td>
                                         <td>@(record.Reference ?? LocalizedUiText.Get("Not issued"))</td>
                                         <td>@record.Status</td>
-                                        <td><button type="button" disabled="@_busy" @onclick="() => OpenDetailAsync(record.SubmissionId)">@LocalizedUiText.Get("Open submission detail")</button></td>
+                                        <td><AppButton Variant="AppButtonVariant.Quiet" Disabled="@_busy" OnClick="@(_ => OpenDetailAsync(record.SubmissionId))">@LocalizedUiText.Get("Open submission detail")</AppButton></td>
                                     </tr>
                                 }
                             }
@@ -157,9 +157,9 @@
                 </div>
 
                 <nav class="srs-registration-monitor__pagination" aria-label="@(LocalizedUiText.Get("Registration result pages"))">
-                    <button type="button" disabled="@(_busy || _page <= 1 || _matchedStudent is null)" @onclick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</button>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_busy || _page <= 1 || _matchedStudent is null)" OnClick="PreviousPageAsync">@LocalizedUiText.Get("Previous page")</AppButton>
                     <span>@LocalizedUiText.Format("Page {0} of {1}", _page, TotalPages)</span>
-                    <button type="button" disabled="@(_busy || _page >= TotalPages || _matchedStudent is null)" @onclick="NextPageAsync">@LocalizedUiText.Get("Next page")</button>
+                    <AppButton Variant="AppButtonVariant.Secondary" Disabled="@(_busy || _page >= TotalPages || _matchedStudent is null)" OnClick="NextPageAsync">@LocalizedUiText.Get("Next page")</AppButton>
                 </nav>
             </section>
 

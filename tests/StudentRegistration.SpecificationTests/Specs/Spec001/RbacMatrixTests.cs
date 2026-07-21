@@ -24,13 +24,14 @@ public sealed class RbacMatrixTests
     }
 
     [Fact]
-    public void Matrix_covers_dual_role_no_role_and_client_route_denials()
+    public void Matrix_covers_invalid_multi_role_no_role_and_client_route_denials()
     {
         var matrix = RepositoryFiles.Read(MatrixPath);
 
         RepositoryFiles.ContainsAll(
             matrix,
-            "Dual Lecturer and TeachingAssistant",
+            "Combined Lecturer and TeachingAssistant assignment",
+            "Reject authentication as invalid role configuration",
             "No supported staff role",
             "Direct route or client role change",
             "deny");

@@ -2,3 +2,14 @@
     display: inline-flex;
     max-inline-size: 100%;
 }
+
+.srs-approval-status__credit-load {
+    display: block;
+    margin-block-start: var(--srs-spacing-primitive-2);
+    color: var(--srs-color-semantic-text-secondary);
+    font-size: var(--srs-typography-primitive-font-size-supporting);
+}
+
+.srs-approval-status__credit-load[data-credit-load="overload"] {
+    color: var(--srs-color-semantic-warning-text);
+}

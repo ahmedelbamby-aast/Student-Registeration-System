@@ -109,7 +109,7 @@ public sealed class Spec008NonProductionBootstrapTests
                     "complete"
                 ],
                 success.Events);
-            Assert.Equal(6, success.PreparedCredentialCount);
+            Assert.Equal(5, success.PreparedCredentialCount);
             Assert.Equal(success.PreparedImportId, success.CompletedImportId);
             Assert.Null(success.AbortedImportId);
         }

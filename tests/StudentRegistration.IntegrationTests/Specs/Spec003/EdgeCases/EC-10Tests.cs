@@ -15,7 +15,7 @@ public sealed class EC_10Tests
             page,
             "if (IsSubmitting || !Validate())",
             "IsSubmitting = true;",
-            "disabled=\"@IsSubmitting\"",
+            "Disabled=\"@IsSubmitting\"",
             "Activating…",
             "IdentityFeedback",
             "ClearSecrets()");

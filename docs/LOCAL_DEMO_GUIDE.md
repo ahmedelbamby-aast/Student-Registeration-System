@@ -36,7 +36,15 @@ Useful variants:
 .\ops\scripts\Start-LocalDemo.ps1 -SkipBuild
 .\ops\scripts\Start-LocalDemo.ps1 -PrepareOnly
 .\ops\scripts\Start-LocalDemo.ps1 -ResetDatabase
+.\ops\scripts\Start-LocalDemo.ps1 -SkipBuild -PerformanceRuntime
 ```
+
+Use `-PerformanceRuntime` for browser performance evidence. Preparation and
+deterministic seeding still run safely in Development, while the web process
+serves the Release client with optimized static-asset behavior and no
+WebAssembly debugging. It deliberately does not claim Production authority;
+the production secret-provider gate remains fail closed. Ordinary manual role
+testing can continue to use the default.
 
 `-ResetDatabase` explicitly deletes only the local Docker Development volume
 before recreating it. The default preserves data. Use it once if the retained

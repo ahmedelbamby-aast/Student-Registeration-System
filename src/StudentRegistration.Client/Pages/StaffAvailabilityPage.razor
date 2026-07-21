@@ -42,10 +42,12 @@
     private bool _requesting;
     private bool _dirty;
     private bool _saved;
-    private UiStatus? ShellStatus => _shellContext is null && !_loading
+    private UiStatus? ShellStatus => !_loading &&
+        (_shellContext is null || _state is "unauthorized" or "session-expired")
         ? new(_reasonCode, ErrorHeading, _message, UiStatusSeverity.Error,
-            [new("staff-home", LocalizedUiText.Get("Return to Staff home"), "/staff")], _reference)
+            [new("staff-home", LocalizedUiText.Get("Return to authorized home"), AuthorizedHome)], _reference)
         : null;
+    private string AuthorizedHome => _shellContext?.ActiveRole == "Admin" ? "/admin" : "/staff";
 
     private string ContractState => _state switch
     {
@@ -148,13 +150,13 @@
                                   DayColumnLabel="@(LocalizedUiText.Get("Day"))" TimeColumnLabel="@(LocalizedUiText.Get("Time"))" MeetingColumnLabel="@(LocalizedUiText.Get("Range"))"
                                   GroupLabel="@(LocalizedUiText.Get("Range"))" ActivityKindLabel="@(LocalizedUiText.Get("Kind"))" LecturerLabel="@(LocalizedUiText.Get("Staff"))"
                                   TeachingAssistantsLabel="@(LocalizedUiText.Get("Partners"))" LocationLabel="@(LocalizedUiText.Get("Location"))" ConflictLabel="@(LocalizedUiText.Get("Status"))"
-                                  Meetings="@_meetings" IsDisabled="true" DisabledReason=LocalizedUiText.Get("Availability ranges are edited with the labelled text fields above.") />
+                                  Meetings="@_meetings" IsDisabled="true" DisabledReason="@(LocalizedUiText.Get("Availability ranges are edited with the labelled text fields above."))" />
                 <ScheduleList ComponentId="availability-list" EquivalentCalendarId="availability-list-calendar-heading"
                               Heading="@(LocalizedUiText.Get("Chronological availability list"))" GroupLabel="@(LocalizedUiText.Get("Range"))" ActivityKindLabel="@(LocalizedUiText.Get("Kind"))"
                               LecturerLabel="@(LocalizedUiText.Get("Staff"))" TeachingAssistantsLabel="@(LocalizedUiText.Get("Partners"))" LocationLabel="@(LocalizedUiText.Get("Location"))"
                               DayLabel="@(LocalizedUiText.Get("Day"))" StartLabel="@(LocalizedUiText.Get("Starts"))" EndLabel="@(LocalizedUiText.Get("Ends"))" TimezoneLabel="@(LocalizedUiText.Get("Time zone"))"
                               ConflictLabel="@(LocalizedUiText.Get("Status"))" Meetings="@_meetings" IsDisabled="true"
-                              DisabledReason=LocalizedUiText.Get("Availability ranges are edited with the labelled text fields above.") />
+                              DisabledReason="@(LocalizedUiText.Get("Availability ranges are edited with the labelled text fields above."))" />
             </section>
 
             @if (_impactAlertIds.Count > 0)

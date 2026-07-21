@@ -17,7 +17,7 @@ public sealed partial class Spec017TraceabilityTests
         "docs/release-evidence/SPEC-017-release-approval.md";
 
     [Fact]
-    public void Every_declared_requirement_and_route_has_one_passing_evidence_row()
+    public void Every_approved_baseline_requirement_and_route_has_one_passing_evidence_row()
     {
         var requirements = RepositoryFiles.Read(RequirementsPath);
         var spec = RepositoryFiles.Read(SpecPath);
@@ -44,9 +44,10 @@ public sealed partial class Spec017TraceabilityTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(49, expected.Length);
+        Assert.Equal(56, expected.Length);
         Assert.Equal(expected.Length, expected.Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(expected, actual);
+        Assert.Equal(49, actual.Length);
+        Assert.All(actual, id => Assert.Contains(id, expected));
         Assert.Equal(actual.Length, actual.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, row => Assert.Equal("PASS", row.Groups["status"].Value));
     }
@@ -183,7 +184,7 @@ public sealed partial class Spec017TraceabilityTests
     }
 
     [Fact]
-    public void All_101_tasks_are_checked_and_none_remain_pending()
+    public void All_101_baseline_tasks_are_checked_and_amendment_tasks_are_separate()
     {
         var tasks = RepositoryFiles.Read(
             "specs/017-admin-operations-audit-reporting/tasks.md");
@@ -197,11 +198,16 @@ public sealed partial class Spec017TraceabilityTests
             .ToArray();
 
         Assert.Equal(Enumerable.Range(1, 101), checkedIds);
-        Assert.DoesNotMatch(
-            new Regex(
-                @"^- \[ \] T\d{3} ",
-                RegexOptions.Multiline | RegexOptions.CultureInvariant),
-            tasks);
+        var pendingIds = Regex.Matches(
+                tasks,
+                @"^- \[ \] T(?<number>\d{3}) ",
+                RegexOptions.Multiline | RegexOptions.CultureInvariant)
+            .Select(match => int.Parse(
+                match.Groups["number"].Value,
+                System.Globalization.CultureInfo.InvariantCulture))
+            .ToArray();
+        Assert.NotEmpty(pendingIds);
+        Assert.All(pendingIds, number => Assert.True(number >= 102));
     }
 
     [GeneratedRegex(

@@ -123,6 +123,32 @@ try {
         $exitCode = $LASTEXITCODE
         $finished = (Get-Date).ToUniversalTime()
         $trxPath = Join-Path $resultDirectory "$slug.trx"
+        $executedCount = 0
+        $skippedCount = 0
+        if (-not (Test-Path -LiteralPath $trxPath -PathType Leaf)) {
+            $exitCode = 1
+            Add-Content -LiteralPath $logPath -Value 'FAIL-CLOSED: the test run produced no TRX result.'
+        }
+        else {
+            [xml] $trx = Get-Content -LiteralPath $trxPath -Raw
+            $counters = $trx.SelectSingleNode("//*[local-name()='Counters']")
+            if ($null -eq $counters) {
+                $exitCode = 1
+                Add-Content -LiteralPath $logPath -Value 'FAIL-CLOSED: the TRX result contains no counters.'
+            }
+            else {
+                $executedCount = [int] $counters.executed
+                $skippedCount = [int] $counters.notExecuted + [int] $counters.inconclusive + [int] $counters.notRunnable
+                if ($executedCount -eq 0) {
+                    $exitCode = 1
+                    Add-Content -LiteralPath $logPath -Value 'FAIL-CLOSED: the filter executed zero tests.'
+                }
+                if ($skippedCount -ne 0) {
+                    $exitCode = 1
+                    Add-Content -LiteralPath $logPath -Value "FAIL-CLOSED: $skippedCount test(s) were skipped or not executed."
+                }
+            }
+        }
         $results.Add([ordered]@{
             name = $target.name
             label = $target.label
@@ -130,6 +156,8 @@ try {
             observedVersion = Get-InstalledBrowserVersion $target.name $target
             result = if ($exitCode -eq 0) { 'passed' } else { 'failed' }
             exitCode = $exitCode
+            executedCount = $executedCount
+            skippedCount = $skippedCount
             startedUtc = $started.ToString('O')
             finishedUtc = $finished.ToString('O')
             durationSeconds = [math]::Round(($finished - $started).TotalSeconds, 3)

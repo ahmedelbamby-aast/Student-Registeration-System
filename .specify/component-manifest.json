@@ -21,7 +21,6 @@
     { "name": "Pagination", "path": "src/StudentRegistration.Client/Components/Data/Pagination.razor" },
     { "name": "GroupCard", "path": "src/StudentRegistration.Client/Components/Registration/GroupCard.razor" },
     { "name": "CapacityBreakdown", "path": "src/StudentRegistration.Client/Components/Registration/CapacityBreakdown.razor" },
-    { "name": "CapacityIndicator", "path": "src/StudentRegistration.Client/Components/Registration/CapacityIndicator.razor", "status": "deprecated-remove-after-route-migration" },
     { "name": "ScheduleCalendar", "path": "src/StudentRegistration.Client/Components/Scheduling/ScheduleCalendar.razor" },
     { "name": "ScheduleList", "path": "src/StudentRegistration.Client/Components/Scheduling/ScheduleList.razor" },
     { "name": "ConflictPanel", "path": "src/StudentRegistration.Client/Components/Scheduling/ConflictPanel.razor" },

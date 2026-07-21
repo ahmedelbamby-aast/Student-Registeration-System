@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using StudentRegistration.Client.Components.Registration;
 using StudentRegistration.Client.Components.Layout;
 using StudentRegistration.TestSupport;
@@ -8,6 +9,39 @@ namespace StudentRegistration.Client.ContractTests;
 
 public sealed class SharedDesignSystemContractTests
 {
+    [Fact]
+    public void All_30_routes_use_shared_shells_actions_and_token_only_page_styles()
+    {
+        using var manifest = JsonDocument.Parse(RepositoryFiles.Read(".specify/route-manifest.json"));
+        var routes = manifest.RootElement.GetProperty("routes").EnumerateArray().ToArray();
+        Assert.Equal(30, routes.Length);
+
+        foreach (var route in routes)
+        {
+            var pageName = route.GetProperty("page").GetString()!;
+            var pagePath = Assert.Single(Directory.EnumerateFiles(
+                RepositoryFiles.PathTo("src/StudentRegistration.Client/Pages"),
+                $"{pageName}.razor",
+                SearchOption.AllDirectories));
+            var source = File.ReadAllText(pagePath);
+
+            Assert.DoesNotContain("<button", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("style=", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotMatch(
+                new Regex(@"(?i)(?:dual\s+role|teacher\s*\+\s*assistant|lecturer\s*\+\s*teachingassistant)"),
+                source);
+
+            var stylePath = $"{pagePath}.css";
+            if (File.Exists(stylePath))
+            {
+                var styles = File.ReadAllText(stylePath);
+                Assert.DoesNotMatch(
+                    new Regex(@"(?i)(?:#[0-9a-f]{3,8}\b|rgba?\(|hsla?\()"),
+                    styles);
+            }
+        }
+    }
+
     [Fact]
     public void Global_design_system_covers_responsive_accessibility_preferences()
     {
@@ -48,7 +82,7 @@ public sealed class SharedDesignSystemContractTests
             name.Contains("Person", StringComparison.OrdinalIgnoreCase) ||
             name.Contains("Identity", StringComparison.OrdinalIgnoreCase));
         Assert.Equal(
-            ["AccessibleName", "Available", "AvailableLabel", "Enrolled", "EnrolledLabel", "Held", "HeldLabel", "Total", "TotalLabel"],
+            ["AccessibleName", "Available", "AvailableLabel", "Enrolled", "EnrolledLabel", "Held", "HeldLabel", "State", "StateMessage", "Total", "TotalLabel"],
             parameterNames.Order(StringComparer.Ordinal).ToArray());
     }
 

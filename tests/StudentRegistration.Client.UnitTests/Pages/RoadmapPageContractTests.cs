@@ -5,6 +5,10 @@ namespace StudentRegistration.Client.UnitTests.Pages;
 public sealed class RoadmapPageContractTests
 {
     [Fact]
+    public void Stu_09_renders_authenticated_landmarks_and_operates_the_workspace_menu() =>
+        StudentPageRenderHarness.AssertAuthenticatedShellAndMenuOperate("StudentRoadmapPage", "STU-09");
+
+    [Fact]
     public void Student_roadmap_uses_the_unified_accessible_page_patterns()
     {
         var source = RepositoryFiles.Read(

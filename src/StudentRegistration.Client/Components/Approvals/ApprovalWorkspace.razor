@@ -48,14 +48,13 @@
                     <EntityCard HeadingId="@($"approval-{row.Line.LineId:D}")"
                                 Heading="@($"{row.Line.CourseCode} — {row.Line.SubjectTitle}")">
                         <HeaderContent>
-                            <ApprovalStatusBadge State="ApprovalStatusBadge.ApprovalState.PendingApproval" Text="@(LocalizedUiText.Get("Pending approval"))" />
+                            <ApprovalStatusBadge State="ApprovalStatusBadge.ApprovalState.PendingApproval"
+                                                 Text="@(LocalizedUiText.Get("Pending approval"))"
+                                                 CurrentCredits="@((int)row.RequestedCredits)"
+                                                 CurrentCgpa="@row.CurrentCgpa" />
                         </HeaderContent>
                         <ChildContent>
                             <p class="srs-approvals__student">@row.StudentDisplayName · @row.StudentUniversityId</p>
-                            @if (row.Overload)
-                            {
-                                <p><StatusBadge Text="@(LocalizedUiText.Get("CGPA-qualified overload"))" Tone="StatusBadge.BadgeTone.Warning" /></p>
-                            }
                             <dl class="srs-approvals__facts">
                                 <div><dt>@LocalizedUiText.Get("Subject credits")</dt><dd>@row.Line.Credits</dd></div>
                                 <div><dt>@LocalizedUiText.Get("Requested total")</dt><dd>@row.RequestedCredits</dd></div>
@@ -64,6 +63,8 @@
                                 <div><dt>@LocalizedUiText.Get("Window closes")</dt><dd>@row.WindowClosesAtUtc.ToString("g") @LocalizedUiText.Get("UTC")</dd></div>
                             </dl>
                             <CapacityBreakdown AccessibleName="@($"Capacity for {row.Line.CourseCode}")"
+                                               State="@(row.Line.Capacity.AvailableSeatCount == 0 ? CapacityBreakdown.CapacityState.Full : CapacityBreakdown.CapacityState.Current)"
+                                               StateMessage="@(row.Line.Capacity.AvailableSeatCount == 0 ? LocalizedUiText.Get("No seats are currently available.") : LocalizedUiText.Get("Current held-seat capacity."))"
                                                TotalLabel="@(LocalizedUiText.Get("Total"))" Total="@row.Line.Capacity.Capacity"
                                                EnrolledLabel="@(LocalizedUiText.Get("Enrolled"))" Enrolled="@row.Line.Capacity.EnrolledCount"
                                                HeldLabel="@(LocalizedUiText.Get("Held"))" Held="@row.Line.Capacity.HeldSeatCount"
@@ -119,7 +120,7 @@
     protected override async Task OnInitializedAsync()
     {
         var context = await AcademicApi.GetAppContextAsync();
-        if (!context.IsSuccess || context.Value is null || context.Value.SessionState is SessionState.RoleSelectionRequired || !HasExpectedRole(context.Value.ActiveRole))
+        if (!context.IsSuccess || context.Value is null || !HasExpectedRole(context.Value.ActiveRole))
         {
             _error = context.Error ?? new("FORBIDDEN", LocalizedUiText.Get("The active role cannot access this approval queue."), "client");
             _contextLoading = false;

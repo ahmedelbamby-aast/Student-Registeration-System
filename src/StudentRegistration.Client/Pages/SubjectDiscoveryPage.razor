@@ -139,7 +139,7 @@ else if (_shellContext is not null)
                                 <a href="@EmptySupportPath">@LocalizedUiText.Get("Open Registrar support")</a>
                             }
                         }
-                        <button type="button" @onclick="ResetFiltersAsync">@LocalizedUiText.Get("Reset filters")</button>
+                        <AppButton Variant="AppButtonVariant.Secondary" OnClick="ResetFiltersAsync">@LocalizedUiText.Get("Reset filters")</AppButton>
                         <a href="/student/schedule">@LocalizedUiText.Get("Open current plan")</a>
                     </section>
                 }
@@ -158,11 +158,9 @@ else if (_shellContext is not null)
                         }
                         @if (_state is ServiceErrorState or OfflineState or StaleState)
                         {
-                            <button type="button"
-                                    disabled="@_requestLoading"
-                                    @onclick="RetryAsync">
+                            <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="RetryAsync">
                                 @LocalizedUiText.Get("Retry subject discovery")
-                            </button>
+                            </AppButton>
                         }
                         <a href="@_shellContext.SupportReferencePath">@LocalizedUiText.Get("Open safe support path")</a>
                     </section>
@@ -179,11 +177,9 @@ else if (_shellContext is not null)
                             <p>
                                 @LocalizedUiText.Get("The displayed result is the latest server refresh. Review the changed capacity and reasons before continuing.")
                             </p>
-                            <button type="button"
-                                    disabled="@_requestLoading"
-                                    @onclick="RetryAsync">
+                            <AppButton Disabled="@_requestLoading" IsLoading="@_requestLoading" OnClick="RetryAsync">
                                 @LocalizedUiText.Get("Retry subject discovery")
-                            </button>
+                            </AppButton>
                         </section>
                     }
 

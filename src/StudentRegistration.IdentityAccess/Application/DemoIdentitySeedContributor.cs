@@ -64,7 +64,7 @@ public sealed class DemoIdentitySeedContributor
         AddIdentity("TA-0001", null, "Demo Teaching Assistant", "TA-0001", ["TeachingAssistant"], provisionedAtUtc, identities, credentials);
 
         // The store performs an idempotent reconciliation by stable synthetic keys
-        // and disables the retired dual-role demo identity if it exists from an
+        // and disables the retired invalid multi-role demo identity if it exists from an
         // earlier local database.
         var provisionedUserIds = await _store.ReconcileAsync(
             identities,

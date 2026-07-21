@@ -43,8 +43,8 @@
 - [x] T032 [P] [API-Endpoint08] Create failing POST /api/auth/sessions/revoke-all antiforgery and two-replica invalidation checks in tests/StudentRegistration.ContractTests/Specs/Spec007/Endpoint08ContractTests.cs.
 - [x] T033 [API-Endpoint09] [OWNER-SPEC-007] Finalize GET /api/auth/session in specs/007-identity-account-lifecycle/contracts/api.md.
 - [x] T034 [P] [API-Endpoint09] Create failing GET /api/auth/session active-role, role-set, expiry, and security-internal non-disclosure checks in tests/StudentRegistration.ContractTests/Specs/Spec007/Endpoint09ContractTests.cs.
-- [x] T035 [API-Endpoint10] [OWNER-SPEC-007] Finalize PUT /api/auth/session/context in specs/007-identity-account-lifecycle/contracts/api.md.
-- [x] T036 [P] [API-Endpoint10] Create failing PUT /api/auth/session/context antiforgery, claim-subset, cookie-rotation, and privilege-escalation checks in tests/StudentRegistration.ContractTests/Specs/Spec007/Endpoint10ContractTests.cs.
+- [x] T035 [API-Endpoint10-RETIRED] Record removal of the former role-context endpoint; single-role sessions require no context mutation.
+- [x] T036 [P] [API-Endpoint10-RETIRED] Verify the request type and endpoint remain absent and multiple roles fail closed.
 
 ## Phase 3 - Acceptance, Edge, and Success-Criterion Tests
 
@@ -59,7 +59,7 @@
 - [x] T045 [P] [AC-9] [NFR-1] [NFR-2] [NFR-3] [NFR-4] Create failing authentication quality-gate coverage in tests/StudentRegistration.AcceptanceTests/Specs/Spec007/AC-9Tests.cs.
 - [x] T046 [P] [EC-1] Create already-activated identity coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-1Tests.cs.
 - [x] T047 [P] [EC-2] Create disabled/locked-account coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-2Tests.cs.
-- [x] T048 [P] [EC-3] Create dual-role context-switch coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-3Tests.cs.
+- [x] T048 [P] [EC-3] Create invalid combined-role fail-closed coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-3Tests.cs.
 - [x] T049 [P] [EC-4] Create expired-session and plan-revalidation coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-4Tests.cs.
 - [x] T050 [P] [EC-5] Create repeated generic recovery coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-5Tests.cs.
 - [x] T051 [P] [EC-6] Create lost activation-response replay coverage in tests/StudentRegistration.IntegrationTests/Specs/Spec007/EdgeCases/EC-6Tests.cs.
@@ -103,7 +103,7 @@
 - [x] T083 [API-Endpoint07] Deliver the POST /api/auth/password/change handler at src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs after T030 and T059 fail for expected reasons.
 - [x] T084 [API-Endpoint08] Deliver the POST /api/auth/sessions/revoke-all handler at src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs after T032 and T059 fail for expected reasons.
 - [x] T085 [API-Endpoint09] Deliver the GET /api/auth/session handler at src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs after T034 and T059 fail for expected reasons.
-- [x] T086 [API-Endpoint10] Deliver the PUT /api/auth/session/context handler at src/StudentRegistration.IdentityAccess/Endpoints/Spec007Endpoints.cs after T036 and T058 fail for expected reasons.
+- [x] T086 [API-Endpoint10-RETIRED] Remove the former role-context handler and keep single-role session issuance server-derived.
 
 ## Phase 6 - Frontend Functional Tests and Pages
 

@@ -259,11 +259,11 @@ public sealed class RegistrationDiscoveryModelConfigurationTests
                  N'AI-DS', N'2023', 3.20, 96, N'Active', 1, N'demo', N'SRC-DATA-SCIENCE', N'1',
                  '2026-07-13T00:00:00', '2026-07-13T00:00:00');
             INSERT INTO [academics].[StudentTermAcademicStates]
-                ([Id], [StudentId], [TermId], [GpaAtStart], [EarnedCreditsAtStart], [StandingAtStart],
+                ([Id], [StudentId], [TermId], [ProgramTermOrdinal], [GpaAtStart], [EarnedCreditsAtStart], [StandingAtStart],
                  [Source], [SourceReference], [DataVersion], [DataAsOfUtc])
             VALUES
                 ('01100000-0000-0000-0000-000000000031', '01100000-0000-0000-0000-000000000002',
-                 '01100000-0000-0000-0000-000000000003', 3.20, 96, N'Active', N'demo', N'SRC-DATA-SCIENCE', N'1', '2026-07-13T00:00:00');
+                 '01100000-0000-0000-0000-000000000003', 7, 3.20, 96, N'Active', N'demo', N'SRC-DATA-SCIENCE', N'1', '2026-07-13T00:00:00');
             INSERT INTO [academics].[RegistrationWindows]
                 ([Id], [TermId], [ScopeType], [ScopeValue], [OpensAtUtc], [ClosesAtUtc], [State])
             VALUES
